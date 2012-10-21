@@ -631,6 +631,11 @@ object Viewer: TViewer
       Visible = False
       OnClick = MiCurrentPersonClick
     end
+    object MiCurrentPersonAvatar: TMenuItem
+      Caption = 'Update Avatar'
+      ImageIndex = 3
+      OnClick = MiCurrentPersonAvatarClick
+    end
     object MiCurrentPersonSeparator: TMenuItem
       Caption = '-'
       Visible = False

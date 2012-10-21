@@ -3,9 +3,10 @@ unit uFormCreatePerson;
 interface
 
 uses
-  System.Types,
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.ActiveX,
+  System.Types,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -15,6 +16,8 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
+  Vcl.AppEvnts,
+  Vcl.Imaging.jpeg,
 
   Dmitry.Controls.Base,
   Dmitry.Controls.WatermarkedEdit,
@@ -24,19 +27,18 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.PathProviders,
 
+  UnitDBDeclare,
+  UnitDBKernel,
+
   uFaceDetection,
   uPeopleSupport,
   uMemory,
   uMemoryEx,
-  jpeg,
   uBitmapUtils,
   uThreadEx,
   uDBThread,
   uThreadForm,
   u2DUtils,
-  UnitDBDeclare,
-  UnitDBKernel,
-  AppEvnts,
   uGroupTypes,
   UnitGroupsWork,
   ImgList,
@@ -48,7 +50,6 @@ uses
   uJpegUtils,
   uFastLoad,
   uVCLHelpers,
-  ActiveX,
   uDBClasses,
   uDBForm,
   uSettings,
@@ -126,6 +127,7 @@ type
     procedure MarkPersonOnPhoto;
     procedure GroupClick(Sender: TObject);
     procedure CloseSuggestForm;
+    procedure RealignControls;
   protected
     function GetFormID: string; override;
     procedure EnableControls(IsEnabled: Boolean);
@@ -426,15 +428,18 @@ begin
     FIsImageChanged := False;
     FIsEditMode := True;
 
+    ReloadGroups;
+
     if NewAvatar <> nil then
     begin
       FPicture.Assign(NewAvatar);
       FIsImageChanged := True;
+      BtnOk.Enabled := True;
     end else
       FPicture.Assign(Person.Image);
 
+    RealignControls;
     RecreateImage;
-    ReloadGroups;
     Caption := LF('Edit person: {0}', [FPerson.Name]);
     ShowModal;
   finally
@@ -464,6 +469,7 @@ begin
   TPersonExtractor.Create(Self, FaceInImage, FPicture);
   RecreateImage;
   ReloadGroups;
+  RealignControls;
   LsExtracting.Show;
   Caption := L('Create new person');
   ShowModal;
@@ -569,6 +575,41 @@ begin
       PbPhoto.Height div 2 - FDisplayImage.Height div 2, FDisplayImage);
 end;
 
+procedure TFormCreatePerson.RealignControls;
+const
+  PaddingBottom = 6;
+
+var
+  Y: Integer;
+begin
+  Y := WedName.AfterTop(PaddingBottom);
+
+  if WlPersonNameStatus.Visible then
+  begin
+    WlPersonNameStatus.Top := Y;
+    LsNameCheck.Top := Y;
+    Y := WlPersonNameStatus.AfterTop(PaddingBottom);
+  end;
+
+  LbBirthDate.Top := Y;
+  Y := LbBirthDate.AfterTop(PaddingBottom);
+
+  DtpBirthDay.Top := Y;
+  Y := DtpBirthDay.AfterTop(PaddingBottom);
+
+  LbGroups.Top := Y;
+  Y := LbGroups.AfterTop(PaddingBottom);
+
+  WllGroups.Top := Y;
+  Y := WllGroups.AfterTop(PaddingBottom);
+
+  LbComments.Top := Y;
+  Y := LbComments.AfterTop(PaddingBottom);
+
+  WmComments.Top := Y;
+  WmComments.Height := BtnOk.Top - Y - PaddingBottom;
+end;
+
 procedure TFormCreatePerson.RecreateImage;
 var
   B, SmallB: TBitmap;
@@ -627,7 +668,7 @@ begin
   begin
     WlPersonNameStatus.IconWidth := 16;
     WlPersonNameStatus.Icon := ImOK.Picture.Icon;
-    WlPersonNameStatus.Text := FormatEx(L('Person name is valid!'), [PersonList.Count]);
+    WlPersonNameStatus.Text := L('Person name is unique!');
     WlPersonNameStatus.CanClick := False;
     WlPersonNameStatus.Refresh;
   end else
@@ -658,10 +699,15 @@ begin
   TFormPersonSuggest(FFormPersonSuggest).LoadPersons(Self, P, PersonList);
 
   BtnOk.Enabled := (PersonList.Count = 0) or ((PersonList.Count > 0) and (TPersonItem(PersonList[0]).PersonName <> WedName.Text));
+
+  RealignControls;
 end;
 
 procedure TFormCreatePerson.WedNameChange(Sender: TObject);
 begin
+  if (FPerson <> nil) and (FPerson.Name = WedName.Text) then
+    Exit;
+
   TmrCkeckName.Restart;
   BtnOk.Enabled := False;
 end;
@@ -745,6 +791,7 @@ var
 begin
   TmrCkeckName.Enabled := False;
   NewFormState;
+  RealignControls;
   if WedName.Text <> '' then
   begin
     PName := '';

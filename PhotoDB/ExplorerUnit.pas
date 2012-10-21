@@ -453,8 +453,8 @@ type
     TbPreviewNavigationSeparator: TToolButton;
     TbPreviewZoomIn: TToolButton;
     TbPreviewZoomOut: TToolButton;
-    ToolButton2: TToolButton;
-    TbPreviewPage: TToolButton;
+    TbPreviewRatingSeparator: TToolButton;
+    TbPreviewRating: TToolButton;
     TbPreviewZoomSeparator: TToolButton;
     TbPreviewOpen: TToolButton;
     TbPreview: TToolButton;
@@ -816,6 +816,7 @@ type
     procedure MiPreviewPersonFindClick(Sender: TObject);
     procedure MiPreviewPersonPropertiesClick(Sender: TObject);
     procedure MiPreviewPersonUpdateAvatarClick(Sender: TObject);
+    procedure TbPreviewRatingClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -993,7 +994,9 @@ type
     procedure OnPreviewPersonMouseEnter(Sender: TObject);
     procedure OnPreviewPersonMouseLeave(Sender: TObject);
     procedure OnPreviewPersonClick(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure OnBeginLoadingPreviewImage(Sender: TObject);
+    procedure OnBeginLoadingPreviewImage(Sender: TObject; NewImage: Boolean);
+    procedure DoStartPersonSelection(Sender: TObject);
+    procedure OnStopPersonSelection(Sender: TObject);
 
     procedure ExtendedSearchInit;
     procedure ExtendedSearchRealign;
@@ -1359,6 +1362,7 @@ begin
     FImageViewer.OnRequestPreviousImage := TbPreviewPreviousClick;
     FImageViewer.OnDblClick := SlideShowLinkClick;
     FImageViewer.OnPersonsFoundOnImage := OnPersonsFoundOnPreview;
+    FImageViewer.OnStopPersonSelection := OnStopPersonSelection;
     TsMediaPreviewResize(Self);
 
     WlFaceCount.ImageList := DBkernel.ImageList;
@@ -2543,13 +2547,36 @@ begin
   end;
 end;
 
-procedure TExplorerForm.OnBeginLoadingPreviewImage(Sender: TObject);
+procedure TExplorerForm.OnBeginLoadingPreviewImage(Sender: TObject; NewImage: Boolean);
 var
-  I: Integer;
+  I, Rating: Integer;
 begin
-  for I := 0 to WllPersonsPreview.ControlCount - 1 do
-    if WllPersonsPreview.Controls[I] is TWebLink then
-      TWebLink(WllPersonsPreview.Controls[I]).Enabled := False;
+  BeginScreenUpdate(TsMediaPreview.Handle);
+  try
+    if NewImage then
+    begin
+      for I := 0 to WllPersonsPreview.ControlCount - 1 do
+        if WllPersonsPreview.Controls[I] is TWebLink then
+        begin
+          TWebLink(WllPersonsPreview.Controls[I]).Enabled := False;
+          TWebLink(WllPersonsPreview.Controls[I]).DisableStyles := True;
+          TWebLink(WllPersonsPreview.Controls[I]).Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor);
+        end;
+
+      TbPreviewRating.Enabled := (not (FolderView and (FImageViewer.Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(FImageViewer.Item.Path);
+    end;
+
+    Rating := Abs(FImageViewer.Item.Rating);
+    if Rating > 5 then
+      Rating := Rating div 10;
+
+    TbPreviewRating.Visible := True;
+    TbPreviewRating.ImageIndex := IIF(Rating = 0, DB_IC_RATING_STAR, Rating + DB_IC_RATING_1 - 1);
+    TbPreviewRatingSeparator.Visible := True;
+    ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
+  finally
+    EndScreenUpdate(TsMediaPreview.Handle, False);
+  end;
 end;
 
 procedure TExplorerForm.OnPersonsFoundOnPreview(Sender: TObject; FileName: string;
@@ -2559,6 +2586,8 @@ const
 var
   Data: TFaceDetectionResult;
   C, J: Integer;
+  LblInfo: TStaticText;
+  Wl: TWebLink;
 begin
   C := 0;
 
@@ -2669,7 +2698,25 @@ begin
     BeginScreenUpdate(TsMediaPreview.Handle);
     try
       WllPersonsPreview.Clear;
-      WllPersonsPreview.Visible := False;
+      if FImageViewer.Text = '' then
+      begin
+        WllPersonsPreview.Visible := True;
+        LblInfo := TStaticText.Create(WllGroups);
+        LblInfo.Parent := WllPersonsPreview;
+        WllPersonsPreview.AddControl(LblInfo, True);
+        LblInfo.Caption := L('No persons on the photo');
+
+        Wl := WllPersonsPreview.AddLink;
+        Wl.Text := L('Select person');
+        Wl.IconWidth := PersonImageSize;
+        Wl.IconHeight := PersonImageSize;
+        Wl.LoadFromResource('Persons');
+        Wl.OnClick := DoStartPersonSelection;
+        Wl.ShowHint := True;
+        Wl.Hint := L('Middle mouse button or shift + selection using mouse');
+      end else
+        WllPersonsPreview.Visible := False;
+
       TsMediaPreviewResize(Self);
     finally
       EndScreenUpdate(TsMediaPreview.Handle, False);
@@ -2688,7 +2735,7 @@ begin
   MiPreviewPersonProperties.Caption := L('Properties');
 
   MiPreviewPersonFind.ImageIndex := DB_IC_SEARCH;
-  MiPreviewPersonUpdateAvatar.ImageIndex := DB_IC_IMEDITOR;
+  MiPreviewPersonUpdateAvatar.ImageIndex := DB_IC_EDIT_PROFILE;
   MiPreviewPersonProperties.ImageIndex := DB_IC_PROPERTIES;
 
   Wl := TWebLink(Sender);
@@ -2714,6 +2761,18 @@ begin
     Exit;
   if FImageViewer <> nil then
     FImageViewer.ResetPersonSelection;
+end;
+
+procedure TExplorerForm.OnStopPersonSelection(Sender: TObject);
+var
+  I: Integer;
+begin
+  for I := 0 to WllPersonsPreview.ControlCount - 1 do
+    if WllPersonsPreview.Controls[I] is TWebLink then
+    begin
+      TWebLink(WllPersonsPreview.Controls[I]).Enabled := True;
+      TWebLink(WllPersonsPreview.Controls[I]).DisableStyles := False;
+    end;
 end;
 
 procedure TExplorerForm.Open1Click(Sender: TObject);
@@ -3290,14 +3349,14 @@ begin
     ElvMain.Selection.ClearAll;
     ElvMain.Items[ItemIndex].Selected := True;
     ElvMain.Items[ItemIndex].Focused := True;
-    ElvMain.Selection.First.MakeVisible(emvMiddle);
+    ElvMain.Selection.First.MakeVisible(emvBottom);
 
   end;
   if (ElvMain.Selection.Count = 0) and (ElvMain.Items.Count > 0) then
   begin
     ElvMain.Items[0].Selected := True;
     ElvMain.Items[0].Focused := True;
-    ElvMain.Selection.First.MakeVisible(emvMiddle);
+    ElvMain.Selection.First.MakeVisible(emvBottom);
   end;
   ElvMain.SetFocus;
   ElvMain.Scrollbars.Update;
@@ -3322,18 +3381,54 @@ begin
     ElvMain.Selection.ClearAll;
     ElvMain.Items[ItemIndex].Selected := True;
     ElvMain.Items[ItemIndex].Focused := True;
-    ElvMain.Selection.First.MakeVisible(emvMiddle);
+    ElvMain.Selection.First.MakeVisible(emvTop);
 
   end;
   if (ElvMain.Selection.Count = 0) and (ElvMain.Items.Count > 0) then
   begin
     ElvMain.Items[ElvMain.Items.Count - 1].Selected := True;
     ElvMain.Items[ElvMain.Items.Count - 1].Focused := True;
-    ElvMain.Selection.First.MakeVisible(emvMiddle);
+    ElvMain.Selection.First.MakeVisible(emvTop);
   end;
 
   ElvMain.Scrollbars.Update;
   ElvMain.SetFocus;
+end;
+
+procedure TExplorerForm.TbPreviewRatingClick(Sender: TObject);
+var
+  I, Index: Integer;
+  P: TPoint;
+begin
+  if FImageViewer = nil then
+    Exit;
+
+  RatingPopupMenu.Tag := 0;
+
+  if FImageViewer.Item.ID > 0 then
+    RatingPopupMenu.Tag := FImageViewer.Item.ID
+  else
+  begin
+    Index := 0;
+    for I := 0 to FFilesInfo.Count - 1 do
+      if AnsiLowerCase(FFilesInfo[I].FileName) = AnsiLowerCase(FImageViewer.Item.FileName) then
+      begin
+        Index := I;
+        Break;
+      end;
+
+    RatingPopupMenu.Tag := -Index;
+  end;
+
+  if Sender = nil then
+    Exit;
+
+  if RatingPopupMenu.Tag <> 0 then
+  begin
+    P := Point(TbPreviewRating.Left, TbPreviewRating.Top + TbPreviewRating.Height);
+    P := TbPreviewRating.Parent.ClientToScreen(P);
+    RatingPopupMenu.Popup(P.X, P.Y);
+  end;
 end;
 
 procedure TExplorerForm.TbPreviewZoomInClick(Sender: TObject);
@@ -3965,6 +4060,7 @@ var
   I: Integer;
   P: TPoint;
   H: THandle;
+  R: TRect;
 begin
   if Msg.hwnd = Handle then
   begin
@@ -4012,6 +4108,48 @@ begin
   begin
     WllExtendedSearchPersons.PerformMouseWheel(Msg.WParam, Handled);
     WllExtendedSearchGroups.PerformMouseWheel(Msg.WParam, Handled);
+  end;
+
+  if TsMediaPreview.Visible then
+  begin
+    if (Msg.message = WM_MOUSEWHEEL) then
+    begin
+      Handled := False;
+      WllPersonsPreview.PerformMouseWheel(Msg.WParam, Handled);
+      if not (Handled and (GetWindowLong(WllPersonsPreview.Handle, GWL_STYLE) and WS_VSCROLL <> 0)) then
+      begin
+        R.TopLeft := TsMediaPreview.ClientToScreen(TsMediaPreview.BoundsRect.TopLeft);
+        R.BottomRight := TsMediaPreview.ClientToScreen(TsMediaPreview.BoundsRect.BottomRight);
+
+        if PtInRect(R, Msg.pt) then
+        begin
+          Handled := True;
+          if NativeInt(Msg.wParam) < 0 then
+            TbPreviewNextClick(Self)
+          else
+            TbPreviewPreviousClick(Self);
+        end;
+      end;
+    end;
+
+    if (Msg.message = WM_KEYDOWN) and CtrlKeyDown then
+    begin
+      TbPreviewRatingClick(nil);
+      if RatingPopupMenu.Tag <> 0 then
+      begin
+        if (Msg.wParam = Byte('0')) or (Msg.wParam = Byte(VK_NUMPAD0)) then N05Click(N00);
+        if (Msg.wParam = Byte('1')) or (Msg.wParam = Byte(VK_NUMPAD1)) then N05Click(N01);
+        if (Msg.wParam = Byte('2')) or (Msg.wParam = Byte(VK_NUMPAD2)) then N05Click(N02);
+        if (Msg.wParam = Byte('3')) or (Msg.wParam = Byte(VK_NUMPAD3)) then N05Click(N03);
+        if (Msg.wParam = Byte('4')) or (Msg.wParam = Byte(VK_NUMPAD4)) then N05Click(N04);
+        if (Msg.wParam = Byte('5')) or (Msg.wParam = Byte(VK_NUMPAD5)) then N05Click(N05);
+      end;
+    end;
+    if (Msg.message = WM_KEYDOWN) and (Msg.wParam = VK_ESCAPE) then
+    begin
+      if FImageViewer <> nil then
+        FImageViewer.StopPersonSelection;
+    end;
   end;
 
   if Msg.Message = WM_KEYDOWN then
@@ -9301,8 +9439,15 @@ begin
     begin
       if (SelCount = 0) or not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
       begin
-        FImageViewer.SetText(L('Select a file to preview'));
-        OnPersonsFoundOnPreview(Self, '', nil);
+        BeginScreenUpdate(TsMediaPreview.Handle);
+        try
+          FImageViewer.SetText(L('Select a file to preview'));
+          TbPreviewRating.Visible := False;
+          TbPreviewRatingSeparator.Visible := False;
+          OnPersonsFoundOnPreview(Self, '', nil);
+        finally
+          EndScreenUpdate(TsMediaPreview.Handle, False);
+        end;
       end else
         FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
     end;
@@ -10319,8 +10464,7 @@ begin
   begin
     SetRating(RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
     EventInfo.Rating := (Sender as TMenuItem).Tag;
-    DBKernel.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating],
-      EventInfo);
+    DBKernel.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating], EventInfo);
   end else
   begin
     FileInfo := TDBPopupMenuInfoRecord.Create;
@@ -10333,6 +10477,8 @@ begin
       F(FileInfo);
     end;
   end;
+  if TsMediaPreview.Visible then
+    TbPreviewRating.ImageIndex := IIF((Sender as TMenuItem).Tag = 0, DB_IC_RATING_STAR, (Sender as TMenuItem).Tag + DB_IC_RATING_1 - 1);
 end;
 
 procedure TExplorerForm.NavigateToFile(FileName: string);
@@ -11183,6 +11329,17 @@ begin
   LsMain.Hide;
   HideProgress;
   StatusBarMain.Panels[1].Text := L('Loading canceled...');
+end;
+
+procedure TExplorerForm.DoStartPersonSelection(Sender: TObject);
+begin
+  if FImageViewer <> nil then
+  begin
+    FImageViewer.StartPersonSelection;
+    TWebLink(Sender).Enabled := False;
+    TWebLink(Sender).DisableStyles := True;
+    TWebLink(Sender).Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor);
+  end;
 end;
 
 procedure TExplorerForm.DoStopLoading;

@@ -438,6 +438,9 @@
     <translate name="File is encrypted" value="Файл зашифован" />
     <translate name="Persons on photo:" value="Персоны на фотографии:" />
     <translate name="Update avatar" value="Обновить аватар" />
+    <translate name="No persons on the photo" value="На фото нет отмеченных персон" />
+    <translate name="Select person" value="Отметить персону" />
+    <translate name="Middle mouse button or shift + selection using mouse" value="Средняя кнопка мыши или shift + выделение мышкой" />	
   </scope>
   <scope name="DBManager">
     <translate name="Set" value="Установить" />
@@ -862,6 +865,7 @@
     <translate name="Click to select person" value="Нажмите для выбора персоны" />	
     <translate name="Shelve" value="Отложить" />
     <translate name="Unshelve" value="Отложить (отмена)" />
+    <translate name="Update avatar" value="Обновить аватар" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
@@ -2013,7 +2017,7 @@
 	<translate name="Create new person" value="Создание новой персоны"/>
 	<translate name="Edit person: {0}" value="Редактирование персоны: {0}"/>
 	<translate name="{0} person(s) are found with similar name!" value="Найдено {0} персон(ы) с похожими именами!"/>
-	<translate name="Person name is valid!" value="Имя персоны - корректное!"/>
+	<translate name="Person name is unique!" value="Имя персоны - уникальное!"/>
 	<translate name="Person name already in use!" value="Данное имя уже используется!"/>
 	<translate name="Person name is required!" value="Имя персоны - обязательное поле!"/>	
   </scope>

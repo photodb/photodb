@@ -236,6 +236,7 @@ const
   DB_IC_MAP_MARKER     = 125;
   DB_IC_SHELF          = 126;
   DB_IC_PHOTO_SHARE    = 127;
+  DB_IC_EDIT_PROFILE   = 128;
 
 const
     WM_DROPFILES = $0233;

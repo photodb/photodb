@@ -20,6 +20,7 @@ uses
 
 type
   TPersonsFoundOnImageEvent = procedure(Sender: TObject; FileName: string; Items: TFaceDetectionResult) of object;
+  TBeginLoadingImageEvent = procedure(Sender: TObject; NewImage: Boolean) of object;
 
 type
   IImageViewer = interface(IFaceResultForm)
@@ -27,6 +28,7 @@ type
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
+    function GetText: string;
     procedure SetText(Text: string);
     procedure ResizeTo(Width, Height: Integer);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
@@ -38,6 +40,8 @@ type
     procedure FinishDetectionFaces;
     procedure SelectPerson(PersonID: Integer);
     procedure ResetPersonSelection;
+    procedure StartPersonSelection;
+    procedure StopPersonSelection;
 
     procedure UpdateAvatar(PersonID: Integer);
 
@@ -58,8 +62,8 @@ type
     property DisplayBitmap: TBitmap read GetDisplayBitmap;
     property CurentFile: string read GetCurentFile;
 
-    procedure SetOnBeginLoadingImage(Event: TNotifyEvent);
-    function GetOnBeginLoadingImage: TNotifyEvent;
+    procedure SetOnBeginLoadingImage(Event: TBeginLoadingImageEvent);
+    function GetOnBeginLoadingImage: TBeginLoadingImageEvent;
     procedure SetOnRequestNextImage(Event: TNotifyEvent);
     function GetOnRequestNextImage: TNotifyEvent;
     procedure SetOnRequestPreviousImage(Event: TNotifyEvent);
@@ -68,12 +72,16 @@ type
     function GetOnDblClick: TNotifyEvent;
     procedure SetOnPersonsFoundOnImage(Event: TPersonsFoundOnImageEvent);
     function GetOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
+    procedure SetOnStopPersonSelection(Event: TNotifyEvent);
+    function GetOnStopPersonSelection: TNotifyEvent;
 
-    property OnBeginLoadingImage: TNotifyEvent read GetOnBeginLoadingImage write SetOnBeginLoadingImage;
+    property OnBeginLoadingImage: TBeginLoadingImageEvent read GetOnBeginLoadingImage write SetOnBeginLoadingImage;
     property OnRequestNextImage: TNotifyEvent read GetOnRequestNextImage write SetOnRequestNextImage;
     property OnRequestPreviousImage: TNotifyEvent read GetOnRequestPreviousImage write SetOnRequestPreviousImage;
     property OnDblClick: TNotifyEvent read GetOnDblClick write SetOnDblClick;
     property OnPersonsFoundOnImage: TPersonsFoundOnImageEvent read GetOnPersonsFoundOnImage write SetOnPersonsFoundOnImage;
+    property OnStopPersonSelection: TNotifyEvent read GetOnStopPersonSelection write SetOnStopPersonSelection;
+    property Text: string read GetText write SetText;
   end;
 
 implementation

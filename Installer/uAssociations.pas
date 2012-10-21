@@ -122,6 +122,7 @@ implementation
 
 var
   FInstance: TFileAssociations = nil;
+  FGlobalSync: TCriticalSection = nil;
 
 function AssociationStateToCheckboxState(AssociationState : TAssociationState; Update: Boolean) : TCheckBoxState;
 begin
@@ -457,10 +458,15 @@ end;
 
 class function TFileAssociations.Instance: TFileAssociations;
 begin
-  if FInstance = nil then
-    FInstance := TFileAssociations.Create;
+  FGlobalSync.Enter;
+  try
+    if FInstance = nil then
+      FInstance := TFileAssociations.Create;
 
-  Result := FInstance;
+    Result := FInstance;
+  finally
+    FGlobalSync.Leave;
+  end;
 end;
 
 function TFileAssociations.IsConvertableExt(Ext: String): Boolean;
@@ -940,9 +946,11 @@ begin
 end;
 
 initialization
+  FGlobalSync := TCriticalSection.Create;
 
 finalization
 
   F(FInstance);
+  F(FGlobalSync);
 
 end.

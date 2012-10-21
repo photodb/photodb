@@ -52,9 +52,9 @@ type
   TDBEventsIDArray = array of DBEventsIDArray;
 
 const
-  IconsCount = 128;
+  IconsCount = 129;
 const
-  IconsVersion = '1_0';
+  IconsVersion = '1_1';
 
 type
   TDbKernelArrayIcons = array [1 .. IconsCount] of THandle;
@@ -1244,6 +1244,7 @@ begin
     Icons[126] := LoadIcon(HInstance,'MAP_MARKER');
     Icons[127] := LoadIcon(HInstance,'SHELF');
     Icons[128] := LoadIcon(HInstance,'PHOTO_SHARE');
+    Icons[129] := LoadIcon(HInstance,'EDIT_PROFILE');
 
     //disabled items are bad
     for I := 1 to IconsCount do

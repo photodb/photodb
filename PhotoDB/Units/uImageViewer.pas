@@ -47,10 +47,10 @@ type
     FIsWaiting: Boolean;
     FActiveThreadId: TGUID;
     FItem: TDBPopupMenuInfoRecord;
-    FOnBeginLoadingImage: TNotifyEvent;
+    FOnBeginLoadingImage: TBeginLoadingImageEvent;
     FOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
     procedure Resize;
-    procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord);
+    procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord; NewImage: Boolean);
     procedure LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
   public
     constructor Create;
@@ -66,6 +66,8 @@ type
     procedure SetFaceDetectionControls(AWlFaceCount: TWebLink; ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
     procedure SelectPerson(PersonID: Integer);
     procedure ResetPersonSelection;
+    procedure StartPersonSelection;
+    procedure StopPersonSelection;
 
     procedure UpdateAvatar(PersonID: Integer);
 
@@ -73,6 +75,7 @@ type
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
+    function GetText: string;
     procedure SetText(Text: string);
     procedure ResizeTo(Width, Height: Integer);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
@@ -88,8 +91,8 @@ type
     function GetDisplayBitmap: TBitmap;
     function GetCurentFile: string;
 
-    procedure SetOnBeginLoadingImage(Event: TNotifyEvent);
-    function GetOnBeginLoadingImage: TNotifyEvent;
+    procedure SetOnBeginLoadingImage(Event: TBeginLoadingImageEvent);
+    function GetOnBeginLoadingImage: TBeginLoadingImageEvent;
     procedure SetOnRequestNextImage(Event: TNotifyEvent);
     function GetOnRequestNextImage: TNotifyEvent;
     procedure SetOnRequestPreviousImage(Event: TNotifyEvent);
@@ -98,6 +101,8 @@ type
     function GetOnDblClick: TNotifyEvent;
     procedure SetOnPersonsFoundOnImage(Event: TPersonsFoundOnImageEvent);
     function GetOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
+    procedure SetOnStopPersonSelection(Event: TNotifyEvent);
+    function GetOnStopPersonSelection: TNotifyEvent;
   end;
 
 implementation
@@ -116,6 +121,7 @@ begin
   FOwnerForm.GetInterface(IImageSource, FImageSource);
 
   FImageControl := TImageViewerControl.Create(Control);
+  FImageControl.ImageViewer := Self;
   FImageControl.Top := Y;
   FImageControl.Left := X;
   FImageControl.OnImageRequest := LoadImage;
@@ -187,7 +193,7 @@ begin
   Result := Self;
 end;
 
-function TImageViewer.GetOnBeginLoadingImage: TNotifyEvent;
+function TImageViewer.GetOnBeginLoadingImage: TBeginLoadingImageEvent;
 begin
   Result := FOnBeginLoadingImage;
 end;
@@ -212,7 +218,17 @@ begin
   Result := FImageControl.OnRequestPreviousImage;
 end;
 
+function TImageViewer.GetOnStopPersonSelection: TNotifyEvent;
+begin
+  Result := FImageControl.OnStopPersonSelection;
+end;
+
 {$ENDREGION}
+
+function TImageViewer.GetText: string;
+begin
+  Result := FImageControl.Text;
+end;
 
 function TImageViewer.GetTop: Integer;
 begin
@@ -224,15 +240,12 @@ begin
   Result := FWidth;
 end;
 
-procedure TImageViewer.LoadFile(FileInfo: TDBPopupMenuInfoRecord);
+procedure TImageViewer.LoadFile(FileInfo: TDBPopupMenuInfoRecord; NewImage: Boolean);
 var
   Width, Height: Integer;
   Bitmap: TBitmap;
 begin        
   FActiveThreadId := GetGUID;
-
-  if Assigned(FOnBeginLoadingImage) then
-    FOnBeginLoadingImage(Self);
 
   if FileInfo.Encrypted then
   begin
@@ -262,20 +275,49 @@ begin
   F(FItem);
   FItem := FileInfo.Copy;
 
+  if Assigned(FOnBeginLoadingImage) then
+    FOnBeginLoadingImage(Self, NewImage);
+
   FImageControl.StartLoadingImage;
   LoadImage(Self, FileInfo, FWidth, FHeight);
 end;
 
 procedure TImageViewer.LoadFiles(FileList: TDBPopupMenuInfo);
 var
-  Position: Integer;
+  I, Position: Integer;
+  TheSameFileList: Boolean;
 begin
+  TheSameFileList := (FFiles <> nil) and (FFiles.Count = FileList.Count) and (FImageControl.Text = '');
+  if TheSameFileList then
+  begin
+    for I := 0 to FFiles.Count - 1 do
+    begin
+      if AnsiLowerCase(FFiles[I].FileName) <> AnsiLowerCase(FileList[I].FileName) then
+      begin
+        TheSameFileList := False;
+        Break;
+      end;
+    end;
+    if TheSameFileList then
+      TheSameFileList := FFiles.Position = FileList.Position;
+  end;
+
   F(FFiles);
   FFiles := FileList;
 
-  Position := FFiles.Position;
-  if Position > -1 then
-    LoadFile(FFiles[Position]);
+  if not TheSameFileList then
+  begin
+    Position := FFiles.Position;
+    if Position > -1 then
+      LoadFile(FFiles[Position], True);
+  end else
+  begin
+    F(FItem);
+    FItem := FFiles[FFiles.Position].Copy;
+    FImageControl.UpdateItemInfo(FItem);
+    if Assigned (FOnBeginLoadingImage) then
+      FOnBeginLoadingImage(Self, False);
+  end;
 end;
 
 procedure TImageViewer.LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
@@ -291,14 +333,14 @@ procedure TImageViewer.LoadNextFile;
 begin
   FFiles.NextSelected;
   if FFiles.Position > -1 then
-    LoadFile(FFiles[FFiles.Position]);
+    LoadFile(FFiles[FFiles.Position], True);
 end;
 
 procedure TImageViewer.LoadPreviousFile;
 begin
   FFiles.PrevSelected;
   if FFiles.Position > -1 then
-    LoadFile(FFiles[FFiles.Position]);
+    LoadFile(FFiles[FFiles.Position], True);
 end;
 
 procedure TImageViewer.ResetPersonSelection;
@@ -342,7 +384,7 @@ begin
   FImageControl.SetFaceDetectionControls(AWlFaceCount, ALsDetectingFaces, ATbrActions);
 end;
 
-procedure TImageViewer.SetOnBeginLoadingImage(Event: TNotifyEvent);
+procedure TImageViewer.SetOnBeginLoadingImage(Event: TBeginLoadingImageEvent);
 begin
   FOnBeginLoadingImage := Event;
 end;
@@ -367,6 +409,11 @@ begin
   FImageControl.OnRequestPreviousImage := Event;
 end;
 
+procedure TImageViewer.SetOnStopPersonSelection(Event: TNotifyEvent);
+begin
+  FImageControl.OnStopPersonSelection := Event;
+end;
+
 procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
 begin
   if FFiles.Position < 0 then
@@ -381,6 +428,16 @@ procedure TImageViewer.SetText(Text: string);
 begin          
   FActiveThreadId := GetGUID;
   FImageControl.SetText(Text);
+end;
+
+procedure TImageViewer.StartPersonSelection;
+begin
+  FImageControl.StartPersonSelection;
+end;
+
+procedure TImageViewer.StopPersonSelection;
+begin
+  FImageControl.StopPersonSelection;
 end;
 
 procedure TImageViewer.RefreshFaceDetestionState;

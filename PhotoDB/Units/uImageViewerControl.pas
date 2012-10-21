@@ -34,16 +34,20 @@ uses
   GIFImage,
   Effects,
   UnitDBKernel,
+  DBCMenu,
 
   uMemory,
   uConstants,
   u2DUtils,
   uDBForm,
+  uIImageViewer,
+  uDBPopupMenuInfo,
   uFaceDetection,
   uFaceDetectionThread,
   uPeopleSupport,
   uGraphicUtils,
   uBitmapUtils,
+  uAssociations,
   uVCLHelpers,
   uAnimatedJPEG,
   uImageZoomHelper,
@@ -52,7 +56,6 @@ uses
   uFormInterfaces,
   uThemesUtils,
   uSettings,
-  uIImageViewer,
   uPortableDeviceUtils,
   uManagerExplorer,
   uAnimationHelper,
@@ -64,6 +67,8 @@ type
 type
   TImageViewerControl = class(TBaseWinControl)
   private
+    FImageViewer: IImageViewer;
+
     FLsLoading: TLoadingSign;
     FHorizontalScrollBar: TScrollBar;
     FVerticalScrollBar: TScrollBar;
@@ -120,6 +125,7 @@ type
     MiClearFaceZone: TMenuItem;
     MiClearFaceZoneSeparator: TMenuItem;
     MiCurrentPerson: TMenuItem;
+    MiCurrentPersonAvatar: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
     MiPreviousSelections: TMenuItem;
     MiPreviousSelectionsSeparator: TMenuItem;
@@ -140,6 +146,7 @@ type
     FOnRequestNextImage: TNotifyEvent;
     FOnRequestPreviousImage: TNotifyEvent;
     FOnDblClick: TNotifyEvent;
+    FOnStopPersonSelection: TNotifyEvent;
 
     function Buffer: TBitmap;
     procedure RecreateImage;
@@ -163,11 +170,14 @@ type
     procedure PmFacesPopup(Sender: TObject);
     procedure PmFacePopup(Sender: TObject);
 
+    procedure GetFaceInfo(Face: TFaceDetectionResultItem; BmpFace3X: TBitmap; out FaceRect: TRect);
+
     procedure MiClearFaceZoneClick(Sender: TObject);
     procedure MiCreatePersonClick(Sender: TObject);
     procedure MiOtherPersonsClick(Sender: TObject);
     procedure MiFindPhotosClick(Sender: TObject);
     procedure MiCurrentPersonClick(Sender: TObject);
+    procedure MiCurrentPersonAvatarClick(Sender: TObject);
     procedure SelectPreviousPerson(Sender: TObject);
 
     procedure MiDrawFaceClick(Sender: TObject);
@@ -191,6 +201,7 @@ type
     procedure Click; override;
     procedure DblClick; override;
     procedure Resize; override;
+    procedure DoContextPopup(MousePos: TPoint; var Handled: Boolean); override;
 
     function DrawElement(DC: HDC): Boolean; override;
     procedure NextFrame;
@@ -212,16 +223,20 @@ type
     procedure ZoomIn;
     procedure SetText(Text: string);
     procedure ReloadCurrent;
+    procedure UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
 
     procedure SetFaceDetectionControls(AWlFaceCount: TWebLink; ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
     procedure HightlitePerson(PersonID: Integer);
     procedure HightliteReset;
+    procedure StartPersonSelection;
+    procedure StopPersonSelection;
 
     procedure FinishDetectingFaces;
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
 
     procedure UpdateAvatar(PersonID: Integer);
 
+    property ImageViewer: IImageViewer read FImageViewer write FImageViewer;
     property IsFastDrawing: Boolean read GetIsFastDrawing;
     property Item: TDBPopupMenuInfoRecord read GetItem;
     property FullImage: TBitmap read FFullImage;
@@ -232,6 +247,8 @@ type
     property OnRequestNextImage: TNotifyEvent read FOnRequestNextImage write FOnRequestNextImage;
     property OnRequestPreviousImage: TNotifyEvent read FOnRequestPreviousImage write FOnRequestPreviousImage;
     property OnDblClick: TNotifyEvent read FOnDblClick write FOnDblClick;
+    property OnStopPersonSelection: TNotifyEvent read FOnStopPersonSelection write FOnStopPersonSelection;
+    property Text: string read FText write SetText;
   end;
 
 implementation
@@ -249,9 +266,9 @@ end;
 procedure TImageViewerControl.Click;
 var
   P, ScreenRect, ImagePoint: TPoint;
-  ImRect: TRect;
+  //ImRect: TRect;
   I: Integer;
-  Dy, Dx, X, Y, Z: Extended;
+  //Dy, Dx, X, Y, Z: Extended;
 begin
   inherited;
   GetCursorPos(ScreenRect);
@@ -345,6 +362,7 @@ begin
 
   FOnRequestNextImage := nil;
   FOnRequestPreviousImage := nil;
+  FOnStopPersonSelection := nil;
 
   FFaceMenu := nil;
   FFacesMenu := nil;
@@ -400,6 +418,31 @@ begin
   inherited;
 end;
 
+procedure TImageViewerControl.DoContextPopup(MousePos: TPoint;
+  var Handled: Boolean);
+var
+  Info: TDBPopupMenuInfo;
+begin
+  inherited;
+
+  if FItem = nil then
+    Exit;
+
+  if not IsGraphicFile(FItem.FileName) then
+    Exit;
+
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Info.Add(FItem.Copy);
+    Info.Position := 0;
+    Info[0].Selected := True;
+
+    TDBPopupMenu.Instance.Execute(TDBForm(Self.OwnerForm), ClientToScreen(MousePos).X, ClientToScreen(MousePos).Y, Info);
+  finally
+    F(Info);
+  end;
+end;
+
 function TImageViewerControl.DrawElement(DC: HDC): Boolean;
 begin
   Result := BitBlt(DC, 0, 0, Buffer.Width, Buffer.Height, Buffer.Canvas.Handle, 0, 0, SRCCOPY);
@@ -417,6 +460,7 @@ end;
 
 procedure TImageViewerControl.FinishDetectingFaces;
 begin
+  F(FDrawFace);
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
 end;
@@ -530,8 +574,6 @@ end;
 procedure TImageViewerControl.LsLoadingGetBackGround(Sender: TObject; X, Y, W,
   H: Integer; Bitmap: TBitmap);
 begin
-  //if FCreating then
-  //  Exit;
   if (Buffer = nil) or Buffer.Empty then
   begin
     Bitmap.Canvas.Pen.Color := Theme.PanelColor;
@@ -557,19 +599,20 @@ begin
   FFaces.RemoveFaceResult(FR);
   FHoverFace := nil;
   UpdateFaceDetectionState;
+
+  if FImageViewer <> nil then
+    FImageViewer.UpdateFaces(FItem.FileName, FFaces);
+
   RefreshFaces;
 end;
 
-procedure TImageViewerControl.MiCreatePersonClick(Sender: TObject);
+procedure TImageViewerControl.GetFaceInfo(Face: TFaceDetectionResultItem; BmpFace3X: TBitmap; out FaceRect: TRect);
 var
-  Face, TmpFace: TFaceDetectionResultItem;
-  R, FaceRect: TRect;
+  R: TRect;
   P1, P2: TPoint;
-  BmpFace3X: TBitmap;
-  P: TPerson;
   W, H: Integer;
 begin
-  Face := TFaceDetectionResultItem(PmFace.Tag);
+  FaceRect := Rect(0, 0, 0, 0);
   R := Face.Rect;
   P1 := R.TopLeft;
   P2 := R.BottomRight;
@@ -597,12 +640,25 @@ begin
   if R.Right > FFullImage.Width then
     R.Right := FFullImage.Width;
 
+  BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
+  BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FFullImage.Canvas, R);
+end;
+
+procedure TImageViewerControl.MiCreatePersonClick(Sender: TObject);
+var
+  Face, TmpFace: TFaceDetectionResultItem;
+  FaceRect: TRect;
+  BmpFace3X: TBitmap;
+  P: TPerson;
+begin
+  Face := TFaceDetectionResultItem(PmFace.Tag);
+
   BmpFace3X := TBitmap.Create;
   try
     BmpFace3X.PixelFormat := pf24Bit;
-    BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
-    BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FFullImage.Canvas, R);
-    //BmpFace3X contains image of person
+
+    GetFaceInfo(Face, BmpFace3X, FaceRect);
+
     TmpFace := TFaceDetectionResultItem.Create;
     try
       TmpFace.X := FaceRect.Left;
@@ -610,6 +666,10 @@ begin
       TmpFace.Width := RectWidth(FaceRect);
       TmpFace.Height := RectHeight(FaceRect);
       CreatePerson(Item, Face, TmpFace, BmpFace3X, P);
+
+      if FImageViewer <> nil then
+        FImageViewer.UpdateFaces(FItem.FileName, FFaces);
+
       RefreshFaces;
       F(P);
     finally
@@ -618,6 +678,47 @@ begin
   finally
     F(BmpFace3X);
   end;
+end;
+
+procedure TImageViewerControl.UpdateAvatar(PersonID: Integer);
+var
+  I: Integer;
+  Face: TFaceDetectionResultItem;
+  FaceRect: TRect;
+  BmpFace3X: TBitmap;
+begin
+  Face := nil;
+  for I := 0 to FFaces.Count - 1 do
+  begin
+    if (FFaces[I].Data <> nil) and (TPersonArea(FFaces[I].Data).PersonID = PersonID) then
+      Face := FFaces[I];
+  end;
+
+  if Face = nil then
+    Exit;
+
+  BmpFace3X := TBitmap.Create;
+  try
+    BmpFace3X.PixelFormat := pf24Bit;
+
+    GetFaceInfo(Face, BmpFace3X, FaceRect);
+
+    EditPerson(PersonID, BmpFace3X);
+    RefreshFaces;
+  finally
+    F(BmpFace3X);
+  end;
+end;
+
+procedure TImageViewerControl.MiCurrentPersonAvatarClick(Sender: TObject);
+var
+  FR: TFaceDetectionResultItem;
+  PA: TPersonArea;
+begin
+  FR := TFaceDetectionResultItem(PmFace.Tag);
+  PA := TPersonArea(FR.Data);
+  if (PA <> nil) then
+    UpdateAvatar(PA.PersonID);
 end;
 
 procedure TImageViewerControl.MiCurrentPersonClick(Sender: TObject);
@@ -741,14 +842,14 @@ end;
 procedure TImageViewerControl.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
   StartPoint, P, DrawFaceEndPoint: TPoint;
-  DragImage: TBitmap;
-  W, H: Integer;
-  FileName: string;
+  //DragImage: TBitmap;
+  //FileName: string;
   I: Integer;
   OldHoverFace: TFaceDetectionResultItem;
   FaceRect: TRect;
 begin
   inherited;
+  FIsHightlitingPerson := False;
   StartPoint := Point(X, Y);
 
   if not FPersonMouseMoveLock and not IsPopupMenuActive then
@@ -838,6 +939,9 @@ begin
     P := ClientToScreen(P);
     PmFace.DoPopupEx(P.X, P.Y);
     UpdateCursor;
+
+    if Assigned(FOnStopPersonSelection) then
+      FOnStopPersonSelection(Self);
   end;
   F(FDrawFace);
   FDBCanDrag := False;
@@ -890,6 +994,12 @@ begin
   MiCurrentPerson.Visible := False;
   MiCurrentPerson.OnClick := MiCurrentPersonClick;
 
+  MiCurrentPersonAvatar := TMenuItem.Create(FFaceMenu);
+  MiCurrentPersonAvatar.Caption := L('Update avatar');
+  MiCurrentPersonAvatar.Visible := False;
+  MiCurrentPersonAvatar.ImageIndex := 3;
+  MiCurrentPersonAvatar.OnClick := MiCurrentPersonAvatarClick;
+
   MiCurrentPersonSeparator := TMenuItem.Create(FFaceMenu);
   MiCurrentPersonSeparator.Caption := '-';
 
@@ -921,6 +1031,7 @@ begin
   FFaceMenu.Items.Add(MiClearFaceZone);
   FFaceMenu.Items.Add(MiClearFaceZoneSeparator);
   FFaceMenu.Items.Add(MiCurrentPerson);
+  FFaceMenu.Items.Add(MiCurrentPersonAvatar);
   FFaceMenu.Items.Add(MiCurrentPersonSeparator);
   FFaceMenu.Items.Add(MiPreviousSelections);
   FFaceMenu.Items.Add(MiPreviousSelectionsSeparator);
@@ -1115,6 +1226,7 @@ begin
     if PtInRect(R, Msg.pt) then
     begin
       Handled := True;
+      Msg.Message := 0;
       if NativeInt(Msg.wParam) < 0 then
         RequestNextImage
       else
@@ -1148,9 +1260,11 @@ begin
   ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_DELETE_INFO + 1]);
   ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_PEOPLE + 1]);
   ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_SEARCH + 1]);
+  ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_EDIT_PROFILE + 1]);
 
   MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
-  MiCurrentPersonSeparator.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
+  MiCurrentPersonAvatar.Visible := MiCurrentPerson.Visible;
+  MiCurrentPersonSeparator.Visible := MiCurrentPerson.Visible;
   P := TPerson.Create;
   try
     if (PA <> nil) and (PA.PersonID > 0) then
@@ -1784,6 +1898,9 @@ begin
       end else
         PersonManager.ChangePerson(PA, P.ID);
 
+      if FImageViewer <> nil then
+        FImageViewer.UpdateFaces(FItem.FileName, FFaces);
+
       RefreshFaces;
     end;
   end;
@@ -1850,78 +1967,24 @@ begin
   FLsLoading.Show;
 end;
 
+procedure TImageViewerControl.StartPersonSelection;
+begin
+  MiDrawFaceClick(MiDrawFace);
+end;
+
 procedure TImageViewerControl.StopLoadingImage;
 begin
   FIsWaiting := False;
   FLsLoading.Hide;
 end;
 
-procedure TImageViewerControl.UpdateAvatar(PersonID: Integer);
-var
-  I: Integer;
-  Face, TmpFace: TFaceDetectionResultItem;
-  R, FaceRect: TRect;
-  P1, P2: TPoint;
-  BmpFace3X: TBitmap;
-  W, H: Integer;
+procedure TImageViewerControl.StopPersonSelection;
 begin
-  Face := nil;
-  for I := 0 to FFaces.Count - 1 do
-  begin
-    if (FFaces[I].Data <> nil) and (TPersonArea(FFaces[I].Data).PersonID = PersonID) then
-      Face := FFaces[I];
-  end;
-
-  if Face = nil then
-    Exit;
-
-  R := Face.Rect;
-  P1 := R.TopLeft;
-  P2 := R.BottomRight;
-  P1 := PxMultiply(P1, Face.ImageSize, FFullImage);
-  P2 := PxMultiply(P2, Face.ImageSize, FFullImage);
-
-  R := Rect(P1, P2);
-  W := RectWidth(R);
-  H := RectHeight(R);
-  InflateRect(R, W, H);
-  FaceRect := Rect(W, H, 2 * W, 2 * H);
-
-  if R.Left < 0 then
-  begin
-    FaceRect := MoveRect(FaceRect, R.Left, 0);
-    R.Left := 0;
-  end;
-  if R.Top < 0 then
-  begin
-    FaceRect := MoveRect(FaceRect, 0, R.Top);
-    R.Top := 0;
-  end;
-  if R.Bottom > FFullImage.Height then
-    R.Bottom := FFullImage.Height;
-  if R.Right > FFullImage.Width then
-    R.Right := FFullImage.Width;
-
-  BmpFace3X := TBitmap.Create;
-  try
-    BmpFace3X.PixelFormat := pf24Bit;
-    BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
-    BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FFullImage.Canvas, R);
-    //BmpFace3X contains image of person
-    TmpFace := TFaceDetectionResultItem.Create;
-    try
-      TmpFace.X := FaceRect.Left;
-      TmpFace.Y := FaceRect.Top;
-      TmpFace.Width := RectWidth(FaceRect);
-      TmpFace.Height := RectHeight(FaceRect);
-      EditPerson(PersonID, BmpFace3X);
-      RefreshFaces;
-    finally
-      F(TmpFace);
-    end;
-  finally
-    F(BmpFace3X);
-  end;
+  FIsSelectingFace := False;
+  UpdateCursor;
+  RecreateImage;
+  if Assigned(FOnStopPersonSelection) then
+    FOnStopPersonSelection(Self);
 end;
 
 procedure TImageViewerControl.UpdateCursor;
@@ -1989,6 +2052,9 @@ end;
 procedure TImageViewerControl.UpdateFaces(FileName: string;
   Faces: TFaceDetectionResult);
 begin
+  if Faces = FFaces then
+    Exit;
+
   if Item.FileName = FileName then
   begin
     FFaces.Assign(Faces);
@@ -1996,6 +2062,12 @@ begin
     UpdateFaceDetectionState;
     RecreateImage;
   end;
+end;
+
+procedure TImageViewerControl.UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
+begin
+  F(FItem);
+  FItem := Item.Copy;
 end;
 
 procedure TImageViewerControl.WlFaceCountClick(Sender: TObject);

@@ -207,6 +207,7 @@ type
     MiClearFaceZone: TMenuItem;
     MiClearFaceZoneSeparator: TMenuItem;
     MiCurrentPerson: TMenuItem;
+    MiCurrentPersonAvatar: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
     MiPreviousSelections: TMenuItem;
     MiPreviousSelectionsSeparator: TMenuItem;
@@ -312,6 +313,7 @@ type
     procedure MiDrawFaceClick(Sender: TObject);
     procedure Createnote1Click(Sender: TObject);
     procedure TbExploreClick(Sender: TObject);
+    procedure MiCurrentPersonAvatarClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -372,6 +374,7 @@ type
     procedure RefreshFaces;
     procedure RefreshFaceDetestionState;
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
+    procedure GetFaceInfo(Face: TFaceDetectionResultItem; BmpFace3X: TBitmap; out FaceRect: TRect);
     function GetImageRect: TRect;
     function GetVisibleImageWidth: Integer;
     function GetVisibleImageHeight: Integer;
@@ -619,6 +622,7 @@ var
   NeedsUpdating: Boolean;
   Bitmap: TBitmap;
   Width, Height: Integer;
+  GC: TGraphicClass;
 begin
   Result := False;
   FIsImageLoading := True;
@@ -633,23 +637,27 @@ begin
     UpdateCrypted;
 
     //try fast load image
-    if not FForwardThreadReady then
+    if not FForwardThreadReady and not FullScreenNow then
     begin
-      Bitmap := TBitmap.Create;
-      try
-        if TFormCollection.Instance.GetImage(nil, Item.FileName, Bitmap, Width, Height) then
-        begin
-          F(FFullImage);
-          FFullImage := Bitmap;
-          Bitmap := nil;
+      GC := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Item.FileName));
+      if not ((GC = TGIFImage) or (GC = TAnimatedJPEG)) then
+      begin
+        Bitmap := TBitmap.Create;
+        try
+          if TFormCollection.Instance.GetImage(nil, Item.FileName, Bitmap, Width, Height) then
+          begin
+            F(FFullImage);
+            FFullImage := Bitmap;
+            Bitmap := nil;
 
-          RealImageWidth := Width;
-          RealImageHeight := Height;
+            RealImageWidth := Width;
+            RealImageHeight := Height;
 
-          RecreateDrawImage(Self);
+            RecreateDrawImage(Self);
+          end;
+        finally
+          F(Bitmap);
         end;
-      finally
-        F(Bitmap);
       end;
     end;
 
@@ -1173,9 +1181,11 @@ begin
   ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_DELETE_INFO + 1]);
   ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_PEOPLE + 1]);
   ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_SEARCH + 1]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_EDIT_PROFILE + 1]);
 
   MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
-  MiCurrentPersonSeparator.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
+  MiCurrentPersonAvatar.Visible := MiCurrentPerson.Visible;
+  MiCurrentPersonSeparator.Visible := MiCurrentPerson.Visible;
   P := TPerson.Create;
   try
     if (PA <> nil) and (PA.PersonID > 0) then
@@ -2265,16 +2275,13 @@ begin
   RefreshFaces;
 end;
 
-procedure TViewer.MiCreatePersonClick(Sender: TObject);
+procedure TViewer.GetFaceInfo(Face: TFaceDetectionResultItem; BmpFace3X: TBitmap; out FaceRect: TRect);
 var
-  Face, TmpFace: TFaceDetectionResultItem;
-  R, FaceRect: TRect;
+  R: TRect;
   P1, P2: TPoint;
-  BmpFace3X: TBitmap;
-  P: TPerson;
   W, H: Integer;
 begin
-  Face := TFaceDetectionResultItem(PmFace.Tag);
+  FaceRect := Rect(0, 0, 0, 0);
   R := Face.Rect;
   P1 := R.TopLeft;
   P2 := R.BottomRight;
@@ -2302,12 +2309,25 @@ begin
   if R.Right > FFullImage.Width then
     R.Right := FFullImage.Width;
 
+  BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
+  BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FFullImage.Canvas, R);
+end;
+
+procedure TViewer.MiCreatePersonClick(Sender: TObject);
+var
+  Face, TmpFace: TFaceDetectionResultItem;
+  FaceRect: TRect;
+  BmpFace3X: TBitmap;
+  P: TPerson;
+begin
+  Face := TFaceDetectionResultItem(PmFace.Tag);
+
   BmpFace3X := TBitmap.Create;
   try
     BmpFace3X.PixelFormat := pf24Bit;
-    BmpFace3X.SetSize(RectWidth(R), RectHeight(R));
-    BmpFace3X.Canvas.CopyRect(BmpFace3X.ClientRect, FFullImage.Canvas, R);
-    //BmpFace3X contains image of person
+
+    GetFaceInfo(Face, BmpFace3X, FaceRect);
+
     TmpFace := TFaceDetectionResultItem.Create;
     try
       TmpFace.X := FaceRect.Left;
@@ -2320,6 +2340,32 @@ begin
     finally
       F(TmpFace);
     end;
+  finally
+    F(BmpFace3X);
+  end;
+end;
+
+procedure TViewer.MiCurrentPersonAvatarClick(Sender: TObject);
+var
+  PersonID: Integer;
+  Face: TFaceDetectionResultItem;
+  FaceRect: TRect;
+  BmpFace3X: TBitmap;
+begin
+  Face := TFaceDetectionResultItem(PmFace.Tag);
+  if (Face = nil) or (Face.Data = nil) then
+    Exit;
+
+  PersonID := TPersonArea(Face.Data).PersonID;
+
+  BmpFace3X := TBitmap.Create;
+  try
+    BmpFace3X.PixelFormat := pf24Bit;
+
+    GetFaceInfo(Face, BmpFace3X, FaceRect);
+
+    EditPerson(PersonID, BmpFace3X);
+    RefreshFaces;
   finally
     F(BmpFace3X);
   end;
@@ -2522,6 +2568,7 @@ begin
     TbConvert.Hint := L('Resize (Ctrl+W)');
 
     MiCreatePerson.Caption := L('Create person');
+    MiCurrentPersonAvatar.Caption := L('Update avatar');
     MiOtherPersons.Caption := L('Other person');
     MiFindPhotos.Caption := L('Find photos');
     MiClearFaceZone.Caption := L('Clear face zone');

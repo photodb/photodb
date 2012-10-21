@@ -2233,14 +2233,14 @@ object ExplorerForm: TExplorerForm
             340
             556)
           object ToolBarPreview: TToolBar
-            Left = 130
+            Left = 110
             Top = 533
-            Width = 219
+            Width = 222
             Height = 22
             Align = alNone
             Anchors = [akLeft, akBottom]
             AutoSize = True
-            ButtonWidth = 30
+            ButtonWidth = 33
             TabOrder = 0
             Transparent = True
             Wrapable = False
@@ -2252,13 +2252,13 @@ object ExplorerForm: TExplorerForm
               OnClick = TbPreviewPreviousClick
             end
             object TbPreviewNext: TToolButton
-              Left = 30
+              Left = 33
               Top = 0
               ImageIndex = 3
               OnClick = TbPreviewNextClick
             end
             object TbPreviewNavigationSeparator: TToolButton
-              Left = 60
+              Left = 66
               Top = 0
               Width = 8
               Caption = 'TbPreviewNavigationSeparator'
@@ -2266,44 +2266,41 @@ object ExplorerForm: TExplorerForm
               Style = tbsSeparator
             end
             object TbPreviewZoomOut: TToolButton
-              Left = 68
+              Left = 74
               Top = 0
               ImageIndex = 0
               Visible = False
               OnClick = TbPreviewZoomOutClick
             end
             object TbPreviewZoomIn: TToolButton
-              Left = 98
+              Left = 107
               Top = 0
               Caption = 'TbPreviewZoomIn'
               ImageIndex = 1
               Visible = False
               OnClick = TbPreviewZoomInClick
             end
-            object ToolButton2: TToolButton
-              Left = 128
-              Top = 0
-              Width = 8
-              Caption = 'ToolButton2'
-              ImageIndex = 3
-              Style = tbsSeparator
-              Visible = False
-            end
-            object TbPreviewPage: TToolButton
-              Left = 136
-              Top = 0
-              ImageIndex = 3
-              Style = tbsDropDown
-              Visible = False
-            end
             object TbPreviewZoomSeparator: TToolButton
-              Left = 181
+              Left = 140
               Top = 0
               Width = 8
               Caption = 'TbPreviewZoomSeparator'
               ImageIndex = 2
               Style = tbsSeparator
               Visible = False
+            end
+            object TbPreviewRating: TToolButton
+              Left = 148
+              Top = 0
+              ImageIndex = 3
+              OnClick = TbPreviewRatingClick
+            end
+            object TbPreviewRatingSeparator: TToolButton
+              Left = 181
+              Top = 0
+              Width = 8
+              ImageIndex = 3
+              Style = tbsSeparator
             end
             object TbPreviewOpen: TToolButton
               Left = 189
@@ -2651,7 +2648,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.009034120370000000
+      Date = 41177.911616805560000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3492,7 +3489,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmPreviewPersonItem: TPopupActionBar
     Left = 449
-    Top = 392
+    Top = 384
     object MiPreviewPersonFind: TMenuItem
       Caption = 'Find pictures'
       OnClick = MiPreviewPersonFindClick
