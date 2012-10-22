@@ -17,6 +17,7 @@ uses
 
   UnitDBDeclare,
   UnitDBKernel,
+  ExplorerTypes,
 
   uMemory,
   uGOM,
@@ -113,6 +114,7 @@ procedure TImageViewer.AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X,
 begin
   if Control = nil then
     raise EArgumentNilException.Create('Control is null!');
+
   FOwner := Control;
   FTop := Y;
   FLeft := X;
@@ -126,6 +128,8 @@ begin
   FImageControl.Left := X;
   FImageControl.OnImageRequest := LoadImage;
   FImageControl.Parent := Control;
+  if FOwnerForm is TCustomExplorerForm then
+     FImageControl.Explorer := TCustomExplorerForm(FOwnerForm);
 
   inherited;
 end;

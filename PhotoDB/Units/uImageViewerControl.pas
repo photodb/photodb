@@ -31,6 +31,7 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitDBDeclare,
+  ExplorerTypes,
   GIFImage,
   Effects,
   UnitDBKernel,
@@ -120,6 +121,7 @@ type
     FImFacePopup: TImageList;
     FFacesMenu: TPopupActionBar;
     FIsHightlitingPerson: Boolean;
+    FExplorer: TCustomExplorerForm;
 
    {$REGION Face menu}
     MiClearFaceZone: TMenuItem;
@@ -141,6 +143,7 @@ type
     MiRefreshFacesSeparator: TMenuItem;
     MiDetectionMethod: TMenuItem;
     MiFaceDetectionStatus: TMenuItem;
+    MiAutoHideFacesPanel: TMenuItem;
    {$ENDREGION}
 
     FOnRequestNextImage: TNotifyEvent;
@@ -183,6 +186,7 @@ type
     procedure MiDrawFaceClick(Sender: TObject);
     procedure MiRefreshFacesClick(Sender: TObject);
     procedure MiFaceDetectionStatusClick(Sender: TObject);
+    procedure MiAutoHideFacesPanelClick(Sender: TObject);
     procedure WlFaceCountClick(Sender: TObject);
     procedure WlFaceCountMouseEnter(Sender: TObject);
     procedure WlFaceCountMouseLeave(Sender: TObject);
@@ -192,6 +196,8 @@ type
 
     procedure RequestNextImage;
     procedure RequestPreviousImage;
+    function GetExplorer: TCustomExplorerForm;
+    procedure SetExplorer(const Value: TCustomExplorerForm);
   protected
     procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
 
@@ -249,6 +255,7 @@ type
     property OnDblClick: TNotifyEvent read FOnDblClick write FOnDblClick;
     property OnStopPersonSelection: TNotifyEvent read FOnStopPersonSelection write FOnStopPersonSelection;
     property Text: string read FText write SetText;
+    property Explorer: TCustomExplorerForm read GetExplorer write SetExplorer;
   end;
 
 implementation
@@ -386,6 +393,7 @@ begin
   FLoadImageSize.cy := 0;
   FText := '';
   FIsHightlitingPerson := False;
+  FExplorer := nil;
 
   FDrawFace := nil;
   FDrawingFace := False;
@@ -583,6 +591,12 @@ begin
     Bitmap.Canvas.CopyRect(Rect(0, 0, W, H), Buffer.Canvas, Rect(X, Y, X + W, Y + H));
 end;
 
+procedure TImageViewerControl.MiAutoHideFacesPanelClick(Sender: TObject);
+begin
+  MiAutoHideFacesPanel.Checked := not MiAutoHideFacesPanel.Checked;
+  Settings.WriteBool('FaceDetection', 'AutoHidePanel', MiAutoHideFacesPanel.Checked);
+end;
+
 procedure TImageViewerControl.MiClearFaceZoneClick(Sender: TObject);
 var
   FR: TFaceDetectionResultItem;
@@ -604,6 +618,14 @@ begin
     FImageViewer.UpdateFaces(FItem.FileName, FFaces);
 
   RefreshFaces;
+end;
+
+function TImageViewerControl.GetExplorer: TCustomExplorerForm;
+begin
+  if FExplorer <> nil then
+    Exit(FExplorer);
+
+  Result := ExplorerManager.NewExplorer(False);
 end;
 
 procedure TImageViewerControl.GetFaceInfo(Face: TFaceDetectionResultItem; BmpFace3X: TBitmap; out FaceRect: TRect);
@@ -766,7 +788,7 @@ begin
     if P.Empty then
       Exit;
 
-    with ExplorerManager.NewExplorer(False) do
+    with Explorer do
     begin
       SetPath(cPersonsPath + '\' + P.Name);
       Show;
@@ -808,6 +830,13 @@ var
   PA: TPersonArea;
 begin
   inherited;
+
+  if FIsSelectingFace and (Button = mbRight) then
+  begin
+    FIsSelectingFace := False;
+    StopPersonSelection;
+  end;
+
   if FIsStaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not FDBCanDrag then
   begin
     FIsSelectingFace := False;
@@ -1069,12 +1098,18 @@ begin
   MiFaceDetectionStatus := TMenuItem.Create(FFacesMenu);
   MiFaceDetectionStatus.OnClick := MiFaceDetectionStatusClick;
 
+  MiAutoHideFacesPanel := TMenuItem.Create(FFacesMenu);
+  MiAutoHideFacesPanel.Caption := L('Auto hide panel');
+  MiAutoHideFacesPanel.OnClick := MiAutoHideFacesPanelClick;
+  MiAutoHideFacesPanel.Checked := Settings.ReadBool('FaceDetection', 'AutoHidePanel', False);
+
   FFacesMenu.Items.Add(MiDrawFace);
   FFacesMenu.Items.Add(MiDrawFaceSeparator);
   FFacesMenu.Items.Add(MiRefreshFaces);
   FFacesMenu.Items.Add(MiRefreshFacesSeparator);
   FFacesMenu.Items.Add(MiDetectionMethod);
   FFacesMenu.Items.Add(MiFaceDetectionStatus);
+  FFacesMenu.Items.Add(MiAutoHideFacesPanel);
 
   Result := FFacesMenu;
 end;
@@ -1938,6 +1973,11 @@ begin
   end;
 end;
 
+procedure TImageViewerControl.SetExplorer(const Value: TCustomExplorerForm);
+begin
+  FExplorer := Value;
+end;
+
 procedure TImageViewerControl.SetFaceDetectionControls(AWlFaceCount: TWebLink;
   ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
 begin
@@ -1955,6 +1995,9 @@ begin
   FText := Text;
   StopLoadingImage;
   FFaces.Clear;
+  if FImageViewer <> nil then
+    FImageViewer.UpdateFaces(FItem.FileName, FFaces);
+
   FOverlayBuffer.SetSize(0, 0);
   CheckFaceIndicatorVisibility;
   RecreateImage;

@@ -2698,7 +2698,7 @@ begin
     BeginScreenUpdate(TsMediaPreview.Handle);
     try
       WllPersonsPreview.Clear;
-      if FImageViewer.Text = '' then
+      if (FImageViewer.Text = '') and not Settings.ReadBool('FaceDetection', 'AutoHidePanel', False) then
       begin
         WllPersonsPreview.Visible := True;
         LblInfo := TStaticText.Create(WllGroups);
@@ -3290,15 +3290,31 @@ begin
 end;
 
 procedure TExplorerForm.SpeedButton1Click(Sender: TObject);
+var
+  Path: TExplorerPath;
 begin
   if FHistory.CanBack then
-    SetNewPathW(FHistory.DoBack, False);
+  begin
+    Path := FHistory.DoBack;
+    if Path.FocusedItem <> '' then
+      SetOldPath(Path.FocusedItem);
+
+    SetNewPathW(Path, False);
+  end;
 end;
 
 procedure TExplorerForm.SpeedButton2Click(Sender: TObject);
+var
+  Path: TExplorerPath;
 begin
   if FHistory.CanForward then
-    SetNewPathW(FHistory.DoForward, False)
+  begin
+    Path := FHistory.DoForward;
+    if Path.FocusedItem <> '' then
+      SetOldPath(Path.FocusedItem);
+
+    SetNewPathW(Path, False);
+  end;
 end;
 
 procedure TExplorerForm.TbForwardMouseDown(Sender: TObject;
@@ -4404,14 +4420,21 @@ end;
 procedure TExplorerForm.DeleteItemWithIndex(Index: Integer);
 var
   MenuIndex: Integer;
+  IsOneSelectedItem: Boolean;
 begin
   LockItems;
   try
+    IsOneSelectedItem := ElvMain.Items[Index].Selected and (ElvMain.Selection.Count = 1);
     MenuIndex := ItemIndexToMenuIndex(Index);
     TObject(ElvMain.Items[Index].Data).Free;
     ElvMain.Items.Delete(Index);
     ElvMain.Groups.ReIndexItems(True);
     FFilesInfo.Delete(MenuIndex);
+    if IsOneSelectedItem and (Index < ElvMain.Items.Count - 1) then
+    begin
+      ElvMain.Items[Index].Selected := True;
+      ElvMain.Items[Index].Focused := True;
+    end;
   finally
     UnLockItems;
   end;
@@ -7542,6 +7565,21 @@ var
   Info: TExplorerViewInfo;
   PI: TPathItem;
   P: TSearchItem;
+
+  procedure UpdateCurrentHistoryFocusedItem;
+  var
+    Index: Integer;
+    FileName: string;
+  begin
+    if ElvMain.Selection.FocusedItem <> nil then
+    begin
+      Index := ItemIndexToMenuIndex(ElvMain.Selection.FocusedItem.Index);
+      FileName := FFilesInfo[Index].FileName;
+
+      FHistory.UpdateLastFileForCurrentState(FileName);
+    end;
+  end;
+
 begin
   PnInfo.Hide;
   FSelectedItem := nil;
@@ -7558,6 +7596,8 @@ begin
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
   OldDir := GetCurrentPath;
   Path := WPath.Path;
+
+  UpdateCurrentHistoryFocusedItem;
 
   if FChangeHistoryOnChPath then
     if (FHistory.LastPath.Path <> Path) or (FHistory.LastPath.PType <> WPath.PType) then

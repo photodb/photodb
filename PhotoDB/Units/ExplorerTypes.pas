@@ -42,6 +42,7 @@ type
     Path: string;
     PType: Integer;
     Tag: Integer;
+    FocusedItem: string;
   end;
 
 type
@@ -206,7 +207,7 @@ type
     { Public declarations }
     constructor Create;
     destructor Destroy; override;
-    procedure Add(Path: TExplorerPath);
+    procedure Add(Path: TExplorerPath; FocusedPath: string = '');
     function CanBack: Boolean;
     function CanForward: Boolean;
     function GetCurrentPos: Integer;
@@ -218,9 +219,10 @@ type
     function GetBackHistory: TArExplorerPath;
     function GetForwardHistory: TArExplorerPath;
     procedure Clear;
+    procedure UpdateLastFileForCurrentState(FileName: string);
     property OnHistoryChange: TNotifyEvent read FOnChange write SetOnChange;
     property Position: Integer read FPosition write FPosition;
-    property Items[Index: Integer] : TExplorerPath read GetItem; default;
+    property Items[Index: Integer]: TExplorerPath read GetItem; default;
   end;
 
 type
@@ -287,12 +289,13 @@ end;
 
 { TStringsHistoryW }
 
-procedure TStringsHistoryW.Add(Path: TExplorerPath);
+procedure TStringsHistoryW.Add(Path: TExplorerPath; FocusedPath: string);
 begin
+  Path.FocusedItem := FocusedPath;
   if FPosition = Length(FArray) - 1 then
   begin
     SetLength(FArray, Length(FArray) + 1);
-    FArray[Length(FArray) - 1]:=Path;
+    FArray[Length(FArray) - 1] := Path;
     FPosition:= Length(FArray) - 1;
   end else
   begin
@@ -455,6 +458,11 @@ end;
 procedure TStringsHistoryW.SetOnChange(const Value: TNotifyEvent);
 begin
   FOnChange := Value;
+end;
+
+procedure TStringsHistoryW.UpdateLastFileForCurrentState(FileName: string);
+begin
+  FArray[FPosition].FocusedItem := FileName;
 end;
 
 { TIcon48 }

@@ -866,6 +866,7 @@
     <translate name="Shelve" value="Отложить" />
     <translate name="Unshelve" value="Отложить (отмена)" />
     <translate name="Update avatar" value="Обновить аватар" />
+    <translate name="Auto hide panel" value="Автоматически скрывать панель" />
   </scope>
   <scope name="ThumbnailsSize">
     <translate name="Thumbnails size" value="Размер предпросмотров" />
