@@ -225,6 +225,7 @@ type
     procedure StopLoadingImage;
     procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
     procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
+    procedure FailedToLoadImage;
     procedure ZoomOut;
     procedure ZoomIn;
     procedure SetText(Text: string);
@@ -566,7 +567,7 @@ begin
   FImageExists := True;
   FLoading := False;
   if not FZoomerOn then
-    Cursor := CrDefault;
+    Cursor := crDefault;
 
   ReAlignScrolls(False);
   FOverlayBuffer.SetSize(0, 0);
@@ -576,6 +577,32 @@ begin
   FIsHightlitingPerson := False;
   UpdateFaceDetectionState;
   StopLoadingImage;
+  RecreateImage;
+end;
+
+procedure TImageViewerControl.FailedToLoadImage;
+begin
+  Cursor := crDefault;
+  FRealImageHeight := 0;
+  FRealImageWidth := 0;
+  //RealZoomInc := FRealZoomScale;
+  //ViewerForm.Item.Encrypted := FIsEncrypted;
+  //if FIsNewDBInfo then
+  //  ViewerForm.UpdateInfo(FSID, FInfo);
+  Item.Rotation := DB_IMAGE_ROTATE_0;
+  FImageExists := False;
+
+  FLsLoading.Hide;
+  ReAlignScrolls(False);
+
+  FFaces.Clear;
+  if FImageViewer <> nil then
+  FImageViewer.UpdateFaces(FItem.FileName, FFaces);
+  FHoverFace := nil;
+  FFaceDetectionComplete := True;
+  UpdateFaceDetectionState;
+
+  Invalidate;
   RecreateImage;
 end;
 
@@ -1572,7 +1599,7 @@ var
   begin
     if FileName <> '' then
     begin
-      MessageText := TA('Can''t display file') + ':';
+      MessageText := L('Can''t display file') + ':';
       ShowInfoText(MessageText, FileName);
     end;
   end;

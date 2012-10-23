@@ -11676,79 +11676,85 @@ procedure TExplorerForm.ExtendedSearchInit;
 begin
   if FExtendedSearchParams = nil then
   begin
-    PmESPerson.Images := DBKernel.ImageList;
-    PmESGroup.Images := DBKernel.ImageList;
+    try
+      BeginScreenUpdate(TsDetailedSearch.Handle);
 
-    MiESPersonFindPictures.Caption := L('Find pictures');
-    MiESPersonRemoveFromList.Caption := L('Remove from list');
-    MiESPersonProperties.Caption := L('Properties');
+      PmESPerson.Images := DBKernel.ImageList;
+      PmESGroup.Images := DBKernel.ImageList;
 
-    MiESPersonFindPictures.ImageIndex := DB_IC_SEARCH;
-    MiESPersonRemoveFromList.ImageIndex := DB_IC_DELETE_INFO;
-    MiESPersonProperties.ImageIndex := DB_IC_PROPERTIES;
+      MiESPersonFindPictures.Caption := L('Find pictures');
+      MiESPersonRemoveFromList.Caption := L('Remove from list');
+      MiESPersonProperties.Caption := L('Properties');
 
-    MiESGroupFindPictures.Caption := L('Find pictures');
-    MiESGroupRemove.Caption := L('Remove from list');
-    MiESGroupProperties.Caption := L('Properties');
+      MiESPersonFindPictures.ImageIndex := DB_IC_SEARCH;
+      MiESPersonRemoveFromList.ImageIndex := DB_IC_DELETE_INFO;
+      MiESPersonProperties.ImageIndex := DB_IC_PROPERTIES;
 
-    MiESGroupFindPictures.ImageIndex := DB_IC_SEARCH;
-    MiESGroupRemove.ImageIndex := DB_IC_DELETE_INFO;
-    MiESGroupProperties.ImageIndex := DB_IC_PROPERTIES;
+      MiESGroupFindPictures.Caption := L('Find pictures');
+      MiESGroupRemove.Caption := L('Remove from list');
+      MiESGroupProperties.Caption := L('Properties');
 
-    MiESSortByID.Caption := L('Sort by ID');
-    MiESSortByID.Tag := NativeInt(dsmID);
-    MiESSortByName.Caption := L('Sort by name');
-    MiESSortByName.Tag := NativeInt(dsmName);
-    MiESSortByDate.Caption := L('Sort by date');
-    MiESSortByDate.Tag := NativeInt(dsmDate);
-    MiESSortByRating.Caption := L('Sort by rating');
-    MiESSortByRating.Tag := NativeInt(dsmRating);
-    MiESSortByFileSize.Caption := L('Sort by file size');
-    MiESSortByFileSize.Tag := NativeInt(dsmFileSize);
-    MiESSortByImageSize.Caption := L('Sort by image size');
-    MiESSortByImageSize.Tag := NativeInt(dsmImageSize);
+      MiESGroupFindPictures.ImageIndex := DB_IC_SEARCH;
+      MiESGroupRemove.ImageIndex := DB_IC_DELETE_INFO;
+      MiESGroupProperties.ImageIndex := DB_IC_PROPERTIES;
 
-    MiESShowHidden.Caption := L('Show hidden images');
-    MiESShowPrivate.Caption := L('Show private images');
+      MiESSortByID.Caption := L('Sort by ID');
+      MiESSortByID.Tag := NativeInt(dsmID);
+      MiESSortByName.Caption := L('Sort by name');
+      MiESSortByName.Tag := NativeInt(dsmName);
+      MiESSortByDate.Caption := L('Sort by date');
+      MiESSortByDate.Tag := NativeInt(dsmDate);
+      MiESSortByRating.Caption := L('Sort by rating');
+      MiESSortByRating.Tag := NativeInt(dsmRating);
+      MiESSortByFileSize.Caption := L('Sort by file size');
+      MiESSortByFileSize.Tag := NativeInt(dsmFileSize);
+      MiESSortByImageSize.Caption := L('Sort by image size');
+      MiESSortByImageSize.Tag := NativeInt(dsmImageSize);
 
-    FExtendedSearchParams := TDatabaseSearchParameters.Create;
-    FExtendedSearchParams.DateFrom := MinDateTime;
-    FExtendedSearchParams.DateTo := MinDateTime;
-    FExtendedSearchParams.RatingFrom := 0;
-    FExtendedSearchParams.RatingTo := 5;
-    FExtendedSearchParams.ShowPrivate := False;
-    FExtendedSearchParams.ShowHidden := False;
+      MiESShowHidden.Caption := L('Show hidden images');
+      MiESShowPrivate.Caption := L('Show private images');
 
-    FExtendedSearchPersons := TList<TPerson>.Create;
+      FExtendedSearchParams := TDatabaseSearchParameters.Create;
+      FExtendedSearchParams.DateFrom := MinDateTime;
+      FExtendedSearchParams.DateTo := MinDateTime;
+      FExtendedSearchParams.RatingFrom := 0;
+      FExtendedSearchParams.RatingTo := 5;
+      FExtendedSearchParams.ShowPrivate := False;
+      FExtendedSearchParams.ShowHidden := False;
 
-    LoadSpeedButtonFromResourcePNG(SbExtendedSearchStart, 'SEARCH');
+      FExtendedSearchPersons := TList<TPerson>.Create;
 
-    WlExtendedSearchDateFrom.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
-    WlExtendedSearchDateTo.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+      LoadSpeedButtonFromResourcePNG(SbExtendedSearchStart, 'SEARCH');
 
-    WlExtendedSearchOptions.LoadFromResource('SERIES_SETTINGS');
+      WlExtendedSearchDateFrom.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+      WlExtendedSearchDateTo.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
 
-    WlExtendedSearchSortDescending.LoadFromResource('SORT_DESCENDING');
+      WlExtendedSearchOptions.LoadFromResource('SERIES_SETTINGS');
 
-    BtnSearch.Images := DBKernel.ImageList;
-    BtnSearch.ImageIndex := DB_IC_SEARCH;
+      WlExtendedSearchSortDescending.LoadFromResource('SORT_DESCENDING');
 
-    WlSearchRatingFromValue.LoadFromResource('TRATING_DEL');
-    WlSearchRatingToValue.LoadFromResource('TRATING_5');
+      BtnSearch.Images := DBKernel.ImageList;
+      BtnSearch.ImageIndex := DB_IC_SEARCH;
 
-    WlSearchRatingFrom.Text := L('Rating from');
-    WlSearchRatingTo.Text := L('Rating to');
-    BtnSearch.Caption := L('Search');
-    BtnSelectDatePopup.Caption := L('Ok');
-    BtnSelectDatePopupReset.Caption := L('Reset');
-    MiPreviousSelections.Caption := L('Previous selections') + ':';
-    MiOtherPersons.Caption := L('Other person');
+      WlSearchRatingFromValue.LoadFromResource('TRATING_DEL');
+      WlSearchRatingToValue.LoadFromResource('TRATING_5');
 
-    ExtendedSearchInitGroups;
-    ExtendedSearchInitPersons;
+      WlSearchRatingFrom.Text := L('Rating from');
+      WlSearchRatingTo.Text := L('Rating to');
+      BtnSearch.Caption := L('Search');
+      BtnSelectDatePopup.Caption := L('Ok');
+      BtnSelectDatePopupReset.Caption := L('Reset');
+      MiPreviousSelections.Caption := L('Previous selections') + ':';
+      MiOtherPersons.Caption := L('Other person');
 
-    ExtendedSearchCheckEnabled;
-    ExtendedSearchRealign;
+      ExtendedSearchInitGroups;
+      ExtendedSearchInitPersons;
+
+      ExtendedSearchCheckEnabled;
+      ExtendedSearchRealign;
+    finally
+      EndScreenUpdate(TsDetailedSearch.Handle, False);
+    end;
   end;
 end;
 

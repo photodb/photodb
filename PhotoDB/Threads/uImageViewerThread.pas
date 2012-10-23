@@ -52,6 +52,7 @@ type
     FBitmap: TBitmap;
     procedure SetStaticImage;
     procedure SetAnimatedImageAsynch;
+    procedure SetNOImageAsynch;
     procedure FinishDetectionFaces;
   protected
     procedure Execute; override;
@@ -113,7 +114,7 @@ begin
         Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
         if Password = '' then
         begin
-          //TODO:
+          SetNOImageAsynch;
           Exit;
         end;
       end;
@@ -128,7 +129,7 @@ begin
         try
           if not LoadImageFromPath(FInfo, FPageNumber, Password, LoadFlags, ImageInfo, FDisplaySize.cx, FDisplaySize.cy) then
           begin
-            //TODO: SetNOImageAsynch;
+            SetNOImageAsynch;
             Exit;
           end;
 
@@ -139,7 +140,7 @@ begin
           on e: Exception do
           begin
             EventLog(e);
-            //TODO: SetNOImageAsynch;
+            SetNOImageAsynch;
             Exit;
           end;
         end;
@@ -190,7 +191,7 @@ begin
               end;
               FBitmap.PixelFormat := pf24bit;
             except
-              //TODO: SetNOImageAsynch;
+              SetNOImageAsynch;
               Exit;
             end;
 
@@ -209,10 +210,8 @@ begin
         if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
         begin
           if CanDetectFacesOnImage(FInfo.FileName, FGraphic) then
-          begin
-            //SynchronizeEx(ShowLoadingSign);
-            FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, FGraphic, FInfo);
-          end else
+            FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, FGraphic, FInfo)
+          else
             FinishDetectionFaces;
         end else
           FinishDetectionFaces;
@@ -241,16 +240,24 @@ procedure TImageViewerThread.SetAnimatedImageAsynch;
 begin
   if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
   begin
-    {ViewerForm.RealImageHeight := FRealHeight;
-    ViewerForm.RealImageWidth := FRealWidth;
-    ViewerForm.RealZoomInc := FRealZoomScale;
-    if FIsNewDBInfo then
+    {if FIsNewDBInfo then
       ViewerForm.UpdateInfo(FSID, FInfo);
     ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
     ViewerForm.SetAnimatedImage(Graphic);   }
     FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale);
     Pointer(FGraphic) := nil;
   end;
+end;
+
+procedure TImageViewerThread.SetNOImageAsynch;
+begin
+  SynchronizeEx(
+    procedure
+    begin
+      if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
+        FOwnerControl.FailedToLoadImage;
+    end
+  );
 end;
 
 procedure TImageViewerThread.SetStaticImage;
@@ -260,13 +267,9 @@ begin
     {ViewerForm.Item.Encrypted := FIsEncrypted;
     if FIsNewDBInfo then
       ViewerForm.UpdateInfo(FSID, FInfo);
-    ViewerForm.Item.Width := FRealWidth;
-    ViewerForm.Item.Height := FRealHeight;
     ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
     ViewerForm.SetStaticImage(Bitmap, FTransparent);}
-
     FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale);
-
     FBitmap := nil;
   end else
     F(FBitmap);

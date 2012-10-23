@@ -81,6 +81,7 @@ type
     procedure ResizeTo(Width, Height: Integer);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+    procedure FailedToLoadImage;
     procedure ZoomOut;
     procedure ZoomIn;
     function GetWidth: Integer;
@@ -370,6 +371,11 @@ end;
 procedure TImageViewer.SelectPerson(PersonID: Integer);
 begin
   FImageControl.HightlitePerson(PersonID);
+end;
+
+procedure TImageViewer.FailedToLoadImage;
+begin
+  FImageControl.FailedToLoadImage;
 end;
 
 procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
