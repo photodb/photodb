@@ -27,7 +27,7 @@ uses
   uCDMappingTypes;
 
 const
-  BufferSize = 100*3*4*4096;
+  BufferSize = 100 * 3 * 4 * 4096;
 
 type
   PBuffer = ^TBuffer;
@@ -224,7 +224,7 @@ type
     function Copy: TDBPopupMenuInfoRecord; reintroduce; virtual;
     function FileExists: Boolean;
     procedure LoadGeoInfo(Latitude, Longitude: Double);
-    procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage : Boolean = False); reintroduce;
+    procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage: Boolean = False); reintroduce;
     property InnerImage: Boolean read GetInnerImage;
     property ExistedFileName: string read GetExistedFileName;
     //lower case

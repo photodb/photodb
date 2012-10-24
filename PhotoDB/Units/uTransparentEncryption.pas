@@ -50,14 +50,16 @@ type
     FChipper: TDECCipherClass;
     FIsDecrypted: Boolean;
     FPassword: string;
+    FFileName: string;
+    FlpOverlapped: POverlapped;
     procedure DecodeDataBlock(const Source; var Dest; DataSize: Integer);
     function GetSize: Int64;
     function GetBlockByIndex(Index: Int64): TMemoryBlock;
   public
-    constructor Create(Handle: THandle);
+    constructor Create(Handle: THandle; FileName: string);
     destructor Destroy; override;
     function CanDecryptWithPasswordRequest(FileName: string): Boolean;
-    procedure ReadBlock(const Block; BlockPosition: Int64; BlockSize: Int64);
+    procedure ReadBlock(const Block; BlockPosition: Int64; BlockSize: Int64; lpOverlapped: POverlapped = nil);
     function GetBlock(BlockPosition: Int64; BlockSize: Int64): Pointer;
     procedure FreeBlock(Block: Pointer);
     property Size: Int64 read GetSize;
@@ -79,8 +81,8 @@ type
 procedure WriteEnryptHeaderV3(Stream: TStream; Src: TStream;
   BlockSize32k: Byte; Password: string; var Seed: Binary; ACipher: TDECCipherClass);
 
-procedure EncryptStreamEx(S, D: TStream; Password: string;
-                          ACipher: TDECCipherClass; Progress: TSimpleEncryptProgress = nil);
+function EncryptStreamEx(S, D: TStream; Password: string;
+                          ACipher: TDECCipherClass; Progress: TSimpleEncryptProgress = nil): Boolean;
 function TransparentEncryptFileEx(FileName: string; Password: string;
                                   ACipher: TDECCipherClass = nil; Progress: TFileProgress = nil): Integer;
 function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize: Int64;
@@ -138,13 +140,17 @@ begin
   Stream.Write(EncryptHeaderV1, SizeOf(EncryptHeaderV1));
 end;
 
-procedure EncryptStreamEx(S, D: TStream; Password: string;
-                         ACipher: TDECCipherClass; Progress: TSimpleEncryptProgress = nil);
+function EncryptStreamEx(S, D: TStream; Password: string;
+                         ACipher: TDECCipherClass; Progress: TSimpleEncryptProgress = nil): Boolean;
 var
   Seed: Binary;
   BlockSize32k: Byte;
   Size, SizeToEncrypt: Int64;
+  BreakOperation: Boolean;
 begin
+  Result := True;
+  BreakOperation := False;
+
   BlockSize32k := 1;
   ACipher := ValidCipher(ACipher);
   WriteEnryptHeaderV3(D, S, BlockSize32k, Password, Seed, ACipher);
@@ -158,7 +164,11 @@ begin
 
     CryptStreamV2(S, D, Password, Seed, nil, cmCTSx, nil, SizeToEncrypt);
     if Assigned(Progress) then
-      Progress(Size, S.Position);
+    begin
+      Progress(Size, S.Position, BreakOperation);
+      if BreakOperation then
+        Exit(False);
+    end;
   end;
 end;
 
@@ -209,7 +219,9 @@ var
   Bytes: TBytes;
   AHash: TDECHashClass;
   Key, Buffer: Binary;
+  BreakOperation: Boolean;
 begin
+  BreakOperation := False;
   StartPos := S.Position;
   AChipper := ValidCipher(AChipper);
   AHash := ValidHash(nil);
@@ -236,7 +248,11 @@ begin
         DoCodeStreamEx(S, D, SizeToEncrypt, Context.BlockSize, Decode, nil, Buffer);
 
         if Assigned(Progress) then
-          Progress(FileSize, S.Position - StartPos);
+        begin
+          Progress(FileSize, S.Position - StartPos, BreakOperation);
+          if BreakOperation then
+            Exit(False);
+        end;
       end;
     finally
       Free;
@@ -250,6 +266,7 @@ end;
 function TransparentEncryptFileEx(FileName: string; Password: string;
   ACipher: TDECCipherClass = nil; Progress: TFileProgress = nil): Integer;
 var
+  IsEncrypted: Boolean;
   SFS, DFS: TFileStream;
   FA: Integer;
   FileSize: Int64;
@@ -284,11 +301,11 @@ begin
       try
         DFS := TFileStream.Create(TmpFileName, FmOpenWrite or FmCreate);
         try
-          EncryptStreamEx(SFS, DFS, Password, ACipher,
-            procedure(BytesTotal, BytesDone: Int64)
+          IsEncrypted := EncryptStreamEx(SFS, DFS, Password, ACipher,
+            procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean)
             begin
               if Assigned(Progress) then     //encryption is the first part of operation
-                Progress(FileName, FileSize, BytesDone div 2);
+                Progress(FileName, FileSize, BytesDone div 2, BreakOperation);
             end
           );
         finally
@@ -307,6 +324,12 @@ begin
     Exit;
   end;
 
+  if not IsEncrypted then
+  begin
+    DeleteFile(PChar(TmpFileName));
+    Exit(CRYPT_RESULT_FAILED_GENERAL_ERROR);
+  end;
+
   FA := FileGetAttr(FileName);
   ResetFileAttributes(FileName, FA);
 
@@ -317,10 +340,10 @@ begin
       if RenameFile(TmpFileName, FileName) then
       begin
         WipeFile(TmpErasedFile, 1,
-          procedure(FileName: string; BytesTotal, BytesDone: Int64)
+          procedure(FileName: string; BytesTotal, BytesDone: Int64; var BreakOperation: Boolean)
           begin
             if Assigned(Progress) then     //erase is the second part of operation
-              Progress(FileName, FileSize, FileSize div 2 + BytesDone div 2);
+              Progress(FileName, FileSize, FileSize div 2 + BytesDone div 2, BreakOperation);
           end
         );
         TLockFiles.Instance.RemoveLockedFile(TmpErasedFile);
@@ -338,6 +361,7 @@ end;
 function TransparentDecryptFileEx(FileName: string; Password: string;
                                   Progress: TFileProgress = nil): Integer;
 var
+  IsEncrypted: Boolean;
   SFS, DFS: TFileStream;
   FA: Integer;
   EncryptHeader: TEncryptedFileHeader;
@@ -371,12 +395,12 @@ begin
       try
         DFS := TFileStream.Create(TmpFileName, FmOpenWrite or FmCreate);
         try
-          DecryptStreamEx(SFS, DFS, Password, SeedToBinary(EncryptHeaderExV1.Seed),
+          IsEncrypted := DecryptStreamEx(SFS, DFS, Password, SeedToBinary(EncryptHeaderExV1.Seed),
                           EncryptHeaderExV1.FileSize, ACipher, EncryptHeaderExV1.BlockSize32k,
-            procedure(BytesTotal, BytesDone: Int64)
+            procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean)
             begin
               if Assigned(Progress) then
-                Progress(FileName, EncryptHeaderExV1.FileSize, BytesDone);
+                Progress(FileName, EncryptHeaderExV1.FileSize, BytesDone, BreakOperation);
             end
           );
         finally
@@ -393,6 +417,12 @@ begin
   except
     Result := CRYPT_RESULT_ERROR_READING_FILE;
     Exit;
+  end;
+
+  if IsEncrypted then
+  begin
+    DeleteFile(PChar(TmpFileName));
+    Exit(CRYPT_RESULT_FAILED_GENERAL_ERROR);
   end;
 
   FA := FileGetAttr(FileName);
@@ -609,16 +639,18 @@ begin
   FileSeek(FHandle, Position, FILE_BEGIN);
 end;
 
-constructor TEncryptedFile.Create(Handle: THandle);
+constructor TEncryptedFile.Create(Handle: THandle; FileName: string);
 begin
   FSync := TCriticalSection.Create;
   FChipper := nil;
+  FlpOverlapped := nil;
 
   FFileBlocks := TList.Create;
   FMemoryBlocks := TList.Create;
 
   FIsDecrypted := False;
   FHandle := Handle;
+  FFileName := FileName;
   FHeaderSize := 0;
   FBlockSize := 0;
 
@@ -687,10 +719,15 @@ var
   SData, DData: Pointer;
   BlockStart, CurrentPosition: Int64;
   BlockSize: Integer;
+  lpNumberOfBytesTransferred,
   lpNumberOfBytesRead: DWORD;
-  MemorySize: Int64;
+  MemorySize, FileReadPosition: Int64;
+  lpOverlapped: POverlapped;
+  Event, FFilehandle: THandle;
 begin
   Result := nil;
+  FFilehandle := 0;
+
   for I := FFileBlocks.Count - 1 downto 0 do
   begin
     B := FFileBlocks[I];
@@ -727,13 +764,46 @@ begin
     Exit;
 
   CurrentPosition := FileSeek(FHandle, Int64(0), FILE_CURRENT);
-
   FileSeek(FHandle, BlockStart + FHeaderSize, FILE_BEGIN);
 
   GetMem(SData, BlockSize);
   try
-    if ReadFile(FHandle, SData^, BlockSize, lpNumberOfBytesRead, nil) then
+    lpOverlapped := nil;
+    if Assigned(FlpOverlapped) then
     begin
+
+      FFilehandle := CreateFile(PChar(FFileName),
+          GENERIC_READ,
+          FILE_SHARE_READ OR FILE_SHARE_WRITE,
+          nil,
+          OPEN_EXISTING,
+          FILE_ATTRIBUTE_NORMAL,
+          0);
+
+      FileSeek(FFilehandle, BlockStart + FHeaderSize, FILE_BEGIN);
+      {
+      GetMem(lpOverlapped, SizeOf(TOverlapped));
+      FillChar(lpOverlapped^, SizeOf(TOverlapped), #0);
+
+      FileReadPosition := BlockStart + FHeaderSize;
+      lpOverlapped.Offset     := Int64Rec(FileReadPosition).Lo;
+      lpOverlapped.OffsetHigh := Int64Rec(FileReadPosition).Hi;
+
+      Event := CreateEvent(nil, True, False, nil);
+      lpOverlapped.hEvent := 0; }
+    end;
+
+    if ReadFile(IIF(Assigned(FlpOverlapped), FFilehandle, FHandle), SData^, BlockSize, lpNumberOfBytesRead, lpOverlapped) then
+    begin
+      {if Assigned(lpOverlapped) then
+      begin
+        if not GetOverlappedResult(FHandle, lpOverlapped^, lpNumberOfBytesTransferred, True) then
+          Exit(nil);
+
+        if lpNumberOfBytesTransferred = 0 then
+          Exit(nil);
+      end; }
+
       GetMem(DData, BlockSize);
       try
         DecodeDataBlock(SData^, DData^, BlockSize);
@@ -749,6 +819,12 @@ begin
           FreeMem(DData);
       end;
     end;
+
+    if Assigned(FlpOverlapped) then
+    begin
+      //FreeMem(lpOverlapped);
+      CloseHandle(FFilehandle);
+    end;
   finally
     FreeMem(SData);
   end;
@@ -762,7 +838,7 @@ begin
   Result := Result - FHeaderSize;
 end;
 
-procedure TEncryptedFile.ReadBlock(const Block; BlockPosition, BlockSize: Int64);
+procedure TEncryptedFile.ReadBlock(const Block; BlockPosition, BlockSize: Int64; lpOverlapped: POverlapped);
 var
   I, StartBlock, BlockEnd: Integer;
   B: TMemoryBlock;
@@ -772,6 +848,8 @@ var
 begin
   if BlockSize = 0 then
     Exit;
+
+  FlpOverlapped := lpOverlapped;
 
   StartBlock := BlockPosition div FBlockSize;
   BlockEnd := Ceil((BlockPosition + BlockSize) / FBlockSize);
@@ -841,7 +919,9 @@ end;
 procedure TEncryptionOptions.Refresh;
 var
   Associations: TStrings;
+  {$IFDEF PHOTODB}
   I: Integer;
+  {$ENDIF}
 begin
   FSync.Enter;
   try

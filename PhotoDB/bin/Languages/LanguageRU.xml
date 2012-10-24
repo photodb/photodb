@@ -41,7 +41,7 @@
   </scope>
   <scope name="Errors">
     <translate name="Result is undefined!" value="Результат не определён!" />
-    <translate name="Error code is: {0}" value="КОд ошибки: {0}" />
+    <translate name="Error code is: {0}" value="Код ошибки: {0}" />
     <translate name="No errors" value="Нет ошибок" />
     <translate name="Failed to encrypt object!" value="Произошла ошибка во время шифрования файла!" />
     <translate name="Failed to encrypt file!" value="Произошла ошибка во время шифрования файла!" />
@@ -71,6 +71,7 @@
     <translate name="All supported formats|*.exe;*.ico;*.dll;*.ocx;*.scr|Icons (*.ico)|*.ico|Executable files (*.exe)|*.exe|Dll files (*.dll)|*.dll" value="Все поддерживаемые форматы|*.exe;*.ico;*.dll;*.ocx;*.scr|Иконки (*.ico)|*.ico|Исполняемые файлы (*.exe)|*.exe|Dll файлы (*.dll)|*.dll"/>
     <translate name="Activate application to enable strong encryption!" value="Активируйте приложение для стойкого шифрования!" />
     <translate name="Home page" value="Домашняя страница" />
+    <translate name="Please, activate the program to encrypt files larger than 1Gb!" value="Пожалуйста, активируйте программу чтобы шифровать файлы более 1Gb!" />
   </scope>
   <scope name="Setup">
     <translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />

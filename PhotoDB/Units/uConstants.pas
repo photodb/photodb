@@ -299,6 +299,7 @@ const
 
   DemoDays = 30;
   LimitDemoRecords = 10000;
+  LimitDemoVideoSize = 1024 * 1024 * 1024; //1Gb
 
 //////////////////////////////////
 ///

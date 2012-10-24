@@ -5,32 +5,38 @@ unit GraphicCrypt;
 interface
 
 uses
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Imaging.JPEG,
+  Vcl.Imaging.PngImage,
+  Data.DB,
+  Data.Win.ADODB,
+
   Dmitry.CRC32,
+  Dmitry.Utils.System,
   Dmitry.Utils.Files,
   Dmitry.Memory,
 
-  Windows,
-  SysUtils,
-  Classes,
-  Graphics,
-  ADODB,
-  JPEG,
-  PngImage,
-  uAssociations,
-  uTiffImage,
-  GraphicEx,
-  RAWImage,
-  uConstants,
-  uStrongCrypt,
-  uTransparentEncryption,
+  CommonDBSupport,
   DECUtil,
   DECCipher,
   GIFImage,
-  DB,
+  RAWImage,
+  GraphicEx,
+
+  uAssociations,
+  uShellIntegration,
+  uTiffImage,
+  uConstants,
+  uTranslate,
+  uStrongCrypt,
+  uTransparentEncryption,
   uErrors,
+  uActivationUtils,
   uGraphicUtils,
-  uShellUtils,
-  CommonDBSupport;
+  uShellUtils;
 
 const
   CRYPT_OPTIONS_NORMAL = 0;
@@ -240,10 +246,10 @@ var
 begin
   Chipper := ValidCipher(nil);
   EncryptStreamEx(S, D, Password, Chipper,
-    procedure(BytesTotal, BytesDone: Int64)
+    procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean)
     begin
       if Assigned(Progress) then
-        Progress(FileName, BytesTotal, BytesDone)
+        Progress(FileName, BytesTotal, BytesDone, BreakOperation)
     end
   );
 end;
@@ -330,7 +336,25 @@ begin
 end;
 
 function CryptGraphicFileV3(FileName: string; Password: string; Options: Integer; Progress: TFileProgress = nil): Integer;
+var
+  FileSize: Int64;
 begin
+  if TActivationManager.Instance.IsDemoMode then
+  begin
+    FileSize := GetFileSize(FileName);
+    if FileSize > uConstants.LimitDemoVideoSize then
+    begin
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          MessageBoxDB(0, TA('Please, activate the program to encrypt files larger than 1Gb!', 'System'), TA('Warning'),  TD_BUTTON_OK, TD_ICON_WARNING);
+        end
+      );
+      Sleep(500);
+      Exit(CRYPT_RESULT_OK);
+    end;
+  end;
+
   if IsGraphicFile(FileName) then
     //using memory
     Result := CryptGraphicFileV3W(FileName, Password, Options, Progress)

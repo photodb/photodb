@@ -77,8 +77,8 @@ const
   Encrypt32kBlockSize = 32 * 1024;
 
 type
-  TEncryptProgress = procedure(BytesTotal, BytesDone: Int64) of object;
-  TSimpleEncryptProgress = reference to procedure(BytesTotal, BytesDone: Int64);
+  TEncryptProgress = procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean) of object;
+  TSimpleEncryptProgress = reference to procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean);
 
   TEncryptFileHeaderExV1 = record
     Version: Byte;

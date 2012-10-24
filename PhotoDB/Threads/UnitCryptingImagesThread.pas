@@ -47,7 +47,7 @@ type
     FLastProgressTime: Cardinal;
     procedure ShowError(ErrorText: string);
     procedure ShowErrorSync;
-    procedure OnFileProgress(FileName: string; BytesTotal, BytesDone: Int64);
+    procedure OnFileProgress(FileName: string; BytesTotal, BytesDone: Int64; var BreakOperation: Boolean);
   public
     constructor Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
   protected
@@ -282,8 +282,11 @@ begin
 end;
 
 procedure TCryptingImagesThread.OnFileProgress(FileName: string; BytesTotal,
-  BytesDone: Int64);
+  BytesDone: Int64; var BreakOperation: Boolean);
+var
+  B: Boolean;
 begin
+  B := BreakOperation;
   if GetTickCount - FLastProgressTime > 100 then
   begin
     FLastProgressTime := GetTickCount;
@@ -296,9 +299,12 @@ begin
 
         (ProgressWindow as TProgressActionForm).MaxPosCurrentOperation := BytesTotal;
         (ProgressWindow as TProgressActionForm).XPosition := BytesDone;
+        if (ProgressWindow as TProgressActionForm).Closed then
+          B := True;
       end
     );
   end;
+  BreakOperation := B;
 end;
 
 procedure TCryptingImagesThread.RemoveFileFromUpdatingList;

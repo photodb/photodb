@@ -11,8 +11,12 @@ uses
   uTransparentEncryption,
   uTransparentEncryptor;
 
+const
+  NTDLLFile = 'ntdll.dll';
+  STATUS_NO_SUCH_FILE = $C000000F;
+
 type
-  NTStatus = Cardinal;
+  NTStatus = Integer;
 
 PWSTR          = ^WCHAR;
 
@@ -23,8 +27,147 @@ PUnicodeString = ^TUnicodeString;
     Buffer: PWideChar;
 end;
 
-const
-  NTDLL = 'ntdll.dll';
+type
+  _FILE_INFORMATION_CLASS = (
+// end_wdm
+    FileEmpty,
+    FileDirectoryInformation,       //= 1,
+    FileFullDirectoryInformation,   // 2
+    FileBothDirectoryInformation,   // 3
+    FileBasicInformation,           // 4  wdm
+    FileStandardInformation,        // 5  wdm
+    FileInternalInformation,        // 6
+    FileEaInformation,              // 7
+    FileAccessInformation,          // 8
+    FileNameInformation,            // 9
+    FileRenameInformation,          // 10
+    FileLinkInformation,            // 11
+    FileNamesInformation,           // 12
+    FileDispositionInformation,     // 13
+    FilePositionInformation,        // 14 wdm
+    FileFullEaInformation,          // 15
+    FileModeInformation,            // 16
+    FileAlignmentInformation,       // 17
+    FileAllInformation,             // 18
+    FileAllocationInformation,      // 19
+    FileEndOfFileInformation,       // 20 wdm
+    FileAlternateNameInformation,   // 21
+    FileStreamInformation,          // 22
+    FilePipeInformation,            // 23
+    FilePipeLocalInformation,       // 24
+    FilePipeRemoteInformation,      // 25
+    FileMailslotQueryInformation,   // 26
+    FileMailslotSetInformation,     // 27
+    FileCompressionInformation,     // 28
+    FileObjectIdInformation,        // 29
+    FileCompletionInformation,      // 30
+    FileMoveClusterInformation,     // 31
+    FileQuotaInformation,           // 32
+    FileReparsePointInformation,    // 33
+    FileNetworkOpenInformation,     // 34
+    FileAttributeTagInformation,    // 35
+    FileTrackingInformation,        // 36
+    FileIdBothDirectoryInformation, // 37
+    FileIdFullDirectoryInformation, // 38
+    FileMaximumInformation);
+// begin_wdm
+    FILE_INFORMATION_CLASS = _FILE_INFORMATION_CLASS;
+    PFILE_INFORMATION_CLASS = ^FILE_INFORMATION_CLASS;
+
+type
+  FILE_DIRECTORY_INFORMATION = record
+    NextEntryOffset: ULONG;
+    Unknown: ULONG;
+    CreationTime,
+    LastAccessTime,
+    LastWriteTime,
+    ChangeTime,
+    EndOfFile,
+    AllocationSize: int64;
+    FileAttributes: ULONG;
+    FileNameLength: ULONG;
+    FileName: PWideChar;
+ end;
+ PFILE_DIRECTORY_INFORMATION = ^FILE_DIRECTORY_INFORMATION;
+
+type
+  FILE_FULL_DIRECTORY_INFORMATION = record
+    NextEntryOffset: ULONG;
+    Unknown: ULONG;
+    CreationTime,
+    LastAccessTime,
+    LastWriteTime,
+    ChangeTime,
+    EndOfFile,
+    AllocationSize: Int64;
+    FileAttributes: ULONG;
+    FileNameLength: ULONG;
+    EaInformationLength: ULONG;
+    FileName: PWideChar;
+ end;
+ PFILE_FULL_DIRECTORY_INFORMATION = ^FILE_FULL_DIRECTORY_INFORMATION;
+
+type
+  FILE_BOTH_DIRECTORY_INFORMATION = record
+    NextEntryOffset: ULONG;
+    Unknown: ULONG;
+    CreationTime,
+    LastAccessTime,
+    LastWriteTime,
+    ChangeTime,
+    EndOfFile,
+    AllocationSize: Int64;
+    FileAttributes: ULONG;
+    FileNameLength: ULONG;
+    EaInformationLength: ULONG;
+    AlternateNameLength: ULONG;
+    AlternateName: array[0..11] of WideChar;
+    FileName: PWideChar;
+ end;
+ PFILE_BOTH_DIRECTORY_INFORMATION = ^FILE_BOTH_DIRECTORY_INFORMATION;
+
+type
+  FILE_NAMES_INFORMATION = record
+    NextEntryOffset: ULONG;
+    Unknown: ULONG;
+    FileNameLength: ULONG;
+    FileName: PWideChar;
+ end;
+
+type
+  HANDLE = THandle;
+
+  { .: LARGE_INTEGER :. }
+  _LARGE_INTEGER = record
+    case Integer of
+      0: (LowPart: DWORD;
+          HighPart: LONG);
+      1: (QuadPart: LONGLONG);
+  end;
+  LARGE_INTEGER = _LARGE_INTEGER;
+  PLARGE_INTEGER = ^LARGE_INTEGER;
+
+  { .: IO_STATUS_BLOCK :. }
+  _IO_STATUS_BLOCK = record
+    Status: NTSTATUS;
+    Information: ULONG_PTR;
+  end;
+  IO_STATUS_BLOCK = _IO_STATUS_BLOCK;
+  PIO_STATUS_BLOCK = ^IO_STATUS_BLOCK;
+
+  { .: OBJECT_ATTRIBUTES :. }
+  _OBJECT_ATTRIBUTES = record
+    Length: ULONG;
+    RootDirectory: HANDLE;
+    ObjectName: PUnicodeString;
+    Attributes: ULONG;
+    SecurityDescriptor: PVOID;
+    SecurityQualityOfService: PVOID;
+  end;
+  OBJECT_ATTRIBUTES = _OBJECT_ATTRIBUTES;
+  POBJECT_ATTRIBUTES = ^OBJECT_ATTRIBUTES;
+
+  PIO_APC_ROUTINE = procedure (ApcContext: PVOID; IoStatusBlock: PIO_STATUS_BLOCK; Reserved: ULONG); stdcall;
 
 procedure HookPEModule(Module: HModule; Recursive: Boolean = True);
 function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode: DWORD;
@@ -105,27 +248,79 @@ var
   GetFileAttributesExWNextHook: function (lpFileName: PWideChar; fInfoLevelId: TGetFileExInfoLevels; lpFileInformation: Pointer): BOOL; stdcall;
 
 
-  DuplicateHandleNextHook    :  function (hSourceProcessHandle, hSourceHandle, hTargetProcessHandle: THandle;
+  DuplicateHandleNextHook    : function (hSourceProcessHandle, hSourceHandle, hTargetProcessHandle: THandle;
                                           lpTargetHandle: PHandle; dwDesiredAccess: DWORD;
                                           bInheritHandle: BOOL; dwOptions: DWORD): BOOL; stdcall;
 
-  LdrLoadDllNextHook         :  function (szcwPath: PWideChar;
+  LdrLoadDllNextHook         : function (szcwPath: PWideChar;
                                           pdwLdrErr: PULONG;
                                           pUniModuleName: PUnicodeString;
                                           pResultInstance: PHandle): NTSTATUS; stdcall;
 
+  NtCreateFileNextHook       : function (FileHandle: PHANDLE; DesiredAccess: ACCESS_MASK;
+                                        ObjectAttributes: POBJECT_ATTRIBUTES; IoStatusBlock: PIO_STATUS_BLOCK;
+                                        AllocationSize: PLARGE_INTEGER; FileAttributes: ULONG; ShareAccess: ULONG;
+                                        CreateDisposition: ULONG; CreateOptions: ULONG; EaBuffer: PVOID;
+                                        EaLength: ULONG): NTSTATUS; stdcall;
+
+  NtQueryDirectoryFileNextHook : function(FileHandle: HANDLE; Event: HANDLE; ApcRoutine: PIO_APC_ROUTINE; ApcContext: PVOID;
+                                          IoStatusBlock: PIO_STATUS_BLOCK; FileInformation: PVOID; FileInformationLength: ULONG;
+                                          FileInformationClass: FILE_INFORMATION_CLASS; ReturnSingleEntry: ByteBool; FileName: PUnicodeString;
+                                          RestartScan: ByteBool): NTSTATUS; stdcall;
+
+
+  NtQueryInformationFileNextHook : function(FileHandle: HANDLE;
+                                IoStatusBlock: PIO_STATUS_BLOCK;
+                                FileInformation: PVOID;
+                                FileInformationLength: ULONG;
+                                FileInformationClass: FILE_INFORMATION_CLASS
+                                ): NTSTATUS; stdcall;
 
 function GetFileSizeEx(hFile: THandle; var lpFileSize: Int64): BOOL; stdcall; external 'kernel32.dll';
 
 function LdrLoadDll(szcwPath: PWideChar;
                     pdwLdrErr: PULONG;
                     pUniModuleName: PUnicodeString;
-                    pResultInstance: PHandle): NTSTATUS;
-                       stdcall; external 'ntdll.dll';
+                    pResultInstance: PHandle): NTSTATUS; stdcall; external NTDLLFile;
+
+function NtCreateFile(FileHandle: PHANDLE; DesiredAccess: ACCESS_MASK;
+                      ObjectAttributes: POBJECT_ATTRIBUTES; IoStatusBlock: PIO_STATUS_BLOCK;
+                      AllocationSize: PLARGE_INTEGER; FileAttributes: ULONG; ShareAccess: ULONG;
+                      CreateDisposition: ULONG; CreateOptions: ULONG; EaBuffer: PVOID;
+                      EaLength: ULONG): NTSTATUS; stdcall; external NTDLLFile;
+
+function NtQueryDirectoryFile(FileHandle: HANDLE; Event: HANDLE; ApcRoutine: PIO_APC_ROUTINE; ApcContext: PVOID;
+                              IoStatusBlock: PIO_STATUS_BLOCK; FileInformation: PVOID; FileInformationLength: ULONG;
+                              FileInformationClass: FILE_INFORMATION_CLASS; ReturnSingleEntry: ByteBool; FileName: PUnicodeString;
+                              RestartScan: ByteBool): NTSTATUS; stdcall; external NTDLLFile;
+
+function NtQueryInformationFile(FileHandle: HANDLE;
+                                IoStatusBlock: PIO_STATUS_BLOCK;
+                                FileInformation: PVOID;
+                                FileInformationLength: ULONG;
+                                FileInformationClass: FILE_INFORMATION_CLASS
+                                ): NTSTATUS; stdcall; external NTDLLFile;
+
 var
   DefaultDll: string;
 
 implementation
+
+function IsSystemPipe(ItemPath: string): Boolean;
+begin
+  ItemPath := AnsiLowerCase(ItemPath);
+  //Reserved system aliases
+  // \pipe\lsarpc, \pipe\samr, \pipe\netlogon (\pipe\lsass aliases)
+  // \pipe\wkssvc, \pipe\srvsvc, \pipe\browser (\pipe\ntsvcs aliases)
+  Result := (Pos('\pipe\lsarpc', ItemPath) > 0)
+            or (Pos('\pipe\samr', ItemPath) > 0)
+            or (Pos('\pipe\netlogon', ItemPath) > 0)
+            or (Pos('\pipe\lsass', ItemPath) > 0)
+            or (Pos('\pipe\wkssvc', ItemPath) > 0)
+            or (Pos('\pipe\srvsvc', ItemPath) > 0)
+            or (Pos('\pipe\browser', ItemPath) > 0)
+            or (Pos('\pipe\ntsvcs', ItemPath) > 0);
+end;
 
 //hooks file opening
 function CreateProcessACallbackProc(appName, cmdLine: pchar; processAttr, threadAttr: PSecurityAttributes; inheritHandles: bool; creationFlags: dword; environment: pointer; currentDir: pchar; const startupInfo: TStartupInfo; var processInfo: TProcessInformation) : bool; stdcall;
@@ -296,15 +491,17 @@ end;
 function MapViewOfFileExHookProc(hFileMappingObject: THandle; dwDesiredAccess: DWORD;
                                 dwFileOffsetHigh, dwFileOffsetLow: DWORD; dwNumberOfBytesToMap: SIZE_T; lpBaseAddress: Pointer): Pointer; stdcall;
 begin
+
   if lpBaseAddress = nil then
     Exit(MapViewOfFileHookProc(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap));
 
+  {$IFDEF DEBUG}
   MessageBox(0, 'Функция: MapViewOfFileExHookProc', 'Позволить ?', MB_OK or MB_ICONWARNING);
-
   Result := MapViewOfFileNextHook(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap);
+  {$ENDIF}
 end;
 
-function  _lopenHookProc(const lpPathName: LPCSTR; iReadWrite: Integer): HFILE; stdcall;
+function _lopenHookProc(const lpPathName: LPCSTR; iReadWrite: Integer): HFILE; stdcall;
 begin
  if MessageBox(0, 'Функция: _lopen', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
     result := _lOpenNextHook( lpPathName,iReadWrite)
@@ -320,7 +517,7 @@ begin
 
   result := _lReadNextHook(hFile, lpBuffer, uBytes);
 
-  ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, result);
+  ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, Result, nil);
 end;
 
 function _lcreatHookProc(const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
@@ -373,6 +570,12 @@ begin
   Result := LoadLibraryANextHook(lpLibFileName);
 end;
 
+{ .: NT_SUCCESS :. }
+function NT_SUCCESS(const Status: NTSTATUS): Boolean;
+begin
+  Result := (Status >= 0);
+end;
+
 function LdrLoadDllHookProc(szcwPath: PWideChar;
                     pdwLdrErr: PULONG;
                     pUniModuleName: PUnicodeString;
@@ -391,19 +594,209 @@ begin
   end;
 end;
 
+function NtCreateFileHookProc(FileHandle: PHANDLE; DesiredAccess: ACCESS_MASK;
+                              ObjectAttributes: POBJECT_ATTRIBUTES; IoStatusBlock: PIO_STATUS_BLOCK;
+                              AllocationSize: PLARGE_INTEGER; FileAttributes: ULONG; ShareAccess: ULONG;
+                              CreateDisposition: ULONG; CreateOptions: ULONG; EaBuffer: PVOID;
+                              EaLength: ULONG): NTSTATUS; stdcall;
+var
+  LastError: DWORD;
+  lpFileName: PWideChar;
+begin
+  Result := NtCreateFileNextHook(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock,
+                                 AllocationSize, FileAttributes, ShareAccess, CreateDisposition,
+                                 CreateOptions, EaBuffer, EaLength);
+  if NT_SUCCESS(Result) then
+  begin
+
+    LastError := GetLastError;
+
+    lpFileName := ObjectAttributes.ObjectName.Buffer;
+
+    if IsHookStarted then
+    begin
+      if not StartsStr('\\.', string(AnsiString(lpFileName))) and not IsSystemPipe(string(AnsiString(lpFileName))) then
+      begin
+        if ValidEncryptFileExHandle(FileHandle^) then
+          InitEncryptedFile(string(AnsiString(lpFileName)), FileHandle^);
+      end;
+    end;
+
+    SetLastError(LastError);
+
+  end;
+end;
+
+procedure ProcessFSAttributes(FileHandle: HANDLE; FileInformation: PVOID; FileInformationLength: ULONG;
+                              FileInformationClass: FILE_INFORMATION_CLASS; STATUS: NTSTATUS);
+var
+  FullFileName: string;
+  DirectoryName: PWideChar;
+  Offset: ULONG;
+
+  LastFileDirectoryInfo, FileDirectoryInfo: PFILE_DIRECTORY_INFORMATION;
+  LastFileFullDirectoryInfo, FileFullDirectoryInfo: PFILE_FULL_DIRECTORY_INFORMATION;
+  LastFileBothDirectoryInfo, FileBothDirectoryInfo: PFILE_BOTH_DIRECTORY_INFORMATION;
+begin
+  if not (NT_SUCCESS(STATUS)) then
+    Exit;
+
+
+  if not (FileInformationClass in [FileDirectoryInformation,
+                                   FileFullDirectoryInformation,
+                                   FileBothDirectoryInformation{,
+                                   FileNamesInformation}]) or
+                                   (STATUS = STATUS_NO_SUCH_FILE) or
+                                   (FileInformationLength = 0) then Exit;
+
+  //get firectory name
+  GetMem(DirectoryName, 1024 + 1);
+  GetFinalPathNameByHandle(FileHandle, DirectoryName, 1024, VOLUME_NAME_DOS or VOLUME_NAME_NONE);
+  FreeMem(DirectoryName);
+
+  FileDirectoryInfo := nil;
+  LastFileDirectoryInfo := nil;
+
+  FileFullDirectoryInfo := nil;
+  LastFileFullDirectoryInfo := nil;
+
+  FileBothDirectoryInfo := nil;
+  LastFileBothDirectoryInfo := nil;
+  Offset := 0;
+
+  case (FileInformationClass) of
+    FileDirectoryInformation:
+    begin
+      FileDirectoryInfo := nil;
+      repeat
+
+        FileDirectoryInfo := Pointer((NativeUInt(FileInformation) + Offset));
+        LastFileDirectoryInfo := FileDirectoryInfo;
+
+        FullFileName := string(DirectoryName) + string(FileDirectoryInfo.FileName);
+        if ValidEnryptFileEx(FullFileName) then
+          FileDirectoryInfo.EndOfFile := FileDirectoryInfo.EndOfFile - 75;
+
+        Offset := Offset + FileDirectoryInfo.NextEntryOffset;
+
+        until (FileDirectoryInfo.NextEntryOffset = 0);
+      end;
+
+    FileFullDirectoryInformation:
+      begin
+        FileFullDirectoryInfo := nil;
+        repeat
+
+          LastFileFullDirectoryInfo := FileFullDirectoryInfo;
+          FileFullDirectoryInfo := Pointer((NativeUInt(FileInformation) + Offset));
+
+          FullFileName := string(DirectoryName) + string(FileFullDirectoryInfo.FileName);
+          if ValidEnryptFileEx(FullFileName) then
+            FileFullDirectoryInfo.EndOfFile := FileFullDirectoryInfo.EndOfFile - 75;
+
+          Offset := Offset + FileFullDirectoryInfo.NextEntryOffset;
+
+        until (FileFullDirectoryInfo.NextEntryOffset = 0);
+
+      end;
+
+    FileBothDirectoryInformation:
+      begin
+        FileBothDirectoryInfo := nil;
+        repeat
+
+          LastFileBothDirectoryInfo := FileBothDirectoryInfo;
+          FileBothDirectoryInfo := Pointer((NativeUInt(FileInformation) + Offset));
+
+          FullFileName := string(DirectoryName) + string(FileBothDirectoryInfo.FileName);
+          if ValidEnryptFileEx(FullFileName) then
+            FileFullDirectoryInfo.EndOfFile := FileFullDirectoryInfo.EndOfFile - 75;
+
+          Offset := Offset + FileBothDirectoryInfo.NextEntryOffset;
+
+        until (FileBothDirectoryInfo.NextEntryOffset = 0);
+
+      end;
+
+    FileNamesInformation:
+      begin
+      (*FileNamesInfo = NULL;
+      do
+      {
+        LastFileNamesInfo = FileNamesInfo;
+        FileNamesInfo = (PVOID)((ULONG)FileInformation + Offset);
+        if (FileNamesInfo->FileName[0] == 0x5F00)
+        {
+          if (!FileNamesInfo->NextEntryOffset)
+          {
+            if(LastFileNamesInfo) LastFileNamesInfo->NextEntryOffset = 0;
+            else status = STATUS_NO_SUCH_FILE;
+            return status;
+          } else
+          if (LastFileNamesInfo) LastFileNamesInfo->NextEntryOffset += FileNamesInfo->NextEntryOffset;
+        }
+
+        Offset += FileNamesInfo->NextEntryOffset;
+      } while (FileNamesInfo->NextEntryOffset);
+    break; *)
+      end;
+  end;
+
+  Offset := 0;
+end;
+
+function NtQueryDirectoryFileHookProc(FileHandle: HANDLE; Event: HANDLE; ApcRoutine: PIO_APC_ROUTINE; ApcContext: PVOID;
+                              IoStatusBlock: PIO_STATUS_BLOCK; FileInformation: PVOID; FileInformationLength: ULONG;
+                              FileInformationClass: FILE_INFORMATION_CLASS; ReturnSingleEntry: ByteBool; FileName: PUnicodeString;
+                              RestartScan: ByteBool): NTSTATUS; stdcall;
+begin
+  Result := NtQueryDirectoryFileNextHook(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock,
+                                         FileInformation, FileInformationLength, FileInformationClass,
+                                         ReturnSingleEntry, FileName, RestartScan);
+
+  ProcessFSAttributes(FileHandle, FileInformation, FileInformationLength, FileInformationClass, Result);
+end;
+
+function NtQueryInformationFileHookProc(FileHandle: HANDLE;
+                                IoStatusBlock: PIO_STATUS_BLOCK;
+                                FileInformation: PVOID;
+                                FileInformationLength: ULONG;
+                                FileInformationClass: FILE_INFORMATION_CLASS
+                                ): NTSTATUS; stdcall;
+begin
+  Result := NtQueryInformationFileNextHook(FileHandle, IoStatusBlock, FileInformation,
+                                           FileInformationLength, FileInformationClass);
+
+ // ProcessFSAttributes(FileHandle, FileInformation, FileInformationLength, FileInformationClass, Result);
+end;
+
 procedure HookPEModule(Module: HModule; Recursive: Boolean = True);
 begin
-
+  {$IFDEF DEBUG}
   HookCode(Module, Recursive,   @CreateProcessA,     @CreateProcessACallbackProc, @CreateProcessANextHook);
   HookCode(Module, Recursive,   @CreateProcessW,     @CreateProcessWCallbackProc, @CreateProcessWNextHook);
 
-  hookCode(Module, Recursive,   @LdrLoadDll,         @LdrLoadDllHookProc, @LdrLoadDllNextHook);
-
+  {REPLACED BY LdrLoadDll}
   hookCode(Module, Recursive,   @LoadLibraryA,       @LoadLibraryAHookProc, @LoadLibraryANextHook);
   hookCode(Module, Recursive,   @LoadLibraryW,       @LoadLibraryWHookProc, @LoadLibraryWNextHook);
 
   hookCode(Module, Recursive,   @LoadLibraryExA,     @LoadLibraryExAHookProc, @LoadLibraryExANextHook);
   hookCode(Module, Recursive,   @LoadLibraryExW,     @LoadLibraryExWHookProc, @LoadLibraryExWNextHook);
+
+  {ANOTHER HOOKS}
+  hookCode(Module, Recursive,   @DuplicateHandle,    @DuplicateHandleHookProc, @DuplicateHandleNextHook);
+
+  {REPLACED BY NtCreateFile}
+
+  {NOT IMPLEMENTED HOOKS}
+  hookCode(Module, Recursive,   @_lopen,             @_lopenHookProc, @_lopenNextHook);
+  hookCode(Module, Recursive,   @_lcreat,            @_lcreatHookProc, @_lcreatNextHook);
+  {$ENDIF}
+
+  hookCode(Module, Recursive,   @LdrLoadDll,         @LdrLoadDllHookProc, @LdrLoadDllNextHook);
+  //hookCode(Module, Recursive,   @NtCreateFile,           @NtCreateFileHookProc,           @NtCreateFileNextHook);
+  //hookCode(Module, Recursive,   @NtQueryDirectoryFile,   @NtQueryDirectoryFileHookProc,   @NtQueryDirectoryFileNextHook);
+  //hookCode(Module, Recursive,   @NtQueryInformationFile, @NtQueryInformationFileHookProc, @NtQueryInformationFileNextHook);
 
   hookCode(Module, Recursive,   @GetProcAddress,     @GetProcAddressHookProc, @GetProcAddressNextHook);
 
@@ -416,20 +809,15 @@ begin
   hookCode(Module, Recursive,   @GetFileAttributesExA, @GetFileAttributesExAHookProc, @GetFileAttributesExANextHook);
   hookCode(Module, Recursive,   @GetFileAttributesExW, @GetFileAttributesExWHookProc, @GetFileAttributesExWNextHook);
 
-  hookCode(Module, Recursive,   @DuplicateHandle,    @DuplicateHandleHookProc, @DuplicateHandleNextHook);
-
-  hookCode(Module, Recursive,   @OpenFile,           @OpenFileAHookProc, @OpenFileNextHook);
-
   hookCode(Module, Recursive,   @CreateFileA,        @CreateFileAHookProc, @CreateFileANextHook);
   hookCode(Module, Recursive,   @CreateFileW,        @CreateFileWHookProc, @CreateFileWNextHook);
+
+  hookCode(Module, Recursive,   @OpenFile,           @OpenFileAHookProc, @OpenFileNextHook);
 
   hookCode(Module, Recursive,   @SetFilePointerEx,   @SetFilePointerExHookProc, @SetFilePointerExNextHook);
   hookCode(Module, Recursive,   @SetFilePointer,     @SetFilePointerHookProc, @SetFilePointerNextHook);
 
-  hookCode(Module, Recursive,   @_lopen,             @_lopenHookProc, @_lopenNextHook);
   hookCode(Module, Recursive,   @_lread,             @_lreadHookProc, @_lreadNextHook);
-  hookCode(Module, Recursive,   @_lcreat,            @_lcreatHookProc, @_lcreatNextHook);
-
   hookCode(Module, Recursive,   @ReadFile,           @ReadFileHookProc, @ReadFileNextHook);
   hookCode(Module, Recursive,   @ReadFileEx,         @ReadFileExHookProc, @ReadFileExNextHook);
 
@@ -542,22 +930,6 @@ begin
       InitEncryptedFile(string(AnsiString(lpFileName)), Result);
 end;
 
-function IsSystemPipe(ItemPath: string): Boolean;
-begin
-  ItemPath := AnsiLowerCase(ItemPath);
-  //Reserved system aliases
-  // \pipe\lsarpc, \pipe\samr, \pipe\netlogon (\pipe\lsass aliases)
-  // \pipe\wkssvc, \pipe\srvsvc, \pipe\browser (\pipe\ntsvcs aliases)
-  Result := (Pos('\pipe\lsarpc', ItemPath) > 0)
-            or (Pos('\pipe\samr', ItemPath) > 0)
-            or (Pos('\pipe\netlogon', ItemPath) > 0)
-            or (Pos('\pipe\lsass', ItemPath) > 0)
-            or (Pos('\pipe\wkssvc', ItemPath) > 0)
-            or (Pos('\pipe\srvsvc', ItemPath) > 0)
-            or (Pos('\pipe\browser', ItemPath) > 0)
-            or (Pos('\pipe\ntsvcs', ItemPath) > 0);
-end;
-
 function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode: DWORD;
                                          lpSecurityAttributes: PSecurityAttributes; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
                                          hTemplateFile: THandle): THandle; stdcall;
@@ -614,17 +986,32 @@ function ReadFileHookProc(hFile: THandle; var Buffer; nNumberOfBytesToRead: DWOR
 var
   dwCurrentFilePosition: Int64;
   LastError: DWORD;
+  lpNumberOfBytesTransferred: DWORD;
 begin
+
   LastError := GetLastError;
   dwCurrentFilePosition := FileSeek(hFile, Int64(0), FILE_CURRENT);
   SetLastError(LastError);
 
-  Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+  if Assigned(lpOverlapped) then
+  begin
+    Int64Rec(dwCurrentFilePosition).Lo := lpOverlapped^.Offset;
+    Int64Rec(dwCurrentFilePosition).Hi := lpOverlapped^.OffsetHigh;
+    Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
-  LastError := GetLastError;
-  ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead);
+    GetOverlappedResult(hFile, lpOverlapped^, lpNumberOfBytesTransferred, True);
 
-  SetLastError(LastError);
+    LastError := GetLastError;
+    ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, lpNumberOfBytesTransferred, lpNumberOfBytesTransferred, lpOverlapped);
+    SetLastError(LastError);
+  end else
+  begin
+    Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
+
+    LastError := GetLastError;
+    ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead, nil);
+    SetLastError(LastError);
+  end;
 end;
 
 function ReadFileExHookProc(hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
@@ -675,28 +1062,31 @@ initialization
   _lOpenNextHook             := nil;
   _lCreatNextHook            := nil;
 
-  CreateFileMappingANextHook := nil;
+  CreateFileMappingANextHook     := nil;
 
-  CreateFileMappingWNextHook := nil;
+  CreateFileMappingWNextHook     := nil;
 
-  MapViewOfFileNextHook      := nil;
+  MapViewOfFileNextHook          := nil;
 
-  MapViewOfFileExNextHook    := nil;
+  MapViewOfFileExNextHook        := nil;
 
-  UnmapViewOfFileNextHook    := nil;
+  UnmapViewOfFileNextHook        := nil;
 
-  GetFileSizeNextHook        := nil;
-  GetFileSizeExNextHook      := nil;
+  GetFileSizeNextHook            := nil;
+  GetFileSizeExNextHook          := nil;
 
-  FindFirstFileANextHook     := nil;
-  FindFirstFileWNextHook     := nil;
-
-
-  GetFileAttributesExANextHook:= nil;
-  GetFileAttributesExWNextHook:= nil;
+  FindFirstFileANextHook         := nil;
+  FindFirstFileWNextHook         := nil;
 
 
-  DuplicateHandleNextHook    := nil;
-  LdrLoadDllNextHook         := nil;
+  GetFileAttributesExANextHook   := nil;
+  GetFileAttributesExWNextHook   := nil;
+
+
+  DuplicateHandleNextHook        := nil;
+  LdrLoadDllNextHook             := nil;
+  NtCreateFileNextHook           := nil;
+  NtQueryDirectoryFileNextHook   := nil;
+  NtQueryInformationFileNextHook := nil;
 
 end.

@@ -6,7 +6,6 @@ uses
   Windows,
   SysUtils,
   Generics.Collections,
-  Classes,
   uMemory,
   SyncObjs,
   uTransparentEncryption;
@@ -19,7 +18,7 @@ type
 
 procedure CloseFileHandle(Handle: THandle);
 procedure InitEncryptedFile(FileName: string; hFile: THandle);
-procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD);
+procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped);
 function FixFileSize(hFile: THandle; lDistanceToMove: DWORD; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
 function FixFileSizeEx(hFile: THandle; liDistanceToMove: TLargeInteger; const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD; SeekExProc: TSetFilePointerExNextHook): BOOL;
 procedure StartLib;
@@ -141,7 +140,7 @@ begin
     if FData.ContainsKey(hFile) then
       Exit;
 
-    MS := TEncryptedFile.Create(hFile);
+    MS := TEncryptedFile.Create(hFile, FileName);
     try
       if MS.CanDecryptWithPasswordRequest(FileName) then
       begin
@@ -218,7 +217,7 @@ begin
   SetLastError(LastError);
 end;
 
-procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD);
+procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped);
 var
   MS: TEncryptedFile;
   //Size: NativeInt;

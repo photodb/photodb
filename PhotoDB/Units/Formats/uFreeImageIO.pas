@@ -30,7 +30,7 @@ end;
 
 function StreamFI_TellProc(handle: fi_handle): LongInt; stdcall;
 begin
-  Result := TStream(handle).Position;
+  Result := LongInt(TStream(handle).Position);
 end;
 
 procedure SetStreamFreeImageIO(var IO: FreeImageIO);

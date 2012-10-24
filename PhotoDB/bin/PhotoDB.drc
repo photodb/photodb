@@ -274,15 +274,15 @@
 #define Data_Win_ADOConst_sNameAttr 64818
 #define Data_Win_ADOConst_sValueAttr 64819
 #define DECUtil_sClassNotRegistered 64820
-#define DECHash_sHashingOverflowError 64821
-#define DECHash_sHashNotInitialized 64822
-#define DECHash_sHashNoDefault 64823
-#define DECCipher_sAlreadyPadded 64824
-#define DECCipher_sInvalidState 64825
-#define DECCipher_sInvalidMessageLength 64826
-#define DECCipher_sKeyMaterialToLarge 64827
-#define DECCipher_sIVMaterialToLarge 64828
-#define DECCipher_sCipherNoDefault 64829
+#define DECCipher_sAlreadyPadded 64821
+#define DECCipher_sInvalidState 64822
+#define DECCipher_sInvalidMessageLength 64823
+#define DECCipher_sKeyMaterialToLarge 64824
+#define DECCipher_sIVMaterialToLarge 64825
+#define DECCipher_sCipherNoDefault 64826
+#define DECHash_sHashingOverflowError 64827
+#define DECHash_sHashNotInitialized 64828
+#define DECHash_sHashNoDefault 64829
 #define IdResourceStrings_RSFailedTimeZoneInfo 64830
 #define IdResourceStrings_RSWinsockCallError 64831
 #define DragDrop_sFormatNameReadOnly 64832
@@ -1257,15 +1257,15 @@ BEGIN
 	Data_Win_ADOConst_sNameAttr,	L"Name"
 	Data_Win_ADOConst_sValueAttr,	L"Value"
 	DECUtil_sClassNotRegistered,	L"Class %s is not registered"
-	DECHash_sHashingOverflowError,	L"Hash function have to many bits processed"
-	DECHash_sHashNotInitialized,	L"Hash must be initialized"
-	DECHash_sHashNoDefault,	L"No default hash are registered"
 	DECCipher_sAlreadyPadded,	L"Cipher has already been padded, cannot process message"
 	DECCipher_sInvalidState,	L"Cipher is not in valid state for this action"
 	DECCipher_sInvalidMessageLength,	L"Message length for %s must be a multiple of %d bytes"
 	DECCipher_sKeyMaterialToLarge,	L"Keymaterial is too large for use (Security Issue)"
 	DECCipher_sIVMaterialToLarge,	L"Initvector is too large for use (Security Issue)"
 	DECCipher_sCipherNoDefault,	L"No default cipher has been registered"
+	DECHash_sHashingOverflowError,	L"Hash function have to many bits processed"
+	DECHash_sHashNotInitialized,	L"Hash must be initialized"
+	DECHash_sHashNoDefault,	L"No default hash are registered"
 	IdResourceStrings_RSFailedTimeZoneInfo,	L"Failed attempting to retrieve time zone information."
 	IdResourceStrings_RSWinsockCallError,	L"Error on call to Winsock2 library function %s"
 	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"

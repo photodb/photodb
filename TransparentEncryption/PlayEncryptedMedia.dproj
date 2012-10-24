@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>PlayEncryptedMedia.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -78,7 +78,7 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Debugger_RunParams>&quot;C:\Program Files (x86)\Essentials Codec Pack\MPC\mpc-hc.exe&quot; &quot;E:\Krasavchik.2007.DUAL.BDRip.XviD.AC3.-HQ-ViDEO.avi&quot;</Debugger_RunParams>
+        <Debugger_RunParams>&quot;c:\Program Files (x86)\Windows Media Player\wmplayer.exe&quot; &quot;E:\Krasavchik.2007.DUAL.BDRip.XviD.AC3.-HQ-ViDEO.avi&quot;</Debugger_RunParams>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
