@@ -8,6 +8,7 @@ uses
   System.StrUtils,
   uAPIHook,
   uStrongCrypt,
+  uProgramCommunication,
   uTransparentEncryption,
   uTransparentEncryptor;
 
@@ -345,7 +346,7 @@ function DuplicateHandleHookProc (hSourceProcessHandle, hSourceHandle, hTargetPr
                                           bInheritHandle: BOOL; dwOptions: DWORD): BOOL; stdcall;
 begin
   if IsEncryptedHandle(hSourceHandle) then
-     MessageBox(0, 'Функция: DuplicateHandleHookProc', '!!!', MB_OK or MB_ICONWARNING);
+    NotifyEncryptionError('DuplicateHandleHookProc');
 
   Result := DuplicateHandleNextHook(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, lpTargetHandle, dwDesiredAccess,
                                     bInheritHandle, dwOptions);
@@ -373,7 +374,7 @@ begin
     end;
     SetLastError(LastError);
   end else
-     MessageBox(0, 'Функция: GetFileAttributesExW', 'not GetFileExInfoStandard', MB_OK or MB_ICONWARNING);
+    NotifyEncryptionError('GetFileAttributesExA, not GetFileExInfoStandard');
 end;
 
 function GetFileAttributesExWHookProc(lpFileName: PWideChar; fInfoLevelId: TGetFileExInfoLevels; lpFileInformation: Pointer): BOOL; stdcall;
@@ -397,7 +398,7 @@ begin
     end;
     SetLastError(LastError);
   end else
-     MessageBox(0, 'Функция: GetFileAttributesExW', 'not GetFileExInfoStandard', MB_OK or MB_ICONWARNING);
+    NotifyEncryptionError('GetFileAttributesExW, not GetFileExInfoStandard');
 end;
 
 function FindFirstFileAHookProc(lpFileName: PAnsiChar; var lpFindFileData: TWIN32FindDataA): THandle; stdcall;
@@ -496,7 +497,7 @@ begin
     Exit(MapViewOfFileHookProc(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap));
 
   {$IFDEF DEBUG}
-  MessageBox(0, 'Функция: MapViewOfFileExHookProc', 'Позволить ?', MB_OK or MB_ICONWARNING);
+  NotifyEncryptionError('MapViewOfFileEx, lpBaseAddress');
   Result := MapViewOfFileNextHook(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap);
   {$ENDIF}
 end;
@@ -522,7 +523,7 @@ end;
 
 function _lcreatHookProc(const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
 begin
- if MessageBox(0, 'Функция: _lcreat', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
+  if MessageBox(0, 'Функция: _lcreat', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
     result := _lCreatNextHook(lpPathName, iAttribute)
   else
     result := 0;
@@ -1016,10 +1017,9 @@ end;
 
 function ReadFileExHookProc(hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
 begin
-  if MessageBox(0, 'Функция: ReadFileEx', 'Позволить ?', MB_YESNO or MB_ICONQUESTION) = IDYES then
-    Result := ReadFileExNextHook(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine)
-  else
-    Result := FALSE;
+  //TODO: support this method
+  NotifyEncryptionError('ReadFileEx');
+  Result := ReadFileExNextHook(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped, lpCompletionRoutine);
 end;
 
 function CloseHandleHookProc(hObject: THandle): BOOL; stdcall;
@@ -1033,6 +1033,7 @@ begin
 end;
 
 initialization
+  SetEncryptionErrorHandler(NotifyEncryptionError);
   CreateProcessANextHook     := nil;
   CreateProcessWNextHook     := nil;
 

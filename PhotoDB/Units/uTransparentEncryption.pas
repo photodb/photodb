@@ -35,6 +35,8 @@ type
     Index: Int64;
   end;
 
+  TEncryptionErrorHandler = procedure(ErrorMessage: string);
+
   TEncryptedFile = class(TObject)
   private
     FSync: TCriticalSection;
@@ -94,12 +96,20 @@ function CanBeTransparentEncryptedFile(FileName: string): Boolean;
 function TransparentDecryptFileEx(FileName: string; Password: string;
                                   Progress: TFileProgress = nil): Integer;
 
+procedure SetEncryptionErrorHandler(ErrorHander: TEncryptionErrorHandler);
+
 function EncryptionOptions: TEncryptionOptions;
 
 implementation
 
 var
   FEncryptionOptions: TEncryptionOptions = nil;
+  FErrorHander: TEncryptionErrorHandler = nil;
+
+procedure SetEncryptionErrorHandler(ErrorHander: TEncryptionErrorHandler);
+begin
+  FErrorHander := ErrorHander;
+end;
 
 function EncryptionOptions: TEncryptionOptions;
 begin
@@ -884,6 +894,8 @@ begin
   begin
     D := Pointer(MemoryCopied + NativeInt(Addr(Pointer(Block))));
     FillChar(D^, MemoryToCopy, #0);
+    if Assigned(FErrorHander) then
+      FErrorHander('ReadBlock, LIMIT');
   end;
 end;
 

@@ -76,6 +76,7 @@ type
     procedure UnRegisterMainForm(Value: TForm);
     procedure ProcessCommandLine(CommandLine: string);
     function ProcessPasswordRequest(S: string): Boolean;
+    function ProcessEncryptionErrorMessage(S: string): Boolean;
   protected
     function GetFormID: string; override;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
@@ -270,6 +271,23 @@ begin
     PDevice := PDManager.GetDeviceByID(S);
     if PDevice <> nil then
       ImportForm.FromDevice(PDevice.Name);
+  end;
+end;
+
+function TFormManager.ProcessEncryptionErrorMessage(S: string): Boolean;
+const
+  ErrorRequestID = '::ENCRYPT_ERROR:';
+var
+  P: Integer;
+  ErrorMessage: string;
+begin
+  Result := False;
+  if StartsText(ErrorRequestID, S) then
+  begin
+    Delete(S, 1, Length(ErrorRequestID));
+    ErrorMessage := S;
+
+    //TODO: MessageBox(0, PChar(ErrorMessage), PChar(TA('Error')), 0);
   end;
 end;
 
@@ -688,6 +706,9 @@ begin
     SetString(S, PWideChar(Data), Msg.CopyDataStruct.CbData div SizeOf(WideChar));
 
     if ProcessPasswordRequest(S) then
+      Exit;
+
+    if ProcessEncryptionErrorMessage(S) then
       Exit;
 
     ProcessCommandLine(S);
