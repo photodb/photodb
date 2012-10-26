@@ -165,6 +165,7 @@ uses
   uThemesUtils,
   uPhotoShelf,
   uThreadTask,
+  uInterfaces,
   uInternetUtils,
 
   VirtualTrees,
@@ -190,7 +191,7 @@ type
   TValueListEditor = class(TEXIFDisplayControl);
 
 type
-  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal)
+  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm)
     SizeImageList: TImageList;
     PmItemPopup: TPopupActionBar;
     SlideShow1: TMenuItem;
@@ -1069,6 +1070,8 @@ type
     procedure EndUpdate(Invalidate: Boolean);
     procedure DoDefaultSort(GUID: TGUID);
     function GetAllItems: TExplorerFileInfos;
+
+    procedure HandleEncryptionError(FileName: string; ErrorMessage: string);
 
     procedure GetCurrentImage(W, H: Integer; out Image: TGraphic); override;
     function GetVisibleItems: TStrings;
@@ -7085,6 +7088,7 @@ procedure TExplorerForm.ShowHelp(Text, Link: string);
 begin
   WlLearnMoreLink.Text := Text;
   WlLearnMoreLink.HelpKeyword := Link;
+  WlLearnMoreLink.RefreshBuffer(True);
 
   PnInfoResize(Self);
   PnInfo.Show;
@@ -7512,6 +7516,11 @@ begin
     ExplorerPath(
       Settings.ReadString('Explorer', 'Path', GetMyPicturesPath),
       Settings.ReadInteger('Explorer', 'PathType', EXPLORER_ITEM_FOLDER)), False);
+end;
+
+procedure TExplorerForm.HandleEncryptionError(FileName, ErrorMessage: string);
+begin
+  ShowHelp(L('File processing could be failed. Please try internal video player or current programm isn''t suported!' + ' ' + ErrorMessage), '');
 end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);
@@ -9750,6 +9759,12 @@ end;
 
 procedure TExplorerForm.WlLearnMoreLinkClick(Sender: TObject);
 begin
+  if WlLearnMoreLink.HelpKeyword = '' then
+  begin
+    SbCloseHelpClick(Sender);
+    Exit;
+  end;
+
   ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + WlLearnMoreLink.HelpKeyword), nil, nil, SW_NORMAL);
 end;
 

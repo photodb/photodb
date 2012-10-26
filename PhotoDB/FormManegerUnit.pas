@@ -32,6 +32,7 @@ uses
   uDBForm,
   uFastLoad,
   uMemory,
+  uInterfaces,
   uMultiCPUThreadManager,
   uShellIntegration,
   uRuntime,
@@ -77,6 +78,8 @@ type
     procedure ProcessCommandLine(CommandLine: string);
     function ProcessPasswordRequest(S: string): Boolean;
     function ProcessEncryptionErrorMessage(S: string): Boolean;
+    function GetCount: Integer;
+    function GetFormByIndex(Index: Integer): TForm;
   protected
     function GetFormID: string; override;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
@@ -92,6 +95,8 @@ type
     procedure CloseApp(Sender: TObject);
     procedure Load;
     property TimeLimitMessage: string read GetTimeLimitMessage;
+    property Count: Integer read GetCount;
+    property Forms[Index: Integer]: TForm read GetFormByIndex; default;
   end;
 
 var
@@ -278,16 +283,28 @@ function TFormManager.ProcessEncryptionErrorMessage(S: string): Boolean;
 const
   ErrorRequestID = '::ENCRYPT_ERROR:';
 var
-  P: Integer;
+  I: Integer;
+  ErrorHandler: IEncryptErrorHandlerForm;
   ErrorMessage: string;
 begin
   Result := False;
   if StartsText(ErrorRequestID, S) then
   begin
+    Result := True;
+
     Delete(S, 1, Length(ErrorRequestID));
     ErrorMessage := S;
 
-    //TODO: MessageBox(0, PChar(ErrorMessage), PChar(TA('Error')), 0);
+    for I := 0 to FormManager.Count - 1 do
+    begin
+      if (FormManager[I] is TDBForm) and Supports(FormManager[I], IEncryptErrorHandlerForm) then
+      begin
+        TDBForm(FormManager[I]).QueryInterface(IEncryptErrorHandlerForm, ErrorHandler);
+        if ErrorHandler <> nil then
+          ErrorHandler.HandleEncryptionError('', ErrorMessage);
+
+      end;
+    end;
   end;
 end;
 
@@ -455,6 +472,16 @@ begin
     TStyleManager.Engine.RegisterStyleHook(TEasyListview, TScrollingStyleHook);
   FSetLanguageMessage := RegisterWindowMessage('UPDATE_APP_LANGUAGE');
   DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
+end;
+
+function TFormManager.GetCount: Integer;
+begin
+  Result := FMainForms.Count;
+end;
+
+function TFormManager.GetFormByIndex(Index: Integer): TForm;
+begin
+  Result := FMainForms[Index];
 end;
 
 function TFormManager.GetFormID: string;

@@ -259,6 +259,7 @@ type
     procedure BeginTranslate;
     procedure EndTranslate;
     procedure FixFormPosition;
+    function QueryInterface(const IID: TGUID; out Obj): HResult;
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
     property Theme: TDatabaseTheme read GetTheme;
@@ -508,6 +509,11 @@ end;
 function TDBForm.LF(StringToTranslate: string; Args: array of const): string;
 begin
   Result := FormatEx(L(StringToTranslate), args);
+end;
+
+function TDBForm.QueryInterface(const IID: TGUID; out Obj): HResult;
+begin
+  Result := inherited QueryInterface(IID, Obj);
 end;
 
 procedure TDBForm.WndProc(var Message: TMessage);

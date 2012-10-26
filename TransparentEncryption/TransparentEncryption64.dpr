@@ -35,7 +35,8 @@ uses
   uTransparentEncryption in '..\PhotoDB\Units\uTransparentEncryption.pas',
   uTransparentEncryptor in 'uTransparentEncryptor.pas',
   uWinAPIRedirections in 'uWinAPIRedirections.pas',
-  uLockedFileNotifications in '..\PhotoDB\Units\uLockedFileNotifications.pas';
+  uLockedFileNotifications in '..\PhotoDB\Units\uLockedFileNotifications.pas',
+  uProgramCommunication in 'uProgramCommunication.pas';
 
 {$R *.res}
 

@@ -220,7 +220,7 @@ end;
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped);
 var
   MS: TEncryptedFile;
-  //Size: NativeInt;
+  Size: NativeInt;
 begin
   if SyncObj = nil then
     Exit;
@@ -232,16 +232,15 @@ begin
 
     MS := FData[hFile];
 
-    //TODO: fix file size to avoid this
-    {Size := MS.Size;
-    if dwCurrentFilePosition + lpNumberOfBytesRead > MS.Size then
+    Size := MS.Size;
+    if dwCurrentFilePosition + lpNumberOfBytesRead > Size then
     begin
-      if MS.Size - dwCurrentFilePosition > 0 then
+      if Size > dwCurrentFilePosition then
         lpNumberOfBytesRead := MS.Size - dwCurrentFilePosition
       else
         lpNumberOfBytesRead := 0;
       FileSeek(hFile, MS.HeaderSize, FILE_END);
-    end;}
+    end;
 
     MS.ReadBlock(Buffer, dwCurrentFilePosition, lpNumberOfBytesRead);
   finally

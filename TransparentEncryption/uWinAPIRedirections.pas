@@ -196,7 +196,6 @@ var
   CreateProcessWNextHook     : function (appName, cmdLine: pwidechar; processAttr, threadAttr: PSecurityAttributes; inheritHandles: bool; creationFlags: dword; environment: pointer; currentDir: pwidechar; const startupInfo: TStartupInfo; var processInfo: TProcessInformation) : bool; stdcall;
 
   SetFilePointerNextHook     : TSetFilePointerNextHook;
-
   SetFilePointerExNextHook   : TSetFilePointerExNextHook;
 
   OpenFileNextHook           : function (const lpFileName: LPCSTR; var lpReOpenBuff: TOFStruct; uStyle: UINT): HFILE; stdcall;
@@ -216,7 +215,6 @@ var
   LoadLibraryExWNextHook     : function (lpLibFileName: PWideChar; hFile: THandle; dwFlags: DWORD): HMODULE; stdcall;
 
   GetProcAddressNextHook     : function (hModule: HMODULE; lpProcName: LPCSTR): FARPROC; stdcall;
-
 
   ReadFileNextHook           : function (hFile: THandle; var Buffer; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped): BOOL; stdcall;
   ReadFileExNextHook         : function (hFile: THandle; lpBuffer: Pointer; nNumberOfBytesToRead: DWORD; lpOverlapped: POverlapped; lpCompletionRoutine: TPROverlappedCompletionRoutine): BOOL; stdcall;
@@ -276,6 +274,7 @@ var
                                 FileInformationLength: ULONG;
                                 FileInformationClass: FILE_INFORMATION_CLASS
                                 ): NTSTATUS; stdcall;
+
 
 function GetFileSizeEx(hFile: THandle; var lpFileSize: Int64): BOOL; stdcall; external 'kernel32.dll';
 
@@ -619,7 +618,16 @@ begin
       if not StartsStr('\\.', string(AnsiString(lpFileName))) and not IsSystemPipe(string(AnsiString(lpFileName))) then
       begin
         if ValidEncryptFileExHandle(FileHandle^) then
+        begin
           InitEncryptedFile(string(AnsiString(lpFileName)), FileHandle^);
+          if DesiredAccess and GENERIC_WRITE > 0 then
+          begin
+            CloseHandle(FileHandle^);
+            Result := ERROR_ACCESS_DENIED;
+            SetLastError(ERROR_ACCESS_DENIED);
+            Exit;
+          end;
+        end;
       end;
     end;
 
@@ -817,7 +825,6 @@ begin
 
   hookCode(Module, Recursive,   @SetFilePointerEx,   @SetFilePointerExHookProc, @SetFilePointerExNextHook);
   hookCode(Module, Recursive,   @SetFilePointer,     @SetFilePointerHookProc, @SetFilePointerNextHook);
-
   hookCode(Module, Recursive,   @_lread,             @_lreadHookProc, @_lreadNextHook);
   hookCode(Module, Recursive,   @ReadFile,           @ReadFileHookProc, @ReadFileNextHook);
   hookCode(Module, Recursive,   @ReadFileEx,         @ReadFileExHookProc, @ReadFileExNextHook);
@@ -1038,7 +1045,6 @@ initialization
   CreateProcessWNextHook     := nil;
 
   SetFilePointerNextHook     := nil;
-
   SetFilePointerExNextHook   := nil;
 
   OpenFileNextHook           := nil;
@@ -1054,7 +1060,6 @@ initialization
   LoadLibraryExWNextHook     := nil;
 
   GetProcAddressNextHook     := nil;
-
 
   ReadFileNextHook           := nil;
   ReadFileExNextHook         := nil;

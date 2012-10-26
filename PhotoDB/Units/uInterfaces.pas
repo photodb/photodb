@@ -22,6 +22,11 @@ type
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
   end;
 
+  IEncryptErrorHandlerForm = interface(IInterface)
+  ['{B734F360-B4DE-4F29-8658-B51D32BB44AE}']
+    procedure HandleEncryptionError(FileName: string; ErrorMessage: string);
+  end;
+
 implementation
 
 end.

@@ -729,11 +729,11 @@ var
   SData, DData: Pointer;
   BlockStart, CurrentPosition: Int64;
   BlockSize: Integer;
-  lpNumberOfBytesTransferred,
+  {lpNumberOfBytesTransferred, }
   lpNumberOfBytesRead: DWORD;
-  MemorySize, FileReadPosition: Int64;
+  MemorySize{, FileReadPosition}: Int64;
   lpOverlapped: POverlapped;
-  Event, FFilehandle: THandle;
+  {Event, }FFilehandle: THandle;
 begin
   Result := nil;
   FFilehandle := 0;
@@ -781,7 +781,6 @@ begin
     lpOverlapped := nil;
     if Assigned(FlpOverlapped) then
     begin
-
       FFilehandle := CreateFile(PChar(FFileName),
           GENERIC_READ,
           FILE_SHARE_READ OR FILE_SHARE_WRITE,
@@ -929,11 +928,11 @@ begin
 end;
 
 procedure TEncryptionOptions.Refresh;
+{$IFDEF PHOTODB}
 var
   Associations: TStrings;
-  {$IFDEF PHOTODB}
   I: Integer;
-  {$ENDIF}
+{$ENDIF}
 begin
   FSync.Enter;
   try
