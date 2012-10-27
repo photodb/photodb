@@ -3,22 +3,26 @@ unit ShellContextMenu;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Messages,
-  StdCtrls,
-  ComCtrls,
-  ShlObj,
-  ActiveX,
-  ShellCtrls,
-  Classes,
-  Controls,
-  Math,
-  Forms,
-  uMemory,
+  System.Types,
+  System.Math,
+  System.SysUtils,
+  System.Classes,
+  System.Win.ComObj,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShlObj,
+  Winapi.ActiveX,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Shell.ShellCtrls,
+
+  DragDropPIDL,
+
   Dmitry.Utils.Files,
-  ComObj,
-  DragDropPIDL;
+
+  uMemory;
 
 procedure GetProperties(Files: TStrings; MP : TPoint; WC : TWinControl);
 procedure GetPropertiesWindows(Files: TStrings; WC: TWinControl);
@@ -166,7 +170,7 @@ begin
   WndClass.lpszClassName := PWideChar(IcmCallbackWnd);
   WndClass.lpfnWndProc := @MenuCallback;
   WndClass.hInstance := HInstance;
-  Windows.RegisterClass(WndClass);
+  Winapi.Windows.RegisterClass(WndClass);
   Result := CreateWindow(IcmCallbackWnd, IcmCallbackWnd, WS_POPUPWINDOW, 0,
     0, 0, 0, 0, 0, HInstance, Pointer(ContextMenu));
 end;
@@ -309,7 +313,7 @@ begin
   CIE := CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
     ICMenu2 := nil;
-    Windows.ClientToScreen(WC.Handle, MP);
+    Winapi.Windows.ClientToScreen(WC.Handle, MP);
     PMenu := CreatePopupMenu;
 
     if Succeeded(ICMenu.QueryContextMenu(PMenu, 0, 1, $7FFF, CMF_NORMAL)) then

@@ -1,9 +1,11 @@
 d:
 cd "D:\Dmitry\Delphi exe\Photo Database"
 
+SET PLAYER=VLC_PLAYER
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\10.0
 SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
+SET DCC64=%DELPHI%\BIN\DCC64.EXE
 SET BRCC32=%DELPHI%\BIN\BRCC32.EXE
 SET DM=D:\dmitry\Dmitry
 SET NS=-NSSystem;System.Win;WinAPI;Vcl;Vcl.Imaging;Data;Xml;Data.Win;Vcl.Shell;Vcl.Samples;Soap
@@ -50,10 +52,18 @@ cd Installer
 "%DCC32%" %NS% InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
+
+cd TransparentEncryption
+"%DCC32%" %NS% TransparentEncryption -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC64%" %NS% TransparentEncryption64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% PlayEncryptedMedia -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC64%" %NS% PlayEncryptedMedia64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+cd ..
+
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" %NS% photodb -D"PHOTODB,LICENCE" -Ebin -V -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE" -Ebin -V -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM;"External\Controls\virtual-treeview\Common" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..

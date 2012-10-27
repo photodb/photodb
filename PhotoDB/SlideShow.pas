@@ -3103,11 +3103,15 @@ begin
     BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_270, True);
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
+
+    Exchange(RealImageWidth, RealImageHeight);
+
     Rotate270A(FFullImage);
     FFaces.RotateLeft;
     if ZoomerOn then
       FitToWindowClick(Sender);
 
+    ReAllignScrolls(True);
     RecreateDrawImage(Self);
   finally
     F(Info);
@@ -3126,6 +3130,8 @@ begin
     BatchProcessingForm.RotateImages(Self, Info, DB_IMAGE_ROTATE_90, True);
 
     LockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
+
+    Exchange(RealImageWidth, RealImageHeight);
 
     Rotate90A(FFullImage);
     FFaces.RotateRight;

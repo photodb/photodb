@@ -82,8 +82,13 @@ type
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure FailedToLoadImage;
+
     procedure ZoomOut;
     procedure ZoomIn;
+
+    procedure RotateCW;
+    procedure RotateCCW;
+
     function GetWidth: Integer;
     function GetHeight: Integer;
     function GetTop: Integer;
@@ -366,6 +371,16 @@ begin
   FImageControl.Height := Height;
   
   Resize;
+end;
+
+procedure TImageViewer.RotateCCW;
+begin
+  FImageControl.RotateCCW;
+end;
+
+procedure TImageViewer.RotateCW;
+begin
+  FImageControl.RotateCW;
 end;
 
 procedure TImageViewer.SelectPerson(PersonID: Integer);

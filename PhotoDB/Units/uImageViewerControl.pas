@@ -77,6 +77,7 @@ type
     FItem: TDBPopupMenuInfoRecord;
     FOnImageRequest: TRequireImageHandler;
     FImageFrameTimer: TTimer;
+    FLockEventRotateFileList: TStrings;
 
     FWlFaceCount: TWebLink;
     FLsDetectingFaces: TLoadingSign;
@@ -167,6 +168,8 @@ type
     function GetFaceMenu: TPopupActionBar;
     function GetFacesMenu: TPopupActionBar;
 
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+
     procedure OnScrollChanged(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: Integer);
     procedure FImageFrameTimerOnTimer(Sender: TObject);
     procedure OnApplicationMessage(var Msg: TMsg; var Handled: Boolean);
@@ -226,8 +229,13 @@ type
     procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
     procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
     procedure FailedToLoadImage;
+
     procedure ZoomOut;
     procedure ZoomIn;
+
+    procedure RotateCW;
+    procedure RotateCCW;
+
     procedure SetText(Text: string);
     procedure ReloadCurrent;
     procedure UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
@@ -396,6 +404,8 @@ begin
   FIsHightlitingPerson := False;
   FExplorer := nil;
 
+  FLockEventRotateFileList := TStringList.Create;
+
   FDrawFace := nil;
   FDrawingFace := False;
   FFaces := TFaceDetectionResult.Create;
@@ -404,6 +414,8 @@ begin
   FDisplayAllFaces := False;
 
   FItem := TDBPopupMenuInfoRecord.Create;
+
+  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TImageViewerControl.DblClick;
@@ -415,6 +427,7 @@ end;
 
 destructor TImageViewerControl.Destroy;
 begin
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   F(FAnimatedImage);
   F(FAnimatedBuffer);
   F(FDrawImage);
@@ -424,6 +437,7 @@ begin
   F(FItem);
   F(FDrawFace);
   F(FFaces);
+  F(FLockEventRotateFileList);
   inherited;
 end;
 
@@ -1921,6 +1935,57 @@ begin
   CheckFaceIndicatorVisibility;
 end;
 
+procedure TImageViewerControl.RotateCCW;
+var
+  Info : TDBPopupMenuInfo;
+begin
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Info.Add(Item.Copy);
+    Info[0].Selected := True;
+
+    BatchProcessingForm.RotateImages(TDBForm(Self.OwnerForm), Info, DB_IMAGE_ROTATE_270, True);
+
+    FLockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
+    Exchange(FRealImageWidth, FRealImageHeight);
+    Rotate270A(FFullImage);
+    FFaces.RotateLeft;
+    //if FZoomerOn then
+    //  FitToWindowClick(Sender);
+
+    ReAlignScrolls(True);
+    RecreateImage;
+  finally
+    F(Info);
+  end;
+end;
+
+procedure TImageViewerControl.RotateCW;
+var
+  Info: TDBPopupMenuInfo;
+begin
+  Info := TDBPopupMenuInfo.Create;
+  try
+    Info.Add(Item.Copy);
+    Info[0].Selected := True;
+
+    BatchProcessingForm.RotateImages(TDBForm(Self.OwnerForm), Info, DB_IMAGE_ROTATE_90, True);
+
+    FLockEventRotateFileList.Add(AnsiLowerCase(Item.FileName));
+
+    Rotate90A(FFullImage);
+    Exchange(FRealImageWidth, FRealImageHeight);
+    FFaces.RotateRight;
+    //if FZoomerOn then
+    //  FitToWindowClick(Sender);
+
+    ReAlignScrolls(True);
+    RecreateImage;
+  finally
+    F(Info);
+  end;
+end;
+
 procedure TImageViewerControl.SelectCascade(Sender: TObject);
 var
   FileName: string;
@@ -2063,6 +2128,30 @@ begin
     Cursor := crCross
   else
     Cursor := crDefault;
+end;
+
+procedure TImageViewerControl.ChangedDBDataByID(Sender: TObject; ID: Integer;
+  Params: TEventFields; Value: TEventValues);
+var
+  I: Integer;
+begin
+  if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
+  begin
+    for I := 0 to FLockEventRotateFileList.Count - 1 do
+      if AnsiLowerCase(Value.Name) = FLockEventRotateFileList[I] then
+      begin
+        FLockEventRotateFileList.Delete(I);
+        Exit;
+      end;
+  end;
+
+  if Id = Item.ID then
+  begin
+    if (EventID_Param_Rotate in Params) then
+      Item.Rotation := Value.Rotate;
+    if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
+      FOnImageRequest(Sender, Item, Screen.DesktopWidth, Screen.DesktopHeight);
+  end;
 end;
 
 procedure TImageViewerControl.CheckFaceIndicatorVisibility;

@@ -2265,20 +2265,18 @@ object ExplorerForm: TExplorerForm
               ImageIndex = 3
               Style = tbsSeparator
             end
-            object TbPreviewZoomOut: TToolButton
+            object TbPreviewRotateCCW: TToolButton
               Left = 74
               Top = 0
               ImageIndex = 0
-              Visible = False
-              OnClick = TbPreviewZoomOutClick
+              OnClick = TbPreviewRotateCCWClick
             end
-            object TbPreviewZoomIn: TToolButton
+            object TbPreviewRotateCW: TToolButton
               Left = 107
               Top = 0
-              Caption = 'TbPreviewZoomIn'
+              Caption = 'TbPreviewRotateCW'
               ImageIndex = 1
-              Visible = False
-              OnClick = TbPreviewZoomInClick
+              OnClick = TbPreviewRotateCWClick
             end
             object TbPreviewZoomSeparator: TToolButton
               Left = 140
@@ -2287,7 +2285,6 @@ object ExplorerForm: TExplorerForm
               Caption = 'TbPreviewZoomSeparator'
               ImageIndex = 2
               Style = tbsSeparator
-              Visible = False
             end
             object TbPreviewRating: TToolButton
               Left = 148
@@ -2648,7 +2645,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.908670937500000000
+      Date = 41177.837518796300000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

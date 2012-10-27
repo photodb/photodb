@@ -2,6 +2,8 @@ unit uTransparentEncryption;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   System.Types,
   System.SysUtils,
@@ -371,7 +373,7 @@ end;
 function TransparentDecryptFileEx(FileName: string; Password: string;
                                   Progress: TFileProgress = nil): Integer;
 var
-  IsEncrypted: Boolean;
+  IsDecrypted: Boolean;
   SFS, DFS: TFileStream;
   FA: Integer;
   EncryptHeader: TEncryptedFileHeader;
@@ -381,66 +383,67 @@ var
 begin
   StrongCryptInit;
 
-  try
-    TryOpenFSForRead(SFS, FileName, DelayReadFileOperation);
-    if SFS = nil then
-      Exit(CRYPT_RESULT_ERROR_READING_FILE);
-
-    try
-      SFS.Read(EncryptHeader, SizeOf(EncryptHeader));
-      if EncryptHeader.ID <> PhotoDBFileHeaderID then
-        Exit(CRYPT_RESULT_ALREADY_DECRYPTED);
-      if EncryptHeader.Version <> ENCRYPT_FILE_VERSION_TRANSPARENT then
-        Exit(CRYPT_RESULT_UNSUPORTED_VERSION);
-
-      SFS.Read(EncryptHeaderExV1, SizeOf(EncryptHeaderExV1));
-
-      ACipher := CipherByIdentity(EncryptHeaderExV1.Algorith);
-      if ACipher = nil then
-        Exit(CRYPT_RESULT_UNSUPORTED_VERSION);
-
-      TmpFileName := FileName + '.tmp';
-      TmpErasedFile := FileName + '.erased';
-
-      try
-        DFS := TFileStream.Create(TmpFileName, FmOpenWrite or FmCreate);
-        try
-          IsEncrypted := DecryptStreamEx(SFS, DFS, Password, SeedToBinary(EncryptHeaderExV1.Seed),
-                          EncryptHeaderExV1.FileSize, ACipher, EncryptHeaderExV1.BlockSize32k,
-            procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean)
-            begin
-              if Assigned(Progress) then
-                Progress(FileName, EncryptHeaderExV1.FileSize, BytesDone, BreakOperation);
-            end
-          );
-        finally
-          F(DFS);
-        end;
-      except
-        Result := CRYPT_RESULT_ERROR_WRITING_FILE;
-        Exit;
-      end;
-
-    finally
-      F(SFS);
-    end;
-  except
-    Result := CRYPT_RESULT_ERROR_READING_FILE;
-    Exit;
-  end;
-
-  if IsEncrypted then
-  begin
-    DeleteFile(PChar(TmpFileName));
-    Exit(CRYPT_RESULT_FAILED_GENERAL_ERROR);
-  end;
-
-  FA := FileGetAttr(FileName);
-  ResetFileAttributes(FileName, FA);
+  TmpFileName := FileName + '.tmp';
+  TmpErasedFile := FileName + '.erased';
 
   TLockFiles.Instance.AddLockedFile(FileName, 10000);
+  TLockFiles.Instance.AddLockedFile(TmpFileName, 10000);
   TLockFiles.Instance.AddLockedFile(TmpErasedFile, 10000);
   try
+    try
+      TryOpenFSForRead(SFS, FileName, DelayReadFileOperation);
+      if SFS = nil then
+        Exit(CRYPT_RESULT_ERROR_READING_FILE);
+
+      try
+        SFS.Read(EncryptHeader, SizeOf(EncryptHeader));
+        if EncryptHeader.ID <> PhotoDBFileHeaderID then
+          Exit(CRYPT_RESULT_ALREADY_DECRYPTED);
+        if EncryptHeader.Version <> ENCRYPT_FILE_VERSION_TRANSPARENT then
+          Exit(CRYPT_RESULT_UNSUPORTED_VERSION);
+
+        SFS.Read(EncryptHeaderExV1, SizeOf(EncryptHeaderExV1));
+
+        ACipher := CipherByIdentity(EncryptHeaderExV1.Algorith);
+        if ACipher = nil then
+          Exit(CRYPT_RESULT_UNSUPORTED_VERSION);
+
+        try
+          DFS := TFileStream.Create(TmpFileName, FmOpenWrite or FmCreate);
+          try
+            IsDecrypted := DecryptStreamEx(SFS, DFS, Password, SeedToBinary(EncryptHeaderExV1.Seed),
+                            EncryptHeaderExV1.FileSize, ACipher, EncryptHeaderExV1.BlockSize32k,
+              procedure(BytesTotal, BytesDone: Int64; var BreakOperation: Boolean)
+              begin
+                if Assigned(Progress) then
+                  Progress(FileName, EncryptHeaderExV1.FileSize, BytesDone, BreakOperation);
+              end
+            );
+          finally
+            F(DFS);
+          end;
+        except
+          Result := CRYPT_RESULT_ERROR_WRITING_FILE;
+          Exit;
+        end;
+
+      finally
+        F(SFS);
+      end;
+    except
+      Result := CRYPT_RESULT_ERROR_READING_FILE;
+      Exit;
+    end;
+
+    if not IsDecrypted then
+    begin
+      DeleteFile(PChar(TmpFileName));
+      Exit(CRYPT_RESULT_FAILED_GENERAL_ERROR);
+    end;
+
+    FA := FileGetAttr(FileName);
+    ResetFileAttributes(FileName, FA);
+
     if RenameFile(FileName, TmpErasedFile) then
       if RenameFile(TmpFileName, FileName) then
       begin
@@ -449,6 +452,7 @@ begin
       end;
   finally
     TLockFiles.Instance.RemoveLockedFile(FileName);
+    TLockFiles.Instance.RemoveLockedFile(TmpFileName);
     TLockFiles.Instance.RemoveLockedFile(TmpErasedFile);
   end;
 

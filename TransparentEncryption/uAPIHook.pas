@@ -92,7 +92,7 @@ begin
 
   InitData.lib_name := VirtualAllocEx(hProcess , nil, Length(dllName) + 5  , MEM_COMMIT , PAGE_READWRITE) ;
   If (InitData.lib_name <> nil) then
-    WriteProcessMemory(hProcess , InitData.lib_name , PAnsiChar(dllName), length(dllName) , BytesWritten );
+    WriteProcessMemory(hProcess , InitData.lib_name , PAnsiChar(AnsiString(dllName)), length(dllName) , BytesWritten );
 
   InitDataAddr := VirtualAllocEx(hProcess , nil, sizeof(InitData)  , MEM_COMMIT , PAGE_READWRITE) ;
   If (InitDataAddr <> nil) then

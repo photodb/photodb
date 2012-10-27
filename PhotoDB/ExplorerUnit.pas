@@ -452,8 +452,8 @@ type
     TbPreviewPrevious: TToolButton;
     TbPreviewNext: TToolButton;
     TbPreviewNavigationSeparator: TToolButton;
-    TbPreviewZoomIn: TToolButton;
-    TbPreviewZoomOut: TToolButton;
+    TbPreviewRotateCW: TToolButton;
+    TbPreviewRotateCCW: TToolButton;
     TbPreviewRatingSeparator: TToolButton;
     TbPreviewRating: TToolButton;
     TbPreviewZoomSeparator: TToolButton;
@@ -771,8 +771,8 @@ type
     procedure PcRightPreviewChange(Sender: TObject);
     procedure TsMediaPreviewResize(Sender: TObject);
     procedure TbPreviewPreviousClick(Sender: TObject);
-    procedure TbPreviewZoomInClick(Sender: TObject);
-    procedure TbPreviewZoomOutClick(Sender: TObject);
+    procedure TbPreviewRotateCWClick(Sender: TObject);
+    procedure TbPreviewRotateCCWClick(Sender: TObject);
     procedure TbPreviewClick(Sender: TObject);
     procedure TbPreviewNextClick(Sender: TObject);
     procedure WedSearchEnter(Sender: TObject);
@@ -3450,16 +3450,16 @@ begin
   end;
 end;
 
-procedure TExplorerForm.TbPreviewZoomInClick(Sender: TObject);
+procedure TExplorerForm.TbPreviewRotateCWClick(Sender: TObject);
 begin
   if FImageViewer <> nil then
-    FImageViewer.ZoomIn;
+    FImageViewer.RotateCW;
 end;
 
-procedure TExplorerForm.TbPreviewZoomOutClick(Sender: TObject);
+procedure TExplorerForm.TbPreviewRotateCCWClick(Sender: TObject);
 begin
   if FImageViewer <> nil then
-    FImageViewer.ZoomOut;
+    FImageViewer.RotateCCW;
 end;
 
 procedure TExplorerForm.TsInfoResize(Sender: TObject);
@@ -12794,8 +12794,8 @@ begin
 
   TbPreviewPrevious.ImageIndex := DB_IC_PREVIOUS;
   TbPreviewNext.ImageIndex := DB_IC_NEXT;
-  TbPreviewZoomOut.ImageIndex := DB_IC_ZOOMOUT;
-  TbPreviewZoomIn.ImageIndex := DB_IC_ZOOMIN;
+  TbPreviewRotateCW.ImageIndex := DB_IC_ROTETED_90;
+  TbPreviewRotateCCW.ImageIndex := DB_IC_ROTETED_270;
   TbPreviewOpen.ImageIndex := DB_IC_SLIDE_SHOW;
 
   Shell1.ImageIndex := DB_IC_SHELL;

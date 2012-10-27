@@ -997,9 +997,14 @@ begin
     end;
   end else
   begin
+    PbImage.Canvas.Pen.Color := Theme.WindowColor;
+    PbImage.Canvas.Brush.Color := Theme.WindowColor;
+    PbImage.Canvas.Rectangle(PbImage.ClientRect);
+
     Text := L('Preview isn''t available. Image can be corrupted or encrypted.');
     H := PbImage.Canvas.TextHeight(Text);
     R := Rect(0, PbImage.Height div 2 - H div 2, PbImage.Width, PbImage.Height);
+    PbImage.Canvas.Font.Color := Theme.WindowTextColor;
     PbImage.Canvas.TextRect(R, Text, [tfCenter, tfWordBreak]);
   end;
 end;

@@ -12,12 +12,14 @@ uses
   uTransparentEncryption,
   uTransparentEncryptor;
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 const
   NTDLLFile = 'ntdll.dll';
   STATUS_NO_SUCH_FILE = $C000000F;
 
 type
-  NTStatus = Integer;
+  NTStatus = CARDINAL;
 
 PWSTR          = ^WCHAR;
 
@@ -586,7 +588,7 @@ end;
 { .: NT_SUCCESS :. }
 function NT_SUCCESS(const Status: NTSTATUS): Boolean;
 begin
-  Result := (Status >= 0);
+  Result := (Integer(Status) >= 0);
 end;
 
 function LdrLoadDllHookProc(szcwPath: PWideChar;
@@ -657,13 +659,12 @@ var
   DirectoryName: PWideChar;
   Offset: ULONG;
 
-  LastFileDirectoryInfo, FileDirectoryInfo: PFILE_DIRECTORY_INFORMATION;
-  LastFileFullDirectoryInfo, FileFullDirectoryInfo: PFILE_FULL_DIRECTORY_INFORMATION;
-  LastFileBothDirectoryInfo, FileBothDirectoryInfo: PFILE_BOTH_DIRECTORY_INFORMATION;
+  FileDirectoryInfo: PFILE_DIRECTORY_INFORMATION;
+  FileFullDirectoryInfo: PFILE_FULL_DIRECTORY_INFORMATION;
+  FileBothDirectoryInfo: PFILE_BOTH_DIRECTORY_INFORMATION;
 begin
   if not (NT_SUCCESS(STATUS)) then
     Exit;
-
 
   if not (FileInformationClass in [FileDirectoryInformation,
                                    FileFullDirectoryInformation,
@@ -677,24 +678,15 @@ begin
   GetFinalPathNameByHandle(FileHandle, DirectoryName, 1024, VOLUME_NAME_DOS or VOLUME_NAME_NONE);
   FreeMem(DirectoryName);
 
-  FileDirectoryInfo := nil;
-  LastFileDirectoryInfo := nil;
-
   FileFullDirectoryInfo := nil;
-  LastFileFullDirectoryInfo := nil;
-
-  FileBothDirectoryInfo := nil;
-  LastFileBothDirectoryInfo := nil;
   Offset := 0;
 
   case (FileInformationClass) of
     FileDirectoryInformation:
     begin
-      FileDirectoryInfo := nil;
       repeat
 
         FileDirectoryInfo := Pointer((NativeUInt(FileInformation) + Offset));
-        LastFileDirectoryInfo := FileDirectoryInfo;
 
         FullFileName := string(DirectoryName) + string(FileDirectoryInfo.FileName);
         if ValidEnryptFileEx(FullFileName) then
@@ -707,10 +699,8 @@ begin
 
     FileFullDirectoryInformation:
       begin
-        FileFullDirectoryInfo := nil;
         repeat
 
-          LastFileFullDirectoryInfo := FileFullDirectoryInfo;
           FileFullDirectoryInfo := Pointer((NativeUInt(FileInformation) + Offset));
 
           FullFileName := string(DirectoryName) + string(FileFullDirectoryInfo.FileName);
@@ -725,10 +715,8 @@ begin
 
     FileBothDirectoryInformation:
       begin
-        FileBothDirectoryInfo := nil;
         repeat
 
-          LastFileBothDirectoryInfo := FileBothDirectoryInfo;
           FileBothDirectoryInfo := Pointer((NativeUInt(FileInformation) + Offset));
 
           FullFileName := string(DirectoryName) + string(FileBothDirectoryInfo.FileName);
@@ -765,7 +753,6 @@ begin
       end;
   end;
 
-  Offset := 0;
 end;
 
 function NtQueryDirectoryFileHookProc(FileHandle: HANDLE; Event: HANDLE; ApcRoutine: PIO_APC_ROUTINE; ApcContext: PVOID;
@@ -974,7 +961,6 @@ begin
         begin
           CloseHandle(Result);
           Result := INVALID_HANDLE_VALUE;
-          Result := ERROR_ACCESS_DENIED;
           SetLastError(ERROR_ACCESS_DENIED);
           Exit;
         end;
@@ -1009,7 +995,6 @@ begin
         begin
           CloseHandle(Result);
           Result := INVALID_HANDLE_VALUE;
-          Result := ERROR_ACCESS_DENIED;
           SetLastError(ERROR_ACCESS_DENIED);
           Exit;
         end;

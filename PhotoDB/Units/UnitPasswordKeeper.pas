@@ -3,6 +3,7 @@ unit UnitPasswordKeeper;
 interface
 
 uses
+  System.Types,
   Winapi.Windows,
   System.Classes,
   System.SyncObjs,
