@@ -5764,6 +5764,7 @@ var
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
       EncryptLink.Text := L('Encrypt');
       TbbEncrypt.Caption := L('Encrypt');
+      TbbEncrypt.Tag := ACTION_ENCRYPT_IMAGES;
       TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
       EncryptLink.Tag := ACTION_ENCRYPT_IMAGES;
     end else
@@ -5771,6 +5772,7 @@ var
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
       EncryptLink.Text := L('Decrypt');
       TbbEncrypt.Caption := L('Decrypt');
+      TbbEncrypt.Tag := ACTION_DECRYPT_IMAGES;
       TbbEncrypt.ImageIndex := DB_IC_DECRYPTIMAGE;
       EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
     end;

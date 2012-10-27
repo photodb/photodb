@@ -441,10 +441,23 @@ begin
 end;
 
 function GetFileSizeHookProc(hFile: THandle; lpFileSizeHigh: Pointer): DWORD; stdcall;
+var
+  FileSize: Int64;
 begin
   Result := GetFileSizeNextHook(hFile, lpFileSizeHigh);
   if IsEncryptedHandle(hFile) then
-    Result := Result - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
+  begin
+    Int64Rec(FileSize).Lo := Result;
+    Int64Rec(FileSize).Hi := 0;
+    if Assigned(lpFileSizeHigh) then
+      Int64Rec(FileSize).Hi := PCardinal(lpFileSizeHigh)^;
+
+    FileSize := FileSize - SizeOf(TEncryptedFileHeader) - SizeOf(TEncryptFileHeaderExV1);
+
+    Result := Int64Rec(FileSize).Lo;
+    if Assigned(lpFileSizeHigh) then
+      PCardinal(lpFileSizeHigh)^ := Int64Rec(FileSize).Hi;
+  end;
 end;
 
 function GetFileSizeExHookProc(hFile: THandle; var lpFileSize: Int64): BOOL; stdcall;
@@ -517,7 +530,7 @@ begin
 
   result := _lReadNextHook(hFile, lpBuffer, uBytes);
 
-  ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, Result, nil);
+  ReplaceBufferContent(hFile, lpBuffer, dwCurrentFilePosition, uBytes, Result, nil, nil);
 end;
 
 function _lcreatHookProc(const lpPathName: LPCSTR; iAttribute: Integer): HFILE; stdcall;
@@ -616,17 +629,18 @@ begin
     if IsHookStarted then
     begin
       if not StartsStr('\\.', string(AnsiString(lpFileName))) and not IsSystemPipe(string(AnsiString(lpFileName))) then
-      begin
-        if ValidEncryptFileExHandle(FileHandle^) then
+      begin                                      //TODO: use overlaped if use this hook
+        if ValidEncryptFileExHandle(FileHandle^, False) then
         begin
-          InitEncryptedFile(string(AnsiString(lpFileName)), FileHandle^);
           if DesiredAccess and GENERIC_WRITE > 0 then
           begin
             CloseHandle(FileHandle^);
+            FileHandle^ := INVALID_HANDLE_VALUE;
             Result := ERROR_ACCESS_DENIED;
             SetLastError(ERROR_ACCESS_DENIED);
             Exit;
           end;
+          InitEncryptedFile(string(AnsiString(lpFileName)), FileHandle^);
         end;
       end;
     end;
@@ -944,6 +958,9 @@ function CreateFileAHookProc(lpFileName: PAnsiChar; dwDesiredAccess, dwShareMode
 var
   LastError: DWORD;
 begin
+  if dwFlagsAndAttributes and FILE_FLAG_NO_BUFFERING = FILE_FLAG_NO_BUFFERING then
+    dwFlagsAndAttributes := dwFlagsAndAttributes xor FILE_FLAG_NO_BUFFERING; //remove flag, unsupported!
+
   Result := CreateFileANextHook(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
   LastError := GetLastError;
 
@@ -951,8 +968,19 @@ begin
   begin
     if not StartsStr('\\.', string(AnsiString(lpFileName))) and not IsSystemPipe(string(AnsiString(lpFileName))) then
     begin
-      if ValidEncryptFileExHandle(Result) then
+      if ValidEncryptFileExHandle(Result, dwFlagsAndAttributes and FILE_FLAG_OVERLAPPED > 0) then
+      begin
+        if dwDesiredAccess and GENERIC_WRITE > 0 then
+        begin
+          CloseHandle(Result);
+          Result := INVALID_HANDLE_VALUE;
+          Result := ERROR_ACCESS_DENIED;
+          SetLastError(ERROR_ACCESS_DENIED);
+          Exit;
+        end;
+
         InitEncryptedFile(string(AnsiString(lpFileName)), Result);
+      end;
     end;
   end;
 
@@ -965,6 +993,9 @@ function CreateFileWHookProc(lpFileName: PWideChar; dwDesiredAccess, dwShareMode
 var
   LastError: DWORD;
 begin
+  if dwFlagsAndAttributes and FILE_FLAG_NO_BUFFERING = FILE_FLAG_NO_BUFFERING then
+    dwFlagsAndAttributes := dwFlagsAndAttributes xor FILE_FLAG_NO_BUFFERING; //remove flag
+
   Result := CreateFileWNextHook( lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile );
   LastError := GetLastError;
 
@@ -972,8 +1003,18 @@ begin
   begin
     if not StartsStr('\\.', lpFileName) and not IsSystemPipe(lpFileName) then
     begin
-      if ValidEncryptFileExHandle(Result) then
+      if ValidEncryptFileExHandle(Result, dwFlagsAndAttributes and FILE_FLAG_OVERLAPPED > 0) then
+      begin
+        if dwDesiredAccess and GENERIC_WRITE > 0 then
+        begin
+          CloseHandle(Result);
+          Result := INVALID_HANDLE_VALUE;
+          Result := ERROR_ACCESS_DENIED;
+          SetLastError(ERROR_ACCESS_DENIED);
+          Exit;
+        end;
         InitEncryptedFile(lpFileName, Result);
+      end;
     end;
   end;
 
@@ -1010,15 +1051,18 @@ begin
     GetOverlappedResult(hFile, lpOverlapped^, lpNumberOfBytesTransferred, True);
 
     LastError := GetLastError;
-    ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, lpNumberOfBytesTransferred, lpNumberOfBytesTransferred, lpOverlapped);
+    ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, lpNumberOfBytesTransferred, lpNumberOfBytesTransferred, lpOverlapped, @Result);
     SetLastError(LastError);
   end else
   begin
     Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
-    LastError := GetLastError;
-    ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead, nil);
-    SetLastError(LastError);
+    if lpNumberOfBytesRead > 0 then
+    begin
+      LastError := GetLastError;
+      ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead, nil, @Result);
+      SetLastError(LastError);
+    end;
   end;
 end;
 

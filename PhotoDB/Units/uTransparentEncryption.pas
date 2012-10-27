@@ -91,7 +91,7 @@ function DecryptStreamEx(S, D: TStream; Password: string; Seed: Binary; FileSize
                          AChipper: TDECCipherClass; BlockSize32k: Byte; Progress: TSimpleEncryptProgress = nil): Boolean;
 
 function ValidEnryptFileEx(FileName: String): Boolean;
-function ValidEncryptFileExHandle(FileHandle: THandle): Boolean;
+function ValidEncryptFileExHandle(FileHandle: THandle; IsAsyncHandle: Boolean): Boolean;
 function CanBeTransparentEncryptedFile(FileName: string): Boolean;
 function TransparentDecryptFileEx(FileName: string; Password: string;
                                   Progress: TFileProgress = nil): Integer;
@@ -467,20 +467,53 @@ begin
   Stream.Seek(Pos, soFromBeginning);
 end;
 
-function ValidEncryptFileExHandle(FileHandle: THandle): Boolean;
+function ValidEncryptFileExHandle(FileHandle: THandle; IsAsyncHandle: Boolean): Boolean;
 var
   EncryptHeader: TEncryptedFileHeader;
   Pos: Int64;
+  Overlapped: TOverlapped;
+  lpNumberOfBytesTransferred: DWORD;
+  lpNumberOfBytesRead: DWORD;
 begin
   Result := False;
   if FileHandle = 0 then
     Exit;
 
-  Pos := FileSeek(FileHandle, 0, FILE_CURRENT);
-  if FileRead(FileHandle, EncryptHeader, SizeOf(EncryptHeader)) = SizeOf(EncryptHeader) then
-    Result := EncryptHeader.ID = PhotoDBFileHeaderID;
+  if not IsAsyncHandle then
+  begin
+    Pos := FileSeek(FileHandle, 0, FILE_CURRENT);
 
-  FileSeek(FileHandle, Pos, FILE_BEGIN);
+    FileSeek(FileHandle, 0, FILE_BEGIN);
+    if FileRead(FileHandle, EncryptHeader, SizeOf(EncryptHeader)) = SizeOf(EncryptHeader) then
+      Result := EncryptHeader.ID = PhotoDBFileHeaderID;
+
+    FileSeek(FileHandle, Pos, FILE_BEGIN);
+  end else
+  begin
+    FillChar(Overlapped, SizeOf(TOverlapped), #0);
+    Overlapped.hEvent := CreateEvent(nil, True, False, nil);
+    try
+
+      lpNumberOfBytesRead := SizeOf(EncryptHeader);
+      ReadFile(FileHandle, EncryptHeader, SizeOf(EncryptHeader), lpNumberOfBytesRead, @Overlapped);
+
+      if ERROR_IO_PENDING <> GetLastError then
+        Exit;
+
+      if WaitForSingleObject(Overlapped.hEvent, INFINITE) = WAIT_OBJECT_0 then
+      begin
+        if not GetOverlappedResult(FileHandle, Overlapped, lpNumberOfBytesTransferred, True) then
+          Exit;
+
+        if lpNumberOfBytesTransferred = 0 then
+          Exit;
+
+        Result := EncryptHeader.ID = PhotoDBFileHeaderID;
+      end;
+    finally
+      CloseHandle(Overlapped.hEvent);
+    end;
+  end;
 end;
 
 procedure TryOpenHandleForRead(var hFile: THandle; FileName: string; DelayReadFileOperation: Integer);
@@ -519,7 +552,7 @@ begin
   if hFile = 0 then
     Exit;
 
-  Result := ValidEncryptFileExHandle(hFile);
+  Result := ValidEncryptFileExHandle(hFile, False);
 
   CloseHandle(hFile);
 end;
@@ -727,16 +760,15 @@ var
   I: Integer;
   B: TMemoryBlock;
   SData, DData: Pointer;
+  Res: BOOL;
   BlockStart, CurrentPosition: Int64;
   BlockSize: Integer;
-  {lpNumberOfBytesTransferred, }
+  lpNumberOfBytesTransferred,
   lpNumberOfBytesRead: DWORD;
-  MemorySize{, FileReadPosition}: Int64;
+  MemorySize, FileReadPosition: Int64;
   lpOverlapped: POverlapped;
-  {Event, }FFilehandle: THandle;
 begin
   Result := nil;
-  FFilehandle := 0;
 
   for I := FFileBlocks.Count - 1 downto 0 do
   begin
@@ -781,16 +813,6 @@ begin
     lpOverlapped := nil;
     if Assigned(FlpOverlapped) then
     begin
-      FFilehandle := CreateFile(PChar(FFileName),
-          GENERIC_READ,
-          FILE_SHARE_READ OR FILE_SHARE_WRITE,
-          nil,
-          OPEN_EXISTING,
-          FILE_ATTRIBUTE_NORMAL,
-          0);
-
-      FileSeek(FFilehandle, BlockStart + FHeaderSize, FILE_BEGIN);
-      {
       GetMem(lpOverlapped, SizeOf(TOverlapped));
       FillChar(lpOverlapped^, SizeOf(TOverlapped), #0);
 
@@ -798,20 +820,24 @@ begin
       lpOverlapped.Offset     := Int64Rec(FileReadPosition).Lo;
       lpOverlapped.OffsetHigh := Int64Rec(FileReadPosition).Hi;
 
-      Event := CreateEvent(nil, True, False, nil);
-      lpOverlapped.hEvent := 0; }
+      lpOverlapped.hEvent := CreateEvent(nil, True, False, nil);
     end;
 
-    if ReadFile(IIF(Assigned(FlpOverlapped), FFilehandle, FHandle), SData^, BlockSize, lpNumberOfBytesRead, lpOverlapped) then
+    Res := ReadFile(FHandle, SData^, BlockSize, lpNumberOfBytesRead, lpOverlapped);
+
+    if Res or (not Res and (lpOverlapped <> nil) and (GetLastError = ERROR_IO_PENDING)) then
     begin
-      {if Assigned(lpOverlapped) then
+      if Assigned(lpOverlapped) then
       begin
+        if not WaitForSingleObject(lpOverlapped.hEvent, INFINITE) = WAIT_OBJECT_0 then
+          Exit(nil);
+
         if not GetOverlappedResult(FHandle, lpOverlapped^, lpNumberOfBytesTransferred, True) then
           Exit(nil);
 
         if lpNumberOfBytesTransferred = 0 then
           Exit(nil);
-      end; }
+      end;
 
       GetMem(DData, BlockSize);
       try
@@ -830,10 +856,7 @@ begin
     end;
 
     if Assigned(FlpOverlapped) then
-    begin
-      //FreeMem(lpOverlapped);
-      CloseHandle(FFilehandle);
-    end;
+      FreeMem(lpOverlapped);
   finally
     FreeMem(SData);
   end;

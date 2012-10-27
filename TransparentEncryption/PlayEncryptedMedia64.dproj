@@ -81,7 +81,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <DCC_Define>TESTPASS;$(DCC_Define)</DCC_Define>
-        <Debugger_RunParams>&quot;C:\Program Files (x86)\Essentials Codec Pack\MPC\mpc-hc64.exe&quot; &quot;E:\MVI_4440 small.avi&quot;</Debugger_RunParams>
+        <Debugger_RunParams>&quot;c:\Windows\System32\notepad.exe&quot; &quot;E:\1.txt&quot;</Debugger_RunParams>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <DCC_RemoteDebug>true</DCC_RemoteDebug>

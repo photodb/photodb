@@ -757,17 +757,20 @@ begin
               ReplaceImageItemImage(FFiles[I].FileName, FFiles[I].FileSize, FFiles[I].SID);
             end;
 
-            if ((FFiles[I].FileType = EXPLORER_ITEM_FILE) and (FFiles[I].Tag = 1)) then
+            if (FFiles[I].FileType = EXPLORER_ITEM_FILE) then
             begin
-              FFiles[I].Tag := 1;
-              GUIDParam := FFiles[I].SID;
+              if (FFiles[I].Tag = 1) then
               begin
-                Inc(InfoPosition);
-                ShowInfo(InfoPosition);
-                CurrentFile := FFiles[I].FileName;
-                MakeIconForFile;
-                CheckIsFileEncrypted;
+                FFiles[I].Tag := 1;
+                GUIDParam := FFiles[I].SID;
+                begin
+                  Inc(InfoPosition);
+                  ShowInfo(InfoPosition);
+                  CurrentFile := FFiles[I].FileName;
+                  MakeIconForFile;
+                end;
               end;
+              CheckIsFileEncrypted;
             end;
 
             if ExplorerInfo.View = LV_THUMBS then

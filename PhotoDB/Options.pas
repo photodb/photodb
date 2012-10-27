@@ -1959,7 +1959,7 @@ begin
   begin
     Extension := CblExtensions.Items[SelectedIndex];
 
-    RbDefaultrogram.Enabled := GetShellPlayerForFile(Extension) <> '';
+    RbDefaultrogram.Enabled := GetShellPlayerForFile('file' + Extension) <> '';
 
     Player := FPlayerExtensions[Extension];
 
