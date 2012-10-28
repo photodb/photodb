@@ -1492,7 +1492,7 @@ begin
     FLeftTabs := FLeftTabs + [eltsSearch];
 
   FActiveLeftTab := eltsPreview;
-  ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsPreview))));
+  ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
   ApplyLeftTabs;
 
   FRightTabs := [ertsPreview, ertsMap];
@@ -1684,6 +1684,9 @@ var
   Index: Integer;
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
+
+  if CanBeTransparentEncryptedFile(FileName) and ShellPlayEncryptedMediaFile(FileName) then
+    Exit;
 
   if (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_IMAGE) or
     (FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
@@ -7124,7 +7127,7 @@ begin
 
         if FImageViewer <> nil then
         begin
-          if (AnsiLowerCase(FImageViewer.Item.FileName) = FileName) and not FImageViewer.DisplayBitmap.Empty then
+          if (AnsiLowerCase(FImageViewer.Item.FileName) = FileName) and not FImageViewer.DisplayBitmap.Empty and (FImageViewer.Text = '') then
             B := FImageViewer.DisplayBitmap;
         end;
 
@@ -9492,7 +9495,10 @@ begin
       begin
         BeginScreenUpdate(TsMediaPreview.Handle);
         try
-          FImageViewer.SetText(L('Select a file to preview'));
+          if SelCount = 1 then
+            FImageViewer.SetText(FormatEx(L('Preview for object "{0}" is unavailable'), [ExtractFileName(FSelectedInfo.FileName)]))
+          else
+            FImageViewer.SetText(L('Select a file to preview'));
           TbPreviewRating.Visible := False;
           TbPreviewRatingSeparator.Visible := False;
           OnPersonsFoundOnPreview(Self, '', nil);
@@ -10672,8 +10678,7 @@ begin
           if not ShellPlayEncryptedMediaFile(FFilesInfo[Index].FileName) then
           begin
             ShellDir := ExtractFileDir(FFilesInfo[Index].FileName);
-            ShellExecute(Handle, 'open', PWideChar(FFilesInfo[Index].FileName), nil,
-              PWideChar(ShellDir), SW_NORMAL);
+            ShellExecute(Handle, 'open', PWideChar(FFilesInfo[Index].FileName), nil, PWideChar(ShellDir), SW_NORMAL);
           end;
           RestoreSelected;
           Exit;

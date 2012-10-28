@@ -310,8 +310,8 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Left = 192
     Top = 176
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnMessage = ApplicationEvents1Message
+  object AeMain: TApplicationEvents
+    OnMessage = AeMainMessage
     Left = 192
     Top = 64
   end

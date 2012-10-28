@@ -2380,11 +2380,15 @@ begin
   Application.CreateForm(TFormFindPerson, FormFindPerson);
   try
     P := nil;
-    Result := FormFindPerson.Execute(Item, P);
-    if (P <> nil) and (Result = SELECT_PERSON_OK) then
-      SelectPerson(P);
-    if Result = SELECT_PERSON_CREATE_NEW then
-      MiCreatePersonClick(Sender);
+    try
+      Result := FormFindPerson.Execute(Item, P);
+      if (P <> nil) and (Result = SELECT_PERSON_OK) then
+        SelectPerson(P);
+      if Result = SELECT_PERSON_CREATE_NEW then
+        MiCreatePersonClick(Sender);
+    finally
+      F(P);
+    end;
   finally
     F(FormFindPerson);
   end;

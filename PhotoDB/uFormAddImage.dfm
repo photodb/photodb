@@ -47,4 +47,10 @@ object FormAddingImage: TFormAddingImage
     Left = 384
     Top = 16
   end
+  object TmrCheck: TTimer
+    Enabled = False
+    OnTimer = TmrCheckTimer
+    Left = 440
+    Top = 16
+  end
 end

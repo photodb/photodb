@@ -33,10 +33,12 @@ type
     LbMessage: TLabel;
     LsMain: TLoadingSign;
     TmrRedraw: TTimer;
+    TmrCheck: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure TmrRedrawTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
+    procedure TmrCheckTimer(Sender: TObject);
   private
     FInfo: TDBPopupMenuInfoRecord;
     FLoadingState: Extended;
@@ -67,6 +69,7 @@ begin
     if AnsiLowerCase(Value.Name) = AnsiLowerCase(FInfo.FileName) then
     begin
       FInfo.ID := Value.ID;
+      TmrCheck.Enabled := False;
       Close;
       Exit;
     end;
@@ -77,12 +80,16 @@ begin
     if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FInfo.FileName)) and (Value.ID > 0) then
     begin
       FInfo.ID := Value.ID;
+      TmrCheck.Enabled := False;
       Close;
       Exit;
     end;
 
     if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+    begin
+      TmrCheck.Enabled := False;
       Close;
+    end;
   end;
 end;
 
@@ -121,7 +128,9 @@ begin
   FInfo.Include := True;
   UpdaterDB.AddFileEx(FInfo, True, True);
   DrawForm;
+  TmrCheck.Enabled := True;
   ShowModal;
+  FInfo := nil;
 end;
 
 procedure TFormAddingImage.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -145,6 +154,14 @@ end;
 function TFormAddingImage.GetFormID: string;
 begin
   Result := 'AddImage';
+end;
+
+procedure TFormAddingImage.TmrCheckTimer(Sender: TObject);
+begin
+  if FInfo = nil then
+    Exit;
+  if not UpdaterDB.HasFile(FInfo.FileName) then
+    Close;
 end;
 
 procedure TFormAddingImage.TmrRedrawTimer(Sender: TObject);

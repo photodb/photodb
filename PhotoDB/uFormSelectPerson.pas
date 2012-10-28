@@ -23,6 +23,7 @@ uses
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.LoadingSign,
   Dmitry.Controls.WebLink,
+  Dmitry.Controls.SaveWindowPos,
 
   UnitDBDeclare,
   UnitDBKernel,
@@ -34,7 +35,8 @@ uses
   uBitmapUtils,
   uMemory,
   uMachMask,
-  uGraphicUtils, Dmitry.Controls.SaveWindowPos;
+  uFormInterfaces,
+  uGraphicUtils;
 
 type
   TFormFindPerson = class(TThreadForm)
@@ -79,7 +81,6 @@ type
     function GetFormID: string; override;
     procedure CustomFormAfterDisplay; override;
     procedure CloseForm;
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
   public
     { Public declarations }
     function Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
@@ -157,10 +158,11 @@ begin
   LsMain.Hide;
   if (LvPersons.Selected <> nil) and (FInfo <> nil) and (FInfo.ID = 0) then
   begin
-    EnableControls(False);
+    NewFormState;
     FInfo.Include := True;
-    UpdaterDB.AddFileEx(FInfo, True, True);
-    Exit;
+    CollectionAddItemForm.Execute(FInfo);
+    if FInfo.ID = 0 then
+      Exit;
   end;
 
   FFormResult := SELECT_PERSON_OK;
@@ -182,25 +184,6 @@ begin
   end;
 
   Close;
-end;
-
-procedure TFormFindPerson.ChangedDBDataByID(Sender: TObject; ID: Integer;
-  params: TEventFields; Value: TEventValues);
-begin
-  if SetNewIDFileData in Params then
-  begin
-    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
-    begin
-      FInfo.ID := Value.ID;
-      CloseForm;
-    end;
-
-  end;
-  if EventID_CancelAddingImage in Params then
-  begin
-    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
-      EnableControls(True);
-  end;
 end;
 
 procedure TFormFindPerson.CheckMsg(var aMsg: TMessage);
@@ -279,7 +262,6 @@ begin
   LoadList;
   TmrSearchTimer(Self);
   LoadLanguage;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
   PersonManager.InitDB;
   SaveWindowPos1.Key := RegRoot + 'SelectPerson';
   SaveWindowPos1.SetPosition(True);
@@ -288,7 +270,6 @@ end;
 procedure TFormFindPerson.FormDestroy(Sender: TObject);
 begin
   SaveWindowPos1.SavePosition;
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
   FPersons.FreeItems;
   F(FPersons);
   F(FInfo);
@@ -331,7 +312,17 @@ begin
     var
       W, H: Integer;
       B, B32, SmallB, LB: TBitmap;
+      ImageListWidth, ImageListHeight: Integer;
     begin
+      ImageListWidth := 0;
+      ImageListHeight := 0;
+      if not Thread.SynchronizeTask(
+         procedure
+         begin
+           ImageListWidth := ImlPersons.Width;
+           ImageListHeight := ImlPersons.Height;
+         end
+        ) then Exit;
 
       CoInitialize(nil);
       try
@@ -344,7 +335,7 @@ begin
               H := B.Height;
               SmallB := TBitmap.Create;
               try
-                ProportionalSize(ImlPersons.Width - 4, ImlPersons.Height - 4, W, H);
+                ProportionalSize(ImageListWidth - 4, ImageListHeight - 4, W, H);
                 DoResize(W, H, B, SmallB);
                 B32 := TBitmap.Create;
                 try
@@ -354,9 +345,9 @@ begin
                   LB := TBitmap.Create;
                   try
                     LB.PixelFormat := pf32bit;
-                    LB.SetSize(ImlPersons.Width, ImlPersons.Height);
+                    LB.SetSize(ImageListWidth, ImageListHeight);
                     FillTransparentColor(LB, Theme.ListViewColor, 0);
-                    DrawImageEx32To32(LB, B32, ImlPersons.Width div 2 - B32.Width div 2, ImlPersons.Height div 2 - B32.Height div 2);
+                    DrawImageEx32To32(LB, B32, ImageListWidth div 2 - B32.Width div 2, ImageListHeight div 2 - B32.Height div 2);
 
                     if not Thread.SynchronizeTask(
                       procedure
@@ -371,7 +362,10 @@ begin
                         end;
                       end
                     ) then
+                    begin
                       F(P);
+                      StopOperation := True;
+                    end;
 
                   finally
                     F(LB);

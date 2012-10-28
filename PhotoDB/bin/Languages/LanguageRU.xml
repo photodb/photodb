@@ -72,6 +72,7 @@
     <translate name="Activate application to enable strong encryption!" value="Активируйте приложение для стойкого шифрования!" />
     <translate name="Home page" value="Домашняя страница" />
     <translate name="Please, activate the program to encrypt files larger than 1Gb!" value="Пожалуйста, активируйте программу чтобы шифровать файлы более 1Gb!" />
+    <translate name="Transparent encryption isn't available on mobile verison." value="Прозрачное шифрование недоступно в мобильной версии." />
   </scope>
   <scope name="Setup">
     <translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
@@ -436,6 +437,7 @@
     <translate name="Show hidden images" value="Показывать скрытые изображения" />
     <translate name="Show private images" value="Показывать личные изображения" />
     <translate name="Select a file to preview" value="Выберите файл для предпросмотра" />
+    <translate name="Preview for object &quot;{0}&quot; is unavailable" value="Предпросмотр для объекта &quot;{0}&quot; недоступен" />
     <translate name="File is encrypted" value="Файл зашифован" />
     <translate name="Persons on photo:" value="Персоны на фотографии:" />
     <translate name="Update avatar" value="Обновить аватар" />

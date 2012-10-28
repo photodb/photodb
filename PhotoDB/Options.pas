@@ -601,6 +601,7 @@ begin
   begin
     PcMain.Pages[0].TabVisible := False;
     PcMain.Pages[1].TabVisible := False;
+    PcMain.Pages[7].TabVisible := False;
     PcMain.ActivePageIndex := 2;
   end;
 
@@ -1075,14 +1076,12 @@ begin
     for I := 0 to Associations.Count - 1 do
     begin
       Player := Settings.ReadString(cMediaAssociationsData + '\' + Associations[I], '');
-      if Player <> '' then
-      begin
-        if Player = cMediaPlayerDefaultId then
-          Player := GetPlayerInternalPath;
 
-        Extension := AnsiUpperCase(Associations[I]);
-        AddMediaAssociation(Extension, Player, False);
-      end;
+      if Player = cMediaPlayerDefaultId then
+        Player := GetPlayerInternalPath;
+
+      Extension := AnsiUpperCase(Associations[I]);
+      AddMediaAssociation(Extension, Player, False);
     end;
   finally
     F(Associations);
@@ -1145,12 +1144,17 @@ end;
 
 procedure TOptionsForm.SaveMediaAssociations;
 var
+  Player: string;
   Pair: TPair<string, string>;
 begin
   Settings.DeleteKey(cMediaAssociationsData);
   for Pair in FPlayerExtensions do
   begin
-    Settings.WriteString(cMediaAssociationsData + '\' + Pair.Key, '', Pair.Value);
+    Player := Pair.Value;
+    if Player = '' then
+      Player := cMediaPlayerDefaultId;
+
+    Settings.WriteString(cMediaAssociationsData + '\' + Pair.Key, '', Player);
   end;
 end;
 
@@ -1848,6 +1852,7 @@ begin
     Extension := CblExtensions.Items[CblExtensions.SelectedIndex];
     if MessageBoxDB(Handle, FormatEx(L('Do you really want to delete mapping for extension "{0}"?'), [Extension]), L('Question'), TD_BUTTON_YESNO, TD_ICON_QUESTION) = ID_YES then
     begin
+      ImlMediaPlayers.Delete(CblExtensions.SelectedIndex);
       CblExtensions.Items.Delete(CblExtensions.SelectedIndex);
       FPlayerExtensions.Remove(Extension);
 

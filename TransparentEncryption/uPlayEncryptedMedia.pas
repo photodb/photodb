@@ -6,7 +6,7 @@ uses
   SysUtils,
   Windows;
 
-procedure StartMedia(HookDll, Player, Media: string);
+function StartMedia(HookDll, Player, Media: string): Boolean;
 procedure PlayMediaFromCommanLine;
 
 implementation
@@ -143,7 +143,7 @@ begin
   Result := hThread;
 end;
 
-procedure StartMedia(HookDll, Player, Media: string);
+function StartMedia(HookDll, Player, Media: string): Boolean;
 var
   SI: TStartupInfo;
   PI: TProcessInformation;
@@ -151,6 +151,11 @@ var
   StartupFlags: Cardinal;
   IsXP: Boolean;
 begin
+  Result := False;
+
+  if not FileExists(HookDll) then
+    Exit(False);
+
   ZeroMemory(@si, SizeOf(si));
   SI.cb := SizeOf(si);
   SI.dwFlags := STARTF_USESHOWWINDOW;
@@ -184,6 +189,7 @@ begin
 
     CloseHandle(PI.hThread);
     CloseHandle(PI.hProcess);
+    Result := True;
   end;
 end;
 

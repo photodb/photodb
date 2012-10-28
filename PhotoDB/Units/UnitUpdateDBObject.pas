@@ -67,6 +67,7 @@ type
     function AddFile(FileName: string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
     function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean; NoExecute: Boolean = False): Boolean;
     function AddDirectory(Directory: string): Boolean;
+    function HasFile(FileName: string): Boolean;
     procedure EndDirectorySize(Sender: TObject);
     procedure OnAddFileDone(Sender: TObject);
     procedure Execute;
@@ -632,6 +633,17 @@ begin
   Result := 0;
   for I := FPosition to FFilesInfo.Count - 1 do
     Result := Result + FFilesInfo[I].FileSize;
+end;
+
+function TUpdaterDB.HasFile(FileName: string): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to FFilesInfo.Count - 1 do
+    if AnsiLowerCase(FFilesInfo[I].FileName) = FileName then
+      Exit(True);
 end;
 
 procedure TUpdaterDB.ProcessFile(var FileName: string);

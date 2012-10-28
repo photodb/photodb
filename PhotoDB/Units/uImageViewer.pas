@@ -341,6 +341,9 @@ end;
 
 procedure TImageViewer.LoadNextFile;
 begin
+  if FFiles = nil then
+    Exit;
+
   FFiles.NextSelected;
   if FFiles.Position > -1 then
     LoadFile(FFiles[FFiles.Position], True);
@@ -348,6 +351,9 @@ end;
 
 procedure TImageViewer.LoadPreviousFile;
 begin
+  if FFiles = nil then
+    Exit;
+
   FFiles.PrevSelected;
   if FFiles.Position > -1 then
     LoadFile(FFiles[FFiles.Position], True);

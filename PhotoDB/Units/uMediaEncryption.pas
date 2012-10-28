@@ -13,7 +13,11 @@ uses
   uTransparentEncryption,
   uFormInterfaces,
   uSettings,
+  uRuntime,
   uMediaPlayers,
+  uTranslate,
+  uShellIntegration,
+  uAssociations,
   UnitDBKernel;
 
 type
@@ -55,6 +59,13 @@ begin
     if Password = '' then
       //play started but user don't know password - it's OK
       Exit(True);
+  end;
+
+  if FolderView then
+  begin
+    if not IsGraphicFile(FileName) then
+      MessageBoxDB(0, TA('Transparent encryption isn''t available on mobile verison.', 'System'), TA('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit;
   end;
 
   Executable := GetFileBindings(FileName);

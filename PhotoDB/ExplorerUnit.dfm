@@ -65,7 +65,7 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 623
-      ActivePage = TsInfo
+      ActivePage = TsPreview
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -2645,7 +2645,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.837518796300000000
+      Date = 41177.685761087960000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

@@ -3,8 +3,8 @@ unit UnitQuickGroupInfo;
 interface
 
 uses
-  Windows,
-  Messages,
+  Winapi.Windows,
+  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   System.Math,
@@ -60,7 +60,7 @@ type
     CbInclude: TCheckBox;
     GroupsImageList: TImageList;
     WllGroups: TWebLinkList;
-    ApplicationEvents1: TApplicationEvents;
+    AeMain: TApplicationEvents;
     BtnEdit: TButton;
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -70,7 +70,7 @@ type
     procedure SearchForGroup1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
+    procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
@@ -175,7 +175,7 @@ begin
   end;
 end;
 
-procedure TFormQuickGroupInfo.ApplicationEvents1Message(var Msg: tagMSG;
+procedure TFormQuickGroupInfo.AeMainMessage(var Msg: tagMSG;
   var Handled: Boolean);
 begin
   if (Msg.message = WM_MOUSEWHEEL) then

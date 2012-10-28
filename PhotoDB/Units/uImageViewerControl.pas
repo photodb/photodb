@@ -848,11 +848,15 @@ begin
   Application.CreateForm(TFormFindPerson, FormFindPerson);
   try
     P := nil;
-    Result := FormFindPerson.Execute(Item, P);
-    if (P <> nil) and (Result = SELECT_PERSON_OK) then
-      SelectPerson(P);
-    if Result = SELECT_PERSON_CREATE_NEW then
-      MiCreatePersonClick(Sender);
+    try
+      Result := FormFindPerson.Execute(Item, P);
+      if (P <> nil) and (Result = SELECT_PERSON_OK) then
+        SelectPerson(P);
+      if Result = SELECT_PERSON_CREATE_NEW then
+        MiCreatePersonClick(Sender);
+    finally
+      F(P);
+    end;
   finally
     F(FormFindPerson);
   end;
@@ -2135,6 +2139,29 @@ procedure TImageViewerControl.ChangedDBDataByID(Sender: TObject; ID: Integer;
 var
   I: Integer;
 begin
+  if SetNewIDFileData in Params then
+  begin
+    if AnsiLowerCase(FItem.FileName) = AnsiLowerCase(Value.name) then
+    begin
+      FItem.ID := ID;
+      FItem.Date := Value.Date;
+      FItem.Time := Value.Time;
+      FItem.IsDate := True;
+      FItem.IsTime := Value.IsTime;
+      FItem.Rating := Value.Rating;
+      FItem.Rotation := Value.Rotate;
+      FItem.Comment := Value.Comment;
+      FItem.KeyWords := Value.Comment;
+      FItem.Links := Value.Links;
+      FItem.Groups := Value.Groups;
+      FItem.IsDate := True;
+      FItem.IsTime := Value.IsTime;
+      FItem.InfoLoaded := True;
+      FItem.Encrypted := Value.Encrypted;
+      FItem.Links := '';
+    end;
+  end;
+
   if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
   begin
     for I := 0 to FLockEventRotateFileList.Count - 1 do
@@ -2225,8 +2252,10 @@ end;
 
 procedure TImageViewerControl.UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
 begin
-  F(FItem);
-  FItem := Item.Copy;
+  if FItem = nil then
+    FItem := Item.Copy
+  else
+    FItem.Assign(Item);
 end;
 
 procedure TImageViewerControl.WlFaceCountClick(Sender: TObject);
