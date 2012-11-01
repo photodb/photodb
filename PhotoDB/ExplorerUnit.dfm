@@ -60,6 +60,7 @@ object ExplorerForm: TExplorerForm
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 0
+    OnResize = MainPanelResize
     object PcTasks: TPageControl
       Left = 0
       Top = 0
@@ -1693,7 +1694,6 @@ object ExplorerForm: TExplorerForm
       Top = 33
       Width = 5
       Height = 586
-      Align = alRight
       ResizeStyle = rsUpdate
       Visible = False
       OnMoved = SplRightPanelMoved
@@ -2173,7 +2173,7 @@ object ExplorerForm: TExplorerForm
       Top = 33
       Width = 350
       Height = 586
-      Align = alRight
+      Align = alClient
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
@@ -2229,136 +2229,149 @@ object ExplorerForm: TExplorerForm
           Caption = 'TsMediaPreview'
           ImageIndex = 1
           OnResize = TsMediaPreviewResize
-          DesignSize = (
-            340
-            556)
-          object ToolBarPreview: TToolBar
-            Left = 110
-            Top = 533
-            Width = 222
-            Height = 22
-            Align = alNone
-            Anchors = [akLeft, akBottom]
-            AutoSize = True
-            ButtonWidth = 33
-            TabOrder = 0
-            Transparent = True
-            Wrapable = False
-            object TbPreviewPrevious: TToolButton
-              Left = 0
-              Top = 0
-              Caption = 'TbPreviewPrevious'
-              ImageIndex = 3
-              OnClick = TbPreviewPreviousClick
-            end
-            object TbPreviewNext: TToolButton
-              Left = 33
-              Top = 0
-              ImageIndex = 3
-              OnClick = TbPreviewNextClick
-            end
-            object TbPreviewNavigationSeparator: TToolButton
-              Left = 66
-              Top = 0
-              Width = 8
-              Caption = 'TbPreviewNavigationSeparator'
-              ImageIndex = 3
-              Style = tbsSeparator
-            end
-            object TbPreviewRotateCCW: TToolButton
-              Left = 74
-              Top = 0
-              ImageIndex = 0
-              OnClick = TbPreviewRotateCCWClick
-            end
-            object TbPreviewRotateCW: TToolButton
-              Left = 107
-              Top = 0
-              Caption = 'TbPreviewRotateCW'
-              ImageIndex = 1
-              OnClick = TbPreviewRotateCWClick
-            end
-            object TbPreviewZoomSeparator: TToolButton
-              Left = 140
-              Top = 0
-              Width = 8
-              Caption = 'TbPreviewZoomSeparator'
-              ImageIndex = 2
-              Style = tbsSeparator
-            end
-            object TbPreviewRating: TToolButton
-              Left = 148
-              Top = 0
-              ImageIndex = 3
-              OnClick = TbPreviewRatingClick
-            end
-            object TbPreviewRatingSeparator: TToolButton
-              Left = 181
-              Top = 0
-              Width = 8
-              ImageIndex = 3
-              Style = tbsSeparator
-            end
-            object TbPreviewOpen: TToolButton
-              Left = 189
-              Top = 0
-              ImageIndex = 2
-              OnClick = SlideShowLinkClick
-            end
-          end
-          object WlFaceCount: TWebLink
-            Left = 24
-            Top = 538
-            Width = 41
-            Height = 13
-            Cursor = crHandPoint
-            Anchors = [akLeft, akBottom]
-            Text = 'Faces: 2'
-            Visible = False
-            ImageIndex = -1
-            IconWidth = 0
-            IconHeight = 0
-            UseEnterColor = False
-            EnterColor = clBlack
-            EnterBould = False
-            TopIconIncrement = 0
-            UseSpecIconSize = True
-            HightliteImage = True
-            StretchImage = True
-            CanClick = True
-          end
-          object LsDetectingFaces: TLoadingSign
-            Left = 3
-            Top = 536
-            Width = 18
-            Height = 18
-            Visible = False
-            Active = True
-            FillPercent = 60
-            Color = clBtnFace
-            ParentColor = False
-            Anchors = [akLeft, akBottom]
-            SignColor = clBlack
-            MaxTransparencity = 255
-          end
-          object WllPersonsPreview: TWebLinkList
-            Left = 5
-            Top = 494
+          object PnRightPreview: TPanel
+            Left = 0
+            Top = 0
             Width = 340
-            Height = 33
-            HorzScrollBar.Visible = False
-            BevelEdges = []
-            BevelInner = bvNone
-            BevelOuter = bvNone
-            BorderStyle = bsNone
-            ParentBackground = True
-            TabOrder = 3
-            VerticalIncrement = 5
-            HorizontalIncrement = 5
-            LineHeight = 0
-            PaddingTop = 2
-            PaddingLeft = 2
-            HorCenter = True
+            Height = 556
+            Align = alClient
+            ParentBackground = False
+            TabOrder = 0
+            ExplicitLeft = 40
+            ExplicitTop = 8
+            ExplicitWidth = 185
+            ExplicitHeight = 41
+            DesignSize = (
+              340
+              556)
+            object ToolBarPreview: TToolBar
+              Left = 110
+              Top = 533
+              Width = 222
+              Height = 22
+              Align = alNone
+              Anchors = [akLeft, akBottom]
+              AutoSize = True
+              ButtonWidth = 33
+              TabOrder = 0
+              Transparent = True
+              Wrapable = False
+              object TbPreviewPrevious: TToolButton
+                Left = 0
+                Top = 0
+                Caption = 'TbPreviewPrevious'
+                ImageIndex = 3
+                OnClick = TbPreviewPreviousClick
+              end
+              object TbPreviewNext: TToolButton
+                Left = 33
+                Top = 0
+                ImageIndex = 3
+                OnClick = TbPreviewNextClick
+              end
+              object TbPreviewNavigationSeparator: TToolButton
+                Left = 66
+                Top = 0
+                Width = 8
+                Caption = 'TbPreviewNavigationSeparator'
+                ImageIndex = 3
+                Style = tbsSeparator
+              end
+              object TbPreviewRotateCCW: TToolButton
+                Left = 74
+                Top = 0
+                ImageIndex = 0
+                OnClick = TbPreviewRotateCCWClick
+              end
+              object TbPreviewRotateCW: TToolButton
+                Left = 107
+                Top = 0
+                Caption = 'TbPreviewRotateCW'
+                ImageIndex = 1
+                OnClick = TbPreviewRotateCWClick
+              end
+              object TbPreviewZoomSeparator: TToolButton
+                Left = 140
+                Top = 0
+                Width = 8
+                Caption = 'TbPreviewZoomSeparator'
+                ImageIndex = 2
+                Style = tbsSeparator
+              end
+              object TbPreviewRating: TToolButton
+                Left = 148
+                Top = 0
+                ImageIndex = 3
+                OnClick = TbPreviewRatingClick
+              end
+              object TbPreviewRatingSeparator: TToolButton
+                Left = 181
+                Top = 0
+                Width = 8
+                ImageIndex = 3
+                Style = tbsSeparator
+              end
+              object TbPreviewOpen: TToolButton
+                Left = 189
+                Top = 0
+                ImageIndex = 2
+                OnClick = SlideShowLinkClick
+              end
+            end
+            object WlFaceCount: TWebLink
+              Left = 24
+              Top = 538
+              Width = 41
+              Height = 13
+              Cursor = crHandPoint
+              Anchors = [akLeft, akBottom]
+              Text = 'Faces: 2'
+              Visible = False
+              ImageIndex = -1
+              IconWidth = 0
+              IconHeight = 0
+              UseEnterColor = False
+              EnterColor = clBlack
+              EnterBould = False
+              TopIconIncrement = 0
+              UseSpecIconSize = True
+              HightliteImage = True
+              StretchImage = True
+              CanClick = True
+            end
+            object WllPersonsPreview: TWebLinkList
+              Left = 0
+              Top = 494
+              Width = 340
+              Height = 33
+              HorzScrollBar.Visible = False
+              BevelEdges = []
+              BevelInner = bvNone
+              BevelOuter = bvNone
+              BorderStyle = bsNone
+              ParentBackground = True
+              TabOrder = 2
+              VerticalIncrement = 5
+              HorizontalIncrement = 5
+              LineHeight = 0
+              PaddingTop = 2
+              PaddingLeft = 2
+              HorCenter = True
+            end
+            object LsDetectingFaces: TLoadingSign
+              Left = 3
+              Top = 536
+              Width = 18
+              Height = 18
+              Visible = False
+              Active = True
+              FillPercent = 60
+              Color = clBtnFace
+              ParentColor = False
+              Anchors = [akLeft, akBottom]
+              SignColor = clBlack
+              MaxTransparencity = 255
+            end
           end
         end
         object TsGeoLocation: TTabSheet
@@ -2475,7 +2488,7 @@ object ExplorerForm: TExplorerForm
       Top = 33
       Width = 507
       Height = 586
-      Align = alClient
+      Align = alLeft
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 3
@@ -2645,7 +2658,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.685761087960000000
+      Date = 41177.995822222220000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

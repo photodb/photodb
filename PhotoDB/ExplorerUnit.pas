@@ -548,6 +548,7 @@ type
     MiPreviewPersonUpdateAvatar: TMenuItem;
     MenuItem6: TMenuItem;
     MiPreviewPersonProperties: TMenuItem;
+    PnRightPreview: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -818,6 +819,7 @@ type
     procedure MiPreviewPersonPropertiesClick(Sender: TObject);
     procedure MiPreviewPersonUpdateAvatarClick(Sender: TObject);
     procedure TbPreviewRatingClick(Sender: TObject);
+    procedure MainPanelResize(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -916,6 +918,9 @@ type
     FExtendedSearchParams: TDatabaseSearchParameters;
     FExtendedSearchPersons: TList<TPerson>;
     FShowStatusBar: Boolean;
+
+    FOldWidth: Integer;
+    IsResizePreivew: Boolean;
 
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
@@ -1035,6 +1040,8 @@ type
     procedure ItemUpdateTimer(Sender: TObject);
     procedure UpdateItems;
     procedure StateChanged(OldState: TGUID); override;
+    procedure ConstrainedResize(var MinWidth, MinHeight, MaxWidth,
+      MaxHeight: Integer); override;
 
     procedure ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
     procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
@@ -1358,7 +1365,7 @@ begin
   if FImageViewer = nil then
   begin
     FImageViewer := TImageViewer.Create;
-    FImageViewer.AttachTo(Self, TsMediaPreview, 2, 2);
+    FImageViewer.AttachTo(Self, PnRightPreview, 2, 2);
     FImageViewer.SetFaceDetectionControls(WlFaceCount, LsDetectingFaces, ToolBarPreview);
     FImageViewer.OnBeginLoadingImage := OnBeginLoadingPreviewImage;
     FImageViewer.OnRequestNextImage := TbPreviewNextClick;
@@ -1396,6 +1403,8 @@ begin
   ListView := LV_THUMBS;
   IsReallignInfo := False;
   FIsMapLoaded := False;
+  FOldWidth := Width;
+  IsResizePreivew := True;
 
   TW.I.Start('ListView1');
 
@@ -2220,6 +2229,8 @@ begin
 end;
 
 procedure TExplorerForm.FormResize(Sender: TObject);
+var
+  IsIncreasing: Boolean;
 begin
   if StyleServices.Enabled then
   begin
@@ -2227,6 +2238,41 @@ begin
     ElvMain.Scrollbars.VertEnabled := False;
     ElvMain.Scrollbars.VertEnabled := True;
     Repaint;
+  end;
+
+  if PnRight.Visible then
+  begin
+    IsIncreasing := FOldWidth < Width;
+    if (PnRight.Width <= 100) and IsResizePreivew and not IsIncreasing then
+    begin
+      IsResizePreivew := False;
+
+      PnRight.Align := alRight;
+      SplRightPanel.Align := alRight;
+      PnListView.Align := alClient;
+      Exit;
+    end;
+
+    if (PnListView.Width > 400) and not IsResizePreivew and IsIncreasing then
+    begin
+      IsResizePreivew := True;
+
+      PnRight.Align := alClient;
+      PnListView.Align := alLeft;
+      SplRightPanel.Align := alLeft;
+    end;
+  end;
+
+  FOldWidth := Width;
+end;
+
+procedure TExplorerForm.ConstrainedResize(var MinWidth, MinHeight, MaxWidth,
+  MaxHeight: Integer);
+begin
+  inherited;
+  if PnRight.Visible then
+  begin
+    MinWidth := MainPanel.Width + ElvMain.Constraints.MinHeight + SplLeftPanel.Width + SplRightPanel.Width + PnRight.Constraints.MinWidth;
   end;
 end;
 
@@ -2579,7 +2625,7 @@ begin
     TbPreviewRating.Visible := True;
     TbPreviewRating.ImageIndex := IIF(Rating = 0, DB_IC_RATING_STAR, Rating + DB_IC_RATING_1 - 1);
     TbPreviewRatingSeparator.Visible := True;
-    ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
+    ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
   finally
     EndScreenUpdate(TsMediaPreview.Handle, False);
   end;
@@ -3491,17 +3537,17 @@ procedure TExplorerForm.TsMediaPreviewResize(Sender: TObject);
 begin
   if FImageViewer <> nil then
   begin
-    WllPersonsPreview.Width := TsMediaPreview.Width - 5 - WllPersonsPreview.Left;
+    WllPersonsPreview.Width := PnRightPreview.Width - 5 - WllPersonsPreview.Left;
     WllPersonsPreview.ReallignList;
     WllPersonsPreview.AutoHeight(300);
 
-    FImageViewer.ResizeTo(TsMediaPreview.Width - FImageViewer.Left * 2,
-                          TsMediaPreview.Height - FImageViewer.Top * 2 - ToolBarPreview.Height - 10 - WllPersonsPreview.Height);
+    FImageViewer.ResizeTo(PnRightPreview.Width - FImageViewer.Left * 2,
+                          PnRightPreview.Height - FImageViewer.Top * 2 - ToolBarPreview.Height - 10 - WllPersonsPreview.Height);
 
-    ToolBarPreview.Left := TsMediaPreview.Width div 2 - ToolBarPreview.Width div 2;
-    ToolBarPreview.Top := TsMediaPreview.Height - ToolBarPreview.Height - 1 {BORDER};
+    ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
+    ToolBarPreview.Top := PnRightPreview.Height - ToolBarPreview.Height - 1 {BORDER};
 
-    WllPersonsPreview.Top := TsMediaPreview.Height - WllPersonsPreview.Height - ToolBarPreview.Height  - 1 - 5;
+    WllPersonsPreview.Top := PnRightPreview.Height - WllPersonsPreview.Height - ToolBarPreview.Height  - 1 - 5;
     LsDetectingFaces.Top := ToolBarPreview.Top;
     WlFaceCount.Top := ToolBarPreview.Top + LsDetectingFaces.Height div 2 - WlFaceCount.Height div 2;
   end;
@@ -4140,8 +4186,8 @@ begin
       WllPersonsPreview.PerformMouseWheel(Msg.WParam, Handled);
       if not (Handled and (GetWindowLong(WllPersonsPreview.Handle, GWL_STYLE) and WS_VSCROLL <> 0)) then
       begin
-        R.TopLeft := TsMediaPreview.ClientToScreen(TsMediaPreview.BoundsRect.TopLeft);
-        R.BottomRight := TsMediaPreview.ClientToScreen(TsMediaPreview.BoundsRect.BottomRight);
+        R.TopLeft := PnRightPreview.ClientToScreen(PnRightPreview.BoundsRect.TopLeft);
+        R.BottomRight := PnRightPreview.ClientToScreen(PnRightPreview.BoundsRect.BottomRight);
 
         if PtInRect(R, Msg.pt) then
         begin
@@ -10435,6 +10481,11 @@ begin
     ElvMain.Groups.EndUpdate;
   if not NoLockListView then
     UpdatingList := False;
+end;
+
+procedure TExplorerForm.MainPanelResize(Sender: TObject);
+begin
+  FormResize(Sender);
 end;
 
 procedure TExplorerForm.MakeFolderViewer1Click(Sender: TObject);
