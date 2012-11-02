@@ -556,7 +556,9 @@ begin
   else if PI is TPortableImageItem then
   begin
     FileSize := TPortableImageItem(PI).FileSize;
-    FileType := EXPLORER_ITEM_DEVICE_IMAGE
+    FileType := EXPLORER_ITEM_DEVICE_IMAGE;
+    Width := TPortableImageItem(PI).Width;
+    Height := TPortableImageItem(PI).Height;
   end
   else if PI is TPortableVideoItem then
   begin

@@ -3,23 +3,23 @@ unit uWPDClasses;
 interface
 
 uses
-  uMemory,
-  Winapi.Windows,
-  Winapi.ActiveX,
-  uPortableClasses,
-  uWPDInterfaces,
   Generics.Collections,
   System.Classes,
   System.SysUtils,
+  System.Math,
+  System.SyncObjs,
+  Winapi.Windows,
+  Winapi.ActiveX,
   Vcl.Imaging.Jpeg,
   Vcl.Imaging.pngimage,
-  uJpegUtils,
   Vcl.Graphics,
   uGraphicUtils,
-  System.SyncObjs,
   uConstants,
+  uMemory,
+  uPortableClasses,
+  uWPDInterfaces,
   uBitmapUtils,
-  Math,
+  uJpegUtils,
   GIFImage;
 
 const

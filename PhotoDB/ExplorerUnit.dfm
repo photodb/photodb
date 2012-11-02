@@ -746,6 +746,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 574
@@ -784,6 +788,10 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -943,6 +951,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -963,6 +975,10 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -2221,7 +2237,7 @@ object ExplorerForm: TExplorerForm
         Top = 1
         Width = 348
         Height = 584
-        ActivePage = TsMediaPreview
+        ActivePage = TsGeoLocation
         Align = alClient
         TabOrder = 0
         OnChange = PcRightPreviewChange
@@ -2235,12 +2251,12 @@ object ExplorerForm: TExplorerForm
             Width = 340
             Height = 556
             Align = alClient
+            BevelOuter = bvNone
+            DoubleBuffered = True
+            FullRepaint = False
             ParentBackground = False
+            ParentDoubleBuffered = False
             TabOrder = 0
-            ExplicitLeft = 40
-            ExplicitTop = 8
-            ExplicitWidth = 185
-            ExplicitHeight = 41
             DesignSize = (
               340
               556)
@@ -2253,8 +2269,10 @@ object ExplorerForm: TExplorerForm
               Anchors = [akLeft, akBottom]
               AutoSize = True
               ButtonWidth = 33
+              DoubleBuffered = True
+              ParentDoubleBuffered = False
               TabOrder = 0
-              Transparent = True
+              Transparent = False
               Wrapable = False
               object TbPreviewPrevious: TToolButton
                 Left = 0
@@ -2658,7 +2676,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.995822222220000000
+      Date = 41177.959783009260000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

@@ -308,6 +308,8 @@ begin
   DirectoryObj := TDirectoryObject.Create('MediaPlayer',    '%PROGRAM%', '');
   DirectoryObj.IsRecursive := True;
   Files.Add(DirectoryObj);
+  //russian language
+  Files.Add(TFileObject.Create('MediaPlayer\Lang\mpcresources.ru.dll', '%PROGRAM%', ''));
   {$ENDIF}
 end;
 

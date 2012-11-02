@@ -43,6 +43,8 @@ type
     function GetDeviceID: string;
     function GetDeviceName: string;
     function GetIsVisible: Boolean;
+    function GetWidth: Integer;
+    function GetHeight: Integer;
     function ExtractPreview(var PreviewImage: TBitmap): Boolean;
     function SaveToStream(S: TStream): Boolean;
     function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
@@ -58,6 +60,8 @@ type
     property DeviceName: string read GetDeviceName;
     property IsVisible: Boolean read GetIsVisible;
     property InnerInterface: IUnknown read GetInnerInterface;
+    property Width: Integer read GetWidth;
+    property Height: Integer read GetHeight;
   end;
 
   IPDevice = interface(IPBaseInterface)

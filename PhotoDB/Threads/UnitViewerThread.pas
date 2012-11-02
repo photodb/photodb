@@ -452,8 +452,6 @@ begin
       if ViewerForm = nil then
         Break;
 
-      ViewerForm.ForwardThreadReady := True;
-
       if not IsEqualGUID(ViewerForm.ForwardThreadSID, FSID) then
         Break;
       if not ViewerForm.ForwardThreadExists then
@@ -463,6 +461,7 @@ begin
         SetImage;
         Exit;
       end;
+      ViewerForm.ForwardThreadReady := True;
       Sleep(10);
     until False;
     F(Bitmap);

@@ -174,6 +174,8 @@ begin
     LoadToMemory := not ((GraphicClass = TRAWImage) and not (ilfFullRAW in Flags));
     if (GraphicClass = TPSDGraphic) then
       LoadToMemory := False;
+    if IsDevicePath(Info.FileName) then
+      LoadToMemory := True;
 
     if not LoadToMemory then
       S := nil

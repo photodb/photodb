@@ -98,6 +98,9 @@ const
   ListViewMinThumbnailSize = 85;
   ListViewMaxThumbnailSize = 550;
 
+  cMinPreviewWidth = 100;
+  cMinListViewWidth = 400;
+
 const
   DB_VER_1_8 = 1;
   DB_VER_1_9 = 2;

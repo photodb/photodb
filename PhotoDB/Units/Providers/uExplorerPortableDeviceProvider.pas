@@ -105,8 +105,15 @@ type
   end;
 
   TPortableImageItem = class(TPortableFSItem)
+  private
+    FWidth: Integer;
+    FHeight: Integer;
   protected
     function InternalCreateNewInstance: TPathItem; override;
+  public
+    constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
+    property Width: Integer read FWidth;
+    property Height: Integer read FHeight;
   end;
 
   TPortableVideoItem = class(TPortableFSItem)
@@ -180,7 +187,9 @@ begin
     piImage: 
     begin
       Result := TPortableImageItem.CreateFromPath(ItemPath, Options, ImageSize);
-      Result.LoadItem(Item);  
+      TPortableImageItem(Result).FWidth := Item.Width;
+      TPortableImageItem(Result).FHeight := Item.Height;
+      Result.LoadItem(Item);
     end;
     piVideo: 
     begin
@@ -784,6 +793,14 @@ begin
 end;
 
 { TPortableImageItem }
+
+constructor TPortableImageItem.CreateFromPath(APath: string; Options,
+  ImageSize: Integer);
+begin
+  inherited CreateFromPath(APath, Options, ImageSize);
+  FWidth := 0;
+  FHeight := 0;
+end;
 
 function TPortableImageItem.InternalCreateNewInstance: TPathItem;
 begin

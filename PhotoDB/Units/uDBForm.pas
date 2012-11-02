@@ -259,7 +259,7 @@ type
     procedure BeginTranslate;
     procedure EndTranslate;
     procedure FixFormPosition;
-    function QueryInterface(const IID: TGUID; out Obj): HResult;
+    function QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
     property Theme: TDatabaseTheme read GetTheme;
@@ -511,7 +511,7 @@ begin
   Result := FormatEx(L(StringToTranslate), args);
 end;
 
-function TDBForm.QueryInterface(const IID: TGUID; out Obj): HResult;
+function TDBForm.QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
 begin
   Result := inherited QueryInterface(IID, Obj);
 end;

@@ -14,6 +14,7 @@ type
   TPageControlNoBorder = class(ComCtrls.TPageControl)
   private
     FCanUpdateActivePage: Boolean;
+    FIsUpdatingPage: Boolean;
     procedure TCMAdjustRect(var Msg: TMessage); message TCM_ADJUSTRECT;
   protected
     procedure ShowControl(AControl: TControl); override;
@@ -24,6 +25,7 @@ type
     procedure HideTab(TabIndex: Integer);
     procedure DisableTabChanging;
     procedure EnableTabChanging;
+    property IsUpdatingPage: Boolean read FIsUpdatingPage;
   end;
 
 implementation
@@ -33,6 +35,7 @@ implementation
 constructor TPageControlNoBorder.Create(AOwner: TComponent);
 begin
   FCanUpdateActivePage := True;
+  FIsUpdatingPage := False;
   inherited;
 end;
 
@@ -72,8 +75,13 @@ end;
 
 procedure TPageControlNoBorder.UpdateActivePage;
 begin
-  if FCanUpdateActivePage then
-    inherited;
+  FIsUpdatingPage := True;
+  try
+    if FCanUpdateActivePage then
+      inherited;
+  finally
+    FIsUpdatingPage := False;
+  end;
 end;
 
 end.

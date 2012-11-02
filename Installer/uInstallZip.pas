@@ -117,8 +117,11 @@ end;
 function ExtractFileFromStorage(Src: TStream; FileName: string; CallBack: TExtractFileCallBack): Boolean;
 var
   FS: TFileStream;
+  DirectoryName: string;
 begin
   Result := True;
+  DirectoryName := ExtractFileDir(FileName);
+  CreateDir(DirectoryName);
   FS := TFileStream.Create(FileName, fmCreate);
   try
     ExtractStreamFromStorage(Src, FS, ExtractFileName(FileName), CallBack);

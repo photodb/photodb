@@ -3,19 +3,21 @@ unit uWIAClasses;
 interface
 
 uses
-  uMemory,
-  System.Classes,
   Generics.Collections,
+  System.Classes,
+  System.Win.ComObj,
+  System.SyncObjs,
+  System.SysUtils,
   Winapi.Windows,
+  Winapi.ActiveX,
   Vcl.Graphics,
+
+  Dmitry.Graphics.Types,
+
+  uMemory,
   uPortableClasses,
   uWIAInterfaces,
-  Winapi.ActiveX,
-  System.SysUtils,
-  Dmitry.Graphics.Types,
-  System.Win.ComObj,
-  uBitmapUtils,
-  System.SyncObjs;
+  uBitmapUtils;
 
 const
   WIA_ERROR_BUSY = -2145320954;
@@ -38,6 +40,8 @@ type
     FDeviceID: string;
     FDeviceName: string;
     FVisible: Boolean;
+    FWidth: Integer;
+    FHeight: Integer;
     procedure ErrorCheck(Code: HRESULT);
     procedure ReadProps;
   public
@@ -57,6 +61,8 @@ type
     function SaveToStream(S: TStream): Boolean;
     function SaveToStreamEx(S: TStream; CallBack: TPDProgressCallBack): Boolean;
     function Clone: IPDItem;
+    function GetWidth: Integer;
+    function GetHeight: Integer;
   end;
 
   TWIADevice = class(TInterfacedObject, IPDevice)
@@ -774,6 +780,8 @@ begin
   FDeviceID := ADevice.FDeviceID;
   FDeviceName := ADevice.FDeviceName;
   FVisible := True;
+  FWidth := 0;
+  FHeight := 0;
   ReadProps;
 end;
 
@@ -899,6 +907,11 @@ begin
   Result := FFullSize;
 end;
 
+function TWIAItem.GetHeight: Integer;
+begin
+  Result := FHeight;
+end;
+
 function TWIAItem.GetInnerInterface: IUnknown;
 begin
   Result := FItem;
@@ -929,6 +942,11 @@ begin
   Result := FName;
 end;
 
+function TWIAItem.GetWidth: Integer;
+begin
+  Result := FWidth;
+end;
+
 procedure TWIAItem.ReadProps;
 var
   HR: HRESULT;
@@ -939,7 +957,7 @@ begin
   HR := FItem.QueryInterface(IWIAPropertyStorage, PropList);
   if SUCCEEDED(HR) then
   begin
-    Setlength(PropSpec, 6);
+    Setlength(PropSpec, 8);
     PropSpec[0].ulKind := PRSPEC_PROPID;
     PropSpec[0].propid := WIA_IPA_FULL_ITEM_NAME;
 
@@ -958,15 +976,26 @@ begin
     PropSpec[5].ulKind := PRSPEC_PROPID;
     PropSpec[5].propid := WIA_IPA_ITEM_SIZE;
 
-    Setlength(PropVariant, 6);
+    PropSpec[6].ulKind := PRSPEC_PROPID;
+    PropSpec[6].propid := WIA_IPA_PIXELS_PER_LINE;
+
+    PropSpec[7].ulKind := PRSPEC_PROPID;
+    PropSpec[7].propid := WIA_IPA_NUMBER_OF_LINES;
+
+    Setlength(PropVariant, 8);
     FLock.Enter;
     try
-      HR := PropList.ReadMultiple(6, @PropSpec[0], @PropVariant[0]);
+      HR := PropList.ReadMultiple(8, @PropSpec[0], @PropVariant[0]);
     finally
       FLock.Leave;
     end;
     if SUCCEEDED(HR) then
     begin
+      if PropVariant[6].lVal > 0 then
+        FWidth := PropVariant[6].lVal;
+      if PropVariant[7].lVal > 0 then
+        FHeight := PropVariant[7].lVal;
+
       FName := PropVariant[1].bstrVal;
       if PropVariant[2].bstrVal <> '' then
         FName := FName + '.' + PropVariant[2].bstrVal;

@@ -299,7 +299,7 @@ begin
     begin
       if (FormManager[I] is TDBForm) and Supports(FormManager[I], IEncryptErrorHandlerForm) then
       begin
-        TDBForm(FormManager[I]).QueryInterface(IEncryptErrorHandlerForm, ErrorHandler);
+        TDBForm(FormManager[I]).QueryInterfaceEx(IEncryptErrorHandlerForm, ErrorHandler);
         if ErrorHandler <> nil then
           ErrorHandler.HandleEncryptionError('', ErrorMessage);
 

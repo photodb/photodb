@@ -1017,6 +1017,9 @@ type
     procedure ExtendedSearchPersonClick(Sender: TObject);
     procedure ExtendedSearchPersonModeClick(Sender: TObject);
     procedure ExtendedSearchShow;
+
+    procedure SetResizePreviewMode;
+    procedure SetResizeListViewMode;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1502,6 +1505,10 @@ begin
 
   FActiveLeftTab := eltsPreview;
   ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
+
+  //hack for second explorer window, preview panel is hidden
+  if FActiveLeftTab = eltsPreview then
+    PcTasks.ActivePageIndex := Integer(eltsExplorer);
   ApplyLeftTabs;
 
   FRightTabs := [ertsPreview, ertsMap];
@@ -1510,7 +1517,9 @@ begin
   ApplyRightTabs;
 
   if Settings.ReadBool('Explorer', 'RightPanelVisible', True) then
-    ShowRightPanel(ertsPreview);
+    ShowRightPanel(ertsPreview)
+  else
+    SetResizeListViewMode;
 
   Lock := False;
 
@@ -2228,6 +2237,8 @@ begin
   FWebBorwserFactory := nil;
 end;
 
+
+
 procedure TExplorerForm.FormResize(Sender: TObject);
 var
   IsIncreasing: Boolean;
@@ -2243,34 +2254,42 @@ begin
   if PnRight.Visible then
   begin
     IsIncreasing := FOldWidth < Width;
-    if (PnRight.Width <= 100) and IsResizePreivew and not IsIncreasing then
+    if (PnRight.Width <= cMinPreviewWidth) and IsResizePreivew and not IsIncreasing then
     begin
-      IsResizePreivew := False;
-
-      PnRight.Align := alRight;
-      SplRightPanel.Align := alRight;
-      PnListView.Align := alClient;
+      SetResizeListViewMode;
       Exit;
     end;
 
-    if (PnListView.Width > 400) and not IsResizePreivew and IsIncreasing then
-    begin
-      IsResizePreivew := True;
-
-      PnRight.Align := alClient;
-      PnListView.Align := alLeft;
-      SplRightPanel.Align := alLeft;
-    end;
+    if (PnListView.Width > cMinListViewWidth) and not IsResizePreivew and IsIncreasing then
+      SetResizePreviewMode;
   end;
 
   FOldWidth := Width;
+end;
+
+procedure TExplorerForm.SetResizeListViewMode;
+begin
+  IsResizePreivew := False;
+
+  PnRight.Align := alRight;
+  SplRightPanel.Align := alRight;
+  PnListView.Align := alClient;
+end;
+
+procedure TExplorerForm.SetResizePreviewMode;
+begin
+  IsResizePreivew := True;
+
+  PnRight.Align := alClient;
+  PnListView.Align := alLeft;
+  SplRightPanel.Align := alLeft;
 end;
 
 procedure TExplorerForm.ConstrainedResize(var MinWidth, MinHeight, MaxWidth,
   MaxHeight: Integer);
 begin
   inherited;
-  if PnRight.Visible then
+  if PnRight.Visible and not PcRightPreview.MouseInClient then
   begin
     MinWidth := MainPanel.Width + ElvMain.Constraints.MinHeight + SplLeftPanel.Width + SplRightPanel.Width + PnRight.Constraints.MinWidth;
   end;
@@ -5537,6 +5556,8 @@ procedure TExplorerForm.ShowRightPanel(Mode: TExplorerRightTab);
 var
   R: TRect;
 begin
+  IsResizePreivew := False;
+
   PcRightPreview.HandleNeeded;
   PcRightPreview.Perform(TCM_GETITEMRECT, 0, LPARAM(@R));
   SbCloseRightPanel.Width := R.Height;
@@ -5564,6 +5585,7 @@ begin
   TbPreview.Tag := 1;
   TbPreview.Down := False;
 
+  SetResizeListViewMode;
   PnRight.Hide;
   SplRightPanel.Hide;
   Winapi.Windows.SetFocus(ElvMain.Handle);

@@ -668,6 +668,7 @@ begin
     begin
       Result := True;
       ForwardThreadExists := False;
+      FForwardThreadReady := False;
       TViewerThread.Create(Self, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
 
       if NeedsUpdating then
