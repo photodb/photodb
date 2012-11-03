@@ -28,16 +28,19 @@ uses
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WatermarkedMemo,
 
-  uRuntime,
-  uMemory,
-  uMemoryEx,
-  uConstants,
-  Dolphin_DB,
-  UnitDBKernel,
-  uGroupTypes,
   UnitGroupsWork,
   GraphicSelectEx,
   UnitDBDeclare,
+  Dolphin_DB,
+  UnitDBKernel,
+
+  uEditorTypes,
+  uRuntime,
+  uInterfaces,
+  uMemory,
+  uMemoryEx,
+  uConstants,
+  uGroupTypes,
   uBitmapUtils,
   uExplorerGroupsProvider,
   uDBForm,
@@ -52,7 +55,7 @@ type
     MemComments: TWatermarkedMemo;
     BtnOk: TButton;
     BtnCancel: TButton;
-    PmLoadImage: TPopupActionBar;
+    PmAvatar: TPopupActionBar;
     LoadFromFile1: TMenuItem;
     MemKeywords: TWatermarkedMemo;
     CbAddkeywords: TCheckBox;
@@ -65,6 +68,8 @@ type
     CbPrivateGroup: TCheckBox;
     WllGroups: TWebLinkList;
     ApplicationEvents1: TApplicationEvents;
+    MiUseCurrentImage: TMenuItem;
+    MiLoadFromMiniGallery: TMenuItem;
     procedure ImGroupClick(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
@@ -78,6 +83,8 @@ type
     procedure WllGroupsDblClick(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure MiUseCurrentImageClick(Sender: TObject);
+    procedure MiLoadFromMiniGalleryClick(Sender: TObject);
   private
     { Private declarations }
     FCreateFixedGroup: Boolean;
@@ -98,6 +105,9 @@ type
   end;
 
 implementation
+
+uses
+  ImEditor;
 
 {$R *.dfm}
 
@@ -240,6 +250,67 @@ begin
     Label3.Caption := L('Related groups') + ':';
   finally
     EndTranslate;
+  end;
+end;
+
+procedure TNewGroupForm.MiLoadFromMiniGalleryClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := ImGroup.ClientToScreen(ImGroup.ClientRect.CenterPoint);
+  GraphicSelect1.RequestPicture(P.X, P.Y);
+end;
+
+procedure TNewGroupForm.MiUseCurrentImageClick(Sender: TObject);
+var
+  I: Integer;
+  Form: TDBForm;
+  Source: ICurrentImageSource;
+  FileName: string;
+  Editor: TImageEditorForm;
+  Bitmap: TBitmap;
+  FJPG: TJpegImage;
+begin
+  FileName := '';
+  for I := 0 to Screen.FormCount - 1 do
+  begin
+    if not (Screen.Forms[I] is TDBForm) then
+      Continue;
+
+    Form := Screen.Forms[I] as TDBForm;
+    if Form.QueryInterfaceEx(ICurrentImageSource, Source) = S_OK then
+    begin
+      FileName := Source.GetCurrentImageFileName;
+      if FileName <> '' then
+        Break;
+     end;
+  end;
+  if FileName <> '' then
+  begin
+    Editor := TImageEditor.Create(nil);
+    try
+      Bitmap := TBitmap.Create;
+      try
+        if Editor.EditFile(FileName, Bitmap) then
+        begin
+          KeepProportions(Bitmap, 48, 48);
+          FJPG := TJpegImage.Create;
+          try
+            FJPG.CompressionQuality := DBJpegCompressionQuality;
+            FJPG.Assign(Bitmap);
+            FJPG.JPEGNeeded;
+            ImGroup.Picture.Graphic := FJPG;
+          finally
+            F(FJPG);
+          end;
+
+        end;
+      finally
+        F(Bitmap);
+      end;
+    finally
+      R(Editor);
+    end;
   end;
 end;
 

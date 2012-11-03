@@ -3,11 +3,11 @@ unit UnitFormChangeGroup;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Math,
-  Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Math,
+  System.Classes,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -35,6 +35,9 @@ uses
   Dolphin_DB,
   UnitGroupsTools,
 
+  uRuntime,
+  uEditorTypes,
+  uInterfaces,
   uBitmapUtils,
   UnitDBCommon,
   uExplorerGroupsProvider,
@@ -53,8 +56,8 @@ type
     MemComments: TWatermarkedMemo;
     BtnOk: TButton;
     BtnCancel: TButton;
-    PmLoadFromFile: TPopupActionBar;
-    LoadFromFile1: TMenuItem;
+    PmAvatar: TPopupActionBar;
+    MiLoadFromFile: TMenuItem;
     MemKeywords: TWatermarkedMemo;
     CbAddkeywords: TCheckBox;
     CommentLabel: TLabel;
@@ -67,16 +70,20 @@ type
     CbPrivateGroup: TCheckBox;
     ApplicationEvents1: TApplicationEvents;
     WllGroups: TWebLinkList;
+    MiUseCurrentImage: TMenuItem;
+    MiLoadFromMiniGallery: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
-    procedure LoadFromFile1Click(Sender: TObject);
+    procedure MiLoadFromFileClick(Sender: TObject);
     procedure GraphicSelect1ImageSelect(Sender: TObject; Bitmap: TBitmap);
     procedure RelodDllNames;
     procedure ImgMainClick(Sender: TObject);
-    procedure PmLoadFromFilePopup(Sender: TObject);
+    procedure PmAvatarPopup(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure WllGroupsDblClick(Sender: TObject);
+    procedure MiLoadFromMiniGalleryClick(Sender: TObject);
+    procedure MiUseCurrentImageClick(Sender: TObject);
   private
     { Private declarations }
     FGroup: TGroup;
@@ -100,6 +107,7 @@ procedure DBChangeGroup(Group: TGroup);
 implementation
 
 uses
+  ImEditor,
   UnitDBKernel;
 
 {$R *.dfm}
@@ -252,7 +260,11 @@ begin
     CbPrivateGroup.Caption := L('Group is private');
     MemComments.WatermarkText := L('Write here comment for this group');
     MemKeywords.WatermarkText := L('Write here keywords for this group');
-    LoadFromFile1.Caption := L('Load from file');
+
+    MiLoadFromFile.Caption := L('Load from file');
+    MiUseCurrentImage.Caption := L('Use current image');
+    MiLoadFromMiniGallery.Caption := L('Load from mini gallery');
+
     CbAddkeywords.Caption := L('Auto add keywords to photo');
     CommentLabel.Caption := L('Comment for group') + ':';
     KeyWordsLabel.Caption := L('Keywords for group') + ':';
@@ -263,9 +275,72 @@ begin
   end;
 end;
 
-procedure TFormChangeGroup.LoadFromFile1Click(Sender: TObject);
+procedure TFormChangeGroup.MiLoadFromFileClick(Sender: TObject);
 begin
   LoadNickJpegImage(ImgMain);
+end;
+
+procedure TFormChangeGroup.MiLoadFromMiniGalleryClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  if Saving then
+    Exit;
+  P := ImgMain.ClientToScreen(ImgMain.ClientRect.CenterPoint);
+  GraphicSelect1.RequestPicture(P.X, P.Y);
+end;
+
+procedure TFormChangeGroup.MiUseCurrentImageClick(Sender: TObject);
+var
+  I: Integer;
+  Form: TDBForm;
+  Source: ICurrentImageSource;
+  FileName: string;
+  Editor: TImageEditorForm;
+  Bitmap: TBitmap;
+  FJPG: TJpegImage;
+begin
+  FileName := '';
+  for I := 0 to Screen.FormCount - 1 do
+  begin
+    if not (Screen.Forms[I] is TDBForm) then
+      Continue;
+
+    Form := Screen.Forms[I] as TDBForm;
+    if Form.QueryInterfaceEx(ICurrentImageSource, Source) = S_OK then
+    begin
+      FileName := Source.GetCurrentImageFileName;
+      if FileName <> '' then
+        Break;
+     end;
+  end;
+  if FileName <> '' then
+  begin
+    Editor := TImageEditor.Create(nil);
+    try
+      Bitmap := TBitmap.Create;
+      try
+        if Editor.EditFile(FileName, Bitmap) then
+        begin
+          KeepProportions(Bitmap, 48, 48);
+          FJPG := TJpegImage.Create;
+          try
+            FJPG.CompressionQuality := DBJpegCompressionQuality;
+            FJPG.Assign(Bitmap);
+            FJPG.JPEGNeeded;
+            ImgMain.Picture.Graphic := FJPG;
+          finally
+            F(FJPG);
+          end;
+
+        end;
+      finally
+        F(Bitmap);
+      end;
+    finally
+      R(Editor);
+    end;
+  end;
 end;
 
 function TFormChangeGroup.GetFormID: string;
@@ -333,13 +408,13 @@ begin
             if ValidJPEGContainer(Directory + SearchRec.Name) then
               TS.Add(Directory + SearchRec.Name);
         end;
-        Found := SysUtils.FindNext(SearchRec);
+        Found := System.SysUtils.FindNext(SearchRec);
       end;
     finally
       FindClose(SearchRec);
     end;
     GraphicSelect1.Galeries := TS;
-    GraphicSelect1.Showgaleries := True;
+    GraphicSelect1.ShowGaleries := True;
   finally
     F(TS);
   end;
@@ -359,7 +434,7 @@ begin
   if Saving then
     Exit;
   GetCursorPos(P);
-  GraphicSelect1.RequestPicture(P.X, P.Y);
+  PmAvatar.Popup(P.X, P.Y);
 end;
 
 procedure TFormChangeGroup.FillImageList;
@@ -451,9 +526,9 @@ begin
   WllGroups.ReallignList;
 end;
 
-procedure TFormChangeGroup.PmLoadFromFilePopup(Sender: TObject);
+procedure TFormChangeGroup.PmAvatarPopup(Sender: TObject);
 begin
-  LoadFromFile1.Visible := not Saving;
+  MiLoadFromFile.Visible := not Saving;
 end;
 
 end.

@@ -40,12 +40,7 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.Controls.DmGradient,
 
-  uGUIDUtils,
   DBCMenu,
-  DropTarget,
-  DropSource,
-  uGroupTypes,
-  uDBClasses,
   UnitGroupsWork,
   dolphin_db,
   UnitDBKernel,
@@ -55,22 +50,32 @@ uses
   CommonDBSupport,
   UnitUpdateDBObject,
   RAWImage,
-  uRawExif,
+
+  DropTarget,
+  DropSource,
   DragDropFile,
   DragDrop,
+
+  CCR.Exif,
+
   UnitPropertyLoadImageThread,
   UnitINI,
-  uLogger,
   UnitPropertyLoadGistogrammThread,
   UnitDBDeclare,
+
+  uGUIDUtils,
+  uGroupTypes,
+  uDBClasses,
+  uRawExif,
+  uLogger,
   uBitmapUtils,
   uCDMappingTypes,
   uDBDrawing,
   uMemory,
   uListViewUtils,
   uDBForm,
+  uInterfaces,
   uDBPopupMenuInfo,
-  CCR.Exif,
   uConstants,
   uShellIntegration,
   uGraphicUtils,
@@ -101,7 +106,7 @@ type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
 
 type
-  TPropertiesForm = class(TDBForm)
+  TPropertiesForm = class(TDBForm, ICurrentImageSource)
     ImMain: TImage;
     CommentMemo: TMemo;
     LabelComment: TLabel;
@@ -353,6 +358,11 @@ type
     SID: TGUID;
     FCurrentPass: string;
     GistogrammData: TGistogrammData;
+
+    //Begin: ICurrentImageSource
+    function GetCurrentImageFileName: string;
+    //End of: ICurrentImageSource
+
     procedure ExecuteFileNoEx(FileName: string);
     procedure Execute(ID: Integer);
     procedure ExecuteEx(IDs: TArInteger); overload;
@@ -591,7 +601,7 @@ begin
     DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBKernel.RegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBitem1.Visible := True;
-    CommentMemo.Cursor := CrDefault;
+    CommentMemo.Cursor := crDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
     DA := TDBAdapter.Create(WorkQuery);
@@ -2673,6 +2683,11 @@ var
 begin
   Group := GetGroupByGroupCode(FNowGroups[PopupMenuGroups.Tag].GroupCode, False);
   DBChangeGroup(Group);
+end;
+
+function TPropertiesForm.GetCurrentImageFileName: string;
+begin
+  Result := GetFileName;
 end;
 
 function TPropertiesForm.GetFileName: string;

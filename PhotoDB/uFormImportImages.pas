@@ -961,8 +961,8 @@ begin
       Sb := DisplayItems[SI];
 
       LnkLabel := Sb.FindChildByTag<TWebLink>(TAG_LABEL);
-      TextSize := Min(Max(LnkLabel.Width - LnkLabel.Left - 5, 175 - 18), 450);
-      Sb.Width := TextSize + 18;
+      TextSize := Min(Max(LnkLabel.Width - LnkLabel.Left - 5, 175 - 22), 450);
+      Sb.Width := TextSize + 22;
       Sb.Left := Left - FContainer.HorzScrollBar.Position;
       Left := Left + Sb.Width + 5;
     end;
@@ -1051,7 +1051,7 @@ begin
     DtpEditDate := TDateTimePicker.Create(FContainer.Owner);
     DtpEditDate.Anchors := [akTop, akLeft, akRight];
     DtpEditDate.Parent := Parent;
-    DtpEditDate.Left := 3;
+    DtpEditDate.Left := 4;
     DtpEditDate.Top := 27;
     DtpEditDate.Width := 121;
     DtpEditDate.Height := 21;
@@ -1207,7 +1207,7 @@ begin
 
         WlLabel := TWebLink.Create(FContainer.Owner);
         WlLabel.Parent := Sb;
-        WlLabel.Left := 2;
+        WlLabel.Left := 4;
         WlLabel.Top := 6;
         WlLabel.LoadFromResource('SERIES_EDIT');
         WlLabel.DisableStyles := True;
@@ -1221,7 +1221,7 @@ begin
 
         WlDate := TWebLink.Create(FContainer.Owner);
         WlDate.Parent := Sb;
-        WlDate.Left := 2;
+        WlDate.Left := 4;
         WlDate.Top := 28;
         WlDate.LoadFromResource('SERIES_DATE');
         WlDate.DisableStyles := True;
@@ -1237,7 +1237,7 @@ begin
         WlItemsCount.IconWidth := 0;
         WlItemsCount.IconHeight := 0;
         WlItemsCount.Parent := Sb;
-        WlItemsCount.Left := 2;
+        WlItemsCount.Left := 4;
         WlItemsCount.Top := 50;
         WlItemsCount.Tag := TAG_ITEMS_COUNT;
         WlItemsCount.DisableStyles := True;
@@ -1252,7 +1252,7 @@ begin
         WlSize.IconWidth := 0;
         WlSize.IconHeight := 0;
         WlSize.Parent := Sb;
-        WlSize.Left := 60;
+        WlSize.Left := 62;
         WlSize.Top := 50;
         WlSize.Tag := TAG_ITEMS_SIZE;
         WlSize.DisableStyles := True;
@@ -1266,7 +1266,7 @@ begin
         WlSettings := TWebLink.Create(FContainer.Owner);
         WlSettings.Anchors := [akTop, akRight];
         WlSettings.Parent := Sb;
-        WlSettings.Left := 148;
+        WlSettings.Left := 152;
         WlSettings.Top := 52;
         WlSettings.TopIconIncrement := 0;
         WlSettings.LoadFromResource('SERIES_SETTINGS');
@@ -1289,7 +1289,7 @@ begin
         WlLabel.Text := SI.ItemLabel;
       WlLabel.LoadImage;
 
-      Sb.Width := Min(Max(WlLabel.Width - WlLabel.Left - 5, 175 - 18), 450) + 18;
+      Sb.Width := Min(Max(WlLabel.Width - WlLabel.Left - 5, 175 - 22), 450) + 22;
 
       WlDate := Sb.FindChildByTag<TWebLink>(TAG_DATE);
 
@@ -1299,7 +1299,7 @@ begin
       WlItemsCount := Sb.FindChildByTag<TWebLink>(TAG_ITEMS_COUNT);
       WlItemsCount.Text := FormatEx(TA('{0} Files', 'ImportPictures'), [SI.ItemsCount]);
       WlItemsCount.LoadImage;
-      WlItemsCount.Left := 2;
+      WlItemsCount.Left := 6;
 
       WlSize := Sb.FindChildByTag<TWebLink>(TAG_ITEMS_SIZE);
       WlSize.Left := WlItemsCount.Left + WlItemsCount.Width + 5;

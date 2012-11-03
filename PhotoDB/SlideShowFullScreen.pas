@@ -99,7 +99,7 @@ end;
 procedure TFullScreenView.FormMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  Showmouse;
+  ShowMouse;
   MouseTimer.Enabled := False;
   MouseTimer.Enabled := True;
 end;

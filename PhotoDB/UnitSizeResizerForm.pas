@@ -159,6 +159,7 @@ type
     procedure ReadSettings;
     procedure UpdateNavigation;
     procedure WndProc(var Message: TMessage); override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     destructor Destroy; override;
@@ -268,7 +269,7 @@ begin
     FProcessingParams.GraphicClass := TGraphicClass(DdConvert.Items.Objects[DdConvert.ItemIndex]);
 
   FProcessingParams.Resize := CbResize.Checked;
-  FProcessingParams.ResizeToSize := (DdResizeAction.ItemIndex in [0 .. 4]) or
+  FProcessingParams.ResizeToSize := (DdResizeAction.ItemIndex in [0 .. 6]) or
     (DdResizeAction.ItemIndex = DdResizeAction.Items.Count - 1);
   if (FProcessingParams.ResizeToSize) then
   begin
@@ -802,6 +803,24 @@ begin
   Params.WndParent := GetDesktopWindow;
   with Params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
+end;
+
+procedure TFormSizeResizer.CustomFormAfterDisplay;
+begin
+  inherited;
+  if EdImageName = nil then
+   Exit;
+  if DdConvert = nil then
+   Exit;
+  if DdRotate = nil then
+   Exit;
+  if DdResizeAction = nil then
+   Exit;
+
+  EdImageName.Refresh;
+  DdConvert.Refresh;
+  DdRotate.Refresh;
+  DdResizeAction.Refresh;
 end;
 
 procedure TFormSizeResizer.DdConvertChange(Sender: TObject);

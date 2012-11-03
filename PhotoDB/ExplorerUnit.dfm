@@ -746,10 +746,6 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 574
@@ -788,10 +784,6 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -951,10 +943,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -975,10 +963,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -2642,12 +2626,13 @@ object ExplorerForm: TExplorerForm
       object TbbOpenDirectory: TToolButton
         Left = 561
         Top = 0
+        AutoSize = True
         Caption = 'TbbOpenDirectory'
         ImageIndex = 9
         OnClick = TbbOpenDirectoryClick
       end
       object TbbRename: TToolButton
-        Left = 661
+        Left = 665
         Top = 0
         AutoSize = True
         Caption = 'TbbRename'
@@ -2655,7 +2640,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Rename1Click
       end
       object TbbProperties: TToolButton
-        Left = 734
+        Left = 738
         Top = 0
         AutoSize = True
         Caption = 'TbbProperties'
@@ -2676,7 +2661,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.959783009260000000
+      Date = 41177.959005104170000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

@@ -27,6 +27,11 @@ type
     procedure HandleEncryptionError(FileName: string; ErrorMessage: string);
   end;
 
+  ICurrentImageSource = interface(IInterface)
+  ['{1BFE6E8F-2411-4250-BF57-75BCEF69F091}']
+    function GetCurrentImageFileName: string;
+  end;
+
 implementation
 
 end.

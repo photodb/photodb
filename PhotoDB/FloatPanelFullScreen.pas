@@ -41,7 +41,6 @@ type
     procedure TbCloseClick(Sender: TObject);
     procedure RecreateImLists;
     procedure FormCreate(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -75,7 +74,7 @@ end;
 
 procedure TFloatPanel.TbCloseClick(Sender: TObject);
 begin
-  Close;
+  Viewer.CloseActiveView;
 end;
 
 procedure TFloatPanel.RecreateImLists;
@@ -146,11 +145,6 @@ procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
   RecreateImLists;
   SetButtonsEnabled(Viewer.ImagesCount > 1);
-end;
-
-procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  Viewer.CloseActiveView;
 end;
 
 end.

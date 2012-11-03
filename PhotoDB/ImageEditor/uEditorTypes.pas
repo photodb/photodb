@@ -49,6 +49,7 @@ type
     VirtualBrushCursor: Boolean;
     VBrush: TVBrushType;
     function EditImage(Image: TBitmap): Boolean; virtual; abstract;
+    function EditFile(Image: string; BitmapOut: TBitmap): Boolean; virtual; abstract;
     property Zoom: Extended read GetZoom;
     procedure MakeImage(ResizedWindow: Boolean = False); virtual; abstract;
     procedure DoPaint; virtual; abstract;

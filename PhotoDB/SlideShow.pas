@@ -109,7 +109,7 @@ uses
   uFormInterfaces;
 
 type
-  TViewer = class(TViewerForm, IViewerForm, IImageSource, IFaceResultForm)
+  TViewer = class(TViewerForm, IViewerForm, IImageSource, IFaceResultForm, ICurrentImageSource)
     PmMain: TPopupActionBar;
     Next1: TMenuItem;
     Previous1: TMenuItem;
@@ -314,6 +314,7 @@ type
     procedure Createnote1Click(Sender: TObject);
     procedure TbExploreClick(Sender: TObject);
     procedure MiCurrentPersonAvatarClick(Sender: TObject);
+    procedure FormDblClick(Sender: TObject);
   private
     { Private declarations }
     WindowsMenuTickCount: Cardinal;
@@ -430,6 +431,10 @@ type
     procedure UpdateCursor;
     property DisplayRating: Integer write SetDisplayRating;
     procedure FinishDetectionFaces;
+
+    //Begin: ICurrentImageSource
+    function GetCurrentImageFileName: string;
+    //End of: ICurrentImageSource
 
     function NextImage: Boolean;
     function PreviousImage: Boolean;
@@ -1052,6 +1057,11 @@ begin
     if DirectShowForm <> nil then
       DirectShowForm.Previous;
   end;
+end;
+
+procedure TViewer.FormDblClick(Sender: TObject);
+begin
+  FullScreen1Click(Sender);
 end;
 
 procedure TViewer.FormDestroy(Sender: TObject);
@@ -2274,6 +2284,11 @@ begin
   FHoverFace := nil;
   UpdateFaceDetectionState;
   RefreshFaces;
+end;
+
+function TViewer.GetCurrentImageFileName: string;
+begin
+  Result := Item.FileName;
 end;
 
 procedure TViewer.GetFaceInfo(Face: TFaceDetectionResultItem; BmpFace3X: TBitmap; out FaceRect: TRect);

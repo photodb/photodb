@@ -454,6 +454,9 @@ begin
   if not IsGraphicFile(FItem.FileName) then
     Exit;
 
+  if FText <> '' then
+    Exit;
+  
   Info := TDBPopupMenuInfo.Create;
   try
     Info.Add(FItem.Copy);

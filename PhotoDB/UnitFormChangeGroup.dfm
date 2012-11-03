@@ -27,6 +27,7 @@ object FormChangeGroup: TFormChangeGroup
     Top = 4
     Width = 50
     Height = 49
+    Cursor = crHandPoint
     Center = True
     Picture.Data = {
       0A544A504547496D61676548060000FFD8FFE000104A46494600010101012C01
@@ -80,7 +81,7 @@ object FormChangeGroup: TFormChangeGroup
       A49FCDFA763D13C63058EA7269B26B9729A7D95940C82112869A56662490003C
       70077E95E4B3797E7C9E496316E3B0B0E76E78CD24923CAE5E476776392CC724
       D36B82ACE12D211B7E2CE9A709AD672BFE0BFAF99FFFD9}
-    PopupMenu = PmLoadFromFile
+    PopupMenu = PmAvatar
     OnClick = ImgMainClick
   end
   object CommentLabel: TLabel
@@ -225,13 +226,21 @@ object FormChangeGroup: TFormChangeGroup
     PaddingTop = 2
     PaddingLeft = 2
   end
-  object PmLoadFromFile: TPopupActionBar
-    OnPopup = PmLoadFromFilePopup
+  object PmAvatar: TPopupActionBar
+    OnPopup = PmAvatarPopup
     Left = 120
     Top = 64
-    object LoadFromFile1: TMenuItem
-      Caption = 'Load From File'
-      OnClick = LoadFromFile1Click
+    object MiLoadFromFile: TMenuItem
+      Caption = 'Load from file'
+      OnClick = MiLoadFromFileClick
+    end
+    object MiUseCurrentImage: TMenuItem
+      Caption = 'Use current image'
+      OnClick = MiUseCurrentImageClick
+    end
+    object MiLoadFromMiniGallery: TMenuItem
+      Caption = 'Load from mini gallery'
+      OnClick = MiLoadFromMiniGalleryClick
     end
   end
   object GroupsImageList: TImageList

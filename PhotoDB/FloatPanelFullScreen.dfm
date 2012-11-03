@@ -14,7 +14,6 @@ object FloatPanel: TFloatPanel
   OldCreateOrder = False
   Position = poDefault
   Visible = True
-  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13

@@ -634,7 +634,7 @@ begin
       begin                                      //TODO: use overlaped if use this hook
         if ValidEncryptFileExHandle(FileHandle^, False) then
         begin
-          if DesiredAccess and GENERIC_WRITE > 0 then
+          if (DesiredAccess and GENERIC_WRITE > 0) then
           begin
             CloseHandle(FileHandle^);
             FileHandle^ := INVALID_HANDLE_VALUE;
@@ -957,7 +957,7 @@ begin
     begin
       if ValidEncryptFileExHandle(Result, dwFlagsAndAttributes and FILE_FLAG_OVERLAPPED > 0) then
       begin
-        if dwDesiredAccess and GENERIC_WRITE > 0 then
+        if (dwDesiredAccess and GENERIC_WRITE > 0) then
         begin
           CloseHandle(Result);
           Result := INVALID_HANDLE_VALUE;
@@ -991,7 +991,7 @@ begin
     begin
       if ValidEncryptFileExHandle(Result, dwFlagsAndAttributes and FILE_FLAG_OVERLAPPED > 0) then
       begin
-        if dwDesiredAccess and GENERIC_WRITE > 0 then
+        if (dwDesiredAccess and GENERIC_WRITE > 0) then
         begin
           CloseHandle(Result);
           Result := INVALID_HANDLE_VALUE;

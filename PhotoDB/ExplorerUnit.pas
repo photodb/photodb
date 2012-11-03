@@ -191,7 +191,7 @@ type
   TValueListEditor = class(TEXIFDisplayControl);
 
 type
-  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm)
+  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource)
     SizeImageList: TImageList;
     PmItemPopup: TPopupActionBar;
     SlideShow1: TMenuItem;
@@ -1043,8 +1043,7 @@ type
     procedure ItemUpdateTimer(Sender: TObject);
     procedure UpdateItems;
     procedure StateChanged(OldState: TGUID); override;
-    procedure ConstrainedResize(var MinWidth, MinHeight, MaxWidth,
-      MaxHeight: Integer); override;
+    procedure ConstrainedResize(var MinWidth, MinHeight, MaxWidth, MaxHeight: Integer); override;
 
     procedure ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
     procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
@@ -1107,6 +1106,10 @@ type
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
     function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
     function AddIcon(Icon: TIcon; SelfReleased : Boolean; FileGUID: TGUID): Boolean;
+
+    //Begin: ICurrentImageSource
+    function GetCurrentImageFileName: string;
+    //End of: ICurrentImageSource
 
     function GetCurrentPath: String; override;
     procedure SetPath(NewPath: String); override;
@@ -1279,7 +1282,12 @@ begin
   begin
     CreatePreview;
     if FImageViewer <> nil then
-      FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+    begin
+      if ListView1Selected <> nil then
+        FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected))
+      else
+        FImageViewer.SetText(L('Select a file to preview'));
+    end;
   end;
 
   if PcRightPreview.ActivePageIndex = Integer(ertsMap) then
@@ -1520,6 +1528,7 @@ begin
     ShowRightPanel(ertsPreview)
   else
     SetResizeListViewMode;
+  PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   Lock := False;
 
@@ -2285,14 +2294,11 @@ begin
   SplRightPanel.Align := alLeft;
 end;
 
-procedure TExplorerForm.ConstrainedResize(var MinWidth, MinHeight, MaxWidth,
-  MaxHeight: Integer);
+procedure TExplorerForm.ConstrainedResize(var MinWidth, MinHeight, MaxWidth, MaxHeight: Integer);
 begin
   inherited;
-  if PnRight.Visible and not PcRightPreview.MouseInClient then
-  begin
+  if PnRight.Visible then
     MinWidth := MainPanel.Width + ElvMain.Constraints.MinHeight + SplLeftPanel.Width + SplRightPanel.Width + PnRight.Constraints.MinWidth;
-  end;
 end;
 
 procedure TExplorerForm.ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
@@ -3781,6 +3787,21 @@ begin
     Image := TBitmap.Create;
     CreateMultiselectImage(ElvMain, TBitmap(Image), FBitmapImageList, ElvMain.Selection.GradientColorBottom, ElvMain.Selection.GradientColorTop,
       ElvMain.Selection.Color, ElvMain.Font, ThSizeExplorerPreview + 3, ThSizeExplorerPreview + 3);
+  end;
+end;
+
+function TExplorerForm.GetCurrentImageFileName: string;
+var
+  Index: Integer;
+begin
+  Result := '';
+  if SelCount > 0 then
+  begin
+    if ElvMain.Selection.FocusedItem <> nil then
+    begin
+      Index := ItemIndexToMenuIndex(ElvMain.Selection.FocusedItem.Index);
+      Result := FFilesInfo[Index].FileName;
+    end;
   end;
 end;
 
@@ -5566,8 +5587,6 @@ begin
   SbCloseRightPanel.Parent := PcRightPreview;
   SbCloseRightPanel.Top := 1;
   SbCloseRightPanel.Left := PcRightPreview.Width - SbCloseRightPanel.Width - 2;
-
-  PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   ShowActiveRightTab(Mode);
   ApplyRightTabs;
@@ -7592,8 +7611,12 @@ begin
 end;
 
 procedure TExplorerForm.HandleEncryptionError(FileName, ErrorMessage: string);
+var
+  ErrorText: string;
 begin
-  ShowHelp(L('File processing could be failed. Please try internal video player or current programm isn''t suported!' + ' ' + ErrorMessage), '');
+  ErrorText := L('File processing could be failed. Please try internal video player or current programm isn''t suported! Internal details: {0}');
+  ErrorText := FormatEx(ErrorText, [ErrorMessage]);
+  ShowHelp(ErrorText, 'transparent-encryption-error');
 end;
 
 procedure TExplorerForm.Help1Click(Sender: TObject);

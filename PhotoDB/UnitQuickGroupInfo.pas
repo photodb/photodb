@@ -72,6 +72,7 @@ type
       Shift: TShiftState);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure GroupImageClick(Sender: TObject);
   private
     { Private declarations }
     FGroup: TGroup;
@@ -233,6 +234,14 @@ end;
 procedure TFormQuickGroupInfo.GroupClick(Sender: TObject);
 begin
   GroupInfoForm.Execute(nil, TWebLink(Sender).Text, False);
+end;
+
+procedure TFormQuickGroupInfo.GroupImageClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := GroupImage.ClientToScreen(GroupImage.ClientRect.CenterPoint);
+  PmGroupOptions.Popup(P.X, P.Y);
 end;
 
 procedure TFormQuickGroupInfo.LoadLanguage;

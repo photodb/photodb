@@ -68,6 +68,7 @@ uses
   UnitDBFileDialogs,
   UnitDBCommonGraphics,
 
+  uInterfaces,
   uTiffImage,
   uJpegUtils,
   uGUIDUtils,
@@ -101,7 +102,7 @@ type
   TWindowEnableStates = array of TWindowEnableState;
 
 type
-  TImageEditor = class(TImageEditorForm)
+  TImageEditor = class(TImageEditorForm, ICurrentImageSource)
     ToolsPanel: TPanel;
     ButtomPanel: TPanel;
     ScrollBarH: TScrollBar;
@@ -275,8 +276,14 @@ type
     procedure SaveImageFile(FileName: string; AfterEnd: Boolean = False);
     procedure ReadActions(Actions: TStrings);
     function EditImage(Image: TBitmap): Boolean; override;
+    function EditFile(Image: string; BitmapOut: TBitmap): Boolean; override;
     procedure MakeImage(ResizedWindow: Boolean = False); override;
     procedure DoPaint; override;
+
+    //Begin: ICurrentImageSource
+    function GetCurrentImageFileName: string;
+    //End of: ICurrentImageSource
+
     property CloseOnFailture: Boolean read FCloseOnFailture write SetCloseOnFailture;
   end;
 
@@ -1994,6 +2001,17 @@ begin
   MakeCaption;
 end;
 
+function TImageEditor.EditFile(Image: string; BitmapOut: TBitmap): Boolean;
+begin
+  FIsEditImageDone := False;
+  FIsEditImage := True;
+  FEditImage := BitmapOut;
+  OpenFileName(Image);
+  InitEditor('');
+  ShowModal;
+  Result := FIsEditImageDone;
+end;
+
 function TImageEditor.EditImage(Image: TBitmap): Boolean;
 begin
   FIsEditImageDone := False;
@@ -2526,6 +2544,11 @@ begin
   EditorFullScreenForm.SetImage(CurrentImage);
   EditorFullScreenForm.CreateDrawImage;
   EditorFullScreenForm.Show;
+end;
+
+function TImageEditor.GetCurrentImageFileName: string;
+begin
+  Result := CurrentFileName;
 end;
 
 function TImageEditor.GetExifData: TExifData;

@@ -29,6 +29,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
     Top = 4
     Width = 50
     Height = 49
+    Cursor = crHandPoint
     Center = True
     Picture.Data = {
       0A544A504547496D61676548060000FFD8FFE000104A46494600010101012C01
@@ -83,6 +84,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
       70077E95E4B3797E7C9E496316E3B0B0E76E78CD24923CAE5E476776392CC724
       D36B82ACE12D211B7E2CE9A709AD672BFE0BFAF99FFFD9}
     PopupMenu = PmGroupOptions
+    OnClick = GroupImageClick
   end
   object CommentLabel: TLabel
     Tag = 2

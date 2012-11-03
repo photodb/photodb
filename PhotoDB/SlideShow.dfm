@@ -23,6 +23,7 @@ object Viewer: TViewer
   OnClose = FormClose
   OnContextPopup = FormContextPopup
   OnCreate = FormCreate
+  OnDblClick = FormDblClick
   OnDestroy = FormDestroy
   OnMouseDown = FormMouseDown
   OnMouseMove = FormMouseMove
