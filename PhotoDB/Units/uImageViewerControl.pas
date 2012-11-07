@@ -240,6 +240,8 @@ type
     procedure ReloadCurrent;
     procedure UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
 
+    function IsAnimatedImage: Boolean;
+
     procedure SetFaceDetectionControls(AWlFaceCount: TWebLink; ALsDetectingFaces: TLoadingSign; ATbrActions: TToolBar);
     procedure HightlitePerson(PersonID: Integer);
     procedure HightliteReset;
@@ -542,8 +544,7 @@ begin
   FZoomerOn := False;
   FTransparentImage := FAnimatedImage.IsTransparentAnimation;
 
-  FAnimatedBuffer.Width := FAnimatedImage.Width;
-  FAnimatedBuffer.Height := FAnimatedImage.Height;
+  FAnimatedBuffer.SetSize(FAnimatedImage.Width, FAnimatedImage.Height);
 
   FAnimatedBuffer.Canvas.Brush.Color := Theme.PanelColor;
   FAnimatedBuffer.Canvas.Pen.Color := Theme.PanelColor;
@@ -570,6 +571,7 @@ begin
   FImageScale := ImageScale;
 
   //FTransparentImage := Transparent;
+  F(FAnimatedImage);
   F(FFullImage);
   FFullImage := Image;
   FLoadImageSize.cx := FFullImage.Width;
@@ -1170,6 +1172,11 @@ begin
       FZoom);
 end;
 
+function TImageViewerControl.IsAnimatedImage: Boolean;
+begin
+  Result := FAnimatedImage <> nil;
+end;
+
 function TImageViewerControl.GetIsFastDrawing: Boolean;
 begin
   Result := False;
@@ -1604,14 +1611,24 @@ var
   end;
 
   procedure ShowInfoText(InfoText, InfoTextLine2: string);
+  var
+    Text: string;
+    TextRect, R: TRect;
   begin
     FDrawImage.Canvas.Font.Color := Theme.PanelFontColor;
 
-    FDrawImage.Canvas.TextOut(FDrawImage.Width div 2 - FDrawImage.Canvas.TextWidth(InfoText) div 2,
-      FDrawImage.Height div 2 - FDrawImage.Canvas.Textheight(InfoText) div 2, InfoText);
+    Text := InfoText + #13 + InfoTextLine2;
+    R := GetClientRect;
+    if R.Right > 300 then
+      R.Right := 300;
+    DrawText(FDrawImage.Canvas.Handle, Text, Length(Text), R, DT_CENTER or DT_WORDBREAK or DT_CALCRECT);
 
-    FDrawImage.Canvas.TextOut(FDrawImage.Width div 2 - FDrawImage.Canvas.TextWidth(InfoTextLine2) div 2,
-      FDrawImage.Height div 2 - FDrawImage.Canvas.TextHeight(InfoTextLine2) div 2 + FDrawImage.Canvas.TextHeight(InfoTextLine2) + 4, InfoTextLine2);
+    TextRect.Left := Width div 2 - R.Width div 2;
+    TextRect.Top := Height div 2 - R.Height div 2;
+    TextRect.Width := R.Width;
+    TextRect.Height := R.Height;
+
+    DrawText(FDrawImage.Canvas.Handle, Text, Length(Text), TextRect, DT_CENTER or DT_WORDBREAK);
   end;
 
   procedure ShowErrorText(FileName: string);
@@ -1889,7 +1906,8 @@ end;
 
 procedure TImageViewerControl.ReloadCurrent;
 begin
-  FOnImageRequest(Self, Item, Screen.DesktopWidth, Screen.DesktopHeight);
+  if FText = '' then
+    FOnImageRequest(Self, Item, Screen.DesktopWidth, Screen.DesktopHeight);
 end;
 
 procedure TImageViewerControl.RequestNextImage;
@@ -1925,7 +1943,7 @@ begin
   W := FRealImageWidth;
   H := FRealImageHeight;
   ProportionalSize(Size.cx, Size.cy, W, H);
-  if (W > FLoadImageSize.cx) or (H > FLoadImageSize.cy) then
+  if (W > FLoadImageSize.cx) or (H > FLoadImageSize.cy) and (FText = '') then
   begin
     FLoadImageSize.cx := Screen.DesktopWidth;
     FLoadImageSize.cy := Screen.DesktopHeight;
@@ -2179,7 +2197,7 @@ begin
   begin
     if (EventID_Param_Rotate in Params) then
       Item.Rotation := Value.Rotate;
-    if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
+    if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) and (Text = '') then
       FOnImageRequest(Sender, Item, Screen.DesktopWidth, Screen.DesktopHeight);
   end;
 end;

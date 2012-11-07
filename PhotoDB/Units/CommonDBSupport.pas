@@ -11,6 +11,7 @@ uses
   Classes,
   ComObj,
   UnitINI,
+  Variants,
   SyncObjs,
 
   Dmitry.CRC32,
@@ -766,8 +767,11 @@ var
   DAO,
   WS: Variant;
   I,
+  WSCount,
   Code: Integer;
-  ErrorString: string;
+  ErrorString: TStrings;
+  Catalog: OLEVariant;
+
   const Engines: array[0..3] of string = ('DAO.DBEngine.120', 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
 
   function CheckClass(OLEClassName: string): Boolean;
@@ -787,31 +791,50 @@ var
 
 begin
   Code := 0;
-  for I := Low(Engines) to High(Engines) do
-    if CheckClass(Engines[I]) then
-      begin
-        try
-          DAO := CreateOleObject(Engines[I]);
-          Code := 1;
-          WS := DAO.Workspaces[0];
-          Code := 2;
-          WS.CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
-          Exit;
-        except
-          on E: Exception do
-          begin
-            ErrorString := 'Error creating database! Engine: ' + Engines[I] + ', ERROR: ' + E.message + ', file: ' + FileName + ', code = ' + IntToStr(Code);
-            EventLog(ErrorString);
-            TThread.Synchronize(nil,
-              procedure
-              begin
-                MessageBoxDB(0, ErrorString, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-              end
-            );
+  WSCount := -1;
+  ErrorString := TStringList.Create;
+  try
+    ErrorString.Add(TA('DAO engine could not be initialized to create database! Details:', 'Errors'));
+    for I := Low(Engines) to High(Engines) do
+      if CheckClass(Engines[I]) then
+        begin
+          try
+            DAO := CreateOleObject(Engines[I]);
+            Code := 1;
+            WSCount := DAO.Workspaces.Count;
+            Code := 2;
+            WS := DAO.Workspaces[0];
+            Code := 3;
+            WS.CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
+            Exit;
+          except
+            on E: Exception do
+            begin
+              ErrorString.Add('Engine: ' + Engines[I] + ', ERROR: ' + E.message + ', file: "' + FileName + '", code = ' + IntToStr(Code) + ', WSCount = ' + IntToStr(WSCount));
+            end;
           end;
         end;
-      end;
-  raise Exception.Create('DAO engine could not be initialized');
+
+    try
+      Catalog := CreateOleObject('ADOX.Catalog');
+      Catalog.Create('Provider=Microsoft.Jet.OLEDB.4.0;Data Source="' + FileName + '";');
+      Catalog := NULL;
+      Exit;
+    except
+      on e: Exception do
+        ErrorString.Add('Create database using Catalog was failed: ' + E.message);
+    end;
+
+    EventLog(ErrorString.Text);
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        MessageBoxDB(0, ErrorString.Text, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      end
+    );
+  finally
+    F(ErrorString);
+  end;
 end;
 
 function ADOCreateImageTable(TableName: string) : boolean;

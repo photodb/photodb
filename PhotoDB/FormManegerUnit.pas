@@ -579,6 +579,18 @@ begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
         CleanUpThread.Create(Self, False);
     end;
+    if (FCheckCount = 50) and not FolderView then // after 4 sec.
+    begin
+      TW.I.Start('FM -> DBCheck');
+      // checking RecordCount
+      if Settings.ReadboolW('DBCheck', ExtractFileName(Dbname), True) = True then
+      begin
+        Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
+        if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
+          ImportImages(Dbname);
+      end;
+    end;
+
     if (FCheckCount = 100) and not FolderView then // after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
@@ -697,23 +709,7 @@ begin
         end;
         Settings.WriteBool('DBVersionCheck', StringDBCheckKey, True);
       end;
-
-      TW.I.Start('FM -> DBCheck');
-      // checking RecordCount
-      if Settings.ReadboolW('DBCheck', ExtractFileName(Dbname), True) = True then
-      begin
-        Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
-        if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
-        begin
-          CloseSplashWindow;
-          ImportImages(Dbname);
-        end
-        else
-          Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
-
-      end;
     end;
-
   finally
     LockCleaning := False;
   end;

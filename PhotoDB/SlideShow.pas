@@ -723,6 +723,7 @@ var
   procedure ShowErrorText(FileName: string);
   var
     MessageText: string;
+    TextRect, R: TRect;
   begin
     if FileName <> '' then
     begin
@@ -732,12 +733,18 @@ var
       else
         DrawImage.Canvas.Font.Color := Theme.HighlightTextColor;
 
-      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(MessageText) div 2,
-        DrawImage.Height div 2 - DrawImage.Canvas.Textheight(MessageText) div 2, MessageText);
+      Text := MessageText + #13 + FileName;
+      R := GetClientRect;
+      if R.Right > 300 then
+        R.Right := 300;
+      DrawText(DrawImage.Canvas.Handle, Text, Length(Text), R, DT_CENTER or DT_WORDBREAK or DT_CALCRECT);
 
-      DrawImage.Canvas.TextOut(DrawImage.Width div 2 - DrawImage.Canvas.TextWidth(FileName) div 2,
-        DrawImage.Height div 2 - DrawImage.Canvas.TextHeight(FileName) div 2 + DrawImage.Canvas.TextHeight
-          (FileName) + 4, FileName);
+      TextRect.Left := DrawImage.Width div 2 - R.Width div 2;
+      TextRect.Top := DrawImage.Height div 2 - R.Height div 2;
+      TextRect.Width := R.Width;
+      TextRect.Height := R.Height;
+
+      DrawText(DrawImage.Canvas.Handle, Text, Length(Text), TextRect, DT_CENTER or DT_WORDBREAK);
     end;
   end;
 

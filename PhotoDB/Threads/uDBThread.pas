@@ -138,6 +138,7 @@ end;
 procedure FormsWaitProc;
 begin
   Application.ProcessMessages;
+  CheckSynchronize();
 end;
 
 initialization

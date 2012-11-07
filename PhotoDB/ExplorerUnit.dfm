@@ -2221,7 +2221,7 @@ object ExplorerForm: TExplorerForm
         Top = 1
         Width = 348
         Height = 584
-        ActivePage = TsGeoLocation
+        ActivePage = TsMediaPreview
         Align = alClient
         TabOrder = 0
         OnChange = PcRightPreviewChange
@@ -2292,11 +2292,10 @@ object ExplorerForm: TExplorerForm
                 ImageIndex = 1
                 OnClick = TbPreviewRotateCWClick
               end
-              object TbPreviewZoomSeparator: TToolButton
+              object TbPreviewRotateSeparator: TToolButton
                 Left = 140
                 Top = 0
                 Width = 8
-                Caption = 'TbPreviewZoomSeparator'
                 ImageIndex = 2
                 Style = tbsSeparator
               end
@@ -2661,7 +2660,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.959005104170000000
+      Date = 41177.652290902780000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

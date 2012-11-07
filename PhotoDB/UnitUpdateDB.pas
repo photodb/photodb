@@ -527,6 +527,7 @@ begin
   F(FImage);
   F(FImageInv);
   F(FImageHourGlass);
+  F(FCurrentImage);
 
   F(FSpeedCounter);
   F(BadHistory);

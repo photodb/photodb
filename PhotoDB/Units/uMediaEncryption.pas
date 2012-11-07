@@ -39,6 +39,20 @@ begin
     Result := GetPlayerInternalPath;
 end;
 
+function ExpandEnvironment(const strValue: string): string;
+var
+  chrResult: array[0..1023] of Char;
+  wrdReturn: DWORD;
+begin
+  wrdReturn := ExpandEnvironmentStrings(PChar(strValue), chrResult, 1024);
+  if wrdReturn = 0 then
+    Result := strValue
+  else
+  begin
+    Result := Trim(chrResult);
+  end;
+end;
+
 function ShellPlayEncryptedMediaFile(const FileName: string): Boolean;
 var
   Executable,
@@ -74,6 +88,8 @@ begin
 
   if Executable <> '' then
   begin
+    Executable := ExpandEnvironment(Executable);
+
     ExecutableType := GetLibMachineType(Executable);
     if ExecutableType in [mt32Bit, mt64Bit] then
     begin

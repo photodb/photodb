@@ -32,7 +32,7 @@ type
     FileName: TFileNameUnicode;
     IsCrypted: Boolean;
     PassCRC: Cardinal;
-    Chiper : Cardinal;
+    Chiper: Cardinal;
     DataCRC: Cardinal;
   end;
 
@@ -289,9 +289,9 @@ var
   FS: TFileStream;
   I: Integer;
   Header: StenographyHeader;
-  MS : TMemoryStream;
-  Seed : Binary;
-  Chiper : TDECCipherClass;
+  MS: TMemoryStream;
+  Seed: Binary;
+  Chiper: TDECCipherClass;
 begin
   try
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
@@ -314,7 +314,7 @@ begin
       for I := 0 to Min(SizeOf(Header.FileName) div SizeOf(Header.FileName[0]) - 1, Length(FileName) - 1) do
         Header.FileName[I] := FileName[I + 1];
 
-      CalcBufferCRC32(TMemoryStream(MS).Memory, MS.Size, Header.DataCRC);
+      CalcBufferCRC32(MS.Memory^, MS.Size, Header.DataCRC);
       Header.FileSize := Integer(MS.Size);
       Header.IsCrypted := Length(Password) > 0;
       if not Header.IsCrypted then

@@ -236,10 +236,11 @@ type
     property Handle;
   end;
 
-  TDBForm = class(TForm)
+  TDBForm = class(TForm, IInterface)
   private
     FWindowID: string;
     FWasPaint: Boolean;
+    FRefCount: Integer;
     function GetTheme: TDatabaseTheme;
   protected
     procedure WndProc(var Message: TMessage); override;
@@ -248,11 +249,18 @@ type
     procedure ApplyStyle; virtual;
     procedure ApplySettings; virtual;
     procedure CustomFormAfterDisplay; virtual;
+
+    function IInterface.QueryInterface = QueryInterfaceInternal;
+    function QueryInterfaceInternal(const IID: TGUID; out Obj): HResult; stdcall;
+    function _AddRef: Integer; stdcall;
+    function _Release: Integer; stdcall;
+    procedure InterfaceDestroyed; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     class constructor Create;
     class destructor Destroy;
+
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate: string; Scope: string): string; overload;
     function LF(StringToTranslate: string; Args: array of const): string;
@@ -320,6 +328,7 @@ end;
 constructor TDBForm.Create(AOwner: TComponent);
 begin
   inherited;
+  FRefCount := 0;
   FWindowID := GUIDToString(GetGUID);
   TFormCollection.Instance.RegisterForm(Self);
   GOM.AddObj(Self);
@@ -501,6 +510,11 @@ begin
   Result := {$IFDEF PHOTODB}uThemesUtils.Theme{$ELSE}nil{$ENDIF};
 end;
 
+procedure TDBForm.InterfaceDestroyed;
+begin
+  //do nothing
+end;
+
 function TDBForm.L(StringToTranslate: string; Scope: string): string;
 begin
   Result := {$IFDEF EXTERNAL}StringToTranslate{$ELSE}TTranslateManager.Instance.SmartTranslate(StringToTranslate, Scope){$ENDIF};
@@ -509,6 +523,14 @@ end;
 function TDBForm.LF(StringToTranslate: string; Args: array of const): string;
 begin
   Result := FormatEx(L(StringToTranslate), args);
+end;
+
+function TDBForm.QueryInterfaceInternal(const IID: TGUID; out Obj): HResult;
+begin
+  if GetInterface(IID, Obj) then
+    Result := S_OK
+  else
+    Result := E_NOINTERFACE
 end;
 
 function TDBForm.QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
@@ -551,6 +573,18 @@ begin
     FWasPaint := True;
 
   inherited;
+end;
+
+function TDBForm._AddRef: Integer;
+begin
+  Result := AtomicIncrement(FRefCount);
+end;
+
+function TDBForm._Release: Integer;
+begin
+  Result := AtomicDecrement(FRefCount);
+  if Result = 0 then
+    InterfaceDestroyed;
 end;
 
 function TDBForm.L(StringToTranslate: string): string;

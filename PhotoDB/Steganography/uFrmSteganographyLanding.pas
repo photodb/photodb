@@ -220,9 +220,9 @@ var
           Chipper := CipherByIdentity(Header.Chiper);
           DeCryptStreamV2(SourceStream, Data, Password, SeedToBinary(Header.Seed), Header.FileSize, Chipper);
         end;
-        CalcBufferCRC32(TMemoryStream(Data).Memory, Data.Size, CRC);
+        CalcBufferCRC32(Data.Memory^, Data.Size, CRC);
 
-        if CRC <> Header.DataCRC then
+        if (Header.DataCRC <> 0) and (CRC <> Header.DataCRC) then
           MessageBoxDB(Handle, L('Information in the file is corrupted! Checksum did not match!'), L('Information'), TD_BUTTON_OK,
             TD_ICON_WARNING);
 

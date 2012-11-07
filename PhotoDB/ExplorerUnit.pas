@@ -456,7 +456,7 @@ type
     TbPreviewRotateCCW: TToolButton;
     TbPreviewRatingSeparator: TToolButton;
     TbPreviewRating: TToolButton;
-    TbPreviewZoomSeparator: TToolButton;
+    TbPreviewRotateSeparator: TToolButton;
     TbPreviewOpen: TToolButton;
     TbPreview: TToolButton;
     ImExtendedSearchGroups: TImageList;
@@ -1003,6 +1003,7 @@ type
     procedure OnBeginLoadingPreviewImage(Sender: TObject; NewImage: Boolean);
     procedure DoStartPersonSelection(Sender: TObject);
     procedure OnStopPersonSelection(Sender: TObject);
+    procedure OnPreviewUpdateButtonsState(Sender: TObject; Buttons: TButtonStates);
 
     procedure ExtendedSearchInit;
     procedure ExtendedSearchRealign;
@@ -1384,6 +1385,7 @@ begin
     FImageViewer.OnDblClick := SlideShowLinkClick;
     FImageViewer.OnPersonsFoundOnImage := OnPersonsFoundOnPreview;
     FImageViewer.OnStopPersonSelection := OnStopPersonSelection;
+    FImageViewer.OnUpdateButtonsState := OnPreviewUpdateButtonsState;
     TsMediaPreviewResize(Self);
 
     WlFaceCount.ImageList := DBkernel.ImageList;
@@ -2775,7 +2777,7 @@ begin
     BeginScreenUpdate(TsMediaPreview.Handle);
     try
       WllPersonsPreview.Clear;
-      if (FImageViewer.Text = '') and not Settings.ReadBool('FaceDetection', 'AutoHidePanel', False) then
+      if (FImageViewer.Text = '') and not Settings.ReadBool('FaceDetection', 'AutoHidePanel', False) and not FImageViewer.IsAnimatedImage then
       begin
         WllPersonsPreview.Visible := True;
         LblInfo := TStaticText.Create(WllGroups);
@@ -2838,6 +2840,33 @@ begin
     Exit;
   if FImageViewer <> nil then
     FImageViewer.ResetPersonSelection;
+end;
+
+procedure TExplorerForm.OnPreviewUpdateButtonsState(Sender: TObject;
+  Buttons: TButtonStates);
+begin
+  TbPreviewPrevious.Visible := Buttons[ivbPrevious].HasState(ivbsVisible);
+  TbPreviewPrevious.Enabled := Buttons[ivbPrevious].HasState(ivbsEnabled);
+
+  TbPreviewNext.Visible := Buttons[ivbNext].HasState(ivbsVisible);
+  TbPreviewNext.Enabled := Buttons[ivbNext].HasState(ivbsEnabled);
+
+  TbPreviewNavigationSeparator.Visible := TbPreviewPrevious.Visible or TbPreviewNext.Visible;
+
+  TbPreviewRotateCW.Visible := Buttons[ivbRotateCW].HasState(ivbsVisible);
+  TbPreviewRotateCW.Enabled := Buttons[ivbRotateCW].HasState(ivbsEnabled);
+
+  TbPreviewRotateCCW.Visible := Buttons[ivbRotateCCW].HasState(ivbsVisible);
+  TbPreviewRotateCCW.Enabled := Buttons[ivbRotateCCW].HasState(ivbsEnabled);
+
+  TbPreviewRotateSeparator.Visible := TbPreviewRotateCCW.Visible or TbPreviewRotateCCW.Visible;
+
+  TbPreviewRating.Visible := Buttons[ivbRating].HasState(ivbsVisible);
+  TbPreviewRating.Enabled := Buttons[ivbRating].HasState(ivbsEnabled);
+
+  TbPreviewRatingSeparator.Visible := TbPreviewRating.Visible;
+
+  ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
 end;
 
 procedure TExplorerForm.OnStopPersonSelection(Sender: TObject);

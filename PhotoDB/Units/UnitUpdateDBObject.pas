@@ -131,11 +131,7 @@ end;
 { TUpdaterDB }
 
 function TUpdaterDB.AddDirectory(Directory: string): Boolean;
-var
-  Dir: string;
 begin
-  Dir := Directory;
-
   TThread.Synchronize(nil,
     procedure
     var
@@ -150,7 +146,7 @@ begin
     end
   );
   FTerminate := False;
-  DirectorySizeThread.Create(Dir, EndDirectorySize, @FTerminate, FoundedEvent, ProcessFile);
+  DirectorySizeThread.Create(Directory, EndDirectorySize, @FTerminate, FoundedEvent, ProcessFile);
   Result := True;
 end;
 

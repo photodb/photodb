@@ -99,6 +99,7 @@ type
     procedure ReallignControlsEx;
     property Password: string read FPassword write FPassword;
     procedure CustomFormAfterDisplay; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     function ForImage(FileName: string): string;
@@ -107,7 +108,6 @@ type
     function ForSteganoraphyFile(FileName: string; CRC: Cardinal) : string;
     function ForManyFiles(FileList: TStrings; CRC: Cardinal; var Skip: Boolean): string;
   end;
-
 
 implementation
 
@@ -184,7 +184,7 @@ end;
 
 procedure TPassWordForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TPassWordForm.FormCreate(Sender: TObject);
@@ -412,6 +412,12 @@ procedure TPassWordForm.InfoListBoxMeasureItem(Control: TWinControl;
   Index: Integer; var Height: Integer);
 begin
   Height := InfoListBox.Canvas.TextHeight('Iy') * 3 + 5;
+end;
+
+procedure TPassWordForm.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TPassWordForm.InfoListBoxDrawItem(Control: TWinControl;

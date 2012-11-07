@@ -843,10 +843,10 @@ begin
 
   DirectoryName := IncludeTrailingPathDelimiter(DirectoryName);
 
-  Found := FindFirst(DirectoryName + '*.*', FaAnyFile, SearchRec);
+  Found := FindFirst(DirectoryName + '*.*', faAnyFile, SearchRec);
   while Found = 0 do
   begin
-    if Terminating^ then
+    if Terminating^ or DBTerminating then
     begin
       FindClose(SearchRec);
       Exit;
@@ -896,12 +896,25 @@ begin
 end;
 
 procedure DirectorySizeThread.Execute;
+var
+  I: Integer;
+  List: TStrings;
 begin
   inherited;
   FreeOnTerminate := True;
   FItems := TDBPopupMenuInfo.Create;
   try
-    GetDirectory(FDirectory, FItems, FTerminating);
+    List := TStringList.Create;
+    try
+      List.Text := FDirectory;
+      for I := 0 to List.Count - 1 do
+      begin
+        if List[I] <> '' then
+          GetDirectory(List[I], FItems, FTerminating);
+      end;
+    finally
+      F(List);
+    end;
     if not FTerminating^ then
       SynchronizeEx(DoOnDone);
   finally

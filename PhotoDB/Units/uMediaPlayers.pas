@@ -8,6 +8,7 @@ uses
   System.Win.Registry,
   System.SysUtils,
   Winapi.ShlObj,
+  Winapi.ShellApi,
   uMemory,
   uAppUtils,
   uSettings,
@@ -30,13 +31,48 @@ procedure RegisterVideoFiles;
 
 implementation
 
+function GetLocalShellPlayerForFile(FileName: string): string;
+var
+  Reg: TRegistry;
+  AssociationsKey, Handler, CommandLine: string;
+begin
+  Result := '';
+
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_CURRENT_USER;
+
+    AssociationsKey := '\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\' + ExtractFileExt(FileName);
+    if Reg.OpenKey(AssociationsKey + '\UserChoice', False) then
+    begin
+      Handler := Reg.ReadString('Progid');
+      if Handler <> '' then
+      begin
+        Reg.CloseKey;
+        Reg.RootKey := HKEY_CLASSES_ROOT;
+
+        if Reg.OpenKey('\' + Handler + '\shell\open\command', False) then
+        begin
+          CommandLine := Reg.ReadString('');
+          if CommandLine <> '' then
+            Result := ParamStrEx(CommandLine, -1);
+        end;
+      end;
+    end;
+  finally
+    F(Reg);
+  end;
+end;
+
 function GetShellPlayerForFile(FileName: string): string;
 var
   Reg: TRegistry;
   Handler,
   CommandLine: string;
 begin
-  Result := '';
+  Result := GetLocalShellPlayerForFile(FileName);
+  if Result <> '' then
+    Exit;
 
   Reg := TRegistry.Create(KEY_READ);
   try

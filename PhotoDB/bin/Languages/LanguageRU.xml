@@ -54,6 +54,7 @@
     <translate name="Error writing to file!" value="Ошибка записи в файл!" />
     <translate name="Unsupported version of file!" value="Неподдерживаемая версия файла" />
     <translate name="Executing" value="Выполнение" />
+    <translate name="DAO engine could not be initialized to create database! Details:" value="Не удалось инициализировать DAO чтобы создать файл базы данных! Детали:" />
   </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />
@@ -1602,8 +1603,6 @@
 	<translate name="Previous" value="Назад"/>
 	<translate name="Next" value="Далее"/>
 	<translate name="Delete" value="Удалить"/>
-	<translate name="File &quot;%s&quot; already exists! $nl$Replace?" value="Файл &quot;%s&quot; уже существует! $nl$Заменить?"/>
-	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
 	<translate name="Finish" value="Финиш"/>
 	<translate name="Start" value="Старт"/>
 	<translate name="Pause" value="Пауза"/>
@@ -1612,11 +1611,8 @@
 	<translate name="Height" value="Высота"/>
 	<translate name="Import your images into the database" value="Импорт ваших изображений в БД"/>	
 	<translate name="This wizard will help you add to the database your photos or other images" value="Этот диалог поможет вам добавить в БД ваши фотографии или другие изображения"/>
-	<translate name="Select folders to import images" value="Выберите папки, откуда будут импортировать изображения"/>
+	<translate name="Select folders to import images" value="Выберите папки, откуда будут импортироваться изображения"/>
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
-	<translate name="Current collection" value="Текущий файл БД" />	
-	<translate name="Create new collection" value="Создать новый файл БД"/>	
-	<translate name="File with collection" value="Файл БД"/>
 	<translate name="Locations to import" value="Папки для импорта"/>
 	<translate name="Ask me" value="Спросить меня"/>
 	<translate name="Add all" value="Добавить все"/>	
@@ -1626,17 +1622,10 @@
 	<translate name="Please, select additional options of import" value="Выберите дополнительные опции импорта изображений."/>
 	<translate name="Click the &quot;Start&quot; button and wait until the program finds and adds all your images. This may require a long time depending on the size of your photo album" value="Нажмите на &quot;Старт&quot; и подождите, пока программа найдёт и добавит все ваши изображения. Это может потребовать много времени в зависимости от величины вашего фотоальбома"/>
 	<translate name="If duplicates are found" value="При нахождении дубликатов"/>	
-	<translate name="Searching for images..." value="Поиск изображений..."/>
-	<translate name="Current size - %s" value="Текущий размер - %s"/>	
 	<translate name="Found %d images" value="Найдено фотографий - %d"/>	
 	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>	
 	<translate name="Please, add any path to import images!" value="Не выбрано ни одного пути для добавления - продолжение невозможно. Нажмите на кнопку &quot;Добавить папку&quot; чтобы добавить путь к фотографиям."/>
-	<translate name="Processing images" value="Обработка изображений"/>
-	<translate name="New collection path" value="Путь к новой базе"/>
-	<translate name="Time remaining: %s" value="Осталось времени: %s"/>
-	<translate name="Processed %d from %d" value="Обработано %d из %d"/>
-	<translate name="Size: %s from %s" value="Размер: %s из %s"/>	
   </scope>
   <scope name="SplitDatabase">
 	<translate name="Select a file to split the database" value="Выберите файл для разбивки базы"/>

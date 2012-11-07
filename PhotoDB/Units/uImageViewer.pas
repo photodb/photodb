@@ -50,9 +50,11 @@ type
     FItem: TDBPopupMenuInfoRecord;
     FOnBeginLoadingImage: TBeginLoadingImageEvent;
     FOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
+    FOnUpdateButtonsState: TUpdateButtonsStateEvent;
     procedure Resize;
     procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord; NewImage: Boolean);
     procedure LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
+    procedure NotifyButtonsUpdate;
   public
     constructor Create;
     destructor Destroy; override;
@@ -97,6 +99,7 @@ type
     function GetItem: TDBPopupMenuInfoRecord;
     function GetDisplayBitmap: TBitmap;
     function GetCurentFile: string;
+    function GetIsAnimatedImage: Boolean;
 
     procedure SetOnBeginLoadingImage(Event: TBeginLoadingImageEvent);
     function GetOnBeginLoadingImage: TBeginLoadingImageEvent;
@@ -110,6 +113,8 @@ type
     function GetOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
     procedure SetOnStopPersonSelection(Event: TNotifyEvent);
     function GetOnStopPersonSelection: TNotifyEvent;
+    procedure SetOnUpdateButtonsState(Event: TUpdateButtonsStateEvent);
+    function GetOnUpdateButtonsState: TUpdateButtonsStateEvent;
   end;
 
 implementation
@@ -186,6 +191,11 @@ begin
   Result := FHeight;
 end;
 
+function TImageViewer.GetIsAnimatedImage: Boolean;
+begin
+  Result := FImageControl.IsAnimatedImage;
+end;
+
 function TImageViewer.GetItem: TDBPopupMenuInfoRecord;
 begin
   Result := FItem;
@@ -231,6 +241,11 @@ end;
 function TImageViewer.GetOnStopPersonSelection: TNotifyEvent;
 begin
   Result := FImageControl.OnStopPersonSelection;
+end;
+
+function TImageViewer.GetOnUpdateButtonsState: TUpdateButtonsStateEvent;
+begin
+  Result := FOnUpdateButtonsState;
 end;
 
 {$ENDREGION}
@@ -359,6 +374,30 @@ begin
     LoadFile(FFiles[FFiles.Position], True);
 end;
 
+procedure TImageViewer.NotifyButtonsUpdate;
+var
+  Buttons: TButtonStates;
+begin
+  if not Assigned(FOnUpdateButtonsState) then
+    Exit;
+
+  Buttons := TButtonStates.Create;
+  try
+    if FImageControl.Text = '' then
+    begin
+      Buttons[ivbRating].AddState(ivbsVisible).AddState(ivbsEnabled);
+      Buttons[ivbRotateCW].AddState(ivbsVisible).AddState(ivbsEnabled);
+      Buttons[ivbRotateCCW].AddState(ivbsVisible).AddState(ivbsEnabled);
+    end;
+    Buttons[ivbPrevious].AddState(ivbsVisible).AddState(ivbsEnabled);
+    Buttons[ivbNext].AddState(ivbsVisible).AddState(ivbsEnabled);
+
+    FOnUpdateButtonsState(Self, Buttons);
+  finally
+    F(Buttons);
+  end;
+end;
+
 procedure TImageViewer.ResetPersonSelection;
 begin
   FImageControl.HightliteReset;
@@ -397,16 +436,7 @@ end;
 procedure TImageViewer.FailedToLoadImage;
 begin
   FImageControl.FailedToLoadImage;
-end;
-
-procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
-begin
-  if FFiles.Position < 0 then
-    Exit;
-  if FFiles.Position > FFiles.Count - 1 then
-    Exit;
-
-  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+  NotifyButtonsUpdate;
 end;
 
 procedure TImageViewer.SetFaceDetectionControls(AWlFaceCount: TWebLink;
@@ -445,6 +475,11 @@ begin
   FImageControl.OnStopPersonSelection := Event;
 end;
 
+procedure TImageViewer.SetOnUpdateButtonsState(Event: TUpdateButtonsStateEvent);
+begin
+  FOnUpdateButtonsState := Event;
+end;
+
 procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
 begin
   if FFiles.Position < 0 then
@@ -453,12 +488,27 @@ begin
     Exit;
 
   FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+  NotifyButtonsUpdate;
+end;
+
+procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+begin
+  if FFiles.Position < 0 then
+    Exit;
+  if FFiles.Position > FFiles.Count - 1 then
+    Exit;
+
+  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+  NotifyButtonsUpdate;
+  if Assigned(FOnPersonsFoundOnImage) then
+    FOnPersonsFoundOnImage(Self, '', nil);
 end;
 
 procedure TImageViewer.SetText(Text: string);
 begin          
   FActiveThreadId := GetGUID;
   FImageControl.SetText(Text);
+  NotifyButtonsUpdate;
 end;
 
 procedure TImageViewer.StartPersonSelection;

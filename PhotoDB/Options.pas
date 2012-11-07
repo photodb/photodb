@@ -1151,9 +1151,6 @@ begin
   for Pair in FPlayerExtensions do
   begin
     Player := Pair.Value;
-    if Player = '' then
-      Player := cMediaPlayerDefaultId;
-
     Settings.WriteString(cMediaAssociationsData + '\' + Pair.Key, '', Player);
   end;
 end;
