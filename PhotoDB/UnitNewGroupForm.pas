@@ -97,6 +97,7 @@ type
     procedure GroupClick(Sender: TObject);
   protected
     function GetFormID : string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure CreateGroup;
@@ -155,6 +156,12 @@ var
 begin
   GetCursorPos(P);
   GraphicSelect1.RequestPicture(P.X, P.Y);
+end;
+
+procedure TNewGroupForm.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TNewGroupForm.ApplicationEvents1Message(var Msg: tagMSG;
@@ -221,7 +228,7 @@ end;
 
 procedure TNewGroupForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TNewGroupForm.FormCreate(Sender: TObject);

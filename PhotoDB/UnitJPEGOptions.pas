@@ -57,6 +57,7 @@ type
     { Protected declarations }
     function GetFormID: string; override;
     procedure LoadLanguage;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure Execute(Section: string);
@@ -68,7 +69,7 @@ implementation
 
 procedure TFormJpegOptions.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TFormJpegOptions.FormCreate(Sender: TObject);
@@ -86,6 +87,12 @@ end;
 function TFormJpegOptions.GetFormID: string;
 begin
   Result := 'JPEG';
+end;
+
+procedure TFormJpegOptions.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TFormJpegOptions.BtCancelClick(Sender: TObject);

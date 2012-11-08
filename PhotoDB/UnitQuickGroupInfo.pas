@@ -85,6 +85,7 @@ type
     procedure ReloadGroups;
   protected
     function GetFormID: string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure Execute(AOwner: TForm; Group: TGroup; CloseOwner: Boolean); overload;
@@ -191,7 +192,7 @@ end;
 procedure TFormQuickGroupInfo.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
@@ -242,6 +243,12 @@ var
 begin
   P := GroupImage.ClientToScreen(GroupImage.ClientRect.CenterPoint);
   PmGroupOptions.Popup(P.X, P.Y);
+end;
+
+procedure TFormQuickGroupInfo.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TFormQuickGroupInfo.LoadLanguage;

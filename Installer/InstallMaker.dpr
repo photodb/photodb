@@ -6,7 +6,7 @@ uses
   Classes,
   SysUtils,
   Zlib,
-  uSysUtils,
+  Dmitry.Utils.System,
   uInstallTypes in 'uInstallTypes.pas',
   acWorkRes in '..\PhotoDB\Units\acWorkRes.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',

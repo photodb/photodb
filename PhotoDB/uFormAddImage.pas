@@ -47,6 +47,7 @@ type
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
     procedure DrawForm;
     function GetFormID: string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure Execute(Info: TDBPopupMenuInfoRecord);
@@ -137,7 +138,7 @@ procedure TFormAddingImage.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   TmrRedraw.Enabled := False;
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TFormAddingImage.FormCreate(Sender: TObject);
@@ -154,6 +155,12 @@ end;
 function TFormAddingImage.GetFormID: string;
 begin
   Result := 'AddImage';
+end;
+
+procedure TFormAddingImage.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TFormAddingImage.TmrCheckTimer(Sender: TObject);

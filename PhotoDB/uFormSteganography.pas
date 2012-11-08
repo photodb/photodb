@@ -52,6 +52,7 @@ type
   protected
     { Protected declarations }
     function GetFormID : string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure HideData(InitialFileName: string);
@@ -105,7 +106,7 @@ end;
 procedure TFormSteganography.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  Release;
+  Action := caHide;
 end;
 
 procedure TFormSteganography.FormCreate(Sender: TObject);
@@ -146,6 +147,12 @@ begin
     LandingFrame.ImageFileName := InitialFileName;
     ShowModal;
   end;
+end;
+
+procedure TFormSteganography.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TFormSteganography.LoadLanguage;

@@ -36,6 +36,7 @@ type
   protected
     function GetFormID: string; override;
     procedure CustomFormAfterDisplay; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     function Query(Caption, Text: String; var UserString: string): Boolean;
@@ -59,7 +60,7 @@ end;
 
 procedure TFormStringPromt.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TFormStringPromt.FormCreate(Sender: TObject);
@@ -77,6 +78,12 @@ end;
 function TFormStringPromt.GetFormID: string;
 begin
   Result := 'TextPromt';
+end;
+
+procedure TFormStringPromt.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TFormStringPromt.BtnCancelClick(Sender: TObject);

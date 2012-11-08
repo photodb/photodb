@@ -71,6 +71,7 @@ type
     function GetPasswordSettingsPopupMenu: TPopupMenu; override;
     function GetPaswordLink: TWebLink; override;
     procedure CustomFormAfterDisplay; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     function QueryPasswordForFile(FileName: string): TEncryptImageOptions;
@@ -162,7 +163,7 @@ end;
 
 procedure TCryptImageForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TCryptImageForm.FormCreate(Sender: TObject);
@@ -276,6 +277,12 @@ end;
 function TCryptImageForm.GetPaswordLink: TWebLink;
 begin
   Result := WblMethod;
+end;
+
+procedure TCryptImageForm.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 function TCryptImageForm.GetPasswordSettingsPopupMenu: TPopupMenu;

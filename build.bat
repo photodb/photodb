@@ -1,7 +1,7 @@
 REM  d:
 REM  cd "D:\Dmitry\Delphi exe\Photo Database"
 
-SET PLAYER=VLC_PLAYER
+SET PLAYER=MEDIA_PLAYER
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\10.0
 SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE

@@ -1,7 +1,7 @@
 d:
 cd "D:\Dmitry\Delphi exe\Photo Database"
 
-SET PLAYER=VLC_PLAYER
+SET PLAYER=MEDIA_PLAYER
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\10.0
 SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
@@ -49,7 +49,7 @@ cd Bridge
 cd ..
 
 cd Installer
-"%DCC32%" %NS% InstallMaker -D"EXTERNAL" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% InstallMaker -D"EXTERNAL;%PLAYER%" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 
@@ -89,7 +89,7 @@ cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
 "%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" %NS% Install -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% Install -D"INSTALL;%PLAYER%" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 InstallMaker /setup Install.exe
 "%BRCC32%" Install_Package.rc

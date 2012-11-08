@@ -527,10 +527,7 @@ end;
 
 function TDBForm.QueryInterfaceInternal(const IID: TGUID; out Obj): HResult;
 begin
-  if GetInterface(IID, Obj) then
-    Result := S_OK
-  else
-    Result := E_NOINTERFACE
+  Result := inherited QueryInterface(IID, Obj);
 end;
 
 function TDBForm.QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
@@ -577,11 +574,13 @@ end;
 
 function TDBForm._AddRef: Integer;
 begin
+  inherited _AddRef;
   Result := AtomicIncrement(FRefCount);
 end;
 
 function TDBForm._Release: Integer;
 begin
+  inherited _Release;
   Result := AtomicDecrement(FRefCount);
   if Result = 0 then
     InterfaceDestroyed;

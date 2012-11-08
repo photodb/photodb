@@ -262,7 +262,7 @@ constructor TPhotoDBInstall_V23.Create;
 var
   PhotoDBFile: TDiskObject;
   PhotoDBBridge: TDiskObject;
-  {$IFDEF VLC_PLAYER}
+  {$IFDEF MEDIA_PLAYER}
   DirectoryObj: TDirectoryObject;
   {$ENDIF}
 begin
@@ -304,7 +304,7 @@ begin
   Files.Add(TDirectoryObject.Create('PlugInsEx',   '%PROGRAM%', ''));
   Files.Add(TDirectoryObject.Create('Styles',      '%PROGRAM%', ''));
 
-  {$IFDEF VLC_PLAYER}
+  {$IFDEF MEDIA_PLAYER}
   DirectoryObj := TDirectoryObject.Create('MediaPlayer',    '%PROGRAM%', '');
   DirectoryObj.IsRecursive := True;
   Files.Add(DirectoryObj);

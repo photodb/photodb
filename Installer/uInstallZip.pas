@@ -196,7 +196,7 @@ begin
         Files.Add(DirectoryName + SearchRec.Name);
         Inc(TotalSize, SearchRec.Size);
       end else
-        FillDirectoryListing(DirectoryName + SearchRec.Name, Files, TotalSize, Recursive);
+        //FillDirectoryListing(DirectoryName + SearchRec.Name, Files, TotalSize, Recursive);
     end;
 
     Found := System.SysUtils.FindNext(SearchRec);

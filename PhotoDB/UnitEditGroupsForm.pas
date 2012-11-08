@@ -126,6 +126,7 @@ type
   protected
     function GetFormID: string; override;
     procedure CustomFormAfterDisplay; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure Execute(var Groups: TGroups; var KeyWords: string; CanNew: Boolean = True); overload;
@@ -347,6 +348,12 @@ end;
 procedure TEditGroupsForm.GroupManeger1Click(Sender: TObject);
 begin
   GroupsManagerForm.Execute;
+end;
+
+procedure TEditGroupsForm.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);
@@ -749,7 +756,7 @@ end;
 
 procedure TEditGroupsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TEditGroupsForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

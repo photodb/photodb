@@ -112,6 +112,7 @@ type
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
   protected
     function GetFormID: string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure Execute;
@@ -148,7 +149,7 @@ end;
 procedure TFormManageGroups.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  Action := caFree;
+  Action := caHide;
 end;
 
 procedure TFormManageGroups.FormCreate(Sender: TObject);
@@ -221,6 +222,12 @@ begin
   ImagePopupMenu.Items.Add(MenuQuickInfoGroup);
   ImagePopupMenu.Popup((Sender as TControl).ClientToScreen(MousePos).X,
     (Sender as TControl).ClientToScreen(MousePos).Y);
+end;
+
+procedure TFormManageGroups.InterfaceDestroyed;
+begin
+  inherited;
+  Free;
 end;
 
 procedure TFormManageGroups.FormDestroy(Sender: TObject);
