@@ -224,7 +224,7 @@ function TBDRegistry.ReadBool(Name: string; Default: Boolean): Boolean;
 var
   Key: string;
 begin
-  Result := default;
+  Result := Default;
   try
     if Registry is TRegistry then
       Result := (Registry as TRegistry).ReadBool(name);
@@ -263,7 +263,7 @@ function TBDRegistry.ReadInteger(Name: string; Default: Integer): Integer;
 var
   Key: string;
 begin
-  Result := default;
+  Result := Default;
   try
     if Registry is TRegistry then
       Result := (Registry as TRegistry).ReadInteger(name);
@@ -282,7 +282,7 @@ function TBDRegistry.ReadString(Name, Default: string): string;
 var
   Key: string;
 begin
-  Result := default;
+  Result := Default;
   try
     if Registry is TRegistry then
       Result := (Registry as TRegistry).ReadString(name);

@@ -43,6 +43,7 @@ uses
   uSettings,
   uThemesUtils,
   uMachMask,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -231,6 +232,10 @@ var
   FGroup: TGroup;
 begin
   FResult := True;
+
+  //statistics
+  ProgramStatistics.GroupUsed;
+
   FreeGroups(FGroups);
   for I := 1 to LstSelectedGroups.Items.Count do
   begin

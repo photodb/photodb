@@ -65,6 +65,7 @@ uses
   uList64,
   uImportPicturesUtils,
   uBox,
+  uProgramStatInfo,
   uFormInterfaces;
 
 const
@@ -1534,6 +1535,9 @@ begin
   Settings.WriteString('ImportPictures', 'Destination', PeImportToPath.Path);
 
   Close;
+
+  //statictics
+  ProgramStatistics.ImportUsed;
 end;
 
 procedure TFormImportImages.BtnSelectPathFromClick(Sender: TObject);

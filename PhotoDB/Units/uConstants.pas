@@ -60,7 +60,7 @@ const
   WindowsMenuTime = 1000;
   ProgramMail = 'photodb@illusdolphin.net';
   CopyRightString = 'Studio "Illusion Dolphin" © 2002-2012';
-  ProgramInstallSize = 19069; //in Kb
+  ProgramInstallSize = 48676; //in Kb
 
   SITE_ACTION_PERSONS = 'persons';
   SITE_ACTION_STYLES = 'styles';

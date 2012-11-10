@@ -318,7 +318,7 @@ object FormCreatePerson: TFormCreatePerson
   object WlPersonNameStatus: TWebLink
     Left = 294
     Top = 54
-    Width = 183
+    Width = 178
     Height = 16
     Cursor = crHandPoint
     Text = 'Found {0} persons with similar name!'

@@ -91,6 +91,7 @@ uses
   uThemesUtils,
   uImageLoader,
   uFormInterfaces,
+  uProgramStatInfo,
   uImageZoomHelper;
 
 type
@@ -2100,6 +2101,8 @@ var
   end;
 
 begin
+  ProgramStatistics.EditorUsed;
+
   if FIsEditImage then
   begin
     FEditImage.Assign(CurrentImage);
@@ -2805,6 +2808,9 @@ end;
 
 procedure TImageEditor.ReadActions(Actions: TStrings);
 begin
+  //Statistics
+  ProgramStatistics.ActionsUsed;
+
   SetLength(EState, 0);
   DisableControls(Self);
   NewActions.Assign(Actions);

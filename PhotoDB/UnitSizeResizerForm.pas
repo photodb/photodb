@@ -60,6 +60,7 @@ uses
   uDBThread,
   uPortableDeviceUtils,
   uThemesUtils,
+  uProgramStatInfo,
   uFormInterfaces;
 
 const
@@ -521,6 +522,9 @@ begin
     FProcessingList.Add(AnsiLOwerCase(FData[I].FileName));
   end;
   DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
+
+  //statistics
+  ProgramStatistics.ConverterUsed;
 
   // change form state
   PnOptions.Hide;

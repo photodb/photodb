@@ -36,6 +36,7 @@ uses
   uErrors,
   uActivationUtils,
   uGraphicUtils,
+  uProgramStatInfo,
   uShellUtils;
 
 const
@@ -356,11 +357,20 @@ begin
   end;
 
   if IsGraphicFile(FileName) then
+  begin
     //using memory
-    Result := CryptGraphicFileV3W(FileName, Password, Options, Progress)
-  else
+    Result := CryptGraphicFileV3W(FileName, Password, Options, Progress);
+
+    //statistics
+    ProgramStatistics.EncryptionImageUsed;
+  end else
+  begin
     //using temporary file
     Result := TransparentEncryptFileEx(FileName, Password, nil, Progress);
+
+    //statistics
+    ProgramStatistics.EncryptionFileUsed;
+  end;
 end;
 
 function DeCryptGraphicFile(FileName: string; Password: String;
@@ -650,6 +660,12 @@ var
   FA: Integer;
 begin
   Result := CRYPT_RESULT_UNDEFINED;
+
+  //statistics
+  if IsGraphicFile(FileName) then
+    ProgramStatistics.DecryptionImageUsed
+  else
+    ProgramStatistics.DecryptionFileUsed;
 
   MS := TMemoryStream.Create;
   try
@@ -973,6 +989,7 @@ var
   GraphicHeader: TEncryptedFileHeader;
   GraphicHeaderV1: TGraphicCryptFileHeaderV1;
   GraphicHeaderV2: TGraphicCryptFileHeaderV2;
+  GraphicHeaderExV1: TEncryptFileHeaderExV1;
 begin
   Result := False;
 
@@ -981,18 +998,25 @@ begin
   if GraphicHeader.ID <> PhotoDBFileHeaderID then
     Exit;
 
-  if GraphicHeader.Version = 1 then
+  if GraphicHeader.Version = ENCRYPT_FILE_VERSION_BASIC then
   begin
     S.Read(GraphicHeaderV1, SizeOf(TGraphicCryptFileHeaderV1));
     CalcAnsiStringCRC32(AnsiString(Password), CRC);
     Result := GraphicHeaderV1.PassCRC = CRC;
   end;
 
-  if GraphicHeader.Version = 2 then
+  if GraphicHeader.Version = ENCRYPT_FILE_VERSION_STRONG then
   begin
     S.Read(GraphicHeaderV2, SizeOf(TGraphicCryptFileHeaderV2));
     CalcStringCRC32(Password, CRC);
     Result := GraphicHeaderV2.PassCRC = CRC;
+  end;
+
+  if GraphicHeader.Version = ENCRYPT_FILE_VERSION_TRANSPARENT then
+  begin
+    S.Read(GraphicHeaderExV1, SizeOf(GraphicHeaderExV1));
+    CalcStringCRC32(Password, CRC);
+    Result := GraphicHeaderExV1.PassCRC = CRC;
   end;
 end;
 

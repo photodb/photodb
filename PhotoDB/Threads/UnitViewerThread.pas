@@ -10,29 +10,29 @@ uses
   GraphicCrypt,
   SysUtils,
   Forms,
-  GIFImage,
+  JPEG,
+  pngimage,
   DB,
 
   Dmitry.Utils.Files,
   Dmitry.Graphics.Types,
 
+  GIFImage,
+  UnitDBkernel,
   CommonDBSupport,
   uTiffImage,
   ActiveX,
   UnitDBCommonGraphics,
   UnitDBCommon,
-  JPEG,
+  UnitDBDeclare,
+  RAWImage,
 
   uMemory,
-  UnitDBDeclare,
-  pngimage,
   uPNGUtils,
-  UnitDBkernel,
   uDBThread,
   uGraphicUtils,
   uDBUtils,
   uViewerTypes,
-  RAWImage,
   uJpegUtils,
   uBitmapUtils,
   uSettings,
@@ -41,6 +41,7 @@ uses
   uImageLoader,
   uPortableDeviceUtils,
   uAnimatedJPEG,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -178,6 +179,10 @@ begin
       FRealHeight := Graphic.Height;
       if not FFullImage then
         JPEGScale(Graphic, Screen.Width, Screen.Height);
+
+      //statistics
+      if Graphic is TAnimatedJPEG then
+        ProgramStatistics.Image3dUsed;
 
       FRealZoomScale := 1;
       if Graphic.Width <> 0 then

@@ -39,6 +39,7 @@ uses
   MPCommonObjects,
 
   Dmitry.Utils.Files,
+  Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
   Dmitry.Controls.SaveWindowPos,
 
@@ -53,6 +54,7 @@ uses
   uListViewUtils,
   uThemesUtils,
   uSettings,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -593,6 +595,9 @@ procedure TPrintForm.BtnPrintClick(Sender: TObject);
 var
   Options: TGenerateImageOptions;
 begin
+  //statistics
+  ProgramStatistics.PrinterUsed;
+
   if RadioGroup1.ItemIndex = 0 then
   begin
     Printer.BeginDoc;

@@ -35,6 +35,7 @@ uses
   uLogger,
   uBitmapUtils,
   uTranslate,
+  uProgramStatInfo,
   uShellIntegration;
 
 const
@@ -379,6 +380,9 @@ var
 begin
   Result := False;
 
+  //statistics
+  ProgramStatistics.FaceDetectionUsed;
+
   P := TPerson.Create;
   try
     FindPerson(PersonArea.PersonID, P);
@@ -464,6 +468,10 @@ var
   UC: TUpdateCommand;
 begin
   Result := False;
+
+  //statistics
+  ProgramStatistics.FaceDetectionUsed;
+
   UC := TUpdateCommand.Create(ObjectMappingTableName);
   try
     UC.AddParameter(TIntegerParameter.Create('ObjectID', ToPersonID));
@@ -926,6 +934,10 @@ var
   DC: TDeleteCommand;
 begin
   Result := False;
+
+  //statistics
+  ProgramStatistics.FaceDetectionUsed;
+
   DC := TDeleteCommand.Create(ObjectMappingTableName);
   try
     DC.AddParameter(TAllParameter.Create);

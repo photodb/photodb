@@ -48,6 +48,7 @@ uses
   uShellIntegration,
   uMemory,
   uThemesUtils,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -198,6 +199,10 @@ begin
     if ID_OK <> MessageBoxDB(Handle, L('Do you really want to change name of this group?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       Exit;
   end;
+
+  //statistics
+  ProgramStatistics.GroupUsed;
+
   Saving := True;
   EdName.Enabled := False;
   MemComments.Enabled := False;

@@ -27,6 +27,8 @@ uses
   uPNGUtils,
   uJpegUtils,
   uSettings,
+  uAnimatedJPEG,
+  uProgramStatInfo,
   uFaceDetection,
   uFaceDetectionThread;
 
@@ -119,7 +121,6 @@ begin
         end;
       end;
 
-
       FGraphic := nil;
       ImageInfo := nil;
       try
@@ -149,6 +150,10 @@ begin
         FRealHeight := FGraphic.Height;
         if FIsPreview then
           JPEGScale(FGraphic, FDisplaySize.cx, FDisplaySize.cy);
+
+        //statistics
+        if FGraphic is TAnimatedJPEG then
+          ProgramStatistics.Image3dUsed;
 
         FRealZoomScale := 1;
         if FGraphic.Width <> 0 then

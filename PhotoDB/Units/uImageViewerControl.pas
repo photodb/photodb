@@ -1313,7 +1313,7 @@ begin
     R.TopLeft := ClientToScreen(BoundsRect.TopLeft);
     R.BottomRight := ClientToScreen(BoundsRect.BottomRight);
 
-    if PtInRect(R, Msg.pt) then
+    if PtInRect(R, Msg.pt) and (WindowFromPoint(Msg.pt) = Handle) then
     begin
       Handled := True;
       Msg.Message := 0;
@@ -1943,7 +1943,7 @@ begin
   W := FRealImageWidth;
   H := FRealImageHeight;
   ProportionalSize(Size.cx, Size.cy, W, H);
-  if (W > FLoadImageSize.cx) or (H > FLoadImageSize.cy) and (FText = '') then
+  if ((W > FLoadImageSize.cx) or (H > FLoadImageSize.cy)) and (FText = '') then
   begin
     FLoadImageSize.cx := Screen.DesktopWidth;
     FLoadImageSize.cy := Screen.DesktopHeight;

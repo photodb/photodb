@@ -49,6 +49,7 @@ uses
   uAssociations,
   uStenography,
   uPortableDeviceUtils,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -176,6 +177,10 @@ var
   MS: TMemoryStream;
 begin
   inherited;
+
+  //statistics
+  ProgramStatistics.StegoUsed;
+
   SavePictureDialog := DBSavePictureDialog.Create;
   try
     SavePictureDialog.Filter := TFileAssociations.Instance.GetFilter('.jpg', True, False);

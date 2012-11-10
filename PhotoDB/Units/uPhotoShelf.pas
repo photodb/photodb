@@ -12,6 +12,7 @@ uses
   SysUtils,
   SyncObjs,
   uSettings,
+  uProgramStatInfo,
   uLogger;
 
 type
@@ -60,6 +61,9 @@ var
   S: string;
   AddedItems: TStrings;
 begin
+  //statistics
+  ProgramStatistics.ShelfUsed;
+
   AddedItems := TStringList.Create;
   try
     FSync.Enter;
@@ -97,6 +101,9 @@ end;
 
 procedure TPhotoShelf.AddToShelf(Path: string);
 begin
+  //statistics
+  ProgramStatistics.ShelfUsed;
+
   FSync.Enter;
   try
     if PathInShelf(Path) = -1 then
@@ -127,6 +134,9 @@ var
   S: string;
   RemovedItems: TStrings;
 begin
+  //statistics
+  ProgramStatistics.ShelfUsed;
+
   RemovedItems := TStringList.Create;
   try
     FSync.Enter;
@@ -216,6 +226,10 @@ var
   Index: Integer;
 begin
   Result := False;
+
+  //statistics
+  ProgramStatistics.ShelfUsed;
+
   FSync.Enter;
   try
     Index := PathInShelf(Path);

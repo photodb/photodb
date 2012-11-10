@@ -25,6 +25,8 @@ uses
   uAssociations,
   uJpegUtils,
   uBitmapUtils,
+  uAnimatedJPEG,
+  uProgramStatInfo,
   uPortableDeviceUtils,
   RAWImage;
 
@@ -167,6 +169,10 @@ begin
           Graphic.LoadFromDevice(FInfo.FileName);
       end;
       JPEGScale(Graphic, FMonWidth, FMonHeight);
+
+      //statistics
+      if Graphic is TAnimatedJPEG then
+        ProgramStatistics.Image3dUsed;
 
       Image := TBitmap.Create;
       try

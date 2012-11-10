@@ -416,7 +416,8 @@ uses
   uImageZoomHelper in 'Units\uImageZoomHelper.pas',
   uSearchQuery in 'Units\uSearchQuery.pas',
   uMonthCalendar in 'Units\Controls\uMonthCalendar.pas',
-  uEXIFDisplayControl in 'Units\Controls\uEXIFDisplayControl.pas';
+  uEXIFDisplayControl in 'Units\Controls\uEXIFDisplayControl.pas',
+  uProgramStatInfo in 'Units\uProgramStatInfo.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -570,7 +571,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

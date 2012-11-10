@@ -74,6 +74,7 @@ uses
   uVCLHelpers,
   uThreadTask,
   uTransparentEncryption,
+  uProgramStatInfo,
   uShellIntegration;
 
 type
@@ -1663,6 +1664,8 @@ begin
   for I := 0 to LbStyles.Items.Count - 1 do
     if LbStyles.Selected[I] then
     begin
+      ProgramStatistics.StyleUsed;
+
       Settings.WriteString('Style', 'FileName', FThemeList[I]);
       if MessageBoxDB(Handle, L('Restart of application is required for applying new style! Restart application now?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
       begin

@@ -36,6 +36,7 @@ uses
   uStringUtils,
   uSettings,
   uImageListDelayed,
+  uProgramStatInfo,
   uVCLHelpers;
 
 type
@@ -210,6 +211,8 @@ begin
       Exit;
     end;
   end;
+
+  ProgramStatistics.DBUsed;
 end;
 
 destructor TDBKernel.Destroy;
@@ -1010,7 +1013,7 @@ begin
     DB_VER_2_2:
       Result := 'PhotoDB v2.2';
     DB_VER_2_3:
-      Result := 'PhotoDB v2.3';
+      Result := 'PhotoDB v4.0'; //the same for 2.3-4.0
   end;
 end;
 

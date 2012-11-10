@@ -27,6 +27,7 @@ uses
   uSettings,
   Dmitry.Utils.System,
   uDBThread,
+  uProgramStatInfo,
   uUpTime;
 
 type
@@ -86,7 +87,7 @@ begin
 
     try
       UpdateFullUrl := ResolveLanguageString(UpdateNotifyURL);
-      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion + '&ut=' + IntToStr(GetCurrentUpTime);
+      UpdateFullUrl := UpdateFullUrl + '?c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion + '&ut=' + IntToStr(GetCurrentUpTime) + '&f=' + ProgramStatistics.ToString;
       UpdateText := DownloadFile(UpdateFullUrl, TEncoding.UTF8);
     except
       on E: Exception do

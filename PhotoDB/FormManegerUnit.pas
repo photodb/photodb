@@ -51,6 +51,7 @@ uses
   UnitINI,
   uActivationUtils,
   {$ENDIF}
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -207,6 +208,9 @@ begin
     Directory := ExtractFileDir(Application.Exename);
   end;
 
+  //statictics
+  ProgramStatistics.ProgramStarted;
+
   if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
   begin
     TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
@@ -218,6 +222,9 @@ begin
       TW.I.Start('ActivateApplication');
       CloseSplashWindow;
       Viewer.Show;
+
+      //statictics
+      ProgramStatistics.ProgramStartedViewer;
     end else
     begin
 
@@ -244,7 +251,8 @@ begin
         CloseSplashWindow;
         Show;
       end;
-
+      //statictics
+      ProgramStatistics.ProgramStartedDefault;
     end;
   end else
   begin
@@ -264,6 +272,8 @@ begin
         Show;
       end;
     end;
+    //statictics
+    ProgramStatistics.ProgramStartedDefault;
   end;
 
   if GetParamStrDBBoolEx(CommandLine, '/import') then

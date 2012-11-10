@@ -3,19 +3,17 @@ unit uFrmSteganographyLanding;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  StdCtrls,
-  uFrameWizardBase,
-  pngimage,
-  uStenography,
-  UnitDBFileDialogs,
-  GraphicCrypt,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.Imaging.pngimage,
+  Vcl.Imaging.jpeg,
+
   DECUtil,
   DECCipher,
 
@@ -23,13 +21,18 @@ uses
   Dmitry.Utils.Files,
 
   UnitDBKernel,
+  UnitDBFileDialogs,
+  GraphicCrypt,
+
+  uFrameWizardBase,
+  uStenography,
   uShellIntegration,
   uConstants,
   uMemory,
   uStrongCrypt,
   uAssociations,
-  jpeg,
   uPortableDeviceUtils,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -264,6 +267,9 @@ begin
   StrongCryptInit;
   RbExtractDataFromImage.Checked := True;
   Result := False;
+
+  //statistics
+  ProgramStatistics.DeStegoUsed;
 
   GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName));
 

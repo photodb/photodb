@@ -12,13 +12,18 @@ uses
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
+  Vcl.Menus,
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
+  Vcl.ImgList,
   Vcl.AppEvnts,
   Vcl.Imaging.jpeg,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
 
+  Dmitry.Utils.System,
   Dmitry.Controls.Base,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WatermarkedMemo,
@@ -29,6 +34,10 @@ uses
 
   UnitDBDeclare,
   UnitDBKernel,
+  RAWImage,
+  CommonDBSupport,
+  UnitGroupsWork,
+  Dolphin_db,
 
   uFaceDetection,
   uPeopleSupport,
@@ -40,26 +49,18 @@ uses
   uThreadForm,
   u2DUtils,
   uGroupTypes,
-  UnitGroupsWork,
-  ImgList,
   uConstants,
   uEditorTypes,
-  Dolphin_db,
   uLogger,
-  RAWImage,
   uJpegUtils,
   uFastLoad,
   uVCLHelpers,
   uDBClasses,
   uDBForm,
   uSettings,
-  Menus,
   uExplorerPersonsProvider,
-  Dmitry.Utils.System,
   uThemesUtils,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  CommonDBSupport,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -285,6 +286,9 @@ begin
 
   EnableControls(False);
 
+  //statistics
+  ProgramStatistics.PersonUsed;
+
   if FIsEditMode then
   begin
     UpdatePersonFields;
@@ -434,10 +438,10 @@ begin
     begin
       FPicture.Assign(NewAvatar);
       FIsImageChanged := True;
-      BtnOk.Enabled := True;
     end else
       FPicture.Assign(Person.Image);
 
+    BtnOk.Enabled := True;
     RealignControls;
     RecreateImage;
     Caption := LF('Edit person: {0}', [FPerson.Name]);

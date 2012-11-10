@@ -60,6 +60,7 @@ uses
   uGOM,
   uTime,
   uLogger,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -250,6 +251,9 @@ begin
   BtnShare.SetEnabledEx(False);
   BtnSettings.Enabled := False;
   TShareImagesThread.Create(Self, FProvider, False);
+
+  //statistics
+  ProgramStatistics.ShareUsed;
 end;
 
 procedure TFormSharePhotos.CreateAlbumBoxResize(Sender: TObject);

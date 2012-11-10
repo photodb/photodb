@@ -45,6 +45,7 @@ uses
   uFrameWizardBase,
   uDBUtils,
   uDBBaseTypes,
+  uProgramStatInfo,
   uPortableDeviceUtils;
 
 type
@@ -208,6 +209,9 @@ var
   InfoStream : TMemoryStream;
 begin
   inherited;
+
+  //statistics
+  ProgramStatistics.StegoUsed;
 
   FileName := EdDataFileName.Text;
 

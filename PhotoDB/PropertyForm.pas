@@ -97,6 +97,7 @@ uses
   uExifInfo,
   uDBInfoEditorUtils,
   uEXIFDisplayControl,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -853,6 +854,9 @@ begin
 
   CbRemoveKeywordsForGroups.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
   CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
+
+  //statistics
+  ProgramStatistics.PropertiesUsed;
 end;
 
 procedure TPropertiesForm.ImMainMouseDown(Sender: TObject; Button: TMouseButton;

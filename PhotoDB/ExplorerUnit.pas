@@ -180,6 +180,7 @@ uses
   uPeopleSupport,
   uFormSelectPerson,
   uEXIFDisplayControl,
+  uProgramStatInfo,
   uMonthCalendar;
 
 const
@@ -420,7 +421,7 @@ type
     TmrCheckItemVisibility: TTimer;
     MiShare: TMenuItem;
     PcTasks: TPageControl;
-    TsPreview: TTabSheet;
+    TsTasks: TTabSheet;
     TsExplorer: TTabSheet;
     TsInfo: TTabSheet;
     TsEXIF: TTabSheet;
@@ -1509,15 +1510,15 @@ begin
 
   TbSearch.Down := Settings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
   TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
-  FLeftTabs := [eltsPreview, eltsExplorer];
+  FLeftTabs := [eltsTasks, eltsExplorer];
   if TbSearch.Down then
     FLeftTabs := FLeftTabs + [eltsSearch];
 
-  FActiveLeftTab := eltsPreview;
+  FActiveLeftTab := eltsExplorer;
   ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
 
   //hack for second explorer window, preview panel is hidden
-  if FActiveLeftTab = eltsPreview then
+  if FActiveLeftTab = eltsTasks then
     PcTasks.ActivePageIndex := Integer(eltsExplorer);
   ApplyLeftTabs;
 
@@ -2264,15 +2265,18 @@ begin
 
   if PnRight.Visible then
   begin
-    IsIncreasing := FOldWidth < Width;
-    if (PnRight.Width <= cMinPreviewWidth) and IsResizePreivew and not IsIncreasing then
+    if FOldWidth <> Width then
     begin
-      SetResizeListViewMode;
-      Exit;
-    end;
+      IsIncreasing := FOldWidth < Width;
+      if (PnRight.Width <= cMinPreviewWidth) and IsResizePreivew and not IsIncreasing then
+      begin
+        SetResizeListViewMode;
+        Exit;
+      end;
 
-    if (PnListView.Width > cMinListViewWidth) and not IsResizePreivew and IsIncreasing then
-      SetResizePreviewMode;
+      if (PnListView.Width > cMinListViewWidth) and not IsResizePreivew and IsIncreasing then
+        SetResizePreviewMode;
+    end;
   end;
 
   FOldWidth := Width;
@@ -4247,7 +4251,7 @@ begin
     WllExtendedSearchGroups.PerformMouseWheel(Msg.WParam, Handled);
   end;
 
-  if TsMediaPreview.Visible then
+  if TsMediaPreview.Visible and (PcRightPreview.ActivePageIndex = Integer(ertsPreview)) then
   begin
     if (Msg.message = WM_MOUSEWHEEL) then
     begin
@@ -4754,6 +4758,8 @@ begin
         (FormatEx('ShowImageLocation({0}, {1}, "{2}", "{3}"); GotoLatLng({0}, {1});',
         [DoubleToStringPoint(Lat), DoubleToStringPoint(Lng), FileName,
         IIF(YearOf(Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', Date), '')]), 'JavaScript');
+
+      ProgramStatistics.GeoInfoReadUsed;
     end;
   end;
 end;
@@ -4826,6 +4832,9 @@ begin
                 EI := FFilesInfo[Index];
                 if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
                 begin
+                  //Statistics
+                  ProgramStatistics.GeoInfoSaveUsed;
+
                   if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
                     UpdatingDone := False
                   else if FCurrentTypePath in [EXPLORER_ITEM_SHELF, EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
@@ -4892,6 +4901,9 @@ begin
               EI := FFilesInfo[Index];
               if (EI.FileType = EXPLORER_ITEM_IMAGE) and not IsDevicePath(EI.FileName) and CanSaveEXIF(EI.FileName) then
               begin
+                //Statistics
+                ProgramStatistics.GeoInfoSaveUsed;
+
                 if not DeleteFileGeoInfo(EI.FileName, True) then
                   UpdatingDone := False;
 
@@ -7107,7 +7119,7 @@ begin
   begin
     TabToShow := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(FActiveLeftTab)));
     if not (TabToShow in FLeftTabs) then
-      TabToShow := eltsPreview;
+      TabToShow := eltsExplorer;
   end;
   if FActiveLeftTab <> TabToShow then
   begin
@@ -7158,7 +7170,7 @@ var
 begin
   PcTasks.DisableTabChanging;
   try
-    for Tab in [eltsPreview..eltsSearch] do
+    for Tab in [eltsTasks..eltsSearch] do
       if (Tab in FLeftTabs) then
         PcTasks.ShowTab(Integer(Tab))
       else
@@ -7593,7 +7605,7 @@ begin
     MiCopyAddress.Caption := L('Copy address');
     MiEditAddress.Caption := L('Edit address');
 
-    TsPreview.Caption := L('Preview');
+    TsTasks.Caption := L('Tasks');
     TsExplorer.Caption := L('Explorer');
     TsInfo.Caption := L('Info');
     TsEXIF.Caption := L('EXIF');
@@ -7607,7 +7619,7 @@ begin
     LbEditKeywords.Caption := L('Keywords') + ':';
     LbEditComments.Caption := L('Comment') + ':';
 
-    TbbPlay.Caption := L('Open');
+    TbbPlay.Caption := L('Show');
     TbbEncrypt.Caption := L('Encrypt');
     TbbResize.Caption := L('Resize');
     TbbConvert.Caption := L('Convert');
@@ -9796,13 +9808,26 @@ begin
 
       if IsShortDrive(Path) then
         Path := Path + '\';
+
       if FSearchMode = EXPLORER_SEARCH_FILES then
-        SetNewPath(Path + cFilesSearchPath + S, False)
-      else if FSearchMode = EXPLORER_SEARCH_IMAGES then
-        SetNewPath(Path + cImagesSearchPath + S, False)
-      else
+      begin
+        SetNewPath(Path + cFilesSearchPath + S, False);
+
+        //statistics
+        ProgramStatistics.SearchFilesUsed;
+      end else if FSearchMode = EXPLORER_SEARCH_IMAGES then
+      begin
+        SetNewPath(Path + cImagesSearchPath + S, False);
+
+        //statistics
+        ProgramStatistics.SearchImagesUsed;
+      end else
+      begin
         SetNewPath(cDBSearchPath + S, False);
 
+        //statistics
+        ProgramStatistics.SearchDatabaseUsed;
+      end;
 
     end else //if IsExtendedSearch then
     begin
@@ -9818,6 +9843,10 @@ begin
         FExtendedSearchParams.Persons.Add(FExtendedSearchPersons[I].Name);
 
       SetNewPath(cDBSearchPath + FExtendedSearchParams.ToString, False);
+
+      //statistics
+      ProgramStatistics.SearchDatabaseUsed;
+
     end;//if IsExtendedSearch then
   finally
     ElvMain.SetFocus;

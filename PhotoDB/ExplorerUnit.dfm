@@ -66,19 +66,19 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 623
-      ActivePage = TsPreview
+      ActivePage = TsTasks
       Align = alClient
       MultiLine = True
       ParentShowHint = False
       ShowHint = False
       TabOrder = 0
       OnChange = PcTasksChange
-      object TsPreview: TTabSheet
+      object TsTasks: TTabSheet
         Margins.Left = 0
         Margins.Top = 0
         Margins.Right = 0
         Margins.Bottom = 0
-        Caption = 'Preview'
+        Caption = 'Tasks'
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -746,6 +746,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 574
@@ -784,6 +788,10 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -943,6 +951,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -963,6 +975,10 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -2377,6 +2393,10 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 521
@@ -2660,7 +2680,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.652290902780000000
+      Date = 41177.894389629630000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

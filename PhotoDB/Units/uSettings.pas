@@ -36,11 +36,12 @@ type
     function ReadValues(Key: string): TStrings;
     function ReadBool(Key, Name: string; Default: Boolean): Boolean;
     function ReadRealBool(Key, Name: string; Default: Boolean): Boolean;
-    function ReadboolW(Key, Name: string; Default: Boolean): Boolean;
+    function ReadBoolW(Key, Name: string; Default: Boolean): Boolean;
     function ReadInteger(Key, Name: string; Default: Integer): Integer;
     function ReadString(Key, Name: string; Default: string = ''): string;
     function ReadStringW(Key, Name: string; Default: string = ''): string;
-    function ReadDateTime(Key, Name: string; Default: TdateTime): TDateTime;
+    function ReadDateTime(Key, Name: string; Default: TDateTime): TDateTime;
+    procedure IncrementInteger(Key, Name: string);
     function GetSection(Key: string): TBDRegistry;
     procedure DeleteValues(Key: string);
     property DataBase: string read GetDataBase;
@@ -329,6 +330,19 @@ end;
 function TSettings.GetSection(Key: string): TBDRegistry;
 begin
   Result := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
+end;
+
+procedure TSettings.IncrementInteger(Key, Name: string);
+var
+  Reg: TBDRegistry;
+  SValue: string;
+  Value: Integer;
+begin
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  SValue := Reg.ReadString(Name);
+  Value := StrToIntDef(SValue, 0);
+  Inc(Value);
+  Reg.WriteString(Name, IntToStr(Value));
 end;
 
 { TExifSettings }

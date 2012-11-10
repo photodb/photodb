@@ -46,6 +46,7 @@ uses
   uDBForm,
   uShellIntegration,
   uThemesUtils,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -190,6 +191,10 @@ begin
     MessageBoxDB(Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;
+
+  //statistics
+  ProgramStatistics.GroupUsed;
+
   Group.GroupName := EdName.Text;
   Group.GroupImage := TJpegImage.Create;
   if not FCreateFixedGroup then

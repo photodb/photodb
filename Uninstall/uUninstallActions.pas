@@ -29,6 +29,7 @@ uses
   uSettings,
   uUpTime,
   uShellUtils,
+  uProgramStatInfo,
   uConfiguration;
 
 const
@@ -90,9 +91,6 @@ type
 
 implementation
 
-var
-  CurrentVersion: TRelease;
-
 { TUninstallFiles }
 
 function TUninstallFiles.CalculateTotalPoints: Int64;
@@ -108,9 +106,6 @@ var
   Terminate: Boolean;
 begin
   Terminate := False;
-
-  ExeFileName := ExtractFilePath(ParamStr(0)) + 'PhotoDB.exe';
-  CurrentVersion := GetExeVersion(ExeFileName);
 
   for I := 0 to CurrentInstall.Files.Count - 1 do
   begin
@@ -189,14 +184,20 @@ end;
 
 procedure TUninstallNotify.Execute(Callback: TActionCallback);
 var
-  NotifyUrl: string;
+  ExeFileName,
+  NotifyUrl,
   Version: string;
+  CurrentVersion: TRelease;
 begin
   Version := ProductMajorVersionVersion;
+
+  ExeFileName := ExtractFilePath(ParamStr(0)) + 'PhotoDB.exe';
+  CurrentVersion := GetExeVersion(ExeFileName);
+
   if CurrentVersion.Build > 0 then
     Version := ReleaseToString(CurrentVersion);
 
-  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + Version + '&ac=' + TActivationManager.Instance.ApplicationCode + '&ut=' + IntToStr(GetCurrentUpTime);
+  NotifyUrl := ResolveLanguageString(UnInstallNotifyURL) + '?v=' + Version + '&ac=' + TActivationManager.Instance.ApplicationCode + '&ut=' + IntToStr(GetCurrentUpTime) + '&f=' + ProgramStatistics.ToString;
   RunAsUser(NotifyUrl, NotifyUrl, NotifyUrl, False);
 end;
 

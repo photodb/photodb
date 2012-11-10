@@ -183,7 +183,7 @@ object FormSharePhotos: TFormSharePhotos
   object WlUserName: TWebLink
     Left = 521
     Top = 8
-    Width = 57
+    Width = 52
     Height = 13
     Cursor = crHandPoint
     Anchors = [akTop, akRight]
@@ -205,7 +205,7 @@ object FormSharePhotos: TFormSharePhotos
   object WlChangeUser: TWebLink
     Left = 512
     Top = 27
-    Width = 66
+    Width = 61
     Height = 13
     Cursor = crHandPoint
     Anchors = [akTop, akRight]
@@ -272,8 +272,8 @@ object FormSharePhotos: TFormSharePhotos
           146
           371)
         object LsLoadingAlbums: TLoadingSign
-          Left = 111
-          Top = 336
+          Left = 119
+          Top = 344
           Width = 24
           Height = 24
           Active = True
@@ -281,8 +281,6 @@ object FormSharePhotos: TFormSharePhotos
           Anchors = [akRight, akBottom]
           SignColor = clBlack
           MaxTransparencity = 255
-          ExplicitLeft = 119
-          ExplicitTop = 344
         end
       end
     end

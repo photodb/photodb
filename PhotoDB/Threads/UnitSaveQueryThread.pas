@@ -41,6 +41,7 @@ uses
   uLogger,
   uDBShellUtils,
   uRuntime,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -213,6 +214,9 @@ begin
               FreeDS(FQuery);
             end;
           end;
+
+          //statistics
+          ProgramStatistics.PortableUsed;
 
           SetMaxValue(Length(FGroupsFounded));
           FRegGroups := GetRegisterGroupList(True);
