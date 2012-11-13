@@ -175,11 +175,11 @@ begin
 
   case Info.Rotation and DB_IMAGE_ROTATE_MASK of
     DB_IMAGE_ROTATE_90:
-      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_90, RotationNotInDB);
+      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTATED_90, RotationNotInDB);
     DB_IMAGE_ROTATE_180:
-      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_180, RotationNotInDB);
+      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTATED_180, RotationNotInDB);
     DB_IMAGE_ROTATE_270:
-      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTETED_270, RotationNotInDB);
+      DoDrawIconEx(HCanvas, 60 + DeltaX, DeltaY, DB_IC_ROTATED_270, RotationNotInDB);
   end;
 
   if Info.Access = db_access_private then

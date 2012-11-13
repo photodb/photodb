@@ -146,11 +146,11 @@ begin
   RotationNotInDB := (FInfo.ID = 0) and (FInfo.Rotation and DB_IMAGE_ROTATE_NO_DB > 0);
   case FInfo.Rotation and DB_IMAGE_ROTATE_MASK of
     DB_IMAGE_ROTATE_90:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_90, RotationNotInDB);
+      DoDrawIcon(Sm, Y, DB_IC_ROTATED_90, RotationNotInDB);
     DB_IMAGE_ROTATE_180:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_180, RotationNotInDB);
+      DoDrawIcon(Sm, Y, DB_IC_ROTATED_180, RotationNotInDB);
     DB_IMAGE_ROTATE_270:
-      DoDrawIcon(Sm, Y, DB_IC_ROTETED_270, RotationNotInDB);
+      DoDrawIcon(Sm, Y, DB_IC_ROTATED_270, RotationNotInDB);
     else
       Inc(Sm, 20);
   end;

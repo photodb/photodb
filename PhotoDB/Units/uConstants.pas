@@ -136,10 +136,10 @@ const
   DB_IC_NEXT           = 22;
   DB_IC_PREVIOUS       = 23;
   DB_IC_NEW            = 24;
-  DB_IC_ROTETED_0      = 25;
-  DB_IC_ROTETED_90     = 26;
-  DB_IC_ROTETED_180    = 27;
-  DB_IC_ROTETED_270    = 28;
+  DB_IC_ROTATED_0      = 25;
+  DB_IC_ROTATED_90     = 26;
+  DB_IC_ROTATED_180    = 27;
+  DB_IC_ROTATED_270    = 28;
   DB_IC_PLAY           = 29;
   DB_IC_PAUSE          = 30;
   DB_IC_COPY           = 31;

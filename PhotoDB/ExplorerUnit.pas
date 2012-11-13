@@ -48,6 +48,7 @@ uses
   Dmitry.Utils.Network,
   Dmitry.Graphics.Types,
   Dmitry.Graphics.Utils,
+  Dmitry.Graphics.LayeredBitmap,
   Dmitry.PathProviders,
   Dmitry.PathProviders.MyComputer,
   Dmitry.PathProviders.FileSystem,
@@ -550,6 +551,7 @@ type
     MenuItem6: TMenuItem;
     MiPreviewPersonProperties: TMenuItem;
     PnRightPreview: TPanel;
+    ImlPreview: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -821,6 +823,8 @@ type
     procedure MiPreviewPersonUpdateAvatarClick(Sender: TObject);
     procedure TbPreviewRatingClick(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
+    procedure SplRightPanelCanResize(Sender: TObject; var NewSize: Integer;
+      var Accept: Boolean);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -2649,12 +2653,14 @@ begin
       TbPreviewRating.Enabled := (not (FolderView and (FImageViewer.Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(FImageViewer.Item.Path);
     end;
 
-    Rating := Abs(FImageViewer.Item.Rating);
-    if Rating > 5 then
-      Rating := Rating div 10;
+    Rating := FImageViewer.Item.Rating;
 
     TbPreviewRating.Visible := True;
-    TbPreviewRating.ImageIndex := IIF(Rating = 0, DB_IC_RATING_STAR, Rating + DB_IC_RATING_1 - 1);
+    if Rating < 0 then
+      TbPreviewRating.ImageIndex := 6 - Rating div 10
+    else
+      TbPreviewRating.ImageIndex := Rating;
+
     TbPreviewRatingSeparator.Visible := True;
     ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
   finally
@@ -4789,6 +4795,20 @@ end;
 procedure TExplorerForm.WlResetFilterClick(Sender: TObject);
 begin
   HideFilter(True);
+end;
+
+procedure TExplorerForm.SplRightPanelCanResize(Sender: TObject;
+  var NewSize: Integer; var Accept: Boolean);
+var
+  PanelSize: Integer;
+begin
+  if NewSize < SplRightPanel.Left then
+    Exit;
+
+  PanelSize := ClientWidth - PnListView.Width - MainPanel.Width - SplRightPanel.Width - SplLeftPanel.Width;
+  Accept := PanelSize >= 99;
+  if not Accept then
+    NewSize := PanelSize;
 end;
 
 procedure TExplorerForm.SplRightPanelMoved(Sender: TObject);
@@ -7023,7 +7043,7 @@ procedure TExplorerForm.InitSearch;
 begin
   TW.I.Start('LoadSpeedButtonFromResourcePNG - SEARCH');
   LoadSpeedButtonFromResourcePNG(sbDoSearch, 'SEARCH');
-  LoadSearchMode(Settings.ReadInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES));
+  LoadSearchMode(Settings.ReadInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_DATABASE));
 end;
 
 procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
@@ -10695,7 +10715,7 @@ begin
     end;
   end;
   if TsMediaPreview.Visible then
-    TbPreviewRating.ImageIndex := IIF((Sender as TMenuItem).Tag = 0, DB_IC_RATING_STAR, (Sender as TMenuItem).Tag + DB_IC_RATING_1 - 1);
+    TbPreviewRating.ImageIndex := (Sender as TMenuItem).Tag;
 end;
 
 procedure TExplorerForm.NavigateToFile(FileName: string);
@@ -12930,12 +12950,28 @@ begin
 end;
 
 procedure TExplorerForm.LoadIcons;
+var
+  I: Integer;
+
+  procedure AddGrayIcon(ImageList: TImageList; Icon: HIcon);
+  var
+    LBitmap: TLayeredBitmap;
+  begin
+    LBitmap := TLayeredBitmap.Create;
+    try
+      LBitmap.LoadFromHIcon(Icon, ImageList.Width, ImageList.Height);
+      LBitmap.GrayScale;
+      ImlPreview.Add(LBitmap, nil);
+    finally
+      F(LBitmap);
+    end;
+  end;
+
 begin
   PmItemPopup.Images := DBKernel.ImageList;
   PmListPopup.Images := DBKernel.ImageList;
   PmLinkOptions.Images := DBKernel.ImageList;
   ToolBarBottom.Images := DBKernel.ImageList;
-  ToolBarPreview.Images := DBKernel.ImageList;
   PmInfoGroup.Images := DBKernel.ImageList;
 
   TbbPlay.ImageIndex := DB_IC_SLIDE_SHOW;
@@ -12951,11 +12987,25 @@ begin
   TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
   TbbOpenDirectory.ImageIndex := DB_IC_DIRECTORY;
 
-  TbPreviewPrevious.ImageIndex := DB_IC_PREVIOUS;
-  TbPreviewNext.ImageIndex := DB_IC_NEXT;
-  TbPreviewRotateCW.ImageIndex := DB_IC_ROTETED_90;
-  TbPreviewRotateCCW.ImageIndex := DB_IC_ROTETED_270;
-  TbPreviewOpen.ImageIndex := DB_IC_SLIDE_SHOW;
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1]);
+  for I := 1 to 5 do
+    ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_RATING_1 + I]);
+
+  AddGrayIcon(ImlPreview, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1]);
+  for I := 1 to 5 do
+    AddGrayIcon(ImlPreview, UnitDBKernel.Icons[DB_IC_RATING_1 + I]);
+
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_PREVIOUS + 1]);
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_NEXT + 1]);
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_90 + 1]);
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_270 + 1]);
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
+
+  TbPreviewPrevious.ImageIndex := 11 + 1;
+  TbPreviewNext.ImageIndex := 11 + 2;
+  TbPreviewRotateCW.ImageIndex := 11 + 3;
+  TbPreviewRotateCCW.ImageIndex := 11 + 4;
+  TbPreviewOpen.ImageIndex := 11 + 5;
 
   Shell1.ImageIndex := DB_IC_SHELL;
   SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;
@@ -13000,10 +13050,10 @@ begin
   Directory2.ImageIndex := DB_IC_NEW_DIRECTORY;
   TextFile2.ImageIndex := DB_IC_TEXT_FILE;
   AsEXIF1.ImageIndex := DB_IC_ROTATE_MAGIC;
-  RotateCCW1.ImageIndex := DB_IC_ROTETED_270;
-  RotateCW1.ImageIndex := DB_IC_ROTETED_90;
-  Rotateon1801.ImageIndex := DB_IC_ROTETED_180;
-  Rotate1.ImageIndex := DB_IC_ROTETED_0;
+  RotateCCW1.ImageIndex := DB_IC_ROTATED_270;
+  RotateCW1.ImageIndex := DB_IC_ROTATED_90;
+  Rotateon1801.ImageIndex := DB_IC_ROTATED_180;
+  Rotate1.ImageIndex := DB_IC_ROTATED_0;
   SetasDesktopWallpaper1.ImageIndex := DB_IC_WALLPAPER;
   Stretch1.ImageIndex := DB_IC_WALLPAPER;
   Center1.ImageIndex := DB_IC_WALLPAPER;

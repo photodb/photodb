@@ -746,10 +746,6 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 574
@@ -788,10 +784,6 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -951,10 +943,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -975,10 +963,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -1712,6 +1696,7 @@ object ExplorerForm: TExplorerForm
       Height = 586
       ResizeStyle = rsUpdate
       Visible = False
+      OnCanResize = SplRightPanelCanResize
       OnMoved = SplRightPanelMoved
       ExplicitLeft = 572
       ExplicitTop = 27
@@ -2270,6 +2255,7 @@ object ExplorerForm: TExplorerForm
               AutoSize = True
               ButtonWidth = 33
               DoubleBuffered = True
+              Images = ImlPreview
               ParentDoubleBuffered = False
               TabOrder = 0
               Transparent = False
@@ -2393,10 +2379,6 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 521
@@ -2680,7 +2662,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.894389629630000000
+      Date = 41177.880562141200000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3540,5 +3522,10 @@ object ExplorerForm: TExplorerForm
       Caption = 'Properties'
       OnClick = MiPreviewPersonPropertiesClick
     end
+  end
+  object ImlPreview: TImageList
+    ColorDepth = cd32Bit
+    Left = 280
+    Top = 548
   end
 end

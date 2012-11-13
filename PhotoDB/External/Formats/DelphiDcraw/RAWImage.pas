@@ -78,7 +78,7 @@ var
   end;
 
 begin
-  Result := DB_IC_ROTETED_0;
+  Result := DB_IC_ROTATED_0;
 
   FindMetaData := FreeImage_FindFirstMetadata(Model, RawBitmap.Dib, TagData);
   try

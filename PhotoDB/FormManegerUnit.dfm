@@ -17,6 +17,7 @@ object FormManager: TFormManager
   PixelsPerInch = 96
   TextHeight = 13
   object AeMain: TApplicationEvents
+    OnException = AeMainException
     Left = 64
     Top = 56
   end

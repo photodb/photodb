@@ -325,10 +325,10 @@ begin
   N41.ImageIndex := DB_IC_RATING_4;
   N51.ImageIndex := DB_IC_RATING_5;
 
-  R01.ImageIndex := DB_IC_ROTETED_0;
-  R02.ImageIndex := DB_IC_ROTETED_90;
-  R03.ImageIndex := DB_IC_ROTETED_180;
-  R04.ImageIndex := DB_IC_ROTETED_270;
+  R01.ImageIndex := DB_IC_ROTATED_0;
+  R02.ImageIndex := DB_IC_ROTATED_90;
+  R03.ImageIndex := DB_IC_ROTATED_180;
+  R04.ImageIndex := DB_IC_ROTATED_270;
 
   SI := -1;
   PackTabelLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
@@ -1067,7 +1067,7 @@ begin
       if ItemData.Rotation > 0 then
       begin
         aRect.Top := aRect.Top + 1;
-        DrawIconEx(Sender.Canvas.Handle, aRect.Left + (aRect.Right - aRect.Left) div 2 - 8, aRect.Top, UnitDBKernel.Icons[ItemData.Rotation + DB_IC_ROTETED_0 + 1], 16, 16, 0, 0, DI_NORMAL);
+        DrawIconEx(Sender.Canvas.Handle, aRect.Left + (aRect.Right - aRect.Left) div 2 - 8, aRect.Top, UnitDBKernel.Icons[ItemData.Rotation + DB_IC_ROTATED_0 + 1], 16, 16, 0, 0, DI_NORMAL);
       end;
     end;
     6:

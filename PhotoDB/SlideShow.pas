@@ -586,10 +586,10 @@ begin
   Stretch1.ImageIndex := DB_IC_WALLPAPER;
   Center1.ImageIndex := DB_IC_WALLPAPER;
   Tile1.ImageIndex := DB_IC_WALLPAPER;
-  RotateCCW1.ImageIndex := DB_IC_ROTETED_270;
-  RotateCW1.ImageIndex := DB_IC_ROTETED_90;
-  Rotateon1801.ImageIndex := DB_IC_ROTETED_180;
-  Rotate1.ImageIndex := DB_IC_ROTETED_0;
+  RotateCCW1.ImageIndex := DB_IC_ROTATED_270;
+  RotateCW1.ImageIndex := DB_IC_ROTATED_90;
+  Rotateon1801.ImageIndex := DB_IC_ROTATED_180;
+  Rotate1.ImageIndex := DB_IC_ROTATED_0;
   ByEXIF1.ImageIndex := DB_IC_ROTATE_MAGIC;
   Resize1.ImageIndex := DB_IC_RESIZE;
   SlideShow1.ImageIndex := DB_IC_DO_SLIDE_SHOW;
