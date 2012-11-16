@@ -417,7 +417,7 @@ end;
 procedure TPassWordForm.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TPassWordForm.InfoListBoxDrawItem(Control: TWinControl;

@@ -92,7 +92,7 @@ end;
 procedure TFormJpegOptions.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TFormJpegOptions.BtCancelClick(Sender: TObject);

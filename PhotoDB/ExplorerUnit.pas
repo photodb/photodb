@@ -1514,22 +1514,6 @@ begin
 
   TbSearch.Down := Settings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
   TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
-  FLeftTabs := [eltsTasks, eltsExplorer];
-  if TbSearch.Down then
-    FLeftTabs := FLeftTabs + [eltsSearch];
-
-  FActiveLeftTab := eltsExplorer;
-  ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
-
-  //hack for second explorer window, preview panel is hidden
-  if FActiveLeftTab = eltsTasks then
-    PcTasks.ActivePageIndex := Integer(eltsExplorer);
-  ApplyLeftTabs;
-
-  FRightTabs := [ertsPreview, ertsMap];
-  FActiveRightTab := ertsPreview;
-  ShowActiveRightTab(TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(ertsPreview))));
-  ApplyRightTabs;
 
   if Settings.ReadBool('Explorer', 'RightPanelVisible', True) then
     ShowRightPanel(ertsPreview)
@@ -2253,8 +2237,6 @@ begin
   FWebBorwserFactory := nil;
 end;
 
-
-
 procedure TExplorerForm.FormResize(Sender: TObject);
 var
   IsIncreasing: Boolean;
@@ -2282,6 +2264,9 @@ begin
         SetResizePreviewMode;
     end;
   end;
+
+  if FImageViewer <> nil then
+    FImageViewer.CheckFaceIndicatorVisibility;
 
   FOldWidth := Width;
 end;
@@ -4513,6 +4498,24 @@ begin
   InitSearch;
   if not (StyleServices.Enabled and TStyleManager.IsCustomStyleActive) then
     PnNavigation.Color := Theme.EditColor;
+
+  //tabs
+  FLeftTabs := [eltsTasks, eltsExplorer];
+  if TbSearch.Down then
+    FLeftTabs := FLeftTabs + [eltsSearch];
+
+  FActiveLeftTab := eltsExplorer;
+  ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
+
+  //hack for second explorer window, preview panel is hidden
+  if FActiveLeftTab = eltsTasks then
+    PcTasks.ActivePageIndex := Integer(eltsExplorer);
+  ApplyLeftTabs;
+
+  FRightTabs := [ertsPreview, ertsMap];
+  FActiveRightTab := ertsPreview;
+  ShowActiveRightTab(TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(ertsPreview))));
+  ApplyRightTabs;
 
   if (StyleServices.Enabled and TStyleManager.IsCustomStyleActive) then
   begin
@@ -9641,7 +9644,7 @@ begin
     if TsMediaPreview.Visible then
       CreatePreview;
 
-    if FImageViewer <> nil then
+    if (FImageViewer <> nil) and not SelfDraging then
     begin
       if (SelCount = 0) or not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
       begin
@@ -9658,7 +9661,12 @@ begin
           EndScreenUpdate(TsMediaPreview.Handle, False);
         end;
       end else
-        FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+      begin
+        if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Selected) then
+          FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem))
+        else
+          FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
+      end;
     end;
   end;
 

@@ -160,7 +160,7 @@ end;
 procedure TFormAddingImage.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TFormAddingImage.TmrCheckTimer(Sender: TObject);

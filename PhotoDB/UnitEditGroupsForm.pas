@@ -358,7 +358,7 @@ end;
 procedure TEditGroupsForm.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TEditGroupsForm.CreateGroup1Click(Sender: TObject);

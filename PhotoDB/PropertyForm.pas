@@ -1011,6 +1011,8 @@ begin
           for I := 0 to FFilesInfo.Count - 1 do
             IDArray[I] := FFilesInfo[I].ID;
 
+          FSaving := False;
+
           ExecuteEx(IDArray);
         end;
         Exit;
@@ -1018,6 +1020,7 @@ begin
 
       if FShowInfoType = SHOW_INFO_ID then
       begin
+        FSaving := False;
 
         UpdateDBRecordWithUserInfo(Self, FFilesInfo[0], UserInput);
 

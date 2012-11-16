@@ -471,6 +471,9 @@ var
 
 
 begin
+  if Self.WindowState = wsMaximized then
+    Exit;
+
   R := CalculateFormRect;
 
   while True do

@@ -282,7 +282,7 @@ end;
 procedure TCryptImageForm.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 function TCryptImageForm.GetPasswordSettingsPopupMenu: TPopupMenu;

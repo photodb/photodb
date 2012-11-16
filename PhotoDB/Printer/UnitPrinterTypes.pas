@@ -1201,6 +1201,7 @@ begin
   begin
     if (Options.Image = nil) or Options.Image.Empty then
       Exit;
+    SampleImage := Options.Image;
   end;
 
   Terminating := False;

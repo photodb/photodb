@@ -227,7 +227,7 @@ end;
 procedure TFormManageGroups.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TFormManageGroups.FormDestroy(Sender: TObject);

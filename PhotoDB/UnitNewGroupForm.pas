@@ -162,7 +162,7 @@ end;
 procedure TNewGroupForm.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TNewGroupForm.ApplicationEvents1Message(var Msg: tagMSG;

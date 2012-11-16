@@ -152,7 +152,7 @@ end;
 procedure TFormSteganography.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TFormSteganography.LoadLanguage;

@@ -83,7 +83,7 @@ end;
 procedure TFormStringPromt.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TFormStringPromt.BtnCancelClick(Sender: TObject);

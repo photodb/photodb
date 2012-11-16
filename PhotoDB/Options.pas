@@ -338,6 +338,7 @@ type
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     procedure LoadLanguage;
@@ -1624,6 +1625,13 @@ begin
   Params.WndParent := GetDesktopWindow;
   with Params do
     ExStyle := ExStyle or WS_EX_APPWINDOW;
+end;
+
+procedure TOptionsForm.CustomFormAfterDisplay;
+begin
+  inherited;
+  if LbStyles <> nil then
+    LbStyles.Refresh;
 end;
 
 procedure TOptionsForm.PcMainChange(Sender: TObject);

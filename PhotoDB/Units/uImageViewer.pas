@@ -71,6 +71,7 @@ type
     procedure ResetPersonSelection;
     procedure StartPersonSelection;
     procedure StopPersonSelection;
+    procedure CheckFaceIndicatorVisibility;
 
     procedure UpdateAvatar(PersonID: Integer);
 
@@ -143,6 +144,11 @@ begin
      FImageControl.Explorer := TCustomExplorerForm(FOwnerForm);
 
   inherited;
+end;
+
+procedure TImageViewer.CheckFaceIndicatorVisibility;
+begin
+  FImageControl.CheckFaceIndicatorVisibility;
 end;
 
 constructor TImageViewer.Create;

@@ -149,7 +149,7 @@ type
     { Public declarations }
     FStatusProgress: TProgressBar;
     procedure Execute(PrintFiles: TStrings); overload;
-    procedure Execute(VirtualFile: TBitmap); overload;
+    procedure Execute(var VirtualFile: TBitmap); overload;
   end;
 
 function GetPrintForm(Files: TStrings): TPrintForm; overload;
@@ -815,7 +815,7 @@ begin
   LvMain.Enabled := not CbUseCustomSize.Checked;
 end;
 
-procedure TPrintForm.Execute(VirtualFile: TBitmap);
+procedure TPrintForm.Execute(var VirtualFile: TBitmap);
 begin
   FFiles.Clear;
   Pointer(VirtualBitmap) := Pointer(VirtualFile);

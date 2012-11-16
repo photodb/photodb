@@ -76,6 +76,7 @@ type
     procedure ResetPersonSelection;
     procedure StartPersonSelection;
     procedure StopPersonSelection;
+    procedure CheckFaceIndicatorVisibility;
 
     procedure UpdateAvatar(PersonID: Integer);
 

@@ -248,7 +248,7 @@ end;
 procedure TFormQuickGroupInfo.InterfaceDestroyed;
 begin
   inherited;
-  Free;
+  Release;
 end;
 
 procedure TFormQuickGroupInfo.LoadLanguage;

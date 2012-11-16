@@ -160,7 +160,6 @@ type
     function GetImageRectA: TRect;
     function HeightW: Integer;
     procedure UpdateCursor;
-    procedure CheckFaceIndicatorVisibility;
     procedure UpdateFaceDetectionState;
 
     procedure RefreshFaces;
@@ -247,6 +246,7 @@ type
     procedure HightliteReset;
     procedure StartPersonSelection;
     procedure StopPersonSelection;
+    procedure CheckFaceIndicatorVisibility;
 
     procedure FinishDetectingFaces;
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
