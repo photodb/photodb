@@ -599,6 +599,8 @@ begin
         if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
           ImportImages(Dbname);
       end;
+
+      TUpdaterDB.CheckSavedWork;
     end;
 
     if (FCheckCount = 100) and not FolderView then // after 10 sec. check for updates

@@ -1053,7 +1053,7 @@ type
 
     procedure ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
     procedure DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
-    procedure StartMap;
+    procedure StartMap(UpdateTab: Boolean);
     procedure ClearMap;
     procedure SaveCurrentImageInfoToMap;
     procedure ClearGeoLocation;
@@ -4740,7 +4740,7 @@ begin
       FSelectedInfo.Date + FSelectedInfo.Time);
   end else
   begin
-    StartMap;
+    StartMap(True);
     ClearMap;
   end;
   if ElvMain.Selection.FocusedItem <> nil then
@@ -4775,7 +4775,7 @@ end;
 
 procedure TExplorerForm.DisplayGeoLocation(FileName: string; Lat, Lng: Double; Date: TDateTime);
 begin
-  StartMap;
+  StartMap(True);
   if FIsMapLoaded then
     ShowMarker(FileName, Lat, Lng, Date)
   else
@@ -5181,7 +5181,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.StartMap;
+procedure TExplorerForm.StartMap(UpdateTab: Boolean);
 var
   Stream: TMemoryStream;
   SW: TStreamWriter;
@@ -5256,7 +5256,8 @@ begin
     end;
   end;
 
-  ShowRightPanel(ertsMap);
+  if UpdateTab then
+    ShowRightPanel(ertsMap);
 end;
 
 procedure TExplorerForm.StateChanged(OldState: TGUID);
@@ -7222,6 +7223,8 @@ begin
     PcRightPreview.EnableTabChanging;
   end;
   PcRightPreview.ActivePageIndex := Integer(FActiveRightTab);
+  if FActiveRightTab = ertsMap then
+    StartMap(False);
 end;
 
 procedure TExplorerForm.ShowFilter(PerformFilter: Boolean);

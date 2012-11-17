@@ -59,16 +59,18 @@ type
     N1: TMenuItem;
     BtnCancel: TButton;
     BtnOk: TButton;
-    LbFoldersAndFiles: TLabel;
-    EdDBName: TWatermarkedEdit;
-    lbFileName: TLabel;
-    LbInfo: TLabel;
-    Image1: TImage;
     BtnNew: TButton;
-    BtnChooseFile: TButton;
     PmInsertMethod: TPopupActionBar;
     Copy2: TMenuItem;
     Cut2: TMenuItem;
+    PnTop: TPanel;
+    BtnChooseFile: TButton;
+    EdDBName: TWatermarkedEdit;
+    Image1: TImage;
+    lbFileName: TLabel;
+    LbFoldersAndFiles: TLabel;
+    LbInfo: TLabel;
+    TmrStart: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure BtnChooseFileClick(Sender: TObject);
@@ -87,6 +89,7 @@ type
     procedure LvMainKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormDestroy(Sender: TObject);
     procedure Cut2Click(Sender: TObject);
+    procedure TmrStartTimer(Sender: TObject);
   private
     { Private declarations }
     Items: TStrings;
@@ -95,7 +98,7 @@ type
     FFiles: TStrings;
     procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
   end;
@@ -518,6 +521,12 @@ procedure TSplitExportForm.LvMainResize(Sender: TObject);
 begin
   LvMain.Columns[0].Width := MethodColumnWidth;
   LvMain.Columns[1].Width := LvMain.Width - MethodColumnWidth - 5;
+end;
+
+procedure TSplitExportForm.TmrStartTimer(Sender: TObject);
+begin
+  TmrStart.Enabled := False;
+  EdDBName.Refresh;
 end;
 
 procedure TSplitExportForm.LvMainKeyDown(Sender: TObject; var Key: Word;

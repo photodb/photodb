@@ -3,37 +3,39 @@ unit UnitUpdateDBObject;
 interface
 
 uses
-  Windows,
-  Controls,
-  Classes,
-  Forms,
-  SysUtils,
-  uScript,
-  UnitScripts,
-  UnitDBDeclare,
-  uMemory,
-  UnitDBKernel,
-  uRuntime,
+  System.Math,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  System.StrUtils,
+  Winapi.Windows,
+  Vcl.Controls,
+  Vcl.Forms,
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
+
+  Dolphin_DB,
+  UnitINI,
+  UnitScripts,
+  UnitDBDeclare,
+  UnitDBKernel,
 
   uDBPopupMenuInfo,
   uConstants,
   uAppUtils,
   uGOM,
+  uMemory,
+  uRuntime,
   uMemoryEx,
   uTranslate,
-  Dolphin_DB,
   uDBForm,
   uSettings,
   uAssociations,
   uLogger,
-  SyncObjs,
+  uScript,
   uUpdateDBTypes,
-  uInterfaceManager,
-  StrUtils,
-  UnitINI;
+  uInterfaceManager;
 
 type
   TUpdaterDB = class(TObject)
@@ -57,11 +59,12 @@ type
     procedure SetAuto(const Value: Boolean);
     procedure SetAutoAnswer(Value: Integer);
     procedure SetUseFileNameScaning(const Value: boolean);
-    procedure ProcessFile(var FileName : string);
+    procedure ProcessFile(var FileName: string);
     function GetForm: TDBForm;
     procedure FoundedEvent(Owner: TObject; FileName: string; Size: Int64);
   public
     NoLimit: Boolean;
+    class procedure CheckSavedWork;
     constructor Create;
     destructor Destroy; override;
     function AddFile(FileName: string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
@@ -183,7 +186,7 @@ begin
   end;
 end;
 
-function TUpdaterDB.AddFile(FileName : string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
+function TUpdaterDB.AddFile(FileName: string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
 var
   Info: TDBPopupMenuInfoRecord;
 begin
@@ -257,6 +260,18 @@ begin
       end;
     end;
   Result := True;
+end;
+
+class procedure TUpdaterDB.CheckSavedWork;
+var
+  DBPrefix: string;
+  C: Integer;
+begin
+  DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
+  C := Settings.ReadInteger('Updater_' + DBPrefix, 'Counter', 0);
+
+  if C > 0 then
+    UpdaterDB.ShowWindowNow;
 end;
 
 constructor TUpdaterDB.Create;
@@ -699,38 +714,42 @@ begin
 
   begin
     DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
-    ProgressWindow := GetProgressWindow;
-    try
-      C := Settings.ReadInteger('Updater_' + DBPrefix, 'Counter', 0);
-      ProgressWindow.OneOperation := True;
-      ProgressWindow.MaxPosCurrentOperation := C;
-      ProgressWindow.XPosition := 0;
-      ProgressWindow.SetAlternativeText(TA('Wait until the program is restore the work', 'Updater'));
-      ProgressWindow.CanClosedByUser := True;
-      if C > 10 then
-        ProgressWindow.Show;
+    C := Settings.ReadInteger('Updater_' + DBPrefix, 'Counter', 0);
 
-      T := GetTickCount;
-      Reg := Settings.GetSection('Updater_' + DBPrefix);
-      for I := 0 to C - 1 do
-      begin
-        if ProgressWindow.Closed then
-          Break;
-        if I mod 50 = 0 then
+    if C > 0 then
+    begin
+      ProgressWindow := GetProgressWindow;
+      try
+        ProgressWindow.OneOperation := True;
+        ProgressWindow.MaxPosCurrentOperation := C;
+        ProgressWindow.XPosition := 0;
+        ProgressWindow.SetAlternativeText(TA('Wait until the program is restore the work', 'Updater'));
+        ProgressWindow.CanClosedByUser := True;
+        if C > 10 then
+          ProgressWindow.Show;
+
+        T := GetTickCount;
+        Reg := Settings.GetSection('Updater_' + DBPrefix);
+        for I := 0 to C - 1 do
         begin
-          ProgressWindow.XPosition := I;
-          ProgressWindow.Repaint;
+          if ProgressWindow.Closed then
+            Break;
+          if I mod 50 = 0 then
+          begin
+            ProgressWindow.XPosition := I;
+            ProgressWindow.Repaint;
+          end;
+          if GetTickCount - T > 100 then
+          begin
+            Application.ProcessMessages;
+            T := GetTickCount;
+          end;
+          AddFileToList(Reg.ReadString('File' + IntToStr(I)));
         end;
-        if GetTickCount - T > 100 then
-        begin
-          Application.ProcessMessages;
-          T := GetTickCount;
-        end;
-        AddFileToList(Reg.ReadString('File' + IntToStr(I)));
+
+      finally
+        R(ProgressWindow);
       end;
-
-    finally
-      R(ProgressWindow);
     end;
   end
   );
@@ -740,7 +759,7 @@ end;
 
 procedure TUpdaterDB.SaveWork;
 var
-  I: Integer;
+  I, SkipCount, Count: Integer;
   DBPrefix: string;
   Reg: TBDRegistry;
 begin
@@ -749,12 +768,16 @@ begin
 
   FIsSaved := True;
 
+  //Start saving from current psition minus possible 4 items in progress
+  SkipCount := Max(0, FPosition - 4);
+  Count := FFilesInfo.Count - SkipCount;
+
   DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
-  Settings.WriteInteger('Updater_' + DBPrefix, 'Counter', FFilesInfo.Count);
+  Settings.WriteInteger('Updater_' + DBPrefix, 'Counter', Count);
   Reg := Settings.GetSection('Updater_' + DBPrefix);
 
-  for I := 0 to FFilesInfo.Count - 1 do
-    Reg.WriteString('File' + IntToStr(I), FFilesInfo[I].FileName);
+  for I := 0 to FFilesInfo.Count - 1 - SkipCount do
+    Reg.WriteString('File' + IntToStr(I), FFilesInfo[I + SkipCount].FileName);
 end;
 
 function TUpdaterDB.GetCount: Integer;
