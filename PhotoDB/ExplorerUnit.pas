@@ -825,6 +825,7 @@ type
     procedure MainPanelResize(Sender: TObject);
     procedure SplRightPanelCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
+    procedure SplLeftPanelMoved(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -2986,7 +2987,16 @@ end;
 procedure TExplorerForm.SplLeftPanelCanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
-  Accept := NewSize > 100;
+  Accept := (NewSize > 100) and (NewSize < Width - 200);
+  if NewSize < SplLeftPanel.Left then
+    FOldWidth := Width - 1
+  else
+    FOldWidth := Width + 1;
+end;
+
+procedure TExplorerForm.SplLeftPanelMoved(Sender: TObject);
+begin
+  FormResize(Sender);
 end;
 
 procedure TExplorerForm.ListView1SelectItem(Sender: TObject;

@@ -292,6 +292,8 @@ const
                     RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate90, FileName);
                   DB_IMAGE_ROTATE_180:
                     RotateGDIPlusJPEGFile(FData.FileName, EncoderValueTransformRotate180, FileName);
+                  else
+                    CopyFile(PChar(FData.FileName), PChar(FileName), False);
                 end;
                 FixJpegFileEXIF(FileName, FData.Width, FData.Height);
               end;
@@ -474,7 +476,8 @@ begin
 
       if (NewGraphicClass = GraphicClass)
         and (GraphicClass = TJPEGImage)
-        and GDIPlusPresent then
+        and GDIPlusPresent
+        and not FProcessingParams.Convert then
       begin
         if (FProcessingParams.Rotation = DB_IMAGE_ROTATE_EXIF) then
           FixEXIFRotate
@@ -500,6 +503,11 @@ begin
                   RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate90);
                 DB_IMAGE_ROTATE_180:
                   RotateGDIPlusJPEGStream(MS, MD, EncoderValueTransformRotate180);
+                else
+                begin
+                  MS.Seek(0, soFromBeginning);
+                  MD.CopyFrom(MS, MS.Size);
+                end;
               end;
 
               SaveFile(MODE_GDI_PLUS_CRYPT);

@@ -36,6 +36,7 @@ object ExplorerForm: TExplorerForm
     Constraints.MaxWidth = 150
     ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
+    OnMoved = SplLeftPanelMoved
     ExplicitLeft = 150
     ExplicitTop = 47
     ExplicitHeight = 546
@@ -2662,7 +2663,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.544367314820000000
+      Date = 41177.836179664350000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
