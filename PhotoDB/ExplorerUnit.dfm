@@ -1699,9 +1699,7 @@ object ExplorerForm: TExplorerForm
       Visible = False
       OnCanResize = SplRightPanelCanResize
       OnMoved = SplRightPanelMoved
-      ExplicitLeft = 572
-      ExplicitTop = 27
-      ExplicitHeight = 564
+      ExplicitHeight = 580
     end
     object PnFilter: TPanel
       Left = 0
@@ -2663,7 +2661,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.836179664350000000
+      Date = 41177.895370798610000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

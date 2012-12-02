@@ -1520,7 +1520,6 @@ begin
     ShowRightPanel(ertsPreview)
   else
     SetResizeListViewMode;
-  PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   Lock := False;
 
@@ -1599,6 +1598,11 @@ begin
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
   FixFormPosition;
+
+  if PnRight.Align = alClient then
+    PnListView.Width := PnContent.Width - SplRightPanel.Width - Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width)
+  else
+    PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
