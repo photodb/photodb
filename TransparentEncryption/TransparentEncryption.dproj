@@ -135,6 +135,7 @@
         <DCCReference Include="..\PhotoDB\Units\uTransparentEncryption.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uLockedFileNotifications.pas"/>
         <DCCReference Include="uProgramCommunication.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\uWinApiRuntime.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

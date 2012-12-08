@@ -41,6 +41,7 @@ uses
   uConstants,
   uAssociations,
   uMemory,
+  uProgramStatInfo,
   uThemesUtils;
 
 type
@@ -263,6 +264,8 @@ var
   I: Integer;
   Link: TLinkInfo;
 begin
+  ProgramStatistics.PropertyLinksUsed;
+
   if FAdd then
   begin
     for I := 0 to Length(FInfo) - 1 do

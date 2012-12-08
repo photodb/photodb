@@ -30,6 +30,7 @@ uses
   uDBForm,
   uConstants,
   uMemory,
+  uProgramStatInfo,
   uShellIntegration;
 
 type
@@ -301,6 +302,8 @@ var
 begin
   if not DirectoryExists(EdNewPath.Text) then
     Exit;
+
+  ProgramStatistics.DBChangePathUsed;
 
   DisableControls;
   try

@@ -7,6 +7,7 @@ uses
   System.Classes,
   System.SysUtils,
   System.StrUtils,
+  uProgramStatInfo,
   uMemory;
 
 const
@@ -204,6 +205,9 @@ begin
     CD.Path := Path;
     Exit;
   end;
+
+  ProgramStatistics.CDMappingUsed;
+
   CD := TCDClass.Create;
   CD.Name := CDName;
   CD.Tag := TCD_CLASS_TAG_NONE;

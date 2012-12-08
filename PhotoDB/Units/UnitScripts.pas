@@ -183,8 +183,8 @@ type
     F_TYPE_PROCEDURE_STRING_STRING_BOOLEAN = 56;
 
     F_TYPE_FUNCTION_STRING_STRING_STRING_IS_STRING = 57;
-    F_TYPE_FUNCTION_DEBUG_START = 58;
-    F_TYPE_FUNCTION_DEBUG_END = 59;
+    //F_TYPE_FUNCTION_DEBUG_START = 58;
+    //F_TYPE_FUNCTION_DEBUG_END = 59;
     F_TYPE_FUNCTION_REGISTER_SCRIPT = 60;
     F_TYPE_FUNCTION_LOAD_VARS = 61;
     F_TYPE_FUNCTION_CREATE_ITEM_DEF_CHECKED_SUBTAG = 62;
@@ -342,11 +342,7 @@ function IsVariable(const s : string) : Boolean;
 implementation
 
 uses
-  UnitScriptsMath, UnitScriptsFunctions, DBScriptFunctions, uMobileUtils
- {$IFDEF USEDEBUG}
-   ,UnitDebugScriptForm
- {$ENDIF}
- ;
+  UnitScriptsMath, UnitScriptsFunctions, DBScriptFunctions, uMobileUtils;
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -1175,33 +1171,13 @@ var
   TempScript: TScript;
   PTempScript: TScript;
   SF: TScriptFunction;
-{$IFDEF USEDEBUG}
 
-  DebugScriptForm: TDebugScriptForm;
-{$ENDIF}
   LineCounter: Integer;
-
- procedure DoExit;
-  begin
-{$IFDEF USEDEBUG}
-    if DebugScriptForm <> nil then
-    begin
-      if DebugScriptForm.Waitind then
-        DebugScriptForm.Stop;
-      if not DebugScriptForm.Working then
-        if not DebugScriptForm.Anil then
-          DebugScriptForm.Release;
-      DebugScriptForm := nil;
-    end;
-    TW.I.Start('END Script: ' + Copy(Script, 1, 20));
-{$ENDIF}
-  end;
 
 begin
   LineCounter := 0;
   Apos := 1;
   Fb := 1;
-  DebugScriptForm := nil;
 
   if AlternativeCommand <> '' then
     Script := AlternativeCommand
@@ -1210,22 +1186,13 @@ begin
     if Sender <> nil then
       Script := Sender.Script
     else
-    begin
-      DoExit;
       Exit;
-    end;
   end;
   TW.I.Start('Script: ' + Copy(Script, 1, 100));
 
   repeat
     Inc(LineCounter);
-{$IFDEF USEDEBUG}
-    if DebugScriptForm <> nil then
-    begin
-      DebugScriptForm.SetActiveLine(LineCounter);
-      DebugScriptForm.Wait;
-    end;
-{$ENDIF}
+
     Af := Fb;
 
     R := PosExR('=', Script, Fb);
@@ -1347,26 +1314,6 @@ begin
       if SF.name = Func then
       begin
         case SF.AType of
-
-          F_TYPE_FUNCTION_DEBUG_START:
-            begin
-{$IFDEF USEDEBUG}
-              if DebugScriptForm = nil then
-              begin
-                Application.CreateForm(TDebugScriptForm, DebugScriptForm);
-                DebugScriptForm.LoadScript(Script);
-                DebugScriptForm.SetScript(@AScript);
-                DebugScriptForm.Show;
-                DebugScriptForm.SetFocus;
-                SetForegroundWindow(DebugScriptForm.Handle)
-              end;
-{$ENDIF}
-            end;
-
-          F_TYPE_FUNCTION_DEBUG_END:
-            begin
-              DoExit;
-            end;
 
           F_TYPE_FUNCTION_REGISTER_SCRIPT:
             begin
@@ -2026,12 +1973,10 @@ begin
       end;
     end;
     if Fb = 0 then
-    begin
-      DoExit;
       Exit;
-    end;
+
   until (PosEx(';', Script, Fb) < 1) or (Fb >= Length(Script));
-  DoExit;
+
 end;
 
 function ValidMenuDescription(const Desc: string): Boolean;
@@ -3095,8 +3040,8 @@ begin
 
   AddScriptFunction(Enviroment, 'REGISTER_SCRIPT', F_TYPE_FUNCTION_REGISTER_SCRIPT, nil);
 
-  AddScriptFunction(Enviroment, 'START_DEBUG', F_TYPE_FUNCTION_DEBUG_START, nil);
-  AddScriptFunction(Enviroment, 'STOP_DEBUG', F_TYPE_FUNCTION_DEBUG_END, nil);
+ // AddScriptFunction(Enviroment, 'START_DEBUG', F_TYPE_FUNCTION_DEBUG_START, nil);
+ // AddScriptFunction(Enviroment, 'STOP_DEBUG', F_TYPE_FUNCTION_DEBUG_END, nil);
   AddScriptFunction(Enviroment, 'LOAD_VARS', F_TYPE_FUNCTION_LOAD_VARS, nil);
   AddScriptFunction(Enviroment, 'SAVE_VAR', F_TYPE_FUNCTION_SAVE_VAR, nil);
   AddScriptFunction(Enviroment, 'DELETE_VAR', F_TYPE_FUNCTION_DELETE_VAR, nil);

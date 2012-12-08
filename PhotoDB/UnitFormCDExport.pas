@@ -9,12 +9,14 @@ uses
   Classes,
   Graphics,
   Controls,
+  ShellApi,
   Forms,
   Dialogs,
   ExtCtrls,
   ComCtrls,
   StdCtrls,
   Menus,
+  pngimage,
   ImgList,
   Dolphin_DB,
   UnitDBKernel,
@@ -22,6 +24,7 @@ uses
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   DragDrop,
+  AppEvnts,
   DropTarget,
 
   Dmitry.Utils.Files,
@@ -34,7 +37,7 @@ uses
   UnitCDMappingSupport,
   UnitDBFileDialogs,
   UnitDBCommonGraphics,
-  AppEvnts,
+
   uAssociatedIcons,
   uMemory,
   uCDMappingTypes,
@@ -42,8 +45,7 @@ uses
   uShellIntegration,
   uRuntime,
   uConstants,
-  ShellApi,
-  pngimage,
+  uProgramStatInfo,
   uFormInterfaces;
 
 type
@@ -462,6 +464,8 @@ begin
 
   EnableControls(False);
   // in thread!
+
+  ProgramStatistics.CDExportUsed;
 
   Options.ToDirectory := EditExportDirectory.Text;
   Options.DeleteFiles := CheckBoxDeleteFiles.Checked;

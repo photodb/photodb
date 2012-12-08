@@ -81,7 +81,6 @@ uses
   UnitFormManagerHint in 'UnitFormManagerHint.pas' {FormManagerHint},
   UnitActionsForm in 'Units\UnitActionsForm.pas' {ActionsForm},
   UnitSplitExportForm in 'UnitSplitExportForm.pas' {SplitExportForm},
-  UnitDebugScriptForm in 'UnitDebugScriptForm.pas' {DebugScriptForm},
   UnitImportingImagesForm in 'UnitImportingImagesForm.pas' {FormImportingImages},
   UnitConvertDBForm in 'UnitConvertDBForm.pas' {FormConvertingDB},
   UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
@@ -571,7 +570,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

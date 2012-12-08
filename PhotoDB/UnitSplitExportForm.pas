@@ -19,31 +19,33 @@ uses
   ImgList,
   Menus,
   DB,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
 
-  CommonDBSupport,
-  UnitGroupsWork,
+  DragDrop,
+  DragDropFile,
 
   Dmitry.Utils.Files,
   Dmitry.Utils.Dialogs,
   Dmitry.Controls.WatermarkedEdit,
 
-  uGroupTypes,
-  DragDrop,
-  DragDropFile,
-  uVistaFuncs,
+  CommonDBSupport,
+  UnitGroupsWork,
   UnitDBDeclare,
   UnitDBFileDialogs,
-  uLogger,
   UnitDBCommon,
+
+  uGroupTypes,
+  uVistaFuncs,
+  uLogger,
   uConstants,
   uDBForm,
   uShellIntegration,
   uMemory,
   uAssociations,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
   uThemesUtils,
   uVCLHelpers,
+  uProgramStatInfo,
   uDBUtils;
 
 type
@@ -396,6 +398,8 @@ begin
   else if ID_OK = MessageBoxDB(Handle, Format(L(
         'Do you really want to split the database and use this file: $nl$"%s"?$nl$WARNING: $nl$During the process all other windows will not be available!'), [EdDBName.Text]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
+    ProgramStatistics.DBSplitUsed;
+
     ItemIDsToDelete := TList.Create;
     try
       ProgressWindow := GetProgressWindow;

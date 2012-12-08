@@ -746,7 +746,6 @@ type
     procedure SbDoSearchLocationClick(Sender: TObject);
     procedure WlSaveLocationClick(Sender: TObject);
     procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure SplRightPanelMoved(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure MiShelfClick(Sender: TObject);
     procedure WlGoToShelfClick(Sender: TObject);
@@ -1598,9 +1597,10 @@ begin
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
   FixFormPosition;
+  RequestAlign;
 
   if PnRight.Align = alClient then
-    PnListView.Width := PnContent.Width - SplRightPanel.Width - Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width)
+    PnListView.Width := IIF(WindowState = wsMaximized, Monitor.Width - (Width - ClientWidth) - MainPanel.Width + SplLeftPanel.Width, PnContent.Width) - Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width)
   else
     PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
@@ -2230,6 +2230,7 @@ begin
   DropFileTargetMain.Unregister;
   DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
+  Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
   Settings.WriteInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
   Settings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
   Settings.WriteString('Explorer', 'Path', GetCurrentPathW.Path);
@@ -4826,11 +4827,6 @@ begin
   Accept := PanelSize >= 99;
   if not Accept then
     NewSize := PanelSize;
-end;
-
-procedure TExplorerForm.SplRightPanelMoved(Sender: TObject);
-begin
-  Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 end;
 
 procedure TExplorerForm.WlSaveLocationClick(Sender: TObject);

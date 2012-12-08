@@ -22,6 +22,7 @@ uses
 
   uConstants,
   uShellIntegration,
+  uProgramStatInfo,
   uDBForm;
 
 type
@@ -80,6 +81,8 @@ var
   Options: TExportOptions;
   F: TextFile;
 begin
+  ProgramStatistics.DBExportUsed;
+
   System.Assign(F, EdName.text);
 {$I-}
   System.Rewrite(F);

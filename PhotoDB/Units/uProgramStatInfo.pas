@@ -46,6 +46,16 @@ type
     procedure GroupUsed; //GO
     procedure PortableUsed; //PV
     procedure DBUsed; //DB
+
+    procedure DBExportUsed; //DBE
+    procedure DBChangePathUsed; //DBCH
+    procedure DBMergeUsed; //DBM
+    procedure DBSplitUsed; //DBS
+    procedure PropertyLinksUsed; //PRL
+    procedure MassRenameUsed; //RM
+    procedure CDExportUsed; //CDE
+    procedure CDMappingUsed; //CDM
+    procedure InitialImportUsed; //II
     function ToString: string; override;
   end;
 
@@ -71,9 +81,39 @@ begin
   UpdateProperty('ACT');
 end;
 
+procedure TProgramStatInfo.CDExportUsed;
+begin
+  UpdateProperty('CDE');
+end;
+
+procedure TProgramStatInfo.CDMappingUsed;
+begin
+  UpdateProperty('CDM');
+end;
+
 procedure TProgramStatInfo.ConverterUsed;
 begin
   UpdateProperty('C');
+end;
+
+procedure TProgramStatInfo.DBChangePathUsed;
+begin
+  UpdateProperty('DBCH');
+end;
+
+procedure TProgramStatInfo.DBExportUsed;
+begin
+  UpdateProperty('DBE');
+end;
+
+procedure TProgramStatInfo.DBMergeUsed;
+begin
+  UpdateProperty('DBM');
+end;
+
+procedure TProgramStatInfo.DBSplitUsed;
+begin
+  UpdateProperty('DBS');
 end;
 
 procedure TProgramStatInfo.DBUsed;
@@ -141,6 +181,16 @@ begin
   UpdateProperty('I');
 end;
 
+procedure TProgramStatInfo.InitialImportUsed;
+begin
+  UpdateProperty('II');
+end;
+
+procedure TProgramStatInfo.MassRenameUsed;
+begin
+  UpdateProperty('RM');
+end;
+
 procedure TProgramStatInfo.PersonUsed;
 begin
   UpdateProperty('PO');
@@ -174,6 +224,11 @@ end;
 procedure TProgramStatInfo.PropertiesUsed;
 begin
   UpdateProperty('PRO');
+end;
+
+procedure TProgramStatInfo.PropertyLinksUsed;
+begin
+  UpdateProperty('PRL');
 end;
 
 procedure TProgramStatInfo.SearchDatabaseUsed;
