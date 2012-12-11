@@ -13,13 +13,15 @@ uses
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.ExtCtrls,
-  uFrameWizardBase,
+  Vcl.Imaging.pngimage,
 
   Dmitry.Utils.Files,
   Dmitry.Controls.DmProgress,
 
   Dolphin_DB,
   UnitDBDeclare,
+
+  uFrameWizardBase,
   uGraphicUtils,
   uMemory,
   uRuntime,
@@ -30,8 +32,8 @@ uses
   uBitmapUtils,
   uUpdateDBTypes,
   uInterfaceManager,
-  uDBForm,
-  pngimage;
+  uProgramStatInfo,
+  uDBForm;
 
 type
   TFrmImportImagesProgress = class(TFrameWizardBase)
@@ -100,6 +102,8 @@ begin
   finally
     F(Directories);
   end;
+
+  ProgramStatistics.InitialImportUsed;
 
   IsBusy := False;
   IsStepComplete := True;

@@ -746,7 +746,6 @@ type
     procedure SbDoSearchLocationClick(Sender: TObject);
     procedure WlSaveLocationClick(Sender: TObject);
     procedure WedGeoSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure SplRightPanelMoved(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure MiShelfClick(Sender: TObject);
     procedure WlGoToShelfClick(Sender: TObject);
@@ -825,6 +824,7 @@ type
     procedure MainPanelResize(Sender: TObject);
     procedure SplRightPanelCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
+    procedure SplLeftPanelMoved(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1519,7 +1519,6 @@ begin
     ShowRightPanel(ertsPreview)
   else
     SetResizeListViewMode;
-  PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   Lock := False;
 
@@ -1598,6 +1597,12 @@ begin
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
   FixFormPosition;
+  RequestAlign;
+
+  if PnRight.Align = alClient then
+    PnListView.Width := IIF(WindowState = wsMaximized, Monitor.Width - (Width - ClientWidth) - MainPanel.Width + SplLeftPanel.Width, PnContent.Width) - Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width)
+  else
+    PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
@@ -2225,6 +2230,7 @@ begin
   DropFileTargetMain.Unregister;
   DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
+  Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
   Settings.WriteInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
   Settings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
   Settings.WriteString('Explorer', 'Path', GetCurrentPathW.Path);
@@ -2249,7 +2255,7 @@ begin
     Repaint;
   end;
 
-  if PnRight.Visible then
+  if PnRight.Visible and not IsRestoring then
   begin
     if FOldWidth <> Width then
     begin
@@ -2986,7 +2992,16 @@ end;
 procedure TExplorerForm.SplLeftPanelCanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
-  Accept := NewSize > 100;
+  Accept := (NewSize > 100) and (NewSize < Width - 200);
+  if NewSize < SplLeftPanel.Left then
+    FOldWidth := Width - 1
+  else
+    FOldWidth := Width + 1;
+end;
+
+procedure TExplorerForm.SplLeftPanelMoved(Sender: TObject);
+begin
+  FormResize(Sender);
 end;
 
 procedure TExplorerForm.ListView1SelectItem(Sender: TObject;
@@ -4812,11 +4827,6 @@ begin
   Accept := PanelSize >= 99;
   if not Accept then
     NewSize := PanelSize;
-end;
-
-procedure TExplorerForm.SplRightPanelMoved(Sender: TObject);
-begin
-  Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 end;
 
 procedure TExplorerForm.WlSaveLocationClick(Sender: TObject);
@@ -6704,6 +6714,7 @@ begin
     try
       Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(MenuInfo);
     end;
@@ -6972,6 +6983,7 @@ begin
       begin
         Viewer.ShowImages(Self, Info);
         Viewer.Show;
+        Viewer.Restore;
       end else
         ShowNoImagesError;
     finally
@@ -8684,6 +8696,7 @@ begin
       begin
         Viewer.ShowImage(Self, S);
         Viewer.Show;
+        Viewer.Restore;
       end else
         ShellExecute(Handle, 'open', PChar(S), nil, nil, SW_NORMAL);
     end else if not ChangeTreeView then
@@ -10848,6 +10861,7 @@ begin
           try
             Viewer.ShowImages(Sender, MenuInfo);
             Viewer.Show;
+            Viewer.Restore;
             RestoreSelected;
           finally
             F(MenuInfo);
@@ -10884,6 +10898,7 @@ begin
               try
                 Viewer.ShowImages(Sender, MenuInfo);
                 Viewer.Show;
+                Viewer.Restore;
                 RestoreSelected;
               finally
                 F(MenuInfo);

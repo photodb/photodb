@@ -45,7 +45,7 @@ object FormInternetUpdating: TFormInternetUpdating
   object WlHomePage: TWebLink
     Left = 8
     Top = 233
-    Width = 59
+    Width = 54
     Height = 13
     Cursor = crHandPoint
     Font.Charset = DEFAULT_CHARSET
@@ -101,7 +101,7 @@ object FormInternetUpdating: TFormInternetUpdating
   object WlDownload: TWebLink
     Left = 8
     Top = 215
-    Width = 86
+    Width = 81
     Height = 13
     Cursor = crHandPoint
     Font.Charset = DEFAULT_CHARSET

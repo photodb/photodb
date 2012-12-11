@@ -8,16 +8,11 @@ uses
   Generics.Collections,
   uMemory,
   SyncObjs,
+  uWinApiRuntime,
   uTransparentEncryption;
 
-type
-  TSetFilePointerNextHook   = function (hFile: THandle; lDistanceToMove: DWORD;
-                                        lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD): DWORD; stdcall;
-  TSetFilePointerExNextHook = function (hFile: THandle; liDistanceToMove: TLargeInteger;
-                                        const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD): BOOL; stdcall;
-
 procedure CloseFileHandle(Handle: THandle);
-procedure InitEncryptedFile(FileName: string; hFile: THandle);
+procedure InitEncryptedFile(FileName: string; hFile: THandle; AsyncHandle: Boolean);
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped; Result: PBOOL);
 function FixFileSize(hFile: THandle; lDistanceToMove: DWORD; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
 function FixFileSizeEx(hFile: THandle; liDistanceToMove: TLargeInteger; const lpNewFilePointer: PLargeInteger; dwMoveMethod: DWORD; SeekExProc: TSetFilePointerExNextHook): BOOL;
@@ -75,23 +70,24 @@ begin
   if SyncObj = nil then
     Exit;
 
-  SyncObj.Enter;
-  try
-    if not IsInternalFileMapping(hFileMappingObject) then
-      Exit;
+  if not IsInternalFileMapping(hFileMappingObject) then
+    Exit;
 
-    FileHandle := FFileMappings[hFileMappingObject];
+  FileHandle := FFileMappings[hFileMappingObject];
 
-    if FData.ContainsKey(FileHandle) then
-    begin
-      Int64Rec(Pos).Hi := dwFileOffsetHigh;
-      Int64Rec(Pos).Lo := dwFileOffsetLow;
+  if FData.ContainsKey(FileHandle) then
+  begin
+    Int64Rec(Pos).Hi := dwFileOffsetHigh;
+    Int64Rec(Pos).Lo := dwFileOffsetLow;
 
+    SyncObj.Enter;
+    try
       MS := FData[FileHandle];
-      Result := MS.GetBlock(dwFileOffsetLow, dwNumberOfBytesToMap);
+    finally
+      SyncObj.Leave;
     end;
-  finally
-    SyncObj.Leave;
+
+    Result := MS.GetBlock(dwFileOffsetLow, dwNumberOfBytesToMap);
   end;
 end;
 
@@ -128,30 +124,30 @@ begin
   end;
 end;
 
-procedure InitEncryptedFile(FileName: string; hFile: THandle);
+procedure InitEncryptedFile(FileName: string; hFile: THandle; AsyncHandle: Boolean);
 var
   MS: TEncryptedFile;
 begin
   if hFile = Windows.INVALID_HANDLE_VALUE then
     Exit;
 
-  SyncObj.Enter;
-  try
-    if FData.ContainsKey(hFile) then
-      Exit;
+  if FData.ContainsKey(hFile) then
+    Exit;
 
-    MS := TEncryptedFile.Create(hFile, FileName);
-    try
-      if MS.CanDecryptWithPasswordRequest(FileName) then
-      begin
+  MS := TEncryptedFile.Create(hFile, FileName, AsyncHandle);
+  try
+    if MS.CanDecryptWithPasswordRequest(FileName) then
+    begin
+      SyncObj.Enter;
+      try
         FData.Add(hFile, MS);
         MS := nil;
+      finally
+        SyncObj.Leave;
       end;
-    finally
-      F(MS);
     end;
   finally
-    SyncObj.Leave;
+    F(MS);
   end;
 end;
 
@@ -166,22 +162,21 @@ begin
   if SyncObj = nil then
     Exit;
 
-  SyncObj.Enter;
-  try
+  if not FData.ContainsKey(hFile) then
+    Exit;
 
-    if not FData.ContainsKey(hFile) then
-      Exit;
-
-    if dwMoveMethod = FILE_END then
-    begin
+  if dwMoveMethod = FILE_END then
+  begin
+    SyncObj.Enter;
+    try
       MS := FData[hFile];
-      PDWORD(lpDistanceToMoveHigh)^ := 0;
-      lDistanceToMove := MS.HeaderSize;
-      Result := SeekProc(hFile, lDistanceToMove, lpDistanceToMoveHigh, FILE_END);
+    finally
+      SyncObj.Leave;
     end;
 
-  finally
-    SyncObj.Leave;
+    PDWORD(lpDistanceToMoveHigh)^ := 0;
+    lDistanceToMove := MS.HeaderSize;
+    Result := SeekProc(hFile, lDistanceToMove, lpDistanceToMoveHigh, FILE_END);
   end;
 
   SetLastError(LastError);
@@ -198,20 +193,19 @@ begin
   if SyncObj = nil then
     Exit;
 
-  SyncObj.Enter;
-  try
-    if not FData.ContainsKey(hFile) then
-      Exit;
+  if not FData.ContainsKey(hFile) then
+    Exit;
 
-    if dwMoveMethod = FILE_END then
-    begin
+  if dwMoveMethod = FILE_END then
+  begin
+    SyncObj.Enter;
+    try
       MS := FData[hFile];
-      liDistanceToMove := MS.HeaderSize;
-      Result := SeekExProc(hFile, liDistanceToMove, lpNewFilePointer, FILE_END);
+    finally
+      SyncObj.Leave;
     end;
-
-  finally
-    SyncObj.Leave;
+    liDistanceToMove := MS.HeaderSize;
+    Result := SeekExProc(hFile, liDistanceToMove, lpNewFilePointer, FILE_END);
   end;
 
   SetLastError(LastError);
@@ -231,7 +225,12 @@ begin
       Exit;
 
     MS := FData[hFile];
+  finally
+    SyncObj.Leave;
+  end;
 
+  if not Assigned(lpOverlapped) then
+  begin
     Size := MS.Size;
     if dwCurrentFilePosition + lpNumberOfBytesRead > Size then
     begin
@@ -244,11 +243,9 @@ begin
       //if Assigned(Result) then
       //  Result^ := False;
     end;
-
-    MS.ReadBlock(Buffer, dwCurrentFilePosition, lpNumberOfBytesRead);
-  finally
-    SyncObj.Leave;
   end;
+
+  MS.ReadBlock(Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpOverlapped);
 end;
 
 procedure StartLib;

@@ -97,10 +97,8 @@ begin
       if Assigned(FProc) then
         FProc(BaseImage, D, CallBack)
       else
-      begin
-        D.Assign(BaseImage);
-        RotateBitmap(D, FAngle, FBackColor, CallBack);
-      end;
+        RotateBitmap(BaseImage, D, FAngle, FBackColor, CallBack);
+
       Synchronize(DoExit);
     finally
       F(D);

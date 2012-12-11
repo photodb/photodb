@@ -20,6 +20,7 @@ resourcestring
   rsUnknownError = 'Unknown error';
 
 const
+  GoogleBaseProxyURL = 'https://google.com';
   /// <summary>
   /// MIME-тип тела запроса, используемый по умолчанию для работы с мета-данными
   /// </summary>
@@ -259,13 +260,14 @@ var
 begin
   FHTTP := TIdHTTP.Create(nil);
   FSSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+
   FHTTP.IOHandler := FSSLIOHandler;
   FHTTP.ConnectTimeout := cConnectionTimeout;
   FHTTP.ReadTimeout := 0;
   FHTTP.OnWorkBegin := WorkBeginEvent;
   FHTTP.OnWorkEnd := WorkEndEvent;
   FHTTP.OnWork := WorkEvent;
-  ConfigureIdHttpProxy(FHTTP, 'https://google.com');
+  ConfigureIdHttpProxy(FHTTP, GoogleBaseProxyURL);
   try
 
     if Assigned(AParams) and (AParams.Count > 0) then

@@ -32,6 +32,7 @@ uses
 
   uMemory,
   uDBForm,
+  uProgramStatInfo,
   uShellIntegration,
   uDBBaseTypes,
   uDBUtils,
@@ -257,6 +258,8 @@ end;
 
 procedure TFormFastFileRenamer.BtnOKClick(Sender: TObject);
 begin
+  ProgramStatistics.MassRenameUsed;
+
   if CheckConflictFileNames then
   begin
     WebLinkWarning.Visible := True;

@@ -36,7 +36,8 @@ uses
   uWinAPIRedirections in 'uWinAPIRedirections.pas',
   uTransparentEncryption in '..\PhotoDB\Units\uTransparentEncryption.pas',
   uLockedFileNotifications in '..\PhotoDB\Units\uLockedFileNotifications.pas',
-  uProgramCommunication in 'uProgramCommunication.pas';
+  uProgramCommunication in 'uProgramCommunication.pas',
+  uWinApiRuntime in '..\PhotoDB\Units\uWinApiRuntime.pas';
 
 {$R *.res}
 

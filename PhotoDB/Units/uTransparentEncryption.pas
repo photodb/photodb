@@ -56,11 +56,13 @@ type
     FPassword: string;
     FFileName: string;
     FlpOverlapped: POverlapped;
+    FIsAsyncHandle: Boolean;
+    FAsyncFileHandle: THandle;
     procedure DecodeDataBlock(const Source; var Dest; DataSize: Integer);
     function GetSize: Int64;
     function GetBlockByIndex(Index: Int64): TMemoryBlock;
   public
-    constructor Create(Handle: THandle; FileName: string);
+    constructor Create(Handle: THandle; FileName: string; IsAsyncHandle: Boolean);
     destructor Destroy; override;
     function CanDecryptWithPasswordRequest(FileName: string): Boolean;
     procedure ReadBlock(const Block; BlockPosition: Int64; BlockSize: Int64; lpOverlapped: POverlapped = nil);
@@ -101,6 +103,10 @@ function TransparentDecryptFileEx(FileName: string; Password: string;
 procedure SetEncryptionErrorHandler(ErrorHander: TEncryptionErrorHandler);
 
 function EncryptionOptions: TEncryptionOptions;
+
+
+function ReadFile(hFile: THandle; var Buffer; nNumberOfBytesToRead: DWORD;
+  lpNumberOfBytesRead: PDWORD; lpOverlapped: POverlapped): BOOL; stdcall; external kernel32 name 'ReadFile';
 
 implementation
 
@@ -477,7 +483,6 @@ var
   Pos: Int64;
   Overlapped: TOverlapped;
   lpNumberOfBytesTransferred: DWORD;
-  lpNumberOfBytesRead: DWORD;
 begin
   Result := False;
   if FileHandle = 0 then
@@ -498,8 +503,7 @@ begin
     Overlapped.hEvent := CreateEvent(nil, True, False, nil);
     try
 
-      lpNumberOfBytesRead := SizeOf(EncryptHeader);
-      ReadFile(FileHandle, EncryptHeader, SizeOf(EncryptHeader), lpNumberOfBytesRead, @Overlapped);
+      ReadFile(FileHandle, EncryptHeader, SizeOf(EncryptHeader), nil, @Overlapped);
 
       if ERROR_IO_PENDING <> GetLastError then
         Exit;
@@ -578,6 +582,55 @@ var
   P: PByte;
   WinHandle: HWND;
   m_pViewOfFile: Pointer;
+
+  FFilePosition: Int64;
+  procedure InternalFileSeek(Offset: Int64);
+  begin
+    if FIsAsyncHandle then
+      FFilePosition := Offset
+    else
+      FileSeek(FHandle, Offset, FILE_BEGIN)
+  end;
+
+  procedure InternalFileRead(var Buffer; SizeToRead: Integer);
+  var
+    Res: BOOL;
+    lpNumberOfBytesTransferred: Cardinal;
+    lpOverlapped: POverlapped;
+  begin
+    if FIsAsyncHandle then
+    begin
+
+      GetMem(lpOverlapped, SizeOf(TOverlapped));
+      FillChar(lpOverlapped^, SizeOf(TOverlapped), #0);
+
+      lpOverlapped.Offset     := Int64Rec(FFilePosition).Lo;
+      lpOverlapped.OffsetHigh := Int64Rec(FFilePosition).Hi;
+
+      lpOverlapped.hEvent := CreateEvent(nil, True, False, nil);
+
+      try
+        Res := ReadFile(FHandle, Buffer, SizeToRead, nil, lpOverlapped);
+
+        if not Res and (GetLastError = ERROR_IO_PENDING) then
+        begin
+          if not WaitForSingleObject(lpOverlapped.hEvent, INFINITE) = WAIT_OBJECT_0 then
+            Exit;
+
+          if not GetOverlappedResult(FHandle, lpOverlapped^, lpNumberOfBytesTransferred, True) then
+            Exit;
+
+          FFilePosition := FFilePosition + Int64(lpNumberOfBytesTransferred);
+        end;
+
+      finally
+        CloseHandle(lpOverlapped.hEvent);
+        FreeMem(lpOverlapped);
+      end;
+    end else
+      FileRead(FHandle, Buffer, SizeToRead);
+  end;
+
 begin
   Result := False;
 
@@ -649,12 +702,12 @@ begin
 
   Position := FileSeek(FHandle, Int64(0), FILE_CURRENT);
 
-  FileSeek(FHandle, 0, FILE_BEGIN);
+  InternalFileSeek(0);
 
   FillChar(EncryptHeader, SizeOf(EncryptHeader), #0);
   FillChar(EncryptHeaderV1, SizeOf(EncryptHeaderV1), #0);
 
-  FileRead(FHandle, EncryptHeader, SizeOf(EncryptHeader));
+  InternalFileRead(EncryptHeader, SizeOf(EncryptHeader));
 
   if EncryptHeader.ID = PhotoDBFileHeaderID then
   begin
@@ -662,7 +715,7 @@ begin
     begin
       StrongCryptInit;
 
-      FileRead(FHandle, EncryptHeaderV1, SizeOf(EncryptHeaderV1));
+      InternalFileRead(EncryptHeaderV1, SizeOf(EncryptHeaderV1));
       CalcStringCRC32(Password, CRC);
       if EncryptHeaderV1.PassCRC <> CRC then
         Exit;
@@ -686,9 +739,10 @@ begin
   FileSeek(FHandle, Position, FILE_BEGIN);
 end;
 
-constructor TEncryptedFile.Create(Handle: THandle; FileName: string);
+constructor TEncryptedFile.Create(Handle: THandle; FileName: string; IsAsyncHandle: Boolean);
 begin
   FSync := TCriticalSection.Create;
+
   FChipper := nil;
   FlpOverlapped := nil;
 
@@ -696,14 +750,26 @@ begin
   FMemoryBlocks := TList.Create;
 
   FIsDecrypted := False;
+
   FHandle := Handle;
   FFileName := FileName;
+  FIsAsyncHandle := IsAsyncHandle;
+
   FHeaderSize := 0;
   FBlockSize := 0;
 
   FContentSize := 0;
   FMemorySize := 0;
   FMemoryLimit := 10 * 1024 * 1024;
+
+  FAsyncFileHandle := 0;
+  if IsAsyncHandle then
+  begin
+    FAsyncFileHandle := CreateFile(PChar(FFileName), GENERIC_READ, FILE_SHARE_WRITE or FILE_SHARE_READ, nil, OPEN_EXISTING,
+                                   FILE_ATTRIBUTE_NORMAL or FILE_FLAG_OVERLAPPED, 0);
+    if FAsyncFileHandle = INVALID_HANDLE_VALUE then
+      FAsyncFileHandle := 0;
+  end;
 end;
 
 procedure TEncryptedFile.DecodeDataBlock(const Source; var Dest; DataSize: Integer);
@@ -734,6 +800,8 @@ begin
   //don't free items -> application should call FreeBlock to avoid
   //memory leaks in winows kernel
   F(FMemoryBlocks);
+  if FAsyncFileHandle <> 0 then
+    CloseHandle(FAsyncFileHandle);
 
   F(FSync);
   inherited;
@@ -771,8 +839,17 @@ var
   lpNumberOfBytesRead: DWORD;
   MemorySize, FileReadPosition: Int64;
   lpOverlapped: POverlapped;
+
+  Async: Boolean;
+  FileHandle: THandle;
 begin
   Result := nil;
+
+  Async := FlpOverlapped <> nil;  // FIsAsyncHandle
+
+  FileHandle := FHandle;
+  if Async and (FAsyncFileHandle <> 0) then
+    FileHandle := FAsyncFileHandle;
 
   for I := FFileBlocks.Count - 1 downto 0 do
   begin
@@ -809,63 +886,66 @@ begin
   if BlockSize <= 0 then
     Exit;
 
-  CurrentPosition := FileSeek(FHandle, Int64(0), FILE_CURRENT);
-  FileSeek(FHandle, BlockStart + FHeaderSize, FILE_BEGIN);
+  CurrentPosition := 0;
+  if not Async then
+  begin
+    CurrentPosition := FileSeek(FileHandle, Int64(0), FILE_CURRENT);
+    FileSeek(FileHandle, BlockStart + FHeaderSize, FILE_BEGIN);
+  end;
 
-  GetMem(SData, BlockSize);
+  SData := AllocMem(BlockSize);
   try
     lpOverlapped := nil;
-    if Assigned(FlpOverlapped) then
+    if Async then
     begin
-      GetMem(lpOverlapped, SizeOf(TOverlapped));
+      New(lpOverlapped);
       FillChar(lpOverlapped^, SizeOf(TOverlapped), #0);
 
       FileReadPosition := BlockStart + FHeaderSize;
       lpOverlapped.Offset     := Int64Rec(FileReadPosition).Lo;
       lpOverlapped.OffsetHigh := Int64Rec(FileReadPosition).Hi;
-
-      lpOverlapped.hEvent := CreateEvent(nil, True, False, nil);
     end;
 
-    Res := ReadFile(FHandle, SData^, BlockSize, lpNumberOfBytesRead, lpOverlapped);
+    try
+      Res := ReadFile(FileHandle, SData^, BlockSize, @lpNumberOfBytesRead, lpOverlapped);
 
-    if Res or (not Res and (lpOverlapped <> nil) and (GetLastError = ERROR_IO_PENDING)) then
-    begin
-      if Assigned(lpOverlapped) then
+      if Res or (not Res and Async and (GetLastError = ERROR_IO_PENDING)) then
       begin
-        if not WaitForSingleObject(lpOverlapped.hEvent, INFINITE) = WAIT_OBJECT_0 then
-          Exit(nil);
+        if Async then
+        begin
+          if not GetOverlappedResult(FileHandle, lpOverlapped^, lpNumberOfBytesTransferred, True) then
+            Exit(nil);
 
-        if not GetOverlappedResult(FHandle, lpOverlapped^, lpNumberOfBytesTransferred, True) then
-          Exit(nil);
+          if lpNumberOfBytesTransferred = 0 then
+            Exit(nil);
+        end;
 
-        if lpNumberOfBytesTransferred = 0 then
-          Exit(nil);
+        GetMem(DData, BlockSize);
+        try
+          DecodeDataBlock(SData^, DData^, BlockSize);
+
+          Result := TMemoryBlock.Create;
+          Result.Index := Index;
+          Result.Size := BlockSize;
+          Result.Memory := DData;
+          DData := nil;
+          FFileBlocks.Add(Result);
+        finally
+          if DData <> nil then
+            FreeMem(DData);
+        end;
       end;
 
-      GetMem(DData, BlockSize);
-      try
-        DecodeDataBlock(SData^, DData^, BlockSize);
-
-        Result := TMemoryBlock.Create;
-        Result.Index := Index;
-        Result.Size := BlockSize;
-        Result.Memory := DData;
-        DData := nil;
-        FFileBlocks.Add(Result);
-      finally
-        if DData <> nil then
-          FreeMem(DData);
-      end;
+    finally
+      if Async then
+        Dispose(lpOverlapped);
     end;
-
-    if Assigned(FlpOverlapped) then
-      FreeMem(lpOverlapped);
   finally
     FreeMem(SData);
   end;
 
-  FileSeek(FHandle, CurrentPosition, FILE_BEGIN);
+  if not Async then
+    FileSeek(FileHandle, CurrentPosition, FILE_BEGIN);
 end;
 
 function TEncryptedFile.GetSize: Int64;
@@ -874,7 +954,7 @@ begin
   Result := Result - FHeaderSize;
 end;
 
-procedure TEncryptedFile.ReadBlock(const Block; BlockPosition, BlockSize: Int64; lpOverlapped: POverlapped);
+procedure TEncryptedFile.ReadBlock(const Block; BlockPosition, BlockSize: Int64; lpOverlapped: POverlapped = nil);
 var
   I, StartBlock, BlockEnd: Integer;
   B: TMemoryBlock;
@@ -916,7 +996,7 @@ begin
       end;
     end;
   end;
-  if MemoryToCopy > 0 then
+  if (MemoryToCopy > 0) then
   begin
     D := Pointer(MemoryCopied + NativeInt(Addr(Pointer(Block))));
     FillChar(D^, MemoryToCopy, #0);

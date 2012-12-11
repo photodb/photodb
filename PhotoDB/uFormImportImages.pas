@@ -1620,6 +1620,7 @@ begin
     begin
       Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
+      Viewer.Restore;
     end;
   finally
     F(MenuInfo);

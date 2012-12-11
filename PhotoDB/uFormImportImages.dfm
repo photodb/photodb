@@ -318,7 +318,7 @@ object FormImportImages: TFormImportImages
   object WlMode: TWebLink
     Left = 8
     Top = 414
-    Width = 64
+    Width = 59
     Height = 13
     Cursor = crHandPoint
     Anchors = [akLeft, akBottom]
@@ -423,7 +423,7 @@ object FormImportImages: TFormImportImages
     object WlResetDate: TWebLink
       Left = 180
       Top = 4
-      Width = 41
+      Width = 36
       Height = 13
       Cursor = crHandPoint
       Text = '(Reset)'

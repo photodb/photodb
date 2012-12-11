@@ -75,12 +75,12 @@ const
   cReadTimeout = 20000;
   cBrowserAgent: string = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0';
 
-function LoadStreamFromURL(URL: string; Stream: TStream; Container: THTTPRequestContainer = nil): Boolean;
+function LoadStreamFromURL(URL: string; Stream: TStream; Container: THTTPRequestContainer = nil; ProxyBaseUrl: string = ''): Boolean;
 function EncodeURLElement(const Value: string): AnsiString;
 function DownloadFile(const Url: string; Encoding: TEncoding): string;
 function InternetTimeToDateTime(const Value: string): TDateTime;
 function EncodeBase64Url(inputData: string): string;
-function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap; Container: THTTPRequestContainer = nil): Boolean;
+function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap; Container: THTTPRequestContainer = nil; ProxyBaseUrl: string = ''): Boolean;
 function GetMimeContentType(Content: Pointer; Len: integer): string;
 
 implementation
@@ -124,7 +124,7 @@ begin // see http://www.garykessler.net/library/file_sigs.html for magic numbers
     end;
 end;
 
-function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap; Container: THTTPRequestContainer = nil): Boolean;
+function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap; Container: THTTPRequestContainer = nil; ProxyBaseUrl: string = ''): Boolean;
 var
   MS: TMemoryStream;
   Jpeg: TJPEGImage;
@@ -136,7 +136,7 @@ begin
   try
     if Url <> '' then
     begin
-      if LoadStreamFromURL(Url, MS, Container) and (MS.Size > 0) then
+      if LoadStreamFromURL(Url, MS, Container, ProxyBaseUrl) and (MS.Size > 0) then
       begin
         Mime := GetMimeContentType(MS.Memory, MS.Size);
 
@@ -269,7 +269,7 @@ begin
 { NetHandle недопустимый. Генерируем исключительную ситуацию }
 end;
 
-function LoadStreamFromURL(URL: string; Stream: TStream; Container: THTTPRequestContainer = nil): Boolean;
+function LoadStreamFromURL(URL: string; Stream: TStream; Container: THTTPRequestContainer = nil; ProxyBaseUrl: string = ''): Boolean;
 var
   FHTTP: TIdHTTP;
   IsOwnContainer: Boolean;
@@ -280,7 +280,7 @@ begin
   try
     FHTTP := Container.HTTP;
     try
-      ConfigureIdHttpProxy(FHTTP, URL);
+      ConfigureIdHttpProxy(FHTTP, IIF(ProxyBaseUrl = '', URL, ProxyBaseUrl));
       FHTTP.Get(URL, Stream);
       Result := True;
     except

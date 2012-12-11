@@ -24,6 +24,7 @@ uses
   CommonDBSupport,
   UnitDBKernel,
 
+  uProgramStatInfo,
   uConstants,
   uShellIntegration,
   uDBForm,
@@ -151,6 +152,7 @@ procedure TImportDataBaseForm.BtnOkClick(Sender: TObject);
 var
   Options: TCompOptions;
 begin
+  ProgramStatistics.DBMergeUsed;
   with Options do
   begin
     AddNewRecords := ClbOptions.Checked[0];

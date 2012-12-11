@@ -66,7 +66,7 @@ procedure Rotate180(S,D : Tbitmap; CallBack : TProgressCallBackProc = nil);
 procedure FlipHorizontal(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 procedure FlipVertical(S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
-procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
+procedure RotateBitmap(Bmp, Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
 //procedure SmoothResizeA(Width, Height : integer; S,D : TBitmap; CallBack : TProgressCallBackProc = nil);
 
 procedure StrRotated(X, Y: Integer; arect: TRect; DC: HDC; Font: HFont; Str: string; Ang: Extended; Options: Cardinal);
@@ -1739,7 +1739,7 @@ begin
  end;
 end;
 
-procedure RotateBitmap(Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
+procedure RotateBitmap(Bmp, Bitmap: TBitmap; Angle: Double; BackColor: TColor; CallBack : TProgressCallBackProc = nil);
 type TRGB = record
        B, G, R: Byte;
      end;
@@ -1748,13 +1748,14 @@ type TRGB = record
      TByteArray = array[0..32767] of Byte;
      TRectList = array [1..4] of TPoint;
 
-var x, y, W, H, v1, v2: Integer;
-    Dest, Src: pRGB;
-    VertArray: array of pByteArray;
-    Bmp: TBitmap;
-    Terminating : boolean;
-    p : PARGB;
-    rgb : TRGB;
+var
+  x, y, W, H, v1, v2: Integer;
+  Dest, Src: pRGB;
+  VertArray: array of pByteArray;
+//  Bmp: TBitmap;
+  Terminating: boolean;
+  p: PARGB;
+  rgb: TRGB;
 
   procedure SinCos(AngleRad: Double; var ASin, ACos: Double);
   begin
@@ -1865,69 +1866,155 @@ var x, y, W, H, v1, v2: Integer;
     end;
   end;
 
-begin
-  Terminating:=false;
-  Bmp := TBitmap.Create;
-  Bitmap.PixelFormat := pf24Bit;
-  try
-    AssignBitmap(Bmp, Bitmap);
-    W := Bitmap.Width - 1;
-    H := Bitmap.Height - 1;
-    if Frac(Angle) <> 0.0
-      then Rotate
-      else
-    case Trunc(Angle) of
-      -360, 0, 360, 720: Exit;
-      90, 270: begin
-        Bitmap.Width := H + 1;
-        Bitmap.Height := W + 1;
-        SetLength(VertArray, H + 1);
-        v1 := 0;
-        v2 := 0;
-        if Angle = 90.0 then v1 := H
-                        else v2 := W;
-        for y := 0 to H do VertArray[y] := Bmp.ScanLine[Abs(v1 - y)];
-        for x := 0 to W do
-        begin
-         Dest := Bitmap.ScanLine[x];
-         for y := 0 to H do
-         begin
-          v1 := Abs(v2 - x)*3;
-          with Dest^ do
-          begin
-           B := VertArray[y, v1];
-           G := VertArray[y, v1+1];
-           R := VertArray[y, v1+2];
-          end;
-          Inc(Dest);
 
-         end;
-          if x mod 50=0 then
-          If Assigned(CallBack) then CallBack(Round(100*x/W),Terminating);
-          if Terminating then Break;
-        end
+{function TrimInt(i,Min,Max:Integer):Integer;
+begin
+  if      i>Max then Result:=Max
+  else if i<Min then Result:=Min
+  else               Result:=i;
+end;
+
+function IntToByte(i:Integer):Byte;
+begin
+  if      i>255 then Result:=255
+  else if i<0   then Result:=0
+  else               Result:=i;
+end;
+
+procedure SmoothRotate;
+var
+Top,
+Bottom,
+Left,
+Right,
+eww,nsw,
+fx,fy,
+wx,wy, Theta:    Extended;
+cAngle,
+sAngle:   Double;
+xDiff,
+yDiff,
+ifx,ify,
+px,py,
+ix,iy,
+x,y, gap:      Integer;
+nw,ne,
+sw,se:    TRGB;
+Tmp:      PRGB;
+Line: Pointer;
+begin
+  Theta:=Abs(Angle)*(Pi/180);
+  x:=Round(Abs(Bmp.Width*Cos(Theta))+Abs(Bmp.Height*Sin(Theta))+0.4);
+  y:=Round(Abs(Bmp.Width*Sin(Theta))+Abs(Bmp.Height*Cos(Theta))+0.4);
+  Bitmap.SetSize(x, y);
+  Bitmap.PixelFormat := pf24bit;
+
+  Angle:=-Angle*Pi/180;
+  sAngle:=Sin(Angle);
+  cAngle:=Cos(Angle);
+  xDiff:=(Bitmap.Width-Bmp.Width)div 2;
+  yDiff:=(Bitmap.Height-Bmp.Height)div 2;
+  Line:=Bitmap.ScanLine[0];
+  gap := NativeInt(Bitmap.ScanLine[1]) - NativeInt(Line);
+
+  for y:=0 to Bitmap.Height-1 do
+  begin
+    Tmp := Line;
+    py:=2*(y)+1;
+    for x:=0 to Bitmap.Width-1 do
+    begin
+      px:=2*(x)+1;
+      fx:=(((px*cAngle-py*sAngle)-1)/ 2)-xDiff;
+      fy:=(((px*sAngle+py*cAngle)-1)/ 2)-yDiff;
+      ifx:=Round(fx);
+      ify:=Round(fy);
+
+      if(ifx>-1)and(ifx<Bmp.Width)and(ify>-1)and(ify<Bmp.Height)then
+      begin
+        eww:=fx-ifx;
+        nsw:=fy-ify;
+        iy:=TrimInt(ify+1,0,Bmp.Height-1);
+        ix:=TrimInt(ifx+1,0,Bmp.Width-1);
+        nw:=PARGB(Bmp.ScanLine[ify])[ifx];
+        ne:=PARGB(Bmp.ScanLine[ify])[ix];
+        sw:=PARGB(Bmp.ScanLine[iy])[ifx];
+        se:=PARGB(Bmp.ScanLine[iy])[ix];
+
+        Top:=nw.b+eww*(ne.b-nw.b);
+        Bottom:=sw.b+eww*(se.b-sw.b);
+        Tmp.b:=IntToByte(Round(Top+nsw*(Bottom-Top)));
+
+        Top:=nw.g+eww*(ne.g-nw.g);
+        Bottom:=sw.g+eww*(se.g-sw.g);
+        Tmp.g:=IntToByte(Round(Top+nsw*(Bottom-Top)));
+
+        Top:=nw.r+eww*(ne.r-nw.r);
+        Bottom:=sw.r+eww*(se.r-sw.r);
+        Tmp.r:=IntToByte(Round(Top+nsw*(Bottom-Top)));
       end;
-      180: begin
-        for y := 0 to H do
-        begin
-         Dest := Bitmap.ScanLine[y];
-         Src := Bmp.ScanLine[H - y];
-         Inc(Src, W);
-         for x := 0 to W do
-         begin
-          Dest^ := Src^;
-          Dec(Src);
-          Inc(Dest);
-         end;
-         if y mod 50=0 then
-         If Assigned(CallBack) then CallBack(Round(100*y/Bitmap.Height),Terminating);
-         if Terminating then Break;
-        end;
-      end;
-      else Rotate;
+      Inc(Tmp);
     end;
-  finally
-    F(Bmp);
+    Line:=Pointer(NativeInt(Line)+gap);
+  end;
+end;   }
+
+begin
+  Terminating := False;
+  Bitmap.PixelFormat := pf24Bit;
+  W := Bitmap.Width - 1;
+  H := Bitmap.Height - 1;
+  if Frac(Angle) <> 0.0
+    then Rotate
+    else
+  case Trunc(Angle) of
+    -360, 0, 360, 720: AssignBitmap(Bitmap, Bmp);
+    90, 270: begin
+      Bitmap.Width := H + 1;
+      Bitmap.Height := W + 1;
+      SetLength(VertArray, H + 1);
+      v1 := 0;
+      v2 := 0;
+      if Angle = 90.0 then v1 := H
+                      else v2 := W;
+      for y := 0 to H do VertArray[y] := Bmp.ScanLine[Abs(v1 - y)];
+      for x := 0 to W do
+      begin
+       Dest := Bitmap.ScanLine[x];
+       for y := 0 to H do
+       begin
+        v1 := Abs(v2 - x)*3;
+        with Dest^ do
+        begin
+         B := VertArray[y, v1];
+         G := VertArray[y, v1+1];
+         R := VertArray[y, v1+2];
+        end;
+        Inc(Dest);
+
+       end;
+        if x mod 50=0 then
+        If Assigned(CallBack) then CallBack(Round(100*x/W),Terminating);
+        if Terminating then Break;
+      end
+    end;
+    180: begin
+      for y := 0 to H do
+      begin
+       Dest := Bitmap.ScanLine[y];
+       Src := Bmp.ScanLine[H - y];
+       Inc(Src, W);
+       for x := 0 to W do
+       begin
+        Dest^ := Src^;
+        Dec(Src);
+        Inc(Dest);
+       end;
+       if y mod 50=0 then
+       If Assigned(CallBack) then CallBack(Round(100*y/Bitmap.Height),Terminating);
+       if Terminating then Break;
+      end;
+    end;
+    else Rotate;
   end;
 end;
 

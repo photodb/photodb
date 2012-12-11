@@ -309,12 +309,11 @@ var
   EV: TEncoderValue;
   PIP: PEncoderParameters;
   NativeImage: GpImage;
-  FileName, FileNameTemp: WideString;
+  FileNameTemp: WideString;
   UseOtherFile: Boolean;
 begin
-  Filename := AFileName;
   NativeImage := nil;
-  GdipLoadImageFromFile(PWideChar(FileName), NativeImage);
+  GdipLoadImageFromFile(PWideChar(AFileName), NativeImage);
 
   GetEncoderClsid('image/jpeg', Clsid);
   EncoderParameters.Count := 1;
@@ -325,10 +324,10 @@ begin
   EncoderParameters.Parameter[0].Value := @EV;
   PIP := @EncoderParameters;
 
-  UseOtherFile := AnsiLowerCase(FileName) <> AnsiLowerCase(AFileName);
+  UseOtherFile := AnsiLowerCase(AFileName) <> AnsiLowerCase(OtherFile);
   if not UseOtherFile then
   begin
-    FileNameTemp := AGetTempFileName(FileName);
+    FileNameTemp := AGetTempFileName(AFileName);
     TLockFiles.Instance.AddLockedFile(FileNameTemp, 10000);
     try
       if Ok <> GdipSaveImageToFile(NativeImage, PWideChar(FileNameTemp), @Clsid, PIP) then
@@ -338,7 +337,7 @@ begin
       DeleteFile(PWideChar(AFileName));
       RenameFile(FileNameTemp, AFileName);
     end;
-    TLockFiles.Instance.AddLockedFile(FileName, 1000);
+    TLockFiles.Instance.AddLockedFile(AFileName, 1000);
   end else
   begin
     if FileExists(OtherFile) then

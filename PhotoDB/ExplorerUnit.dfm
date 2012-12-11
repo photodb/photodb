@@ -1,10 +1,11 @@
 object ExplorerForm: TExplorerForm
   Left = 221
   Top = 233
+  Width = 1024
+  Height = 759
   VertScrollBar.Visible = False
+  AutoScroll = True
   Caption = 'DB Explorer'
-  ClientHeight = 721
-  ClientWidth = 1008
   Color = clBtnFace
   Constraints.MinHeight = 200
   Constraints.MinWidth = 300
@@ -36,6 +37,7 @@ object ExplorerForm: TExplorerForm
     Constraints.MaxWidth = 150
     ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
+    OnMoved = SplLeftPanelMoved
     ExplicitLeft = 150
     ExplicitTop = 47
     ExplicitHeight = 546
@@ -79,6 +81,10 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Tasks'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -746,6 +752,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 574
@@ -943,6 +953,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -1697,10 +1711,7 @@ object ExplorerForm: TExplorerForm
       ResizeStyle = rsUpdate
       Visible = False
       OnCanResize = SplRightPanelCanResize
-      OnMoved = SplRightPanelMoved
-      ExplicitLeft = 572
-      ExplicitTop = 27
-      ExplicitHeight = 564
+      ExplicitHeight = 580
     end
     object PnFilter: TPanel
       Left = 0
@@ -2662,7 +2673,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.544367314820000000
+      Date = 41177.944181701390000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

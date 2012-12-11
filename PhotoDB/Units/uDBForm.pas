@@ -241,6 +241,7 @@ type
     FWindowID: string;
     FWasPaint: Boolean;
     FRefCount: Integer;
+    FIsRestoring: Boolean;
     function GetTheme: TDatabaseTheme;
   protected
     procedure WndProc(var Message: TMessage); override;
@@ -249,6 +250,8 @@ type
     procedure ApplyStyle; virtual;
     procedure ApplySettings; virtual;
     procedure CustomFormAfterDisplay; virtual;
+
+    procedure WMSize(var Message: TWMSize); message WM_SIZE;
 
     function IInterface.QueryInterface = QueryInterfaceInternal;
     function QueryInterfaceInternal(const IID: TGUID; out Obj): HResult; stdcall;
@@ -261,6 +264,7 @@ type
     class constructor Create;
     class destructor Destroy;
 
+    procedure Restore;
     function L(StringToTranslate: string): string; overload;
     function L(StringToTranslate: string; Scope: string): string; overload;
     function LF(StringToTranslate: string; Args: array of const): string;
@@ -271,6 +275,7 @@ type
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
     property Theme: TDatabaseTheme read GetTheme;
+    property IsRestoring: Boolean read FIsRestoring;
   end;
 
 type
@@ -332,6 +337,8 @@ begin
   FWindowID := GUIDToString(GetGUID);
   TFormCollection.Instance.RegisterForm(Self);
   GOM.AddObj(Self);
+
+  FIsRestoring := False;
   {$IFDEF PHOTODB}
   {$ENDIF}
 end;
@@ -533,9 +540,26 @@ begin
   Result := inherited QueryInterface(IID, Obj);
 end;
 
+procedure TDBForm.Restore;
+begin
+  if IsIconic(Handle) then
+    ShowWindow(Handle, SW_RESTORE);
+end;
+
 function TDBForm.QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
 begin
   Result := inherited QueryInterface(IID, Obj);
+end;
+
+procedure TDBForm.WMSize(var Message: TWMSize);
+begin
+  if Message.SizeType = SIZE_RESTORED then
+    FIsRestoring := True;
+  try
+    inherited;
+  finally
+    FIsRestoring := False;
+  end;
 end;
 
 procedure TDBForm.WndProc(var Message: TMessage);

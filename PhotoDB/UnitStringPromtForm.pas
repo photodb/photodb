@@ -49,7 +49,7 @@ implementation
 function TFormStringPromt.Query(Caption, Text: String;
   var UserString: string): Boolean;
 begin
-  Caption := Caption;
+  Self.Caption := Caption;
   LbInfo.Caption := Text;
   FOldString := UserString;
   EdString.Text := UserString;
@@ -68,7 +68,7 @@ begin
   FIsOk := False;
   BtnCancel.Caption := L('Cancel');
   BtnOK.Caption := L('Ok');
-  EdString.Text := L('Enter your text here');
+  EdString.WatermarkText := L('Enter your text here');
   BtnOK.Top := EdString.Top + EdString.Height + 3;
   BtnCancel.Top := EdString.Top + EdString.Height + 3;
 

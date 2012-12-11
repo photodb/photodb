@@ -46,6 +46,7 @@ type
     procedure LoadLanguage;
   protected
     function GetFormID: string; override;
+    procedure CustomFormAfterDisplay; override;
   public
     { Public declarations }
     procedure Execute(Info: TUpdateInfo);
@@ -66,6 +67,12 @@ begin
 end;
 
 { TFormInternetUpdating }
+
+procedure TFormInternetUpdating.CustomFormAfterDisplay;
+begin
+  inherited;
+  RedInfo.Refresh;
+end;
 
 procedure TFormInternetUpdating.Execute(Info: TUpdateInfo);
 begin

@@ -1066,14 +1066,14 @@ begin
       begin
 
         Key.fmtid := PKEY_GenericObj;
-        Key.pid := WPD_OBJECT_NAME;
+        Key.pid := WPD_OBJECT_ORIGINAL_FILE_NAME;
         HR := ppValues.GetStringValue(key, pszObjectName);
         if (SUCCEEDED(HR)) then
           FName := pszObjectName
         else
         begin
           Key.fmtid := PKEY_GenericObj;
-          Key.pid := WPD_OBJECT_ORIGINAL_FILE_NAME;
+          Key.pid := WPD_OBJECT_NAME;
           HR := ppValues.GetStringValue(key, pszObjectName);
           if (SUCCEEDED(HR)) then
             FName := pszObjectName;

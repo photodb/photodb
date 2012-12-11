@@ -104,7 +104,7 @@ object FormFastFileRenamer: TFormFastFileRenamer
       Tag = -1
       Left = 189
       Top = 52
-      Width = 112
+      Width = 107
       Height = 16
       Cursor = crHandPoint
       DisableStyles = True

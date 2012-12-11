@@ -43,6 +43,7 @@ uses
   uThreadTask,
   uThreadForm,
   uPhotoShareInterfaces,
+  uInternetProxy,
   uBox,
   uVCLHelpers,
   uGraphicUtils,
@@ -371,6 +372,7 @@ procedure TFormSharePhotos.FormCreate(Sender: TObject);
 var
   AccessIndex: Integer;
 begin
+  ClearProxyCache;
   RegisterMainForm(Self);
 
   SaveWindowPos1.Key := RegRoot + 'SharePhotos';
@@ -1540,6 +1542,7 @@ begin
 
   Viewer.ShowImages(Self, FFiles);
   Viewer.Show;
+  Viewer.Restore;
 end;
 
 procedure TFormSharePhotos.SplAlbumsCanResize(Sender: TObject;

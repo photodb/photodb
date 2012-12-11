@@ -178,7 +178,7 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
     object WblJpegOptions: TWebLink
       Left = 12
       Top = 206
-      Width = 83
+      Width = 78
       Height = 13
       Cursor = crHandPoint
       Enabled = False
