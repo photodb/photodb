@@ -1535,6 +1535,7 @@ procedure TDBPopupMenu.ShowItemPopUpMenu_(Sender: TObject);
 begin
   Viewer.ShowImages(Sender, FInfo);
   Viewer.Show;
+  Viewer.Restore;
 end;
 
 function TDBPopupMenu.CheckDBReadOnly: Boolean;

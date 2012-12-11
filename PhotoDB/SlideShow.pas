@@ -404,6 +404,7 @@ type
     DrawImage: TBitmap;
     FFullImage: TBitmap;
     constructor Create(AOwner: TComponent); override;
+
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
     function ShowImageInDirectoryEx(FileName: string): Boolean;
     function ShowImages(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
@@ -2114,6 +2115,8 @@ var
   FOldImageExists, NotifyUser: Boolean;
   CurrentItem, DBItem: TDBPopupMenuInfoRecord;
 begin
+  ForwardThreadExists := False;
+  FForwardThreadReady := False;
   TW.I.Start('ExecuteW');
   Result := True;
   SlideTimer.Enabled := False;

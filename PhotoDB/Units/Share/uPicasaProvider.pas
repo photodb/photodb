@@ -586,7 +586,7 @@ end;
 
 function TPicasaUserAlbumsInfo.GetUserAvatar(Bitmap: TBitmap): Boolean;
 begin
-  Result := LoadBitmapFromUrl(FAlbumsInfo.FAvatarUrl, Bitmap);
+  Result := LoadBitmapFromUrl(FAlbumsInfo.FAvatarUrl, Bitmap, nil, GoogleBaseProxyURL);
 end;
 
 function TPicasaUserAlbumsInfo.GetUserDisplayName: string;
@@ -756,10 +756,10 @@ end;
 
 function TPicasaUserAlbum.GetPreview(Bitmap: TBitmap; HttpContainer: THTTPRequestContainer = nil): Boolean;
 begin
-  if IsProxyServerUsed(FAlbumPreviewUrl) then
+  if IsProxyServerUsed(GoogleBaseProxyURL) then
     HttpContainer := nil;
 
-  Result := LoadBitmapFromUrl(FAlbumPreviewUrl, Bitmap, HttpContainer);
+  Result := LoadBitmapFromUrl(FAlbumPreviewUrl, Bitmap, HttpContainer, GoogleBaseProxyURL);
 end;
 
 function TPicasaUserAlbum.GetUrl: string;
@@ -843,7 +843,7 @@ end;
 
 function TPicasaUserAlbumPhoto.ExtractPreview(Image: TBitmap): Boolean;
 begin
-  Result := LoadBitmapFromUrl(FUrl, Image);
+  Result := LoadBitmapFromUrl(FUrl, Image, nil, GoogleBaseProxyURL);
 end;
 
 function TPicasaUserAlbumPhoto.GetDate: TDateTime;

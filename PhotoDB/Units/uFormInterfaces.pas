@@ -25,6 +25,7 @@ type
   IFormInterface = interface
     ['{24769E47-FE80-4FF7-81CC-F8E6C8AA77EC}']
     procedure Show;
+    procedure Restore;
   end;
 
   IViewerForm = interface(IFormInterface)

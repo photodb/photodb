@@ -157,6 +157,7 @@ begin
       Info.Add(InfoItem);
       Viewer.ShowImages(Sender, Info);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(Info);
     end;
@@ -195,6 +196,7 @@ begin
       Info.Add(InfoItem);
       Viewer.ShowImages(Sender, Info);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(Info);
     end;

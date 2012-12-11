@@ -221,7 +221,9 @@ begin
       Viewer.ShowImageInDirectoryEx(ParamStr1);
       TW.I.Start('ActivateApplication');
       CloseSplashWindow;
+
       Viewer.Show;
+      Viewer.Restore;
 
       //statictics
       ProgramStatistics.ProgramStartedViewer;

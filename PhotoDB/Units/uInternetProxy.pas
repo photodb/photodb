@@ -3,10 +3,13 @@ unit uInternetProxy;
 interface
 
 uses
-  Windows,
+  Winapi.Windows,
+  System.SysUtils,
+  System.SyncObjs,
+  Generics.Collections,
   idHTTP,
-  uSettings,
-  SysUtils;
+  uMemory,
+  uSettings;
 
 type
   HINTERNET = Pointer;
@@ -107,8 +110,28 @@ const
 
 procedure ConfigureIdHttpProxy(HTTP: TIdHTTP; RequestUrl: string);
 function IsProxyServerUsed(RequestUrl: string): Boolean;
+procedure ClearProxyCache;
 
 implementation
+
+var
+  FSync: TCriticalSection = nil;
+  FProxyList: TDictionary<string, TProxyInfo> = nil;
+
+procedure InitProxyCache;
+begin
+  if FSync = nil then
+    FSync := TCriticalSection.Create;
+
+  if FProxyList = nil then
+    FProxyList := TDictionary<string, TProxyInfo>.Create;
+end;
+
+procedure ClearProxyCache;
+begin
+  InitProxyCache;
+  FProxyList.Clear;
+end;
 
 function GetProxyInfo(const AURL: WideString; var AProxyInfo: TProxyInfo): DWORD;
 var
@@ -235,10 +258,26 @@ var
   ProxyInfo: TProxyInfo;
 begin
   Result := False;
-  Res := GetProxyInfo(RequestUrl, ProxyInfo);
-  case Res of
-    0:
-      Result := GetHostName(ProxyInfo.ProxyURL) <> '';
+  FSync.Enter;
+  try
+
+    if FProxyList.ContainsKey(RequestUrl) then
+    begin
+      ProxyInfo := FProxyList[RequestUrl];
+      if ProxyInfo.ProxyURL <> '' then
+        Result := GetHostName(ProxyInfo.ProxyURL) <> '';
+      Exit;
+    end;
+
+    Res := GetProxyInfo(RequestUrl, ProxyInfo);
+    case Res of
+      0:
+        Result := GetHostName(ProxyInfo.ProxyURL) <> '';
+    end;
+
+    FProxyList.Add(RequestUrl, ProxyInfo);
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -247,21 +286,46 @@ var
   Result: DWORD;
   ProxyInfo: TProxyInfo;
 begin
-  Result := GetProxyInfo(RequestUrl, ProxyInfo);
-  case Result of
-    0:
+  InitProxyCache;
+
+  FSync.Enter;
+  try
+    if FProxyList.ContainsKey(RequestUrl) then
     begin
-      HTTP.ProxyParams.ProxyServer := GetHostName(ProxyInfo.ProxyURL);
-      HTTP.ProxyParams.ProxyPort := GetHostPort(ProxyInfo.ProxyURL);
-      HTTP.ProxyParams.ProxyUsername := Settings.ReadString('Options', 'ProxyUser');
-      HTTP.ProxyParams.ProxyPassword := Settings.ReadString('Options', 'ProxyPassword');
+      ProxyInfo := FProxyList[RequestUrl];
+      if ProxyInfo.ProxyURL <> '' then
+      begin
+        HTTP.ProxyParams.ProxyServer := GetHostName(ProxyInfo.ProxyURL);
+        HTTP.ProxyParams.ProxyPort := GetHostPort(ProxyInfo.ProxyURL);
+        HTTP.ProxyParams.ProxyUsername := Settings.ReadString('Options', 'ProxyUser');
+        HTTP.ProxyParams.ProxyPassword := Settings.ReadString('Options', 'ProxyPassword');
+      end;
+      Exit;
     end;
-    12166, //ShowMessage('Error in proxy auto-config script code');
-    12167, //ShowMessage('Unable to download proxy auto-config script');
-    12180: //ShowMessage('WPAD detection failed');
-  else
-    //ShowMessage('Last error: ' + IntToStr(Result));
+
+    Result := GetProxyInfo(RequestUrl, ProxyInfo);
+    case Result of
+      0:
+      begin
+        HTTP.ProxyParams.ProxyServer := GetHostName(ProxyInfo.ProxyURL);
+        HTTP.ProxyParams.ProxyPort := GetHostPort(ProxyInfo.ProxyURL);
+        HTTP.ProxyParams.ProxyUsername := Settings.ReadString('Options', 'ProxyUser');
+        HTTP.ProxyParams.ProxyPassword := Settings.ReadString('Options', 'ProxyPassword');
+      end;
+      //12166, //ShowMessage('Error in proxy auto-config script code');
+      //12167, //ShowMessage('Unable to download proxy auto-config script');
+      //12180: //ShowMessage('WPAD detection failed');
+    else
+    end;
+    FProxyList.Add(RequestUrl, ProxyInfo);
+  finally
+    FSync.Leave;
   end;
 end;
+
+initialization
+
+finalization
+  F(FSync);
 
 end.

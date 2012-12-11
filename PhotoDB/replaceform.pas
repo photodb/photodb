@@ -780,6 +780,7 @@ procedure TDBReplaceForm.Image1DblClick(Sender: TObject);
 begin
   Viewer.ShowImage(Self, FCurrentFileName);
   Viewer.Show;
+  Viewer.Restore;
 end;
 
 end.

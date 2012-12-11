@@ -594,6 +594,7 @@ begin
       info.Add(InfoItem);
       Viewer.ShowImages(Sender, Info);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(InfoItem);
     end;
@@ -891,6 +892,7 @@ begin
   begin
     Viewer.ShowImageInDirectoryEx(FCurrentFileName);
     Viewer.Show;
+    Viewer.Restore;
   end;
 end;
 

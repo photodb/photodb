@@ -2255,7 +2255,7 @@ begin
     Repaint;
   end;
 
-  if PnRight.Visible then
+  if PnRight.Visible and not IsRestoring then
   begin
     if FOldWidth <> Width then
     begin
@@ -6714,6 +6714,7 @@ begin
     try
       Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(MenuInfo);
     end;
@@ -6982,6 +6983,7 @@ begin
       begin
         Viewer.ShowImages(Self, Info);
         Viewer.Show;
+        Viewer.Restore;
       end else
         ShowNoImagesError;
     finally
@@ -8694,6 +8696,7 @@ begin
       begin
         Viewer.ShowImage(Self, S);
         Viewer.Show;
+        Viewer.Restore;
       end else
         ShellExecute(Handle, 'open', PChar(S), nil, nil, SW_NORMAL);
     end else if not ChangeTreeView then
@@ -10858,6 +10861,7 @@ begin
           try
             Viewer.ShowImages(Sender, MenuInfo);
             Viewer.Show;
+            Viewer.Restore;
             RestoreSelected;
           finally
             F(MenuInfo);
@@ -10894,6 +10898,7 @@ begin
               try
                 Viewer.ShowImages(Sender, MenuInfo);
                 Viewer.Show;
+                Viewer.Restore;
                 RestoreSelected;
               finally
                 F(MenuInfo);

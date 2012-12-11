@@ -265,6 +265,7 @@ begin
       Info.Add(InfoItem.Copy);
       Viewer.ShowImages(nil, Info);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(InfoItem);
     end;

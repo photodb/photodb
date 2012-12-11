@@ -1074,6 +1074,7 @@ procedure TPropertiesForm.Show1Click(Sender: TObject);
 begin
   Viewer.ShowImages(Sender, FFilesInfo);
   Viewer.Show;
+  Viewer.Restore;
 end;
 
 procedure TPropertiesForm.TmrFilterTimer(Sender: TObject);
@@ -2041,6 +2042,7 @@ var
   begin
     Viewer.ShowImage(Self, FileName);
     Viewer.Show;
+    Viewer.Restore;
   end;
 
 begin
