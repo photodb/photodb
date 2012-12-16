@@ -224,7 +224,7 @@ type
     BtnApplyTheme: TButton;
     WlGetMoreStyles: TWebLink;
     BtnShowThemesFolder: TButton;
-    GbProxyAuthorisation: TGroupBox;
+    GbProxySettings: TGroupBox;
     WebProxyUserName: TWatermarkedEdit;
     LbProxyUserName: TLabel;
     LbProxyPassword: TLabel;
@@ -255,6 +255,7 @@ type
     RbDefaultrogram: TRadioButton;
     CbShowStatusBar: TCheckBox;
     CbSmoothScrolling: TCheckBox;
+    CbUseProxyServer: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -322,6 +323,7 @@ type
     procedure WlAddPlayerExtensionClick(Sender: TObject);
     procedure MiSelectFileClick(Sender: TObject);
     procedure MiSelectextensionClick(Sender: TObject);
+    procedure CbUseProxyServerClick(Sender: TObject);
   private
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
@@ -461,6 +463,8 @@ begin
 
     WebProxyUserName.Text := Settings.ReadString('Options', 'ProxyUser');
     WebProxyPassword.Text := Settings.ReadString('Options', 'ProxyPassword');
+    CbUseProxyServer.Checked := Settings.ReadBool('Options', 'UseProxyServer', False);
+    CbUseProxyServerClick(Self);
   end;
 
   if NewTab = 6 then
@@ -735,6 +739,7 @@ begin
 
     Settings.WriteString('Options', 'ProxyUser', WebProxyUserName.Text);
     Settings.WriteString('Options', 'ProxyPassword', WebProxyPassword.Text);
+    Settings.WriteBool('Options', 'UseProxyServer', CbUseProxyServer.Checked);
   end;
   // 5 :
   if FLoadedPages[6] then
@@ -1004,11 +1009,14 @@ begin
     WlGetMoreStyles.LoadImage;
     WlGetMoreStyles.Left := TsStyle.ClientRect.Width - WlGetMoreStyles.Width - 5;
 
-    GbProxyAuthorisation.Caption := L('Proxy authorisation');
+    GbProxySettings.Caption := L('Proxy settings');
     LbProxyUserName.Caption := L('User name') + ':';
     LbProxyPassword.Caption := L('Password') + ':';
     WebProxyUserName.WatermarkText := L('User name');
     WebProxyPassword.WatermarkText := L('Password');
+    CbUseProxyServer.Caption := L('Use proxy server');
+    LbProxyUserName.Left := WebProxyUserName.Left - LbProxyUserName.Width - 5;
+    LbProxyPassword.Left := WebProxyPassword.Left - LbProxyPassword.Width - 5;
 
     LbDisplayICCProfile.Caption := L('Display ICC profile');
 
@@ -2038,6 +2046,12 @@ begin
     FPlaces[I].MyPictures := CblPlacesDisplayIn.Checked[2];
     FPlaces[I].OtherFolder := CblPlacesDisplayIn.Checked[3];
   end;
+end;
+
+procedure TOptionsForm.CbUseProxyServerClick(Sender: TObject);
+begin
+  WebProxyUserName.Enabled := CbUseProxyServer.Checked;
+  WebProxyPassword.Enabled := CbUseProxyServer.Checked;
 end;
 
 procedure TOptionsForm.BtnChoosePlaceIconClick(Sender: TObject);

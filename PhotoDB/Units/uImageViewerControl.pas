@@ -1671,6 +1671,13 @@ begin
     ImageEffectiveHeight := FRealImageHeight;
   end;
 
+  if FDrawImage.Height = 0 then
+    Exit;
+  if ImageEffectiveHeight = 0 then
+    Exit;
+  if ImageEffectiveWidth = 0 then
+    Exit;
+
   if (ImageEffectiveWidth > ClientWidth) or (ImageEffectiveHeight > HeightW) then
   begin
     if ImageEffectiveWidth / ImageEffectiveHeight < FDrawImage.Width / FDrawImage.Height then

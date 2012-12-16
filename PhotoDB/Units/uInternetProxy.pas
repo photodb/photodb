@@ -143,6 +143,10 @@ var
 begin
   // initialize the result
   Result := 0;
+
+  if not Settings.ReadBool('Options', 'UseProxyServer', False) then
+    Exit;
+
   // initialize auto-detection to off
   AutoDetectProxy := False;
   // initialize the result structure
