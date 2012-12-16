@@ -2673,7 +2673,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.944181701390000000
+      Date = 41177.938014826390000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

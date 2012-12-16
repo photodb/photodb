@@ -242,6 +242,7 @@ type
     FWasPaint: Boolean;
     FRefCount: Integer;
     FIsRestoring: Boolean;
+    FIsMinimizing: Boolean;
     function GetTheme: TDatabaseTheme;
   protected
     procedure WndProc(var Message: TMessage); override;
@@ -276,6 +277,7 @@ type
     property WindowID: string read FWindowID;
     property Theme: TDatabaseTheme read GetTheme;
     property IsRestoring: Boolean read FIsRestoring;
+    property IsMinimizing: Boolean read FIsMinimizing;
   end;
 
 type
@@ -338,6 +340,7 @@ begin
   TFormCollection.Instance.RegisterForm(Self);
   GOM.AddObj(Self);
 
+  FIsMinimizing := False;
   FIsRestoring := False;
   {$IFDEF PHOTODB}
   {$ENDIF}
@@ -555,9 +558,12 @@ procedure TDBForm.WMSize(var Message: TWMSize);
 begin
   if Message.SizeType = SIZE_RESTORED then
     FIsRestoring := True;
+  if Message.SizeType = SIZE_MINIMIZED then
+    FIsMinimizing := True;
   try
     inherited;
   finally
+    FIsMinimizing := False;
     FIsRestoring := False;
   end;
 end;

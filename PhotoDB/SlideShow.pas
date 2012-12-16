@@ -732,7 +732,7 @@ var
       if not FullScreenNow then
         DrawImage.Canvas.Font.Color := Theme.WindowTextColor
       else
-        DrawImage.Canvas.Font.Color := Theme.HighlightTextColor;
+        DrawImage.Canvas.Font.Color := clWhite;
 
       Text := MessageText + #13 + FileName;
       R := GetClientRect;
@@ -1512,31 +1512,47 @@ begin
   if DBCanDrag then
   begin
     GetCursorPos(P);
-    if (Abs(DBDragPoint.X - P.X) > 5) or (Abs(DBDragPoint.Y - P.Y) > 5) then
+
+    if ZoomerOn then
     begin
-      DropFileSource1.Files.Clear;
-      if CurrentInfo.Count > 0 then
+      if SbVertical.Visible then
+        SbVertical.Position := Max(0, Min(SbVertical.Position + (DBDragPoint.Y - P.Y), SbVertical.Max - SbVertical.PageSize));
+
+      if SbHorisontal.Visible then
+        SbHorisontal.Position := Max(0, Min(SbHorisontal.Position + (DBDragPoint.X - P.X), SbHorisontal.Max - SbHorisontal.PageSize));
+
+      DBDragPoint := P;
+
+      RecreateDrawImage(Sender);
+      Refresh;
+    end else
+    begin
+      if (Abs(DBDragPoint.X - P.X) > 5) or (Abs(DBDragPoint.Y - P.Y) > 5) then
       begin
-        FileName := Item.FileName;
-        DropFileSource1.Files.Add(FileName);
-        DropFileSource1.ShowImage := FImageExists;
-        W := FFullImage.Width;
-        H := FFullImage.Height;
-        ProportionalSize(ThImageSize, ThImageSize, W, H);
+        DropFileSource1.Files.Clear;
+        if CurrentInfo.Count > 0 then
+        begin
+          FileName := Item.FileName;
+          DropFileSource1.Files.Add(FileName);
+          DropFileSource1.ShowImage := FImageExists;
+          W := FFullImage.Width;
+          H := FFullImage.Height;
+          ProportionalSize(ThImageSize, ThImageSize, W, H);
 
-        DragImage := TBitmap.Create;
-        try
-          DoResize(W, H, FFullImage, DragImage);
-          CreateDragImage(DragImage, DragImageList, Font, ExtractFileName(FileName));
-        finally
-          F(DragImage);
+          DragImage := TBitmap.Create;
+          try
+            DoResize(W, H, FFullImage, DragImage);
+            CreateDragImage(DragImage, DragImageList, Font, ExtractFileName(FileName));
+          finally
+            F(DragImage);
+          end;
+
+          DropFileSource1.ImageIndex := 0;
+          DropFileSource1.Execute;
+          Invalidate;
         end;
-
-        DropFileSource1.ImageIndex := 0;
-        DropFileSource1.Execute;
-        Invalidate;
+        DBCanDrag := False;
       end;
-      DBCanDrag := False;
     end;
   end;
 
@@ -2634,6 +2650,7 @@ procedure TViewer.FormMouseDown(Sender: TObject; Button: TMouseButton;
 var
   P: TPoint;
   PA: TPersonArea;
+  lpMsg: TMsg;
 begin
   if StaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not DBCanDrag then
   begin
@@ -2659,11 +2676,18 @@ begin
     Exit;
 
   if Button = MbLeft then
+  begin
     if FileExistsSafe(Item.FileName) then
     begin
       DBCanDrag := True;
       GetCursorPos(DBDragPoint);
     end;
+    if ZoomerOn then
+    begin
+      Cursor := crHandPoint;
+      Perform(WM_SETCURSOR, Handle, HTCLIENT);
+    end;
+  end;
 end;
 
 procedure TViewer.FormMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -2687,6 +2711,7 @@ begin
     PmFace.DoPopupEx(P.X, P.Y);
     UpdateCursor;
   end;
+  Cursor := crDefault;
   F(FDrawFace);
   DBCanDrag := False;
 end;
@@ -2710,6 +2735,8 @@ begin
   if ScrollPos > (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize then
     ScrollPos := (Sender as TScrollBar).Max - (Sender as TScrollBar).PageSize;
   RecreateDrawImage(Sender);
+
+  Refresh;
 end;
 
 procedure TViewer.ReAllignScrolls(IsCenter: Boolean);
@@ -2723,7 +2750,7 @@ end;
 
 procedure TViewer.RealSizeClick(Sender: TObject);
 begin
-  Cursor := CrDefault;
+  Cursor := crDefault;
   TbZoomOut.Down := False;
   TbZoomIn.Down := False;
   if not ZoomerOn and (RealZoomInc > 1) then
@@ -2762,7 +2789,7 @@ end;
 
 procedure TViewer.FitToWindowClick(Sender: TObject);
 begin
-  Cursor := CrDefault;
+  Cursor := crDefault;
   TbZoomOut.Down := False;
   TbZoomIn.Down := False;
   ZoomerOn := False;
@@ -2898,29 +2925,33 @@ begin
     end;
     Exit;
   end;
-  if Cursor = CursorZoomInNo then
+
+  if not ZoomerOn then
   begin
-    Z := Zoom;
-    Zoom := Min(Z * (1 / 0.8), 16);
-    ImRect := GetImageRectA;
-    X := P.X;
-    Y := P.Y;
-    Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
-    SbHorisontal.Position := SbHorisontal.Position + Round(SbHorisontal.PageSize * Dx);
-    Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
-    SbVertical.Position := SbVertical.Position + Round(SbVertical.PageSize * Dy);
-  end;
-  if Cursor = CursorZoomOutNo then
-  begin
-    Z := Zoom;
-    Zoom := Max(Z * 0.8, 0.05);
-    ImRect := GetImageRectA;
-    X := P.X;
-    Y := P.Y;
-    Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
-    SbHorisontal.Position := SbHorisontal.Position + Round(SbHorisontal.PageSize * Dx);
-    Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
-    SbVertical.Position := SbVertical.Position + Round(SbVertical.PageSize * Dy);
+    if Cursor = CursorZoomInNo then
+    begin
+      Z := Zoom;
+      Zoom := Min(Z * (1 / 0.8), 16);
+      ImRect := GetImageRectA;
+      X := P.X;
+      Y := P.Y;
+      Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
+      SbHorisontal.Position := SbHorisontal.Position + Round(SbHorisontal.PageSize * Dx);
+      Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
+      SbVertical.Position := SbVertical.Position + Round(SbVertical.PageSize * Dy);
+    end;
+    if Cursor = CursorZoomOutNo then
+    begin
+      Z := Zoom;
+      Zoom := Max(Z * 0.8, 0.05);
+      ImRect := GetImageRectA;
+      X := P.X;
+      Y := P.Y;
+      Dx := (X - (ImRect.Right - ImRect.Left) div 2) / (ImRect.Right - ImRect.Left);
+      SbHorisontal.Position := SbHorisontal.Position + Round(SbHorisontal.PageSize * Dx);
+      Dy := (Y - (ImRect.Bottom - ImRect.Top) div 2) / (ImRect.Bottom - ImRect.Top);
+      SbVertical.Position := SbVertical.Position + Round(SbVertical.PageSize * Dy);
+    end;
   end;
   FormResize(Sender);
 end;
@@ -3400,7 +3431,7 @@ begin
   ImageExists := True;
   Loading := False;
   if not ZoomerOn then
-    Cursor := CrDefault;
+    Cursor := crDefault;
   TbFitToWindow.Enabled := True;
   TbRealSize.Enabled := True;
   TbSlideShow.Enabled := True;
@@ -3523,7 +3554,7 @@ procedure TViewer.LoadingFailed(FileName: String);
 begin
   Loading := False;
   FCurrentlyLoadedFile := FileName;
-  Cursor := CrDefault;
+  Cursor := crDefault;
   TbFitToWindow.Enabled := False;
   TbRealSize.Enabled := False;
   TbSlideShow.Enabled := False;

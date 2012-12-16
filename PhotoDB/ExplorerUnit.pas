@@ -1719,6 +1719,7 @@ begin
     try
       Viewer.ShowImages(Sender, MenuInfo);
       Viewer.Show;
+      Viewer.Restore;
     finally
       F(MenuInfo);
     end;
@@ -1726,7 +1727,10 @@ begin
   if FFilesInfo[PmItemPopup.Tag].FileType = EXPLORER_ITEM_FOLDER then
   begin
     if Viewer.ShowImageInDirectory(FFilesInfo[PmItemPopup.Tag].FileName, ExplorerManager.ShowPrivate) then
-      Viewer.Show
+    begin
+      Viewer.Show;
+      Viewer.Restore;
+    end
     else
       MessageBoxDB(Handle, L('There are no images to display!'), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
@@ -2255,7 +2259,7 @@ begin
     Repaint;
   end;
 
-  if PnRight.Visible and not IsRestoring then
+  if PnRight.Visible and (Width - PnRight.Width - ElvMain.Width > 0) then
   begin
     if FOldWidth <> Width then
     begin
@@ -2281,18 +2285,38 @@ procedure TExplorerForm.SetResizeListViewMode;
 begin
   IsResizePreivew := False;
 
-  PnRight.Align := alRight;
-  SplRightPanel.Align := alRight;
-  PnListView.Align := alClient;
+  if Visible then
+    BeginScreenUpdate(Handle);
+  try
+    PnRight.Align := alRight;
+    SplRightPanel.Align := alRight;
+    PnListView.Align := alClient;
+    if PnRight.Width < 100 then
+      PnRight.Width := 100;
+  finally
+    if Visible then
+      EndScreenUpdate(Handle, False);
+  end;
 end;
 
 procedure TExplorerForm.SetResizePreviewMode;
+var
+  W: Integer;
 begin
   IsResizePreivew := True;
 
-  PnRight.Align := alClient;
-  PnListView.Align := alLeft;
-  SplRightPanel.Align := alLeft;
+  if Visible then
+    BeginScreenUpdate(Handle);
+  try
+    W := PnListView.Width;
+    PnRight.Align := alClient;
+    PnListView.Align := alLeft;
+    SplRightPanel.Align := alLeft;
+    PnListView.Width := W;
+  finally
+    if Visible then
+      EndScreenUpdate(Handle, False);
+  end;
 end;
 
 procedure TExplorerForm.ConstrainedResize(var MinWidth, MinHeight, MaxWidth, MaxHeight: Integer);
@@ -3015,6 +3039,9 @@ end;
 procedure TExplorerForm.ListViewOnCanResize(Sender: TObject; var NewWidth,
   NewHeight: Integer; var Resize: Boolean);
 begin
+  if NewHeight < 100 then
+    Resize := False;
+
   if ElvMain.Selection.FocusedItem <> nil then
     ElvMain.Selection.FocusedItem.Tag := IIF(IsFocusedVisible, 1, 0);
 end;
@@ -6992,7 +7019,10 @@ begin
   end else
   begin
     if Viewer.ShowImageInDirectory(GetCurrentPath, ExplorerManager.ShowPrivate) then
-      Viewer.Show
+    begin
+      Viewer.Show;
+      Viewer.Restore;
+    end
     else
       ShowNoImagesError;
   end;
@@ -7216,6 +7246,10 @@ begin
   end;
   if FActiveLeftTab = eltsSearch then
     ExtendedSearchInit;
+
+  if (PcTasks.ActivePageIndex <> Integer(FActiveLeftTab)) and (FActiveLeftTab = eltsExplorer) then
+    if (GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH) and (PePath.PathEx <> nil) then
+      TreeView.SelectPathItem(PePath.PathEx);
 
   PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
 end;

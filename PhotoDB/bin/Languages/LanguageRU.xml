@@ -1757,8 +1757,9 @@
 	<translate name="Standard windows theme (preview isn't available)" value="Стандартная тема для Windows - предпросмотр недоступен"/>	
 	<translate name="Restart of application is required for applying new style! Restart application now?" value="Необходим перезапуск приложения для применения нового стиля! Перезапустить приложение?"/>
 	<translate name="Open user themes folder" value="Открыть пользовательские стили"/>
-	<translate name="Proxy authorisation" value="Авторизация прокси"/>
+	<translate name="Proxy settings" value="Настройки прокси"/>
 	<translate name="User name" value="Имя пользователя"/>
+	<translate name="Use proxy server" value="Использовать прокси"/>
 	<translate name="Password" value="Пароль"/>
 	<translate name="Display ICC profile" value="ICC профиль для отображения"/>
 	<translate name="Don't use ICC profile" value="Не использовать ICC профиль"/>
