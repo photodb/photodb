@@ -2650,7 +2650,6 @@ procedure TViewer.FormMouseDown(Sender: TObject; Button: TMouseButton;
 var
   P: TPoint;
   PA: TPersonArea;
-  lpMsg: TMsg;
 begin
   if StaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not DBCanDrag then
   begin
@@ -2899,17 +2898,21 @@ begin
   P := ScreenToClient(ScreenRect);
 
   ImagePoint := BufferPointToImagePoint(P);
-  for I := 0 to FFaces.Count - 1 do
-    if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FFullImage, FFaces[I].ImageSize)) then
-    begin
-      FHoverFace := FFaces[I];
-      RefreshFaces;
-      PmFace.Tag := NativeInt(FFaces[I]);
-      PmFace.DoPopupEx(ScreenRect.X, ScreenRect.Y);
-      Exit;
-    end;
 
-  if Cursor = CrDefault then
+  if not ZoomerOn then
+  begin
+    for I := 0 to FFaces.Count - 1 do
+      if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FFullImage, FFaces[I].ImageSize)) then
+      begin
+        FHoverFace := FFaces[I];
+        RefreshFaces;
+        PmFace.Tag := NativeInt(FFaces[I]);
+        PmFace.DoPopupEx(ScreenRect.X, ScreenRect.Y);
+        Exit;
+      end;
+  end;
+
+  if Cursor = crDefault then
   begin
     if Settings.Readbool('Options', 'NextOnClick', False) then
     begin
