@@ -47,6 +47,7 @@ type
   protected
     { Protected declarations }
     function GetFormID: string; override;
+    procedure ApplyStyle; override;
   public
     { Public declarations }
   end;
@@ -57,6 +58,13 @@ uses
   uPicturesImportPatternEdit;
 
 {$R *.dfm}
+
+procedure TFormImportPicturesSettings.ApplyStyle;
+begin
+  inherited;
+  BtnOk.BeforeRight(Self);
+  BtnCancel.BeforeLeft(BtnOk, 5);
+end;
 
 procedure TFormImportPicturesSettings.BtnCancelClick(Sender: TObject);
 begin

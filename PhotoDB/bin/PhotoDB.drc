@@ -1984,6 +1984,7 @@ END
 /* Resources\Film_Strip.res */
 /* Resources\PathSeparator.res */
 /* Resources\NoHistogram.res */
+/* Resources\SampleDB.res */
 /* ..\DBIcons\icons.res */
 /* ..\DBIcons\db_icons.res */
 /* ..\DBIcons\ZoomRc.res */

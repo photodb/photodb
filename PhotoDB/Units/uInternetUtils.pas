@@ -76,6 +76,7 @@ const
   cBrowserAgent: string = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0';
 
 function LoadStreamFromURL(URL: string; Stream: TStream; Container: THTTPRequestContainer = nil; ProxyBaseUrl: string = ''): Boolean;
+function PostDataToURL(URL: string; ParamList: TStringList): string;
 function EncodeURLElement(const Value: string): AnsiString;
 function DownloadFile(const Url: string; Encoding: TEncoding): string;
 function InternetTimeToDateTime(const Value: string): TDateTime;
@@ -84,6 +85,18 @@ function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap; Container: THTTPRequest
 function GetMimeContentType(Content: Pointer; Len: integer): string;
 
 implementation
+
+function PostDataToURL(URL: string; ParamList: TStringList): string;
+var
+  HTTP: TIdHTTP;
+begin
+  HTTP := TIdHTTP.Create(nil);
+  try
+    Result := HTTP.Post(URL, ParamList);
+  finally
+    F(HTTP);
+  end;
+end;
 
 function GetMimeContentType(Content: Pointer; Len: integer): string;
 begin // see http://www.garykessler.net/library/file_sigs.html for magic numbers

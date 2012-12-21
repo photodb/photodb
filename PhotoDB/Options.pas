@@ -341,6 +341,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
     procedure CustomFormAfterDisplay; override;
+    procedure ApplyStyle; override;
   public
     { Public declarations }
     procedure LoadLanguage;
@@ -845,6 +846,13 @@ begin
       or (Msg.hwnd = CbInstallTypeNone.Handle) then
         Msg.message := 0;
   end;
+end;
+
+procedure TOptionsForm.ApplyStyle;
+begin
+  inherited;
+  OkButton.BeforeRight(PcMain);
+  CancelButton.BeforeLeft(OkButton, 5);
 end;
 
 procedure TOptionsForm.BtnInstallExtensionsClick(Sender: TObject);

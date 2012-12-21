@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.Classes,
   Winapi.Windows,
+  Winapi.Dwmapi,
   Vcl.ExtCtrls,
   Vcl.Forms,
   Vcl.Controls,
@@ -80,6 +81,8 @@ type
   TControlHelper = class helper for TControl
     function AfterTop(Padding: Integer): Integer;
     function AfterRight(Padding: Integer): Integer;
+    procedure BeforeLeft(Control: TControl; Padding: Integer);
+    procedure BeforeRight(Control: TControl);
     function FormBounds: TRect;
     function ScreenBelow: TPoint;
     function OwnerForm: TForm;
@@ -417,6 +420,27 @@ end;
 function TControlHelper.AfterTop(Padding: Integer): Integer;
 begin
   Result := Top + Height + Padding;
+end;
+
+procedure TControlHelper.BeforeLeft(Control: TControl; Padding: Integer);
+begin
+  Left := Control.Left - Width - Padding;
+end;
+
+procedure TControlHelper.BeforeRight(Control: TControl);
+var
+  W: Integer;
+begin
+  if Control is TForm then
+  begin
+    W := Control.ClientWidth;
+    if (TForm(Control).BorderStyle = bsSingle) and DwmCompositionEnabled then
+      W := W - GetSystemMetrics(SM_CXSIZEFRAME);
+  end
+  else
+    W := Control.Width;
+
+  Left := Control.Left + W - Width;
 end;
 
 function TControlHelper.FormBounds: TRect;

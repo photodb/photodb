@@ -3,16 +3,15 @@ unit CommonDBSupport;
 interface
 
 uses
-  Windows,
-  ADODB,
-  SysUtils,
-  DB,
-  ActiveX,
-  Classes,
-  ComObj,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  System.SyncObjs,
+  System.Win.ComObj,
+  Data.DB,
+  Data.Win.ADODB,
   UnitINI,
-  Variants,
-  SyncObjs,
 
   Dmitry.CRC32,
   Dmitry.Utils.System,
@@ -25,11 +24,12 @@ uses
   uTime,
   uShellIntegration,
   uTranslate,
+  uResources,
 
+  UnitDBCommon,
   ReplaseIconsInScript,
-  uScript,
 
-  UnitDBCommon;
+  uScript;
 
 const
   DB_TYPE_UNKNOWN = 0;
@@ -154,6 +154,8 @@ var
                             'Jet OLEDB:Don''t Copy Locale on Compact=False;'+
                             'Jet OLEDB:Compact Without Replica Repair=False;'+
                             'Jet OLEDB:SFP=False';
+
+//  DBFConnectionString : string = 'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=%s;Persist Security Info=False';
 
   // Read Only String
   DBViewConnectionString: string =
@@ -764,76 +766,19 @@ end;
 
 procedure CreateMSAccessDatabase(FileName: string);
 var
-  DAO,
-  WS: Variant;
-  I,
-  WSCount,
-  Code: Integer;
-  ErrorString: TStrings;
-  Catalog: OLEVariant;
-
-  const Engines: array[0..3] of string = ('DAO.DBEngine.120', 'DAO.DBEngine.36', 'DAO.DBEngine.35', 'DAO.DBEngine');
-
-  function CheckClass(OLEClassName: string): Boolean;
-  var
-    HR: HResult;
-    G: TGUID;
-    I: IInterface;
-  begin
-    HR := CLSIDFromProgID(PWideChar(WideString(OLEClassName)), G);
-
-    if Failed(HR) then
-      Exit(False);
-
-    HR := CoCreateInstance(G, nil, CLSCTX_INPROC_SERVER or CLSCTX_LOCAL_SERVER, IDispatch, I);
-    Result := HR = S_OK;
-  end;
-
+  MS: TMemoryStream;
+  FS: TFileStream;
 begin
-  Code := 0;
-  WSCount := -1;
-  ErrorString := TStringList.Create;
+  MS := GetRCDATAResourceStream('SampleDB');
   try
-    ErrorString.Add(TA('DAO engine could not be initialized to create database! Details:', 'Errors'));
-    for I := Low(Engines) to High(Engines) do
-      if CheckClass(Engines[I]) then
-        begin
-          try
-            DAO := CreateOleObject(Engines[I]);
-            Code := 1;
-            WSCount := DAO.Workspaces.Count;
-            Code := 2;
-            WS := DAO.Workspaces[0];
-            Code := 3;
-            WS.CreateDatabase(FileName, ';LANGID=0x0409;CP=1252;COUNTRY=0', 64);
-            Exit;
-          except
-            on E: Exception do
-            begin
-              ErrorString.Add('Engine: ' + Engines[I] + ', ERROR: ' + E.message + ', file: "' + FileName + '", code = ' + IntToStr(Code) + ', WSCount = ' + IntToStr(WSCount));
-            end;
-          end;
-        end;
-
+    FS := TFileStream.Create(FileName, fmCreate, fmExclusive);
     try
-      Catalog := CreateOleObject('ADOX.Catalog');
-      Catalog.Create('Provider=Microsoft.Jet.OLEDB.4.0;Data Source="' + FileName + '";');
-      Catalog := NULL;
-      Exit;
-    except
-      on e: Exception do
-        ErrorString.Add('Create database using Catalog was failed: ' + E.message);
+      FS.CopyFrom(MS, MS.Size);
+    finally
+      F(FS);
     end;
-
-    EventLog(ErrorString.Text);
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        MessageBoxDB(0, ErrorString.Text, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-      end
-    );
   finally
-    F(ErrorString);
+    F(MS);
   end;
 end;
 
@@ -1120,7 +1065,7 @@ var
 begin
   if IsFile then
     // c:\Folder\1.EXE => c:\Folder\
-    Folder := SysUtils.ExtractFileDir(FileFullPath)
+    Folder := ExtractFileDir(FileFullPath)
   else
     Folder := FileFullPath;
 
@@ -1230,7 +1175,7 @@ begin
 
   if FileExists(ProgramDir + 'FolderDB.photodb') then
   begin
-    Attr := Windows.GetFileAttributes(PChar(ProgramDir + 'FolderDB.photodb'));
+    Attr := GetFileAttributes(PChar(ProgramDir + 'FolderDB.photodb'));
     if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
     begin
       Result := True;
@@ -1240,8 +1185,7 @@ begin
 
   if FileExists(ProgramDir + GetFileNameWithoutExt(ParamStr(0)) + '.photodb') then
   begin
-    Attr := Windows.GetFileAttributes
-      (PChar(ProgramDir + GetFileNameWithoutExt(ParamStr(0)) + '.photodb'));
+    Attr := GetFileAttributes(PChar(ProgramDir + GetFileNameWithoutExt(ParamStr(0)) + '.photodb'));
     if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
       Result := True;
   end;

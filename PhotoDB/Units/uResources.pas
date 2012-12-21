@@ -40,6 +40,7 @@ function GetNoHistogramImage: TPNGImage;
 {$R Film_Strip.res}
 {$R PathSeparator.res}
 {$R NoHistogram.res}
+{$R SampleDB.res}
 
 //Icons
 {$R icons.res}

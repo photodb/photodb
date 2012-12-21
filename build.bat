@@ -27,6 +27,7 @@ cd photodb/resources
 "%BRCC32%" PicturesImport.rc
 "%BRCC32%" SharePictures.rc
 "%BRCC32%" NoHistogram.rc
+"%BRCC32%" SampleDB.rc
 
 cd ..
 cd ..
