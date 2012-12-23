@@ -683,7 +683,7 @@ function TSelectCommand.Execute: Integer;
 begin
   SetSQL(FQuery, SQL);
   UpdateParameters;
-  FQuery.Open;
+  OpenDS(FQuery);
   Result := FQuery.RecordCount;
   if Result > 0 then
     FQuery.First;
@@ -698,7 +698,7 @@ begin
     ForwardOnlyQuery(FQuery);
   end;
   UpdateParameters;
-  FQuery.Open;
+  OpenDS(FQuery);
   Result := IIF(FQuery.Eof, 0, 1);
 end;
 

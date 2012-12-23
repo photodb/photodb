@@ -336,26 +336,11 @@ var
   COMMode: Integer;
 
   procedure LoadDBContent;
-  var
-    I: Integer;
   begin
     ShowInfo(L('Query in collection...'), 1, 0);
 
     SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFolder, False)));
-
-    for I := 1 to 20 do
-    begin
-      try
-        FQuery.Active := True;
-        Break;
-      except
-        on E: Exception do
-        begin
-          EventLog(':TExplorerThread::Execute throw exception: ' + E.message);
-          Sleep(DelayExecuteSQLOperation);
-        end;
-      end;
-    end;
+    TryOpenCDS(FQuery);
   end;
 
   procedure ProcessNotifys(NotifyProcessProcedure: TProcessNotifyProc; UpdateMode: Integer);

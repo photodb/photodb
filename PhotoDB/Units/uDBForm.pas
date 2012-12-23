@@ -250,6 +250,7 @@ type
     procedure DoCreate; override;
     procedure ApplyStyle; virtual;
     procedure ApplySettings; virtual;
+    procedure FixLayout; virtual;
     procedure CustomFormAfterDisplay; virtual;
 
     procedure WMSize(var Message: TWMSize); message WM_SIZE;
@@ -302,6 +303,9 @@ type
     property Forms[Index: Integer]: TDBForm read GetFormByIndex; default;
   end;
 
+type
+  TAnchorsArray = TDictionary<TControl, TAnchors>;
+
 implementation
 
 {$IFDEF PHOTODB}
@@ -312,6 +316,38 @@ uses
 function GetGUID: TGUID;
 begin
   CoCreateGuid(Result);
+end;
+
+procedure DisableAnchors(ParentControl: TWinControl; Storage: TAnchorsArray);
+var
+  I: Integer;
+  ChildControl: TControl;
+begin
+  for I := 0 to ParentControl.ControlCount - 1 do
+  begin
+    ChildControl := ParentControl.Controls[I];
+
+    Storage.Add(ChildControl, ChildControl.Anchors);
+
+    ChildControl.Anchors := [];
+  end;
+
+  //Add children
+  for I := 0 to ParentControl.ControlCount - 1 do
+  begin
+    ChildControl := ParentControl.Controls[I];
+    if ChildControl is TWinControl then
+       DisableAnchors(TWinControl(ChildControl), Storage);
+  end;
+end;
+
+procedure EnableAnchors(Storage: TAnchorsArray);
+var
+  I: Integer;
+  Pair: TPair<TControl, TAnchors>;
+begin
+  for Pair in Storage do
+   Pair.Key.Anchors := Pair.Value;
 end;
 
 { TDBForm }
@@ -391,6 +427,7 @@ begin
     TMainMenuStyleHook.RegisterMenu(TMainMenu(Menu));
   if ClassName <> 'TFormManager' then
     TLoad.Instance.RequaredStyle;
+  FixLayout;
   ApplyStyle;
   ApplySettings;
   {$ENDIF}
@@ -515,6 +552,33 @@ begin
   begin
     SetBounds(R.Left, R.Top, RectWidth(R), RectHeight(R));
     Position := poDesigned;
+  end;
+end;
+
+procedure TDBForm.FixLayout;
+var
+  StoredAnchors: TAnchorsArray;
+  Details: TThemedElementDetails;
+  Size: TSize;
+begin
+  if ((BorderStyle = bsSingle) or (BorderStyle = bsToolWindow)) and StyleServices.Enabled then
+  begin
+    StoredAnchors := TAnchorsArray.Create;
+    try
+      DisableAlign;
+      DisableAnchors(Self, StoredAnchors);
+      try
+        Details := StyleServices.GetElementDetails(twFrameLeftActive);
+        StyleServices.GetElementSize(0, Details, esActual, Size);
+
+        ClientWidth := ClientWidth + Size.cx;
+      finally
+        EnableAnchors(StoredAnchors);
+        EnableAlign;
+      end;
+    finally
+      StoredAnchors.Free;
+    end;
   end;
 end;
 

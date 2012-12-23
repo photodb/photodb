@@ -341,7 +341,6 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
     procedure CustomFormAfterDisplay; override;
-    procedure ApplyStyle; override;
   public
     { Public declarations }
     procedure LoadLanguage;
@@ -632,8 +631,7 @@ begin
   Addnewcommand1.ImageIndex := DB_IC_EXPLORER;
   Remove1.ImageIndex := DB_IC_DELETE_INFO;
   CbCheckLinksOnUpdate.Enabled := not FolderView;
-  ClientHeight := 484;
-  PcMain.Width := ClientWidth - 15;
+
   PcMainChange(Self);
 
   WblMethod.Color := Theme.PanelColor;
@@ -846,13 +844,6 @@ begin
       or (Msg.hwnd = CbInstallTypeNone.Handle) then
         Msg.message := 0;
   end;
-end;
-
-procedure TOptionsForm.ApplyStyle;
-begin
-  inherited;
-  OkButton.BeforeRight(PcMain);
-  CancelButton.BeforeLeft(OkButton, 5);
 end;
 
 procedure TOptionsForm.BtnInstallExtensionsClick(Sender: TObject);

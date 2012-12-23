@@ -4,14 +4,14 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.ActiveX,
+  Winapi.ActiveX,  
+  Winapi.ShellApi,
   System.SysUtils,
   System.Classes,
   System.SyncObjs,
   System.Win.ComObj,
   Data.DB,
   Data.Win.ADODB,
-  UnitINI,
 
   Dmitry.CRC32,
   Dmitry.Utils.System,
@@ -25,7 +25,11 @@ uses
   uShellIntegration,
   uTranslate,
   uResources,
-
+  uAppUtils,
+  uSettings,
+  uSplashThread,
+               
+  UnitINI,
   UnitDBCommon,
   ReplaseIconsInScript,
 
@@ -133,15 +137,14 @@ var
   FSync: TCriticalSection = nil;
 
 const
-  {$ifdef cpux64}
-  MDBProvider = 'Microsoft.ACE.OLEDB.12.0';
-  {$endif}
-  {$ifndef cpux64}
-  MDBProvider = 'Microsoft.Jet.OLEDB.4.0';
-  {$endif}
+  ErrorCodeProviderNotFound = $800A0E7A;
 
-var
-  DBFConnectionString: string = 'Provider=' + MDBProvider + ';Password="";User ID=Admin;'+
+  Jet40ProviderName = 'Microsoft.Jet.OLEDB.4.0';
+  ACE12ProviderName = 'Microsoft.ACE.OLEDB.12.0';
+  ACE14ProviderName = 'Microsoft.ACE.OLEDB.14.0';
+
+  Jet40ConnectionString: string =
+                            'Provider=Microsoft.Jet.OLEDB.4.0;Password="";User ID=Admin;'+
                             'Data Source=%s;Mode=%MODE%;Extended Properties="";'+
                             'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
                             'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=5;'+
@@ -155,20 +158,23 @@ var
                             'Jet OLEDB:Compact Without Replica Repair=False;'+
                             'Jet OLEDB:SFP=False';
 
-//  DBFConnectionString : string = 'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=%s;Persist Security Info=False';
-
   // Read Only String
-  DBViewConnectionString: string =
-    'Provider=' + MDBProvider + ';Password="";'+
-    'User ID=Admin;Data Source=%s;'+
-    'Mode=Share Deny Write;Extended Properties="";'+
-    'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
-    'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=0;'+
-    'Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=1;'+
-    'Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";'+
-    'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
-    'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
-    'Compact Without Replica Repair=False;Jet OLEDB:SFP=False';
+  Jet40ReadOnlyConnectionString: string =
+                            'Provider=Microsoft.Jet.OLEDB.4.0;Password="";'+
+                            'User ID=Admin;Data Source=%s;'+
+                            'Mode=Share Deny Write;Extended Properties="";'+
+                            'Jet OLEDB:System database="";Jet OLEDB:Registry Path="";'+
+                            'Jet OLEDB:Database Password="";Jet OLEDB:Engine Type=0;'+
+                            'Jet OLEDB:Database Locking Mode=1;Jet OLEDB:Global Partial Bulk Ops=1;'+
+                            'Jet OLEDB:Global Bulk Transactions=1;Jet OLEDB:New Database Password="";'+
+                            'Jet OLEDB:Create System Database=False;Jet OLEDB:Encrypt Database=False;'+
+                            'Jet OLEDB:Don''t Copy Locale on Compact=False;Jet OLEDB:'+
+                            'Compact Without Replica Repair=False;Jet OLEDB:SFP=False';
+
+   ACE12ConnectionString: string =
+                            'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=%s;Persist Security Info=False';
+   ACE14ConnectionString: string =
+                            'Provider=Microsoft.ACE.OLEDB.14.0;Data Source=%s;Persist Security Info=False';
 
 function GetDBType: Integer; overload;
 function GetDBType(Dbname: string): Integer; overload;
@@ -227,13 +233,109 @@ function GetDefaultImageDBOptions: TImageDBOptions;
 function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
-function TryOpenCDS(DS: TDataSet): Boolean;
+function TryOpenCDS(DS: TDataSet): Boolean;     
+function OpenDS(DS: TDataSet): Boolean;
 procedure ForwardOnlyQuery(DS: TDataSet);
 procedure ReadOnlyQuery(DS: TDataSet);
 function DBReadOnly: Boolean;
 function GroupsTableFileNameW(FileName: string): string;
 
 implementation
+
+var
+  FIsBrowserWithNotifyUserAboutErorrsInProvidersOpened: Boolean = False; 
+  FIsMessageBoxForUserAboutErorrsInProvidersOpened: Boolean = False;
+
+procedure NotifyUserAboutErorrsInProviders;
+begin
+  if not FIsBrowserWithNotifyUserAboutErorrsInProvidersOpened then
+  begin
+    FIsBrowserWithNotifyUserAboutErorrsInProvidersOpened := True;
+    ShellExecute(0, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + 'provider-not-found'), nil, nil, SW_NORMAL);
+  end;
+end;
+
+procedure RaiseProviderNotFoundException;
+var
+  ProvidersList: string;
+begin
+  //close splash screen if it's being shown
+  CloseSplashWindow;
+
+  //reset provider
+  Settings.WriteString('Settings', 'DatabaseProvider', '');
+
+  //create error message
+
+  if not FIsMessageBoxForUserAboutErorrsInProvidersOpened then
+  begin   
+    FIsMessageBoxForUserAboutErorrsInProvidersOpened := True;                                                          
+    ProvidersList := Jet40ProviderName + ', ' + ACE12ProviderName + ', ' + ACE14ProviderName;
+    MessageBoxDB(0, FormatEx(TA('Fatal error: at least one provider should be registered: {0}', 'Errors'), [ProvidersList]), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+  end;
+  //try to send user to page with detailed information
+  NotifyUserAboutErorrsInProviders;
+end;
+
+function DataBaseProvider: string;
+const
+  ProviderList: array[0..2] of string = (Jet40ProviderName, ACE12ProviderName, ACE14ProviderName);
+
+var
+  S: TStrings;
+  I, J: Integer;
+begin
+  Result := Settings.ReadString('Settings', 'DatabaseProvider');
+  if Result <> '' then
+    Exit(Result);
+
+  S := TStringList.Create;
+  try
+    try
+      GetProviderNames(S);
+    except
+      on e: Exception do
+      begin
+        MessageBoxDB(0, e.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      end;
+    end;
+
+    for I := Low(ProviderList) to High(ProviderList) do
+    begin
+      for J := 0 to S.Count - 1 do
+      begin
+        if AnsiLowerCase(S[J]) = AnsiLowerCase(ProviderList[I]) then
+        begin
+          Settings.WriteString('Settings', 'DatabaseProvider', ProviderList[I]);
+          Exit(ProviderList[I]);
+        end;
+      end;
+    end;
+  finally
+    F(S);
+  end;
+end;
+
+function ConnectionString: string;
+var
+  Provider: string;
+begin
+  Provider := DataBaseProvider;
+
+  if Provider = '' then
+    RaiseProviderNotFoundException;
+
+  if (Provider = ACE12ProviderName) or GetParamStrDBBool('/ace12') then
+    Exit(ACE12ConnectionString);
+
+  if (Provider = ACE14ProviderName) or GetParamStrDBBool('/ace14') then
+    Exit(ACE14ConnectionString);
+
+  if FolderView and DBReadOnly then
+    Exit(Jet40ReadOnlyConnectionString);
+
+  Result := Jet40ConnectionString;
+end;
 
 function GroupsTableFileNameW(FileName: string): string;
 begin
@@ -263,13 +365,41 @@ begin
     try
       DS.Active := True;
     except
-      Result := False;
+      on e: Exception do
+      begin
+        Result := False;
+        if E is EOleException then
+        begin
+          if (EOleException(E).ErrorCode and $FFFFFFFF) = ErrorCodeProviderNotFound then
+          begin
+            RaiseProviderNotFoundException;
+            Exit;
+          end;
+        end;
+      end;
     end;
     if Result then
       Break;
     Sleep(DelayExecuteSQLOperation);
   end;
+end;      
+
+function OpenDS(DS: TDataSet): Boolean;
+begin
+  try
+    DS.Open;
+    Result := True;
+  except
+    on e: EOleException do
+    begin
+      if (E.ErrorCode and $FFFFFFFF) = ErrorCodeProviderNotFound then
+        RaiseProviderNotFoundException;
+
+      raise;
+    end;
+  end;
 end;
+
 
 function NormalizeDBString(S: string): string;
 begin
@@ -377,12 +507,12 @@ end;
 
 function GetConnectionString: string;
 begin
-  Result := Format(DBFConnectionString, [Dbname]);
+  Result := Format(ConnectionString, [Dbname]);
 end;
 
 function GetConnectionString(Dbname: string; ReadOnly: Boolean): string;
 begin
-  Result := StringReplace(DBFConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
+  Result := StringReplace(ConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
   Result := Format(Result, [Dbname]);
 end;
 
@@ -912,7 +1042,6 @@ begin
   DBConnection.ADOConnection := TADOConnection.Create(nil);
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname, ForseNewConnection);
   DBConnection.ADOConnection.LoginPrompt := False;
-  DBConnection.ADOConnection.Provider := MDBProvider;
   if ForseNewConnection then
     DBConnection.ADOConnection.IsolationLevel := ilReadCommitted;
 
@@ -1214,12 +1343,6 @@ initialization
 
   FSync := TCriticalSection.Create;
   ADOConnections := TADOConnections.Create;
-
-  if FolderView then
-  begin
-    if DBReadOnly then
-      DBFConnectionString := DBViewConnectionString;
-  end;
 
 finalization
 

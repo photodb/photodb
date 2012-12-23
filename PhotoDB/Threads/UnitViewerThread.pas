@@ -237,8 +237,7 @@ begin
 
           if not ViewerManager.ValidateState(FSID) then Exit;
 
-          if not ((ilfFullRAW in LoadFlags) and (Graphic is TRAWImage)) then
-            ApplyRotate(Bitmap, FInfo.Rotation);
+          ApplyRotate(Bitmap, FInfo.Rotation);
 
           CanDetectFaces := ViewerManager.ValidateState(FSID);
           if not CanDetectFaces then Exit;

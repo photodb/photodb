@@ -31,7 +31,7 @@ uses
   uAssociations,
   uActivationUtils,
   uImageLoader,
-  uUpTIme;
+  uUpTime;
 
 type
   THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
