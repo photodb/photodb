@@ -62,7 +62,7 @@ type
     procedure ResizeTo(Width, Height: Integer);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
-    procedure FailedToLoadImage;
+    procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
     procedure ZoomIn;

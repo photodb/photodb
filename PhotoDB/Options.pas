@@ -631,8 +631,7 @@ begin
   Addnewcommand1.ImageIndex := DB_IC_EXPLORER;
   Remove1.ImageIndex := DB_IC_DELETE_INFO;
   CbCheckLinksOnUpdate.Enabled := not FolderView;
-  ClientHeight := 484;
-  PcMain.Width := ClientWidth - 15;
+
   PcMainChange(Self);
 
   WblMethod.Color := Theme.PanelColor;

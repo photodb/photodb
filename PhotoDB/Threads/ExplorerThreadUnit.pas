@@ -336,26 +336,11 @@ var
   COMMode: Integer;
 
   procedure LoadDBContent;
-  var
-    I: Integer;
   begin
     ShowInfo(L('Query in collection...'), 1, 0);
 
     SetSQL(FQuery, 'Select * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFolder, False)));
-
-    for I := 1 to 20 do
-    begin
-      try
-        FQuery.Active := True;
-        Break;
-      except
-        on E: Exception do
-        begin
-          EventLog(':TExplorerThread::Execute throw exception: ' + E.message);
-          Sleep(DelayExecuteSQLOperation);
-        end;
-      end;
-    end;
+    TryOpenCDS(FQuery);
   end;
 
   procedure ProcessNotifys(NotifyProcessProcedure: TProcessNotifyProc; UpdateMode: Integer);
@@ -2652,16 +2637,18 @@ begin
 end;
 
 procedure TExplorerThread.CheckIsFileEncrypted;
+var
+  IsEncrypted: Boolean;
 begin
   if CanBeTransparentEncryptedFile(CurrentFile) then
   begin
-    if ValidEnryptFileEx(CurrentFile) then
-      SynchronizeEx(
-        procedure
-        begin
-          FSender.SetFileIsEncrypted(GUIDParam, True);
-        end
-      );
+    IsEncrypted := ValidEnryptFileEx(CurrentFile);
+    SynchronizeEx(
+      procedure
+      begin
+        FSender.SetFileIsEncrypted(GUIDParam, IsEncrypted);
+      end
+    );
   end;
 end;
 

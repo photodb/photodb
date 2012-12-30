@@ -33,7 +33,6 @@ object OptionsForm: TOptionsForm
     Caption = 'Cancel'
     TabOrder = 0
     OnClick = CancelButtonClick
-    ExplicitLeft = 399
   end
   object OkButton: TButton
     Left = 506
@@ -44,7 +43,6 @@ object OptionsForm: TOptionsForm
     Caption = 'Ok'
     TabOrder = 1
     OnClick = OkButtonClick
-    ExplicitLeft = 480
   end
   object PcMain: TPageControl
     Left = 8
@@ -55,11 +53,9 @@ object OptionsForm: TOptionsForm
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
-    ExplicitWidth = 548
     object TsStyle: TTabSheet
       Caption = 'Style'
       ImageIndex = 6
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -126,7 +122,6 @@ object OptionsForm: TOptionsForm
         HightliteImage = False
         StretchImage = False
         CanClick = True
-        ExplicitLeft = 450
       end
       object BtnShowThemesFolder: TButton
         Left = 176
@@ -137,12 +132,10 @@ object OptionsForm: TOptionsForm
         Caption = 'BtnShowThemesFolder'
         TabOrder = 3
         OnClick = BtnShowThemesFolderClick
-        ExplicitWidth = 361
       end
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -274,7 +267,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -371,7 +363,6 @@ object OptionsForm: TOptionsForm
           'My Documents'
           'Other folders')
         TabOrder = 12
-        ExplicitWidth = 298
       end
       object CbExplorerShowPlaces: TCheckBox
         Left = 7
@@ -397,7 +388,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Images'
         TabOrder = 9
-        ExplicitWidth = 342
       end
       object CbExplorerSaveThumbsForFolders: TCheckBox
         Left = 194
@@ -407,7 +397,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Save Thumbnails For Folders'
         TabOrder = 8
-        ExplicitWidth = 342
       end
       object CbExplorerShowThumbsForFolders: TCheckBox
         Left = 194
@@ -417,7 +406,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Folders'
         TabOrder = 7
-        ExplicitWidth = 342
       end
       object CbExplorerShowAttributes: TCheckBox
         Left = 194
@@ -427,7 +415,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Attributes'
         TabOrder = 6
-        ExplicitWidth = 342
       end
       object Label13: TStaticText
         Left = 194
@@ -487,13 +474,11 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Thumbnails For Video'
         TabOrder = 10
-        ExplicitWidth = 342
       end
     end
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -551,7 +536,6 @@ object OptionsForm: TOptionsForm
         TabOrder = 0
         ThumbLength = 15
         OnChange = TrackBar1Change
-        ExplicitWidth = 526
       end
       object TrackBar2: TTrackBar
         Left = 3
@@ -565,7 +549,6 @@ object OptionsForm: TOptionsForm
         TabOrder = 1
         ThumbLength = 15
         OnChange = TrackBar2Change
-        ExplicitWidth = 526
       end
       object TrackBar4: TTrackBar
         Left = 3
@@ -579,7 +562,6 @@ object OptionsForm: TOptionsForm
         TabOrder = 2
         ThumbLength = 15
         OnChange = TrackBar4Change
-        ExplicitWidth = 526
       end
       object CbViewerNextOnClick: TCheckBox
         Left = 8
@@ -589,7 +571,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Next on Click'
         TabOrder = 3
-        ExplicitWidth = 526
       end
       object CbViewerUseCoolStretch: TCheckBox
         Left = 8
@@ -599,7 +580,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use Cool Stretch'
         TabOrder = 4
-        ExplicitWidth = 526
       end
       object cbViewerFaceDetection: TCheckBox
         Left = 8
@@ -609,7 +589,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Enable face detection'
         TabOrder = 5
-        ExplicitWidth = 526
       end
       object CbDetectionSize: TComboBox
         Left = 8
@@ -649,7 +628,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Red-cyan glasses for stereo images'
         TabOrder = 9
-        ExplicitWidth = 526
       end
       object CbDisplayICCProfile: TComboBox
         Left = 8
@@ -663,7 +641,6 @@ object OptionsForm: TOptionsForm
     object TsUserMenu: TTabSheet
       Caption = 'User Menu'
       ImageIndex = 3
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -739,7 +716,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use Menu for'
         TabOrder = 15
-        ExplicitWidth = 354
         object CbUseUserMenuForIDMenu: TCheckBox
           Left = 13
           Top = 24
@@ -775,7 +751,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 11
         OnClick = BtnSaveUserMenuItemClick
-        ExplicitWidth = 397
       end
       object BtnAddNewUserMenuItem: TButton
         Left = 0
@@ -866,7 +841,6 @@ object OptionsForm: TOptionsForm
         ReadOnly = True
         TabOrder = 8
         OnKeyPress = EdUserMenuItemCaptionKeyPress
-        ExplicitWidth = 377
       end
       object BtnUserMenuChooseIcon: TButton
         Left = 544
@@ -878,7 +852,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 14
         OnClick = BtnUserMenuChooseIconClick
-        ExplicitLeft = 518
       end
       object EdUserMenuItemParams: TEdit
         Left = 135
@@ -889,7 +862,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 7
         OnKeyPress = EdUserMenuItemCaptionKeyPress
-        ExplicitWidth = 397
       end
       object EdUserMenuItemExecutable: TEdit
         Left = 135
@@ -900,7 +872,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 5
         OnKeyPress = EdUserMenuItemCaptionKeyPress
-        ExplicitWidth = 377
       end
       object BtnUserMenuChooseExecutable: TButton
         Left = 544
@@ -912,7 +883,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 6
         OnClick = BtnUserMenuChooseExecutableClick
-        ExplicitLeft = 518
       end
       object EdUserMenuItemCaption: TEdit
         Left = 135
@@ -927,7 +897,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -939,7 +908,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'BackUping'
         TabOrder = 0
-        ExplicitWidth = 522
         object Label30: TLabel
           Left = 134
           Top = 43
@@ -973,7 +941,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Passwords'
         TabOrder = 1
-        ExplicitWidth = 519
         DesignSize = (
           545
           233)
@@ -1329,7 +1296,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Use auto saving password in user'#39's settings'
           TabOrder = 0
-          ExplicitWidth = 508
         end
         object CbAutoSavePasswordForSession: TCheckBox
           Left = 8
@@ -1339,7 +1305,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Use auto saving password in current session'
           TabOrder = 1
-          ExplicitWidth = 508
         end
         object WblMethod: TWebLink
           Left = 8
@@ -1369,7 +1334,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Proxy settings'
         TabOrder = 2
-        ExplicitWidth = 522
         DesignSize = (
           548
           74)
@@ -1395,7 +1359,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
           Text = 'WebProxyUserName'
-          ExplicitWidth = 201
         end
         object WebProxyPassword: TWatermarkedEdit
           Left = 312
@@ -1406,7 +1369,6 @@ object OptionsForm: TOptionsForm
           PasswordChar = '*'
           TabOrder = 1
           Text = 'WebProxyUserName'
-          ExplicitWidth = 201
         end
         object CbUseProxyServer: TCheckBox
           Left = 11
@@ -1422,7 +1384,6 @@ object OptionsForm: TOptionsForm
     object TsGlobal: TTabSheet
       Caption = 'Global'
       ImageIndex = 5
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -1458,7 +1419,6 @@ object OptionsForm: TOptionsForm
         Caption = 'Verify links on updation images (works slowly, read help)'
         TabOrder = 5
         WordWrap = True
-        ExplicitWidth = 522
       end
       object CbSmallToolBars: TCheckBox
         Left = 11
@@ -1468,7 +1428,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use small icons in toolbars'
         TabOrder = 4
-        ExplicitWidth = 522
       end
       object CblEditorVirtuaCursor: TCheckBox
         Left = 11
@@ -1478,7 +1437,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Virtual Cursor in Editor'
         TabOrder = 3
-        ExplicitWidth = 522
       end
       object CbSortGroups: TCheckBox
         Left = 11
@@ -1488,7 +1446,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Sort Groups by Name'
         TabOrder = 2
-        ExplicitWidth = 522
       end
       object CbListViewHotSelect: TCheckBox
         Left = 11
@@ -1498,7 +1455,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Use "hot" select in listviews'
         TabOrder = 0
-        ExplicitWidth = 522
       end
       object CbListViewShowPreview: TCheckBox
         Left = 11
@@ -1508,7 +1464,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Show Preview'
         TabOrder = 1
-        ExplicitWidth = 522
       end
       object SedMinHeight: TSpinEdit
         Left = 130
@@ -1538,7 +1493,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'EXIF'
         TabOrder = 9
-        ExplicitWidth = 522
         DesignSize = (
           548
           86)
@@ -1550,7 +1504,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbReadInfoFromExif'
           TabOrder = 0
-          ExplicitWidth = 503
         end
         object CbSaveInfoToExif: TCheckBox
           Left = 11
@@ -1560,7 +1513,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbSaveInfoToExif'
           TabOrder = 1
-          ExplicitWidth = 503
         end
         object CbUpdateExifInfoInBackground: TCheckBox
           Left = 11
@@ -1570,7 +1522,6 @@ object OptionsForm: TOptionsForm
           Anchors = [akLeft, akTop, akRight]
           Caption = 'CbUpdateExifInfoInBackground'
           TabOrder = 2
-          ExplicitWidth = 507
         end
       end
       object CbShowStatusBar: TCheckBox
@@ -1581,7 +1532,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'CbShowStatusBar'
         TabOrder = 10
-        ExplicitWidth = 522
       end
       object CbSmoothScrolling: TCheckBox
         Left = 11
@@ -1591,13 +1541,11 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         Caption = 'CbSmoothScrolling'
         TabOrder = 11
-        ExplicitWidth = 522
       end
     end
     object TsPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
-      ExplicitWidth = 540
       DesignSize = (
         566
         413)
@@ -1639,7 +1587,6 @@ object OptionsForm: TOptionsForm
         TabOrder = 2
         TabStop = True
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
       object StUseProgram: TStaticText
         Left = 259
@@ -1658,7 +1605,6 @@ object OptionsForm: TOptionsForm
         Caption = 'RbVlcPlayer'
         TabOrder = 4
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
       object RbKmPlayer: TRadioButton
         Left = 259
@@ -1669,7 +1615,6 @@ object OptionsForm: TOptionsForm
         Caption = 'RbKmPlayer'
         TabOrder = 5
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
       object RbMediaPlayerClassic: TRadioButton
         Left = 259
@@ -1680,7 +1625,6 @@ object OptionsForm: TOptionsForm
         Caption = 'RbMediaPlayerClassic'
         TabOrder = 6
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
       object RbOtherProgram: TRadioButton
         Left = 259
@@ -1691,7 +1635,6 @@ object OptionsForm: TOptionsForm
         Caption = 'RbOtherProgram*'
         TabOrder = 7
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
       object EdPlayerExecutable: TEdit
         Left = 259
@@ -1702,7 +1645,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 8
         OnChange = EdPlayerExecutableChange
-        ExplicitWidth = 249
       end
       object BtnSelectPlayerExecutable: TButton
         Left = 540
@@ -1714,7 +1656,6 @@ object OptionsForm: TOptionsForm
         Enabled = False
         TabOrder = 9
         OnClick = BtnSelectPlayerExecutableClick
-        ExplicitLeft = 514
       end
       object WlAddPlayerExtension: TWebLink
         Left = 3
@@ -1795,7 +1736,6 @@ object OptionsForm: TOptionsForm
         Caption = 'RbWindowsMediaPlayer'
         TabOrder = 13
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
       object RbDefaultrogram: TRadioButton
         Left = 259
@@ -1806,7 +1746,6 @@ object OptionsForm: TOptionsForm
         Caption = 'RbDefaultrogram'
         TabOrder = 14
         OnClick = RbPlayerInternalClick
-        ExplicitWidth = 276
       end
     end
   end

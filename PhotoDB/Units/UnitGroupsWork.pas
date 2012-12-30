@@ -121,7 +121,7 @@ begin
   try
     SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupName like "' + GroupName + '"');
     try
-      Query.Active := True;
+      OpenDS(Query);
     except
       Exit;
     end;
@@ -144,7 +144,7 @@ begin
   Query := GetQuery;
   try
     SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode="' + GroupCode + '"');
-    Query.Active := True;
+    OpenDS(Query);
     if Query.RecordCount = 0 then
       Exit;
 
@@ -170,7 +170,7 @@ begin
   try
     SetSQL(Query, 'Select 1 From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
     try
-      Query.Active := True;
+      OpenDS(Query);
     except
       Exit;
     end;
@@ -190,7 +190,7 @@ begin
   try
     SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode like "' + GroupCode + '"');
     try
-      Query.Active := True;
+      OpenDS(Query);
     except
       Exit;
     end;
@@ -290,7 +290,7 @@ begin
   try
     SetSQL(Query, 'Select * From ' + GroupsTableName(FileName) + ' Where GroupCode like "' + Group.GroupCode + '"');
     try
-      Query.Active := True;
+      OpenDS(Query);
     except
       Exit;
     end;
@@ -386,7 +386,7 @@ begin
 
   try
     try
-      Table.Active := True;
+      OpenDS(Query);
     except
       FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(FileName));
       Exit;
@@ -411,7 +411,7 @@ begin
         finally
           FreeDS(Query);
         end;
-        Table.Active := True;
+        OpenDS(Query);
       end;
       Table.FieldByName('GroupKW').AsString;
       if Table.FindField('GroupAddKW') = nil then
@@ -424,7 +424,7 @@ begin
         finally
           FreeDS(Query);
         end;
-        Table.Active := True;
+        OpenDS(Query);
       end;
       Table.FieldByName('GroupAddKW').AsBoolean;
       // Included in PhotoDB v1.9
@@ -458,7 +458,7 @@ begin
         finally
           FreeDS(Query);
         end;
-        Table.Active := True;
+        OpenDS(Query);
       end;
       Table.FieldByName('IncludeInQuickList').AsBoolean;
     except
@@ -500,7 +500,7 @@ begin
         'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW,RelatedGroups,IncludeInQuickList From '
           + GroupsTableName + ' Where GroupCode like "' + GroupCode + '"');
     try
-      Query.Active := True;
+      OpenDS(Query);
     except
       Result := GetNilGroup;
       Exit;
@@ -531,7 +531,7 @@ begin
       SetSQL(Query,
         'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW, RelatedGroups, IncludeInQuickList From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
     try
-      Query.Active := True;
+      OpenDS(Query);
     except
       Exit;
     end;
@@ -560,7 +560,7 @@ begin
     if Table = nil then
       Exit;
     try
-      Table.Active := True;
+      OpenDS(Table);
     except
       Exit;
     end;

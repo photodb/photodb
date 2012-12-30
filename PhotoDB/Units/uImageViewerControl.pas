@@ -227,7 +227,7 @@ type
     procedure StopLoadingImage;
     procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
     procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
-    procedure FailedToLoadImage;
+    procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
     procedure ZoomIn;
@@ -599,7 +599,9 @@ begin
   RecreateImage;
 end;
 
-procedure TImageViewerControl.FailedToLoadImage;
+procedure TImageViewerControl.FailedToLoadImage(ErrorMessage: string);
+var
+  S: string;
 begin
   Cursor := crDefault;
   FRealImageHeight := 0;
@@ -621,6 +623,11 @@ begin
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
 
+  if ErrorMessage <> '' then
+    S := FormatEx(TA('Error loading image: {0}, {1}', 'Errors'), [ExtractFileName(FItem.FileName), ErrorMessage])
+  else
+    S := FormatEx(TA('Error loading image: {0}', 'Errors'), [ExtractFileName(FItem.FileName)]);
+  SetText(S);
   Invalidate;
   RecreateImage;
 end;

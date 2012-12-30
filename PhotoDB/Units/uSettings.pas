@@ -42,7 +42,7 @@ type
     function ReadStringW(Key, Name: string; Default: string = ''): string;
     function ReadDateTime(Key, Name: string; Default: TDateTime): TDateTime;
     procedure IncrementInteger(Key, Name: string);
-    function GetSection(Key: string): TBDRegistry;
+    function GetSection(Key: string; ReadOnly: Boolean): TBDRegistry;
     procedure DeleteValues(Key: string);
     property DataBase: string read GetDataBase;
     property Exif: TExifSettings read FExifSettings;
@@ -109,7 +109,7 @@ var
   Value: string;
 begin
   Result := Default;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   Value := AnsiLowerCase(Reg.ReadString(Name));
   if Value = 'true' then
     Result := True;
@@ -121,17 +121,17 @@ function TSettings.ReadRealBool(Key, Name: string; Default: Boolean): Boolean;
 var
   Reg : TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   Result := Reg.ReadBool(Name);
 end;
 
-function TSettings.ReadboolW(Key, Name: string; Default: Boolean): boolean;
+function TSettings.ReadboolW(Key, Name: string; Default: Boolean): Boolean;
 var
   Reg: TBDRegistry;
   Value : string;
 begin
   Result := Default;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key, True);
   Value := AnsiLowerCase(Reg.ReadString(Name));
   if Value = 'true' then
     Result := True;
@@ -143,7 +143,7 @@ function TSettings.ReadInteger(Key, Name: string; Default: Integer): Integer;
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   Result := StrToIntDef(Reg.ReadString(Name), Default);
 end;
 
@@ -152,7 +152,7 @@ var
   Reg: TBDRegistry;
 begin
   Result := Default;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   if Reg.ValueExists(Name) then
     Result:=Reg.ReadDateTime(Name);
 end;
@@ -162,7 +162,7 @@ var
   Reg: TBDRegistry;
 begin
   Result := '';
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key, True);
   Result := Reg.ReadString(Name);
 end;
 
@@ -171,7 +171,7 @@ var
   Reg: TBDRegistry;
 begin
   Result := TStringList.Create;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   Reg.GetKeyNames(Result);
 end;
 
@@ -180,7 +180,7 @@ var
   Reg: TBDRegistry;
 begin
   Result := TStringList.Create;
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   Reg.GetValueNames(Result);
 end;
 
@@ -241,7 +241,7 @@ function TSettings.ReadString(Key, Name: string; Default: string = ''): string;
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, True);
   Result := Reg.ReadString(name);
   if Result = '' then
     Result := Default;
@@ -251,7 +251,7 @@ function TSettings.ReadStringW(Key, Name: string; Default: string = ''): string;
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key, True);
   Result := Reg.ReadString(Name);
   if Result = '' then
     Result := Default;
@@ -261,7 +261,7 @@ procedure TSettings.WriteBool(Key, name: string; Value: Boolean);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, False);
   if Value then
     Reg.WriteString(name, 'True')
   else
@@ -272,7 +272,7 @@ procedure TSettings.WriteBoolW(Key, Name: string; Value: Boolean);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key, False);
   if Value then
     Reg.WriteString(Name, 'True')
   else
@@ -283,7 +283,7 @@ procedure TSettings.WriteInteger(Key, Name: string; Value: Integer);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, False);
   Reg.WriteString(Name, IntToStr(Value));
 end;
 
@@ -291,7 +291,7 @@ procedure TSettings.WriteProperty(Key, Name, Value: string);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key, False);
   Reg.WriteString(Name, Value);
 end;
 
@@ -299,7 +299,7 @@ procedure TSettings.WriteString(Key, Name, Value: string);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, False);
   Reg.WriteString(Name, Value);
 end;
 
@@ -307,7 +307,7 @@ procedure TSettings.WriteStringW(Key, Name, value: string);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot + Key, False);
   Reg.WriteString(Name, Value);
 end;
 
@@ -315,7 +315,7 @@ procedure TSettings.WriteDateTime(Key, Name : String; Value: TDateTime);
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, False);
   Reg.WriteDateTime(Name, Value);
 end;
 
@@ -323,13 +323,13 @@ function TSettings.GetDataBase: string;
 var
   Reg: TBDRegistry;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot, True);
   Result := Reg.ReadString('DBDefaultName');
 end;
 
-function TSettings.GetSection(Key: string): TBDRegistry;
+function TSettings.GetSection(Key: string; ReadOnly: Boolean): TBDRegistry;
 begin
-  Result := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot);
+  Result := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot, ReadOnly);
 end;
 
 procedure TSettings.IncrementInteger(Key, Name: string);
@@ -338,7 +338,7 @@ var
   SValue: string;
   Value: Integer;
 begin
-  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key);
+  Reg := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, GetRegRootKey + Key, False);
   SValue := Reg.ReadString(Name);
   Value := StrToIntDef(SValue, 0);
   Inc(Value);

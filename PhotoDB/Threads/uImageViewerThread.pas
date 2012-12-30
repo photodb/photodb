@@ -54,7 +54,7 @@ type
     FBitmap: TBitmap;
     procedure SetStaticImage;
     procedure SetAnimatedImageAsynch;
-    procedure SetNOImageAsynch;
+    procedure SetNOImageAsynch(ErrorMessage: string);
     procedure FinishDetectionFaces;
   protected
     procedure Execute; override;
@@ -116,7 +116,7 @@ begin
         Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
         if Password = '' then
         begin
-          SetNOImageAsynch;
+          SetNOImageAsynch('');
           Exit;
         end;
       end;
@@ -130,7 +130,7 @@ begin
         try
           if not LoadImageFromPath(FInfo, FPageNumber, Password, LoadFlags, ImageInfo, FDisplaySize.cx, FDisplaySize.cy) then
           begin
-            SetNOImageAsynch;
+            SetNOImageAsynch('');
             Exit;
           end;
 
@@ -141,7 +141,7 @@ begin
           on e: Exception do
           begin
             EventLog(e);
-            SetNOImageAsynch;
+            SetNOImageAsynch(e.Message);
             Exit;
           end;
         end;
@@ -196,8 +196,11 @@ begin
               end;
               FBitmap.PixelFormat := pf24bit;
             except
-              SetNOImageAsynch;
-              Exit;
+              on e: Exception do
+              begin
+                SetNOImageAsynch(e.Message);
+                Exit;
+              end;
             end;
 
             ImageInfo.AppllyICCProfile(FBitmap);
@@ -224,7 +227,10 @@ begin
       end;
     except
       on Ex: Exception do
+      begin
         EventLog(Ex);
+        SetNOImageAsynch(Ex.Message);
+      end;
     end;
   finally
     CoUninitialize;
@@ -254,13 +260,13 @@ begin
   end;
 end;
 
-procedure TImageViewerThread.SetNOImageAsynch;
+procedure TImageViewerThread.SetNOImageAsynch(ErrorMessage: string);
 begin
   SynchronizeEx(
     procedure
     begin
       if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
-        FOwnerControl.FailedToLoadImage;
+        FOwnerControl.FailedToLoadImage(ErrorMessage);
     end
   );
 end;

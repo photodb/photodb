@@ -84,7 +84,7 @@ type
     procedure ResizeTo(Width, Height: Integer);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
-    procedure FailedToLoadImage;
+    procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
     procedure ZoomIn;
@@ -439,9 +439,9 @@ begin
   FImageControl.HightlitePerson(PersonID);
 end;
 
-procedure TImageViewer.FailedToLoadImage;
+procedure TImageViewer.FailedToLoadImage(ErrorMessage: string);
 begin
-  FImageControl.FailedToLoadImage;
+  FImageControl.FailedToLoadImage(ErrorMessage);
   NotifyButtonsUpdate;
 end;
 

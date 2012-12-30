@@ -160,6 +160,23 @@ type
   end;
 
 type
+  // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
+  PInfoCallback = ^TInfoCallback;
+
+  TInfoCallback = record
+    FAction: Integer; // тип изменения (константы FILE_ACTION_XXX)
+    FOldFileName: string; // имя файла до переименования
+    FNewFileName: string; // имя файла после переименования
+  end;
+
+  TInfoCallBackDirectoryChangedArray = array of TInfoCallback;
+
+  // callback процедура, вызываемая при изменении в файловой системе
+  TWatchFileSystemCallback = procedure(PInfo: TInfoCallBackDirectoryChangedArray) of object;
+
+  TNotifyDirectoryChangeW = procedure(Sender: TObject; SID: string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
+
+type
   TImportPlace = class(TObject)
   public
     Path: string;

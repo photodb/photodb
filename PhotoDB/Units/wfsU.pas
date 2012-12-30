@@ -8,9 +8,13 @@ uses
   System.SysUtils,
   System.SyncObjs,
   Winapi.Windows,
-  Dolphin_DB,
+
   Dmitry.Graphics.Types,
+
+  UnitDBDeclare,
   ExplorerTypes,
+  Dolphin_DB,
+
   uLogger,
   uGOM,
   uMemory,
@@ -281,16 +285,6 @@ begin
       LstrcpynW(FileName, PFileNotifyInformation(Ptr).FileName, PFileNotifyInformation(Ptr).FileNameLength div 2 + 1);
       FileSkipped := False;
       NoMoreFilesFound := False;
-
-      {if TLockFiles.Instance.IsFileLocked(FName + FileName) then
-      begin
-        if PFileNotifyInformation(Ptr).NextEntryOffset = 0 then
-          NoMoreFilesFound := True
-        else
-          Inc(NativeUInt(Ptr), PFileNotifyInformation(Ptr).NextEntryOffset);
-
-        FileSkipped := True;
-      end;}
 
       if NoMoreFilesFound then
         Break

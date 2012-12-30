@@ -193,7 +193,7 @@ type
   TValueListEditor = class(TEXIFDisplayControl);
 
 type
-  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource)
+  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource, IDirectoryWatcher)
     SizeImageList: TImageList;
     PmItemPopup: TPopupActionBar;
     SlideShow1: TMenuItem;
@@ -4637,7 +4637,7 @@ var
 begin
   if not FormLoadEnd then
     Exit;
-  if not IsActualState(SID) then
+  if not IsActualState(SID) and not IsSystemState(SID) then
     Exit;
 
   for K := 0 to Length(PInfo) - 1 do
@@ -6235,7 +6235,7 @@ begin
     if (SelCount = 1)
       and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
           EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
-          EXPLORER_ITEM_SEARCH])
+          EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF])
       and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
           EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
           EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,

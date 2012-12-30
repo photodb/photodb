@@ -63,7 +63,7 @@ begin
 end;
 procedure ExternalThreadProcedureEnd;
 begin
-//just markef of ExternalThreadProcedure end
+//just marker of ExternalThreadProcedure end
 end;
 
 function InjectDll(TargetId: Cardinal; DllName: string): Cardinal;

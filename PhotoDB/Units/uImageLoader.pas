@@ -171,7 +171,7 @@ begin
 
     MSICC := nil;
 
-    LoadToMemory := not ((GraphicClass = TRAWImage) and not (ilfFullRAW in Flags));
+    LoadToMemory := not (GraphicClass = TRAWImage);
     if (GraphicClass = TPSDGraphic) then
       LoadToMemory := False;
     if IsDevicePath(Info.FileName) then

@@ -3,20 +3,23 @@ unit UnitCryptingImagesThread;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  ActiveX,
-  Forms,
-  DB,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Forms,
+  Data.DB,
+
+  Dmitry.Utils.Files,
+
   Dolphin_DB,
   UnitDBKernel,
   UnitPropeccedFilesSupport,
   UnitCrypting,
   GraphicCrypt,
   CommonDBSupport,
-  Dmitry.Utils.Files,
   UnitDBDeclare,
+
   uGOM,
   uDBBaseTypes,
   uDBForm,
@@ -24,7 +27,9 @@ uses
   uDBThread,
   uConstants,
   uErrors,
+  uGUIDUtils,
   uShellIntegration,
+  uInterfaces,
   uFormInterfaces;
 
 type
@@ -48,6 +53,7 @@ type
     procedure ShowError(ErrorText: string);
     procedure ShowErrorSync;
     procedure OnFileProgress(FileName: string; BytesTotal, BytesDone: Int64; var BreakOperation: Boolean);
+    procedure NotifyFileUpdated(FileName: string);
   public
     constructor Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
   protected
@@ -176,7 +182,7 @@ begin
             StrParam := FOptions.Files[I];
             IntParam := FOptions.IDs[I];
             GetPassword;
-            // DEcrypting images
+            // Decrypting images
             CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword, OnFileProgress);
 
             if CryptResult <> CRYPT_RESULT_OK then
@@ -187,6 +193,13 @@ begin
           Synchronize(RemoveFileFromUpdatingList);
           Synchronize(DoDBkernelEventRefreshList);
           Synchronize(DoDBkernelEvent);
+
+          Synchronize(
+            procedure
+            begin
+              NotifyFileUpdated(FOptions.Files[I]);
+            end
+          );
         end;
       end;
     finally
@@ -278,6 +291,28 @@ begin
     MaxPosCurrentOperation := 0;
     XPosition := 0;
     Show;
+  end;
+end;
+
+procedure TCryptingImagesThread.NotifyFileUpdated(FileName: string);
+var
+  I: Integer;
+  Form: TForm;
+  Watcher: IDirectoryWatcher;
+  Info: TInfoCallBackDirectoryChangedArray;
+begin
+
+  SetLength(Info, 1);
+  Info[0].FAction := FILE_ACTION_MODIFIED;
+  Info[0].FOldFileName := FileName;
+  Info[0].FNewFileName := FileName;
+
+  for I := 0 to TFormCollection.Instance.Count - 1 do
+  begin
+    Form := TFormCollection.Instance[I];
+
+    if Form.GetInterface(IDirectoryWatcher, Watcher) then
+      Watcher.DirectoryChanged(Self, SystemDirectoryWatchNotification, Info);
   end;
 end;
 

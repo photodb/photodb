@@ -616,7 +616,7 @@ var
     RF.Right  := Round((F.X + F.Width)  * 1000 / F.ImageWidth);
     RF.Bottom := Round((F.Y + F.Height) * 1000 / F.ImageHeight);
 
-    Result := RectIntersectWithRectPercent(RA, RF) > 90;
+    Result := RectIntersectWithRectPercent(RA, RF) > 80;
   end;
 
   function FaceEquals(A, B: TFaceDetectionResultItem): Boolean; overload;
@@ -633,7 +633,7 @@ var
     RF.Right  := Round((B.X + B.Width)  * 1000 / B.ImageWidth);
     RF.Bottom := Round((B.Y + B.Height) * 1000 / B.ImageHeight);
 
-    Result := RectIntersectWithRectPercent(RA, RF) > 90;
+    Result := RectIntersectWithRectPercent(RA, RF) > 80;
   end;
 
 begin

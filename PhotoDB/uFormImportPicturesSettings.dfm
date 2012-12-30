@@ -91,7 +91,7 @@ object FormImportPicturesSettings: TFormImportPicturesSettings
   object WlFilter: TWebLink
     Left = 175
     Top = 61
-    Width = 58
+    Width = 53
     Height = 13
     Cursor = crHandPoint
     Text = '(filter: *.*)'

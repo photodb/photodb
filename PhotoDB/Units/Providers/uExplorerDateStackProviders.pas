@@ -235,7 +235,7 @@ begin
       ForwardOnlyQuery(FDateRangeDS);
       SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as GroupYear, Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' ) Group BY Year(DateToAdd) Order by Year(DateToAdd) desc');
 
-      FDateRangeDS.Active := True;
+      OpenDS(FDateRangeDS);
 
       while not FDateRangeDS.EOF do
       begin
@@ -263,7 +263,7 @@ begin
       Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
       SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + Filter + ' ) Group BY Year(DateToAdd) Order by Year(DateToAdd) desc');
 
-      FDateRangeDS.Active := True;
+      OpenDS(FDateRangeDS);
 
       while not FDateRangeDS.EOF do
       begin
@@ -294,7 +294,7 @@ begin
 
       SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ' + Table + ' where ' + Filter + ' ) Group BY Year(DateToAdd) Order by Year(DateToAdd) desc');
 
-      FDateRangeDS.Active := True;
+      OpenDS(FDateRangeDS);
 
       while not FDateRangeDS.EOF do
       begin
@@ -338,7 +338,7 @@ begin
 
       SetSQL(FDateRangeDS, SQL);
 
-      FDateRangeDS.Active := True;
+      OpenDS(FDateRangeDS);
 
       while not FDateRangeDS.EOF do
       begin
@@ -382,7 +382,7 @@ begin
       SQL := 'SELECT Day(DateToAdd) as "GroupDay", Count(1) as ItemCount FROM (select DateToAdd from ' + Table + ' where ' + Filter + ' and Year(DateToAdd) = ' + IntToStr(MI.Year) + ' and Month(DateToAdd) = ' + IntToStr(MI.Month) + ') Group BY Day(DateToAdd) Order by Day(DateToAdd) desc';
       SetSQL(FDateRangeDS, SQL);
 
-      FDateRangeDS.Active := True;
+      OpenDS(FDateRangeDS);
 
       while not FDateRangeDS.EOF do
       begin
