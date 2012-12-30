@@ -28,7 +28,7 @@ type
     FKey: string;
     FSection: Integer;
   public
-    constructor Create(ASection: Integer; readonly: Boolean = False);
+    constructor Create(ASection: Integer; ReadOnly: Boolean = False);
     destructor Destroy; override;
     function OpenKey(Key: string; CreateInNotExists: Boolean): Boolean;
     function ReadString(name: string; Default: string = ''): string;
@@ -48,6 +48,7 @@ type
     procedure WriteInteger(name: string; Value: Integer);
     property Key: string read FKey;
     property Section: Integer read FSection;
+    property IsReadOnly: Boolean read FReadOnly;
   end;
 
   TDBRegistryCache = class(TObject)
@@ -58,7 +59,7 @@ type
     constructor Create;
     procedure Clear;
     destructor Destroy; override;
-    function GetSection(ASection : Integer; AKey : string) : TBDRegistry;
+    function GetSection(ASection: Integer; AKey: string; ReadOnly: Boolean) : TBDRegistry;
   end;
 
 const
@@ -87,12 +88,12 @@ begin
  if Registry is TRegistry then (Registry as TRegistry).CloseKey;
 end;
 
-constructor TBDRegistry.Create(ASection: integer; ReadOnly : Boolean = False);
+constructor TBDRegistry.Create(ASection: Integer; ReadOnly: Boolean = False);
 begin
   inherited Create;
   FSection := ASection;
   FKey := '';
-  FReadOnly := readonly;
+  FReadOnly := ReadOnly;
   if PortableWork then
   begin
     Registry := TMyRegistryINIFile.Create(GetRegIniFileName);
@@ -212,7 +213,7 @@ begin
   FKey := Key;
   Result := False;
   if Registry is TRegistry then
-    Result := (Registry as TRegistry).OpenKey(Key, not FReadOnly);
+    Result := (Registry as TRegistry).OpenKey(Key, not FReadOnly and CreateInNotExists);
   if Registry is TMyRegistryINIFile then
   begin
    (Registry as TMyRegistryINIFile).Key := Key;
@@ -393,7 +394,7 @@ begin
   inherited;
 end;
 
-function TDBRegistryCache.GetSection(ASection: Integer; AKey: string): TBDRegistry;
+function TDBRegistryCache.GetSection(ASection: Integer; AKey: string; ReadOnly: Boolean): TBDRegistry;
 var
   I: Integer;
   Reg: TBDRegistry;
@@ -403,14 +404,14 @@ begin
     for I := 0 to FList.Count - 1 do
     begin
       Reg := FList[I];
-      if (Reg.Key = AKey) and (Reg.Section = ASection) then
+      if (Reg.Key = AKey) and (Reg.Section = ASection) and (Reg.IsReadOnly = ReadOnly) then
       begin
         Result := FList[I];
         Exit;
       end;
     end;
 
-    Result := TBDRegistry.Create(ASection);
+    Result := TBDRegistry.Create(ASection, ReadOnly);
     Result.OpenKey(AKey, True);
     FList.Add(Result);
   finally

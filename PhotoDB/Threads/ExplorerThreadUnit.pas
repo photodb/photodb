@@ -2637,16 +2637,18 @@ begin
 end;
 
 procedure TExplorerThread.CheckIsFileEncrypted;
+var
+  IsEncrypted: Boolean;
 begin
   if CanBeTransparentEncryptedFile(CurrentFile) then
   begin
-    if ValidEnryptFileEx(CurrentFile) then
-      SynchronizeEx(
-        procedure
-        begin
-          FSender.SetFileIsEncrypted(GUIDParam, True);
-        end
-      );
+    IsEncrypted := ValidEnryptFileEx(CurrentFile);
+    SynchronizeEx(
+      procedure
+      begin
+        FSender.SetFileIsEncrypted(GUIDParam, IsEncrypted);
+      end
+    );
   end;
 end;
 

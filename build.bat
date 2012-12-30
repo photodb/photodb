@@ -27,7 +27,6 @@ cd photodb/resources
 "%BRCC32%" PicturesImport.rc
 "%BRCC32%" SharePictures.rc
 "%BRCC32%" NoHistogram.rc
-"%BRCC32%" SampleDB.rc
 
 cd ..
 cd ..
@@ -51,14 +50,6 @@ cd ..
 
 cd Installer
 "%DCC32%" %NS% InstallMaker -D"EXTERNAL;%PLAYER%" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-cd ..
-
-
-cd TransparentEncryption
-"%DCC32%" %NS% TransparentEncryption -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-"%DCC64%" %NS% TransparentEncryption64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-"%DCC32%" %NS% PlayEncryptedMedia -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-"%DCC64%" %NS% PlayEncryptedMedia64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd PhotoDB

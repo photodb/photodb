@@ -32,6 +32,11 @@ type
     function GetCurrentImageFileName: string;
   end;
 
+  IDirectoryWatcher = interface(IInterface)
+    ['{887A08D0-3D36-4744-9241-9454BAAA9D53}']
+    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+  end;
+
 implementation
 
 end.

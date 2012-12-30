@@ -3,23 +3,28 @@ unit UnitDirectXSlideShowCreator;
 interface
 
 uses
-  Windows,
-  Classes,
-  Graphics,
+  Winapi.Windows,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+  System.Math,
+  Vcl.Graphics,
+  Vcl.Forms,
+
+  Dmitry.Graphics.Utils,
+
+  DDraw,
+  Effects,
+  RAWImage,
   GraphicCrypt,
   Dolphin_DB,
-  Forms,
-  DDraw,
-  Dmitry.Graphics.Utils,
-  Effects,
   UnitDBCommonGraphics,
+  UnitDBKernel,
+
+  uGraphicUtils,
   uMemory,
   uDXUtils,
-  SysUtils,
-  SyncObjs,
   uConstants,
-  UnitDBKernel,
-  uGraphicUtils,
   uDBThread,
   uMemoryEx,
   uAssociations,
@@ -27,8 +32,7 @@ uses
   uBitmapUtils,
   uAnimatedJPEG,
   uProgramStatInfo,
-  uPortableDeviceUtils,
-  RAWImage;
+  uPortableDeviceUtils;
 
 type
   TDirectXSlideShowCreator = class(TDirectXSlideShowCreatorCustomThread)
@@ -168,7 +172,7 @@ begin
         else
           Graphic.LoadFromDevice(FInfo.FileName);
       end;
-      JPEGScale(Graphic, FMonWidth, FMonHeight);
+      JPEGScale(Graphic, Max(FMonWidth, FMonHeight), Max(FMonWidth, FMonHeight));
 
       //statistics
       if Graphic is TAnimatedJPEG then

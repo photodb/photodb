@@ -729,7 +729,7 @@ begin
           ProgressWindow.Show;
 
         T := GetTickCount;
-        Reg := Settings.GetSection('Updater_' + DBPrefix);
+        Reg := Settings.GetSection('Updater_' + DBPrefix, True);
         for I := 0 to C - 1 do
         begin
           if ProgressWindow.Closed then
@@ -774,7 +774,7 @@ begin
 
   DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
   Settings.WriteInteger('Updater_' + DBPrefix, 'Counter', Count);
-  Reg := Settings.GetSection('Updater_' + DBPrefix);
+  Reg := Settings.GetSection('Updater_' + DBPrefix, False);
 
   for I := 0 to FFilesInfo.Count - 1 - SkipCount do
     Reg.WriteString('File' + IntToStr(I), FFilesInfo[I + SkipCount].FileName);

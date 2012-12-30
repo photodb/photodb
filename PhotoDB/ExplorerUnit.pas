@@ -193,7 +193,7 @@ type
   TValueListEditor = class(TEXIFDisplayControl);
 
 type
-  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource)
+  TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource, IDirectoryWatcher)
     SizeImageList: TImageList;
     PmItemPopup: TPopupActionBar;
     SlideShow1: TMenuItem;
@@ -4637,7 +4637,7 @@ var
 begin
   if not FormLoadEnd then
     Exit;
-  if not IsActualState(SID) then
+  if not IsActualState(SID) and not IsSystemState(SID) then
     Exit;
 
   for K := 0 to Length(PInfo) - 1 do
