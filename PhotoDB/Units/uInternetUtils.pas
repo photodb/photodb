@@ -11,12 +11,16 @@ uses
   uConstants,
   EncdDecd,
   uDBBaseTypes,
-  Dmitry.Utils.System,
   JPEG,
   pngimage,
-  uInternetProxy,
+
+  Dmitry.Utils.System,
+
   IdSSLOpenSSL,
-  idHTTP;
+  idHTTP,
+
+  uInternetProxy,
+  uSysInfo;
 
 type
   THTTPRequestContainer = class
@@ -238,7 +242,7 @@ begin
   @InternetReadFile := GetProcAddress(WinInetHandle, 'InternetReadFile');
   @InternetCloseHandle := GetProcAddress(WinInetHandle, 'InternetCloseHandle');
   Result := '';
-  NetHandle := InternetOpen(ProductName, INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
+  NetHandle := InternetOpen(PChar(ProductName + ' on ' + GetOSInfo), INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
   if Assigned(NetHandle) then
     begin
       UrlHandle := InternetOpenUrl(NetHandle, PChar(Url), nil, 0, INTERNET_FLAG_RELOAD, 0);

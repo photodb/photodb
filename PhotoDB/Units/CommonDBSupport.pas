@@ -239,12 +239,24 @@ procedure ForwardOnlyQuery(DS: TDataSet);
 procedure ReadOnlyQuery(DS: TDataSet);
 function DBReadOnly: Boolean;
 function GroupsTableFileNameW(FileName: string): string;
+procedure NotifyOleException(E: Exception);
 
 implementation
 
 var
   FIsBrowserWithNotifyUserAboutErorrsInProvidersOpened: Boolean = False; 
   FIsMessageBoxForUserAboutErorrsInProvidersOpened: Boolean = False;
+
+procedure NotifyOleException(E: Exception);
+var
+  ErrorCode: HRESULT;
+begin
+  ErrorCode := 0;
+  if E is EOleException then
+    ErrorCode := EOleException(E).ErrorCode;
+
+  ShellExecute(0, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + 'ole-exception&code=' + IntToHex(ErrorCode, 8)), nil, nil, SW_NORMAL);
+end;
 
 procedure NotifyUserAboutErorrsInProviders;
 begin
@@ -294,9 +306,10 @@ begin
     try
       GetProviderNames(S);
     except
-      on e: Exception do
+      on E: Exception do
       begin
-        MessageBoxDB(0, e.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        MessageBoxDB(0, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+        NotifyOleException(E);
       end;
     end;
 
@@ -827,7 +840,10 @@ begin
       ExecSQL(FQuery);
     except
       on E: Exception do
+      begin
         EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
+        raise;
+      end;
     end;
 
     SQL := 'CREATE TABLE DBSettings ( ' + 'Version INTEGER , ' + 'DBName Character(255) , ' +
@@ -841,7 +857,7 @@ begin
       on E: Exception do
       begin
         EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
-        Result := False;
+        raise;
       end;
     end;
 
@@ -858,7 +874,7 @@ begin
       on E: Exception do
       begin
         EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
-        Result := False;
+        raise;
       end;
     end;
   finally
@@ -942,8 +958,7 @@ begin
       on E: Exception do
       begin
         EventLog(':ADOCreateImageTable() throw exception: ' + E.message);
-        FreeDS(FQuery);
-        Exit;
+        raise;
       end;
     end;
     Result := True;

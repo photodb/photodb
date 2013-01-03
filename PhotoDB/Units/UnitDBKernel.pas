@@ -3,17 +3,18 @@ unit UnitDBKernel;
 interface
 
 uses
-  Forms,
-  Windows,
-  Classes,
-  SyncObjs,
-  DB,
-  SysUtils,
-  CommCtrl,
-  IniFiles,
-  ImgList,
+  Winapi.Windows,
+  Winapi.ShellApi,
+  Winapi.CommCtrl,
+  System.Classes,
+  System.SyncObjs,
+  System.SysUtils,
+  System.Win.ComObj,
+  Data.DB,
+  Vcl.Forms,
+  Vcl.Controls,
+  Vcl.ImgList,
 
-  uShellIntegration,
   UnitDBDeclare,
   GraphicCrypt,
   CommonDBSupport,
@@ -24,6 +25,7 @@ uses
   Dmitry.Graphics.LayeredBitmap,
 
   uMemory,
+  uShellIntegration,
   uLogger,
   uCDMappingTypes,
   uConstants,
@@ -35,7 +37,7 @@ uses
   uDBBaseTypes,
   uStringUtils,
   uSettings,
-  uImageListDelayed,
+  uImageListUtils,
   uProgramStatInfo,
   uVCLHelpers;
 
@@ -1055,7 +1057,7 @@ begin
         Exit;
       end
     end;
-    DBName := SysUtils.AnsiDequotedStr(ParamDBFile, '"');
+    DBName := AnsiDequotedStr(ParamDBFile, '"');
     if GetParamStrDBBool('/SelectDBPermanent') then
       DBKernel.SetDataBase(DBName);
   end;
@@ -1070,7 +1072,7 @@ begin
   PassArray:= TStringList.Create;
   try
     PassParam := GetParamStrDBValue('/AddPass');
-    PassParam := SysUtils.AnsiDequotedStr(PassParam, '"');
+    PassParam := AnsiDequotedStr(PassParam, '"');
     SplitString(PassParam, '!', PassArray);
     for I := 0 to PassArray.Count - 1 do
       AddTemporaryPasswordInSession(PassArray[I]);
@@ -1090,6 +1092,7 @@ begin
     procedure
     begin
       MessageBoxDB(0, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      NotifyOleException(E);
     end
   );
   EventLog(E);
@@ -1107,12 +1110,12 @@ var
   end;
 
 begin
-  FImageList := TDelayedImageList.Create(nil);
+  FImageList := TSIImageList.Create(nil);
   FImageList.Width := 16;
   FImageList.Height := 16;
   FImageList.ColorDepth := cd32Bit;
 
-  FDisabledImageList := TDelayedImageList.Create(nil);
+  FDisabledImageList := TSIImageList.Create(nil);
   FDisabledImageList.Width := 16;
   FDisabledImageList.Height := 16;
   FDisabledImageList.ColorDepth := cd32Bit;

@@ -268,9 +268,9 @@
 #define IdResourceStrings_RSStackEWOULDBLOCK 64813
 #define IdResourceStrings_RSStackEINPROGRESS 64814
 #define IdResourceStrings_RSStackEALREADY 64815
-#define Data_Win_ADOConst_SRecordsetNotOpen 64816
-#define Data_Win_ADOConst_sNameAttr 64817
-#define Data_Win_ADOConst_sValueAttr 64818
+#define DragDropPIDL_sBadDesktop 64816
+#define DragDropPIDL_sBadFilename 64817
+#define uShellIntegration_SNotSupported 64818
 #define DECUtil_sClassNotRegistered 64819
 #define DECCipher_sAlreadyPadded 64820
 #define DECCipher_sInvalidState 64821
@@ -284,22 +284,22 @@
 #define IdResourceStrings_RSFailedTimeZoneInfo 64829
 #define IdResourceStrings_RSWinsockCallError 64830
 #define IdResourceStrings_RSWinsockLoadError 64831
-#define DragDrop_sNoCopyStgMedium 64832
-#define DragDrop_sBadConstructor 64833
-#define DragDropPIDL_sBadDesktop 64834
-#define DragDropPIDL_sBadFilename 64835
-#define uShellIntegration_SNotSupported 64836
-#define Data_Win_ADOConst_SMissingConnection 64837
-#define Data_Win_ADOConst_SNoDetailFilter 64838
-#define Data_Win_ADOConst_SBookmarksRequired 64839
-#define Data_Win_ADOConst_SMissingCommandText 64840
-#define Data_Win_ADOConst_SNoResultSet 64841
-#define Data_Win_ADOConst_SADOCreateError 64842
-#define Data_Win_ADOConst_SEventsNotSupported 64843
-#define Data_Win_ADOConst_SUsupportedFieldType 64844
-#define Data_Win_ADOConst_SConnectionRequired 64845
-#define Data_Win_ADOConst_SCantRequery 64846
-#define Data_Win_ADOConst_SNoFilterOptions 64847
+#define Data_Win_ADOConst_SUsupportedFieldType 64832
+#define Data_Win_ADOConst_SConnectionRequired 64833
+#define Data_Win_ADOConst_SCantRequery 64834
+#define Data_Win_ADOConst_SNoFilterOptions 64835
+#define Data_Win_ADOConst_SRecordsetNotOpen 64836
+#define Data_Win_ADOConst_sNameAttr 64837
+#define Data_Win_ADOConst_sValueAttr 64838
+#define DropSource_sDropSourceBusy 64839
+#define DropSource_sDropSourceAsyncFailed 64840
+#define DropSource_sDropSourceAsyncBusy 64841
+#define DropTarget_sTargetAsyncBusy 64842
+#define DropTarget_sRichEditWarning 64843
+#define DragDrop_sImplementationRequired 64844
+#define DragDrop_sFormatNameReadOnly 64845
+#define DragDrop_sNoCopyStgMedium 64846
+#define DragDrop_sBadConstructor 64847
 #define Data_DBConsts_SProviderSQLNotSupported 64848
 #define Data_DBConsts_SProviderExecuteNotSupported 64849
 #define Data_DBConsts_SDataSetUnidirectional 64850
@@ -309,13 +309,13 @@
 #define Data_DBConsts_SInvalidBcdValue 64854
 #define Data_DBConsts_SCouldNotParseTimeStamp 64855
 #define Data_DBConsts_SInvalidSqlTimeStamp 64856
-#define DropSource_sDropSourceBusy 64857
-#define DropSource_sDropSourceAsyncFailed 64858
-#define DropSource_sDropSourceAsyncBusy 64859
-#define DropTarget_sTargetAsyncBusy 64860
-#define DropTarget_sRichEditWarning 64861
-#define DragDrop_sImplementationRequired 64862
-#define DragDrop_sFormatNameReadOnly 64863
+#define Data_Win_ADOConst_SMissingConnection 64857
+#define Data_Win_ADOConst_SNoDetailFilter 64858
+#define Data_Win_ADOConst_SBookmarksRequired 64859
+#define Data_Win_ADOConst_SMissingCommandText 64860
+#define Data_Win_ADOConst_SNoResultSet 64861
+#define Data_Win_ADOConst_SADOCreateError 64862
+#define Data_Win_ADOConst_SEventsNotSupported 64863
 #define Data_DBConsts_SNoIndexForFields 64864
 #define Data_DBConsts_SIndexNotFound 64865
 #define Data_DBConsts_SDBDuplicateName 64866
@@ -1250,9 +1250,9 @@ BEGIN
 	IdResourceStrings_RSStackEWOULDBLOCK,	L"Operation would block."
 	IdResourceStrings_RSStackEINPROGRESS,	L"Operation now in progress."
 	IdResourceStrings_RSStackEALREADY,	L"Operation already in progress."
-	Data_Win_ADOConst_SRecordsetNotOpen,	L"Recordset is not open"
-	Data_Win_ADOConst_sNameAttr,	L"Name"
-	Data_Win_ADOConst_sValueAttr,	L"Value"
+	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
+	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
+	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
 	DECUtil_sClassNotRegistered,	L"Class %s is not registered"
 	DECCipher_sAlreadyPadded,	L"Cipher has already been padded, cannot process message"
 	DECCipher_sInvalidState,	L"Cipher is not in valid state for this action"
@@ -1266,22 +1266,22 @@ BEGIN
 	IdResourceStrings_RSFailedTimeZoneInfo,	L"Failed attempting to retrieve time zone information."
 	IdResourceStrings_RSWinsockCallError,	L"Error on call to Winsock2 library function %s"
 	IdResourceStrings_RSWinsockLoadError,	L"Error on loading Winsock2 library (%s)"
-	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
-	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
-	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
-	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
-	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
-	Data_Win_ADOConst_SMissingConnection,	L"Missing Connection or ConnectionString"
-	Data_Win_ADOConst_SNoDetailFilter,	L"Filter property cannot be used for detail tables"
-	Data_Win_ADOConst_SBookmarksRequired,	L"Dataset does not support bookmarks, which are required for multi-record data controls"
-	Data_Win_ADOConst_SMissingCommandText,	L"Missing %s property"
-	Data_Win_ADOConst_SNoResultSet,	L"CommandText does not return a result set"
-	Data_Win_ADOConst_SADOCreateError,	L"Error creating object.  Please verify that the Microsoft Data Access Components 2.1 (or later) have been properly installed"
-	Data_Win_ADOConst_SEventsNotSupported,	L"Events are not supported with server side TableDirect cursors"
 	Data_Win_ADOConst_SUsupportedFieldType,	L"Unsupported field type (%s) in field %s"
 	Data_Win_ADOConst_SConnectionRequired,	L"A connection component is required for async ExecuteOptions"
 	Data_Win_ADOConst_SCantRequery,	L"Cannot perform a requery after connection has changed"
 	Data_Win_ADOConst_SNoFilterOptions,	L"FilterOptions are not supported"
+	Data_Win_ADOConst_SRecordsetNotOpen,	L"Recordset is not open"
+	Data_Win_ADOConst_sNameAttr,	L"Name"
+	Data_Win_ADOConst_sValueAttr,	L"Value"
+	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
+	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
+	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
+	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
+	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
+	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
+	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
+	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
+	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
 	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
 	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
 	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
@@ -1291,13 +1291,13 @@ BEGIN
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
 	Data_DBConsts_SInvalidSqlTimeStamp,	L"Invalid SQL date/time values"
-	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
-	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
-	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
-	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
-	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
-	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
-	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
+	Data_Win_ADOConst_SMissingConnection,	L"Missing Connection or ConnectionString"
+	Data_Win_ADOConst_SNoDetailFilter,	L"Filter property cannot be used for detail tables"
+	Data_Win_ADOConst_SBookmarksRequired,	L"Dataset does not support bookmarks, which are required for multi-record data controls"
+	Data_Win_ADOConst_SMissingCommandText,	L"Missing %s property"
+	Data_Win_ADOConst_SNoResultSet,	L"CommandText does not return a result set"
+	Data_Win_ADOConst_SADOCreateError,	L"Error creating object.  Please verify that the Microsoft Data Access Components 2.1 (or later) have been properly installed"
+	Data_Win_ADOConst_SEventsNotSupported,	L"Events are not supported with server side TableDirect cursors"
 	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
 	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
 	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"

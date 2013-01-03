@@ -5,26 +5,9 @@ interface
 uses
   System.Win.Registry,
   System.SysUtils,
-  Winapi.Windows;
+  Winapi.Windows,
 
-type
-  _OSVERSIONINFOEX = record
-    dwOSVersionInfoSize : DWORD;
-    dwMajorVersion      : DWORD;
-    dwMinorVersion      : DWORD;
-    dwBuildNumber       : DWORD;
-    dwPlatformId        : DWORD;
-    szCSDVersion        : array[0..127] of AnsiChar;
-    wServicePackMajor   : WORD;
-    wServicePackMinor   : WORD;
-    wSuiteMask          : WORD;
-    wProductType        : BYTE;
-    wReserved           : BYTE;
-  end;
-  TOSVERSIONINFOEX = _OSVERSIONINFOEX;
-
-  function GetVersionExA(var lpVersionInformation: TOSVersionInfoEX): BOOL;
-        stdcall; external kernel32;
+  Dmitry.Utils.System;
 
 const
   VER_NT_WORKSTATION    :Integer = 1;
@@ -87,21 +70,101 @@ var
   NTBres, BRes: Boolean;
   OSVI: TOSVERSIONINFO;
   OSVI_NT: TOSVERSIONINFOEX;
-  tmpStr: string;
+  tmpStr, SPVersion: string;
   dwOSMajorVersion, dwOSMinorVersion,
   dwSpMajorVersion, dwSpMinorVersion,
-  pdwReturnedProductType : DWORD;
-  GetProductInfo: function (dwOSMajorVersion, dwOSMinorVersion,
-                            dwSpMajorVersion, dwSpMinorVersion: DWORD;
-                            var pdwReturnedProductType: DWORD): BOOL stdcall;
+  pdwReturnedProductType: DWORD;
+  Is64Windows: Boolean;
+
+  function GetProductInfo: string;
+  var
+    GetProductInfo: function (dwOSMajorVersion, dwOSMinorVersion,
+                              dwSpMajorVersion, dwSpMinorVersion: DWORD;
+                              var pdwReturnedProductType: DWORD): BOOL stdcall;
+  begin
+    @GetProductInfo := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), 'GetProductInfo');
+
+     if Assigned(GetProductInfo) then
+     begin
+       GetProductInfo( dwOSMajorVersion, dwOSMinorVersion,
+                       dwSpMajorVersion, dwSpMinorVersion,
+                       pdwReturnedProductType );
+       case pdwReturnedProductType of
+         PRODUCT_BUSINESS:
+           tmpStr := 'Business Edition';
+         PRODUCT_BUSINESS_N:
+           tmpStr := 'Business Edition';
+         PRODUCT_CLUSTER_SERVER:
+           tmpStr := 'Cluster Server Edition';
+         PRODUCT_DATACENTER_SERVER:
+           tmpStr := 'Server Datacenter Edition (full installation)';
+         PRODUCT_DATACENTER_SERVER_CORE:
+           tmpStr := 'Server Datacenter Edition (core installation)';
+         PRODUCT_ENTERPRISE:
+           tmpStr := 'Enterprise Edition';
+         PRODUCT_ENTERPRISE_N:
+           tmpStr := 'Enterprise Edition';
+         PRODUCT_ENTERPRISE_SERVER:
+           tmpStr := 'Server Enterprise Edition (full installation)';
+         PRODUCT_ENTERPRISE_SERVER_CORE:
+           tmpStr := 'Server Enterprise Edition (core installation)';
+         PRODUCT_ENTERPRISE_SERVER_IA64:
+           tmpStr := 'Server Enterprise Edition for Itanium-based Systems';
+         PRODUCT_HOME_BASIC:
+           tmpStr := 'Home Basic Edition';
+         PRODUCT_HOME_BASIC_N:
+           tmpStr := 'Home Basic Edition';
+         PRODUCT_HOME_PREMIUM:
+           tmpStr := 'Home Premium Edition';
+         PRODUCT_HOME_PREMIUM_N:
+           tmpStr := 'Home Premium Edition';
+         PRODUCT_HOME_SERVER:
+           tmpStr := 'Home Server Edition';
+         PRODUCT_SERVER_FOR_SMALLBUSINESS:
+           tmpStr := 'Server for Small Business Edition';
+         PRODUCT_SMALLBUSINESS_SERVER:
+           tmpStr := 'Small Business Server';
+         PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
+           tmpStr := 'Small Business Server Premium Edition';
+         PRODUCT_STANDARD_SERVER:
+           tmpStr := 'Server Standard Edition (full installation)';
+         PRODUCT_STANDARD_SERVER_CORE:
+           tmpStr := 'Server Standard Edition (core installation)';
+         PRODUCT_STARTER:
+           tmpStr := 'Starter Edition';
+         PRODUCT_STORAGE_ENTERPRISE_SERVER:
+           tmpStr := 'Storage Server Enterprise Edition';
+         PRODUCT_STORAGE_EXPRESS_SERVER:
+           tmpStr := 'Storage Server Express Edition';
+         PRODUCT_STORAGE_STANDARD_SERVER:
+           tmpStr := 'Storage Server Standard Edition';
+         PRODUCT_STORAGE_WORKGROUP_SERVER:
+           tmpStr := 'Storage Server Workgroup Edition';
+         PRODUCT_UNDEFINED:
+           tmpStr := 'An unknown product';
+         PRODUCT_ULTIMATE:
+           tmpStr := 'Ultimate Edition';
+         PRODUCT_ULTIMATE_N:
+           tmpStr := 'Ultimate Edition';
+         PRODUCT_WEB_SERVER:
+           tmpStr := 'Web Server Edition';
+         PRODUCT_UNLICENSED:
+           tmpStr := 'Unlicensed product'
+       else
+         tmpStr := '';
+       end;{ pdwReturnedProductType }
+       Result := Result + tmpStr;
+       NTBRes := FALSE;
+     end;{ GetProductInfo<>NIL }
+  end;
+
 begin
-  @GetProductInfo := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), 'GetProductInfo');
 
   Result := 'Error';
   NTBRes := FALSE;
   try
     OSVI_NT.dwOSVersionInfoSize := SizeOf(TOSVERSIONINFOEX);
-    NTBRes := GetVersionExA(OSVI_NT);
+    NTBRes := GetVersionExW(OSVI_NT);
     OSVI.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
     BRes := GetVersionEx(OSVI);
   except
@@ -111,6 +174,8 @@ begin
   if (not BRes) and (not NTBres) then
     Exit;
   Move( OSVI, OSVI_NT, SizeOf(TOSVersionInfo) );
+
+  Result := FormatEx('Windows {0}.{1}', [OSVI_NT.dwMajorVersion, OSVI_NT.dwMinorVersion]);
 
   case OSVI_NT.dwPlatformId of
      VER_PLATFORM_WIN32_NT:
@@ -122,81 +187,20 @@ begin
          if  (OSVI_NT.dwMajorVersion = 5) and (OSVI_NT.dwMinorVersion = 1) then
            Result := 'Windows XP ';
          if (OSVI_NT.dwMajorVersion = 6) and (OSVI_NT.dwMinorVersion = 0) then
-         begin
-           Result := 'Windows Vista ';
-           if Assigned(GetProductInfo) then
-           begin
-             GetProductInfo( dwOSMajorVersion, dwOSMinorVersion,
-                             dwSpMajorVersion, dwSpMinorVersion,
-                             pdwReturnedProductType );
-             case pdwReturnedProductType of
-               PRODUCT_BUSINESS:
-                 tmpStr := 'Business Edition';
-               PRODUCT_BUSINESS_N:
-                 tmpStr := 'Business Edition';
-               PRODUCT_CLUSTER_SERVER:
-                 tmpStr := 'Cluster Server Edition';
-               PRODUCT_DATACENTER_SERVER:
-                 tmpStr := 'Server Datacenter Edition (full installation)';
-               PRODUCT_DATACENTER_SERVER_CORE:
-                 tmpStr := 'Server Datacenter Edition (core installation)';
-               PRODUCT_ENTERPRISE:
-                 tmpStr := 'Enterprise Edition';
-               PRODUCT_ENTERPRISE_N:
-                 tmpStr := 'Enterprise Edition';
-               PRODUCT_ENTERPRISE_SERVER:
-                 tmpStr := 'Server Enterprise Edition (full installation)';
-               PRODUCT_ENTERPRISE_SERVER_CORE:
-                 tmpStr := 'Server Enterprise Edition (core installation)';
-               PRODUCT_ENTERPRISE_SERVER_IA64:
-                 tmpStr := 'Server Enterprise Edition for Itanium-based Systems';
-               PRODUCT_HOME_BASIC:
-                 tmpStr := 'Home Basic Edition';
-               PRODUCT_HOME_BASIC_N:
-                 tmpStr := 'Home Basic Edition';
-               PRODUCT_HOME_PREMIUM:
-                 tmpStr := 'Home Premium Edition';
-               PRODUCT_HOME_PREMIUM_N:
-                 tmpStr := 'Home Premium Edition';
-               PRODUCT_HOME_SERVER:
-                 tmpStr := 'Home Server Edition';
-               PRODUCT_SERVER_FOR_SMALLBUSINESS:
-                 tmpStr := 'Server for Small Business Edition';
-               PRODUCT_SMALLBUSINESS_SERVER:
-                 tmpStr := 'Small Business Server';
-               PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
-                 tmpStr := 'Small Business Server Premium Edition';
-               PRODUCT_STANDARD_SERVER:
-                 tmpStr := 'Server Standard Edition (full installation)';
-               PRODUCT_STANDARD_SERVER_CORE:
-                 tmpStr := 'Server Standard Edition (core installation)';
-               PRODUCT_STARTER:
-                 tmpStr := 'Starter Edition';
-               PRODUCT_STORAGE_ENTERPRISE_SERVER:
-                 tmpStr := 'Storage Server Enterprise Edition';
-               PRODUCT_STORAGE_EXPRESS_SERVER:
-                 tmpStr := 'Storage Server Express Edition';
-               PRODUCT_STORAGE_STANDARD_SERVER:
-                 tmpStr := 'Storage Server Standard Edition';
-               PRODUCT_STORAGE_WORKGROUP_SERVER:
-                 tmpStr := 'Storage Server Workgroup Edition';
-               PRODUCT_UNDEFINED:
-                 tmpStr := 'An unknown product';
-               PRODUCT_ULTIMATE:
-                 tmpStr := 'Ultimate Edition';
-               PRODUCT_ULTIMATE_N:
-                 tmpStr := 'Ultimate Edition';
-               PRODUCT_WEB_SERVER:
-                 tmpStr := 'Web Server Edition';
-               PRODUCT_UNLICENSED:
-                 tmpStr := 'Unlicensed product'
-             else
-               tmpStr := '';
-             end;{ pdwReturnedProductType }
-             Result := Result + tmpStr;
-             NTBRes := FALSE;
-           end;{ GetProductInfo<>NIL }
-         end;{ Vista }
+           Result := 'Windows Vista ' + GetProductInfo;
+         if (OSVI_NT.dwMajorVersion = 6) and (OSVI_NT.dwMinorVersion = 1) then
+           Result := 'Windows 7 ' + GetProductInfo;
+         if (OSVI_NT.dwMajorVersion = 6) and (OSVI_NT.dwMinorVersion = 2) then
+           Result := 'Windows 8 ' + GetProductInfo;
+
+         SPVersion := StrPas(OSVI_NT.szCSDVersion);
+         if SPVersion <> '' then
+           Result := Result + ', ' + SPVersion;
+
+         IsWow64Process(GetCurrentProcessId, @Is64Windows);
+         if Is64Windows then
+           Result := Result + ' (x64)';
+
          if NTBres then
          begin
            if OSVI_NT.wProductType = VER_NT_WORKSTATION then
@@ -261,7 +265,7 @@ begin
      VER_PLATFORM_WIN32s:
        Result := 'Microsoft Win32s';
   else
-    Result := 'Unknown';
+    Result := FormatEx('Unknown {0}.{1}', [OSVI_NT.dwMajorVersion, OSVI_NT.dwMinorVersion]);
   end;{ OSVI_NT.dwPlatformId }
 end;{ GetOSInfo }
 

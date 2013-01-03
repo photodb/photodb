@@ -1,0 +1,38 @@
+Read forums of concurents
+
+Bugs:
+
+v4.0
+
+Rnown issues:
+  - Rotation for RAW images in database with rotation could be wrong, update info and set correct rotation;?
+  - Dll could be attached to some process (install update)
+
+- Site
+ + Free activation form on the site
+
+Possible CRs:
+[F] Folder list in menu;
+[F] Prevew pane for Video, non-image files;
+[F] Explorer tasks panel review;
+[F] Import tool button
+[F] Import set password;
+[F] resize - raw use preview checkbox;
+[F] png watermarks;
+[F] Add new styles;
+[F] Command line encrypt/steno;
+
+[F] Player russian (in registry);
+[F] XP dll injection update?;
+[F] Explorer preview zoom?
+[CR] Private group -> Hidden group;
+[CR] DB -> Collection in RU
+[F] Update info in bottom => remove update form;
+[F] DB Search - count indicator;
+[B] Hint color
+- adding process icc?
+- Explorer shift button fix?
+- Disable hint if preview available;?
+
+TODO:
+  Review DB;
