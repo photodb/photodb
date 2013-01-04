@@ -17,6 +17,7 @@ uses
   Vcl.ActnPopup,
   Vcl.StdCtrls,
   Vcl.ImgList,
+  Vcl.ComCtrls,
 
   Dmitry.Utils.Files,
 
@@ -113,6 +114,12 @@ type
     function GetSelectedIndex: Integer;
   public
     property SelectedIndex: Integer read GetSelectedIndex;
+  end;
+
+  TToolBarHelper = class helper for TToolBar
+  public
+    procedure DisableToolBarForButtons;
+    procedure EnableToolBarForButtons;
   end;
 
 type
@@ -233,10 +240,46 @@ begin
 end;
 
 procedure TMenuItemHelper.ExSetDefault(Value: Boolean);
+var
+  I: Integer;
+
+  function IsStyledItem: Boolean;
+  begin
+    Result := TStyleManager.Enabled;
+
+    if GetParentMenu is TMainMenu then
+      Result := False;
+
+    if (Owner is TMenuItem) then
+      if (Owner as TMenuItem).GetParentMenu is TMainMenu then
+        Result := False;
+  end;
+
 begin
-  //XE2 crahed here
-  //TODO: remove method
-  Self.Default := Value;
+  if not Value then
+  begin
+    if IsStyledItem then
+      Self.Checked := False
+    else
+      Self.Default := False;
+
+    Exit;
+  end;
+  if IsStyledItem then
+  begin
+    Self.Checked := True;
+    if Parent <> nil then
+    begin
+      for I := 0 to Parent.Count - 1 do
+      begin
+        if Parent.Items[I] <> Self then
+          Parent.Items[I].Checked := False;
+      end;
+    end;
+  end else
+  begin
+    Self.Default := True;
+  end;
 end;
 
 { TPopupActionBarHelper }
@@ -475,6 +518,27 @@ function TControlHelper.ScreenBelow: TPoint;
 begin
   Result := Point(Left, BoundsRect.Bottom);
   Result := Parent.ClientToScreen(Result);
+end;
+
+{ TToolBarHelper }
+
+type
+  TToolBarButtonEx = class(TToolButton);
+
+procedure TToolBarHelper.DisableToolBarForButtons;
+var
+  I: Integer;
+begin
+  for I := 0 to Self.ButtonCount - 1 do
+    TToolBarButtonEx(Self.Buttons[I]).FToolBar := nil;
+end;
+
+procedure TToolBarHelper.EnableToolBarForButtons;
+var
+  I: Integer;
+begin
+  for I := 0 to Self.ButtonCount - 1 do
+    TToolBarButtonEx(Self.Buttons[I]).FToolBar := Self;
 end;
 
 end.

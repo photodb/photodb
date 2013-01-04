@@ -59,7 +59,7 @@ const
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
   ProgramMail = 'photodb@illusdolphin.net';
-  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2012';
+  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2013';
   ProgramInstallSize = 48676; //in Kb
 
   SITE_ACTION_PERSONS = 'persons';
@@ -99,7 +99,7 @@ const
   ListViewMaxThumbnailSize = 550;
 
   cMinPreviewWidth = 100;
-  cMinListViewWidth = 400;
+  cMinListViewWidth = 450;
 
 const
   DB_VER_1_8 = 1;
@@ -108,7 +108,7 @@ const
   DB_VER_2_1 = 4;
   DB_VER_2_2 = 5;
   DB_VER_2_3 = 6;
-  DB_VER_3_0 = 6; //the same, no DB structure changes
+  DB_VER_4_0 = 6; //the same, no DB structure changes
 
 const
   DB_IC_SHELL          = 0;

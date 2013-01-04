@@ -142,6 +142,7 @@ uses
   uExplorerDateStackProviders,
   uTranslate,
   uVCLHelpers,
+  uImageListUtils,
   PDB.uVCLRewriters,
   uActivationUtils,
 
@@ -975,6 +976,7 @@ type
     procedure SetView(const Value: Integer);
     function GetItemsCount: Integer;
     function GetIsExplorerTreeViewVisible: Boolean;
+    function GetW7TaskBar: ITaskbarList3;
     property SecondStepHelp: string read GetSecondStepHelp;
     function GetPathDescription(Path: string; FileType: Integer): string;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
@@ -1026,6 +1028,7 @@ type
 
     procedure SetResizePreviewMode;
     procedure SetResizeListViewMode;
+    property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1402,6 +1405,7 @@ end;
 procedure TExplorerForm.FormCreate(Sender: TObject);
 var
   I: Integer;
+  C: TComponent;
 begin
   FSearchMode := -1;
   FGeoHTMLWindow := nil;
@@ -1437,6 +1441,7 @@ begin
   ElvMain.Align := alClient;
   ElvMain.Constraints.MinWidth := 100;
   ElvMain.ShowThemedBorder := False;
+  ElvMain.BorderStyle := bsNone;
 
   MouseDowned := False;
   PopupHandled := False;
@@ -1592,10 +1597,13 @@ begin
 
   PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
+  TW.I.Start('AddExplorer');
   ExplorerManager.AddExplorer(Self);
 
   SaveWindowPos1.Key := RegRoot + 'Explorer\' + MakeRegPath(GetCurrentPath);
   SaveWindowPos1.SetPosition;
+
+  TW.I.Start('FixFormPosition');
   FixFormPosition;
   RequestAlign;
 
@@ -1604,6 +1612,7 @@ begin
   else
     PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
+  TW.I.Start('FormLoadEnd - true');
   FormLoadEnd := True;
   LsMain.Top := PnNavigation.Top + PnNavigation.Height + 3;
   LsMain.BringToFront;
@@ -1612,15 +1621,17 @@ begin
     LoadLastPath;
   FCanPasteFromClipboard := CanCopyFromClipboard;
 
+  TW.I.Start('BackGround');
   for I := 0 to ScrollBox1.ComponentCount - 1 do
-    if ScrollBox1.Components[I] is TWebLink then
-      if ScrollBox1.Components[I] <> WlLearnMoreLink then
-        (ScrollBox1.Components[I] as TWebLink).GetBackGround := BackGround;
+  begin
+    C := ScrollBox1.Components[I];
+    if C is TWebLink then
+      if C <> WlLearnMoreLink then
+        TWebLink(C).GetBackGround := BackGround;
+  end;
 
   for I := 0 to Length(UserLinks) - 1 do
     UserLinks[I].GetBackGround := BackGround;
-
-  FW7TaskBar := CreateTaskBarInstance;
 
   TW.I.Start('LoadIcons');
   LoadIcons;
@@ -2870,28 +2881,33 @@ end;
 procedure TExplorerForm.OnPreviewUpdateButtonsState(Sender: TObject;
   Buttons: TButtonStates);
 begin
-  TbPreviewPrevious.Visible := Buttons[ivbPrevious].HasState(ivbsVisible);
-  TbPreviewPrevious.Enabled := Buttons[ivbPrevious].HasState(ivbsEnabled);
+  BeginScreenUpdate(TsMediaPreview.Handle);
+  try
+    TbPreviewPrevious.Visible := Buttons[ivbPrevious].HasState(ivbsVisible);
+    TbPreviewPrevious.Enabled := Buttons[ivbPrevious].HasState(ivbsEnabled);
 
-  TbPreviewNext.Visible := Buttons[ivbNext].HasState(ivbsVisible);
-  TbPreviewNext.Enabled := Buttons[ivbNext].HasState(ivbsEnabled);
+    TbPreviewNext.Visible := Buttons[ivbNext].HasState(ivbsVisible);
+    TbPreviewNext.Enabled := Buttons[ivbNext].HasState(ivbsEnabled);
 
-  TbPreviewNavigationSeparator.Visible := TbPreviewPrevious.Visible or TbPreviewNext.Visible;
+    TbPreviewNavigationSeparator.Visible := TbPreviewPrevious.Visible or TbPreviewNext.Visible;
 
-  TbPreviewRotateCW.Visible := Buttons[ivbRotateCW].HasState(ivbsVisible);
-  TbPreviewRotateCW.Enabled := Buttons[ivbRotateCW].HasState(ivbsEnabled);
+    TbPreviewRotateCW.Visible := Buttons[ivbRotateCW].HasState(ivbsVisible);
+    TbPreviewRotateCW.Enabled := Buttons[ivbRotateCW].HasState(ivbsEnabled);
 
-  TbPreviewRotateCCW.Visible := Buttons[ivbRotateCCW].HasState(ivbsVisible);
-  TbPreviewRotateCCW.Enabled := Buttons[ivbRotateCCW].HasState(ivbsEnabled);
+    TbPreviewRotateCCW.Visible := Buttons[ivbRotateCCW].HasState(ivbsVisible);
+    TbPreviewRotateCCW.Enabled := Buttons[ivbRotateCCW].HasState(ivbsEnabled);
 
-  TbPreviewRotateSeparator.Visible := TbPreviewRotateCCW.Visible or TbPreviewRotateCCW.Visible;
+    TbPreviewRotateSeparator.Visible := TbPreviewRotateCCW.Visible or TbPreviewRotateCCW.Visible;
 
-  TbPreviewRating.Visible := Buttons[ivbRating].HasState(ivbsVisible);
-  TbPreviewRating.Enabled := Buttons[ivbRating].HasState(ivbsEnabled);
+    TbPreviewRating.Visible := Buttons[ivbRating].HasState(ivbsVisible);
+    TbPreviewRating.Enabled := Buttons[ivbRating].HasState(ivbsEnabled);
 
-  TbPreviewRatingSeparator.Visible := TbPreviewRating.Visible;
+    TbPreviewRatingSeparator.Visible := TbPreviewRating.Visible;
 
-  ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
+    ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
+  finally
+    EndScreenUpdate(TsMediaPreview.Handle, False);
+  end
 end;
 
 procedure TExplorerForm.OnStopPersonSelection(Sender: TObject);
@@ -5671,8 +5687,8 @@ begin
     FStatusProgress.Show;
   end;
 
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
+  if W7TaskBar <> nil then
+    W7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
 end;
 
 procedure TExplorerForm.ShowRightPanel(Mode: TExplorerRightTab);
@@ -5720,8 +5736,8 @@ begin
     FStatusProgress.Show;
   end;
 
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
+  if W7TaskBar <> nil then
+    W7TaskBar.SetProgressState(Handle, TBPF_INDETERMINATE);
 end;
 
 procedure TExplorerForm.HideLoadingSign;
@@ -5734,8 +5750,8 @@ begin
   FStatusProgress.Hide;
   StatusBarMain.Hide;
 
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
+  if W7TaskBar <> nil then
+    W7TaskBar.SetProgressState(Handle, TBPF_NOPROGRESS);
 end;
 
 procedure TExplorerForm.SetProgressMax(Value: Integer);
@@ -5747,8 +5763,8 @@ procedure TExplorerForm.SetProgressPosition(Value: Integer);
 begin
   FStatusProgress.Position := Value;
 
-  if FW7TaskBar <> nil then
-    FW7TaskBar.SetProgressValue(Handle, Value, FStatusProgress.Max);
+  if W7TaskBar <> nil then
+    W7TaskBar.SetProgressValue(Handle, Value, FStatusProgress.Max);
 end;
 
 procedure TExplorerForm.SetStatusText(Text: string);
@@ -7427,7 +7443,6 @@ begin
     SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_DAY), False);
 end;
 
-
 procedure TExplorerForm.PePathChange(Sender: TObject);
 begin
   SetPathItem(PePath.CurrentPathEx);
@@ -7691,6 +7706,7 @@ begin
     LbEditKeywords.Caption := L('Keywords') + ':';
     LbEditComments.Caption := L('Comment') + ':';
 
+    ToolBarBottom.ShowCaptions := False;
     TbbPlay.Caption := L('Show');
     TbbEncrypt.Caption := L('Encrypt');
     TbbResize.Caption := L('Resize');
@@ -7703,6 +7719,7 @@ begin
     TbbProperties.Caption := L('Properties');
     TbbShare.Caption := L('Share');
     TbbOpenDirectory.Caption := L('Open directory');
+    ToolBarBottom.ShowCaptions := True;
 
     TsGeoLocation.Caption := L('Map');
     TsMediaPreview.Caption := L('Preview');
@@ -10288,6 +10305,14 @@ begin
       F(TempResult);
     end;
   end;
+end;
+
+function TExplorerForm.GetW7TaskBar: ITaskbarList3;
+begin
+  if FW7TaskBar = nil then
+    FW7TaskBar := CreateTaskBarInstance;
+
+  Result := FW7TaskBar;
 end;
 
 function TExplorerForm.CanUp: Boolean;
@@ -13034,6 +13059,7 @@ begin
   ToolBarBottom.Images := DBKernel.ImageList;
   PmInfoGroup.Images := DBKernel.ImageList;
 
+  ToolBarBottom.DisableToolBarForButtons;
   TbbPlay.ImageIndex := DB_IC_SLIDE_SHOW;
   TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
   TbbResize.ImageIndex := DB_IC_RESIZE;
@@ -13046,6 +13072,7 @@ begin
   TbbProperties.ImageIndex := DB_IC_PROPERTIES;
   TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
   TbbOpenDirectory.ImageIndex := DB_IC_DIRECTORY;
+  ToolBarBottom.EnableToolBarForButtons;
 
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1]);
   for I := 1 to 5 do
@@ -13061,11 +13088,13 @@ begin
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_270 + 1]);
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
 
+  ToolBarPreview.DisableToolBarForButtons;
   TbPreviewPrevious.ImageIndex := 11 + 1;
   TbPreviewNext.ImageIndex := 11 + 2;
   TbPreviewRotateCW.ImageIndex := 11 + 3;
   TbPreviewRotateCCW.ImageIndex := 11 + 4;
   TbPreviewOpen.ImageIndex := 11 + 5;
+  ToolBarPreview.EnableToolBarForButtons;
 
   Shell1.ImageIndex := DB_IC_SHELL;
   SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;

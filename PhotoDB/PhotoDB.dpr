@@ -352,7 +352,6 @@ uses
   uInterfaceManager in 'Units\uInterfaceManager.pas',
   uUpTime in 'Units\uUpTime.pas',
   uGeoLocation in 'Units\uGeoLocation.pas',
-  uImageListDelayed in 'Units\uImageListDelayed.pas',
   uBrowserEmbedDraw in 'Units\uBrowserEmbedDraw.pas',
   IntfDocHostUIHandler in 'Units\WebJS\IntfDocHostUIHandler.pas',
   uWebJSExternal in 'Units\WebJS\uWebJSExternal.pas',
@@ -416,7 +415,9 @@ uses
   uSearchQuery in 'Units\uSearchQuery.pas',
   uMonthCalendar in 'Units\Controls\uMonthCalendar.pas',
   uEXIFDisplayControl in 'Units\Controls\uEXIFDisplayControl.pas',
-  uProgramStatInfo in 'Units\uProgramStatInfo.pas';
+  uProgramStatInfo in 'Units\uProgramStatInfo.pas',
+  uImageListUtils in 'Units\uImageListUtils.pas',
+  uSysInfo in 'Units\uSysInfo.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

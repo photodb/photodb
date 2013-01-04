@@ -10,8 +10,10 @@ uses
   Winapi.Windows,
   Winapi.ActiveX,
   Vcl.Forms,
+  Xml.xmldom,
 
-  xmldom,
+  Dmitry.Utils.System,
+
   UnitDBKernel,
   Dolphin_DB,
 
@@ -25,7 +27,6 @@ uses
   uDBForm,
   uActivationUtils,
   uSettings,
-  Dmitry.Utils.System,
   uDBThread,
   uProgramStatInfo,
   uUpTime;

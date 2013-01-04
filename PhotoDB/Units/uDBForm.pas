@@ -343,7 +343,6 @@ end;
 
 procedure EnableAnchors(Storage: TAnchorsArray);
 var
-  I: Integer;
   Pair: TPair<TControl, TAnchors>;
 begin
   for Pair in Storage do

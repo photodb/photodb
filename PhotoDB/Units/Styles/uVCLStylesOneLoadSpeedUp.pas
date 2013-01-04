@@ -40,6 +40,7 @@ type
   TCustomStyleEx = class(TCustomStyle)
   public
     class function LoadFromStream(Stream: TStream): TCustomStyleServices; override;
+    constructor Create; override;
   end;
 
   {$HINTS OFF}
@@ -50,16 +51,33 @@ type
   end;
   {$HINTS ON}
 
+  TSeStyleSourceEx = class(TSeStyleSource)
+
+  end;
+
+constructor TCustomStyleEx.Create;
+begin
+  inherited;
+  //free object from Vcl.Styles and create object from included units
+  TCustomStyleHack(Self).FSource.Free;
+  TCustomStyleHack(Self).FSource := TseStyle.Create;
+end;
+
 class function TCustomStyleEx.LoadFromStream(
   Stream: TStream): TCustomStyleServices;
 var
   LResult: TCustomStyle;
   Se: TseStyle;
 begin
-  LResult := TCustomStyle.Create;
+  LResult := TCustomStyleEx.Create;
 
   Se := TseStyle(TCustomStyleHack(LResult).FSource);
-  Se.FreeObjects;
+
+  //free objects from Vcl.Styles and create objects from included units
+  Se.FStyleSource.Free;
+  Se.FStyleSource := TSeStyleSourceEx.Create(nil);
+  Se.FCleanCopy.Free;
+  Se.FCleanCopy := TSeStyleSourceEx.Create(nil);
 
   Se.FStyleSource.LoadFromStream(Stream);
 
@@ -71,6 +89,7 @@ begin
 end;
 
 initialization
+  InitStyleAPI;
   TStyleManager.UnRegisterStyleClass(TCustomStyle);
   TStyleManager.RegisterStyleClass(TStyleEngine.FileExtension, SStyleFileDescription, TStyleEngine.ResourceTypeName, TCustomStyleEx);
 
