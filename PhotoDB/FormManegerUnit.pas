@@ -652,6 +652,7 @@ var
   DBFile: TPhotoDBFile;
   DBVersion: Integer;
   StringDBCheckKey: string;
+
 begin
   TW.I.Start('FM -> Load');
   Caption := DBID;
@@ -694,7 +695,7 @@ begin
           DBVersion := DBKernel.TestDBEx(Dbname, True);
           if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
           begin
-            Application.Terminate;
+            DBTerminating := True;
             Exit;
           end;
 
@@ -717,7 +718,7 @@ begin
           DBVersion := DBKernel.TestDBEx(Dbname, False);
           if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
           begin
-            Application.Terminate;
+            DBTerminating := True;
             Exit;
           end;
         end;
@@ -779,6 +780,9 @@ begin
 end;
 
 initialization
+  FormManager := nil;
+
+finalization
   FormManager := nil;
 
 end.

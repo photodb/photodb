@@ -107,6 +107,7 @@ begin
 
     Log(L('Creating collection'));
     DBKernel.CreateDBbyName(ToFileName);
+    ADOCreateSettingsTable(ToFileName);
     Log(L('Creating collection: success!'));
 
     UpdateImageSettings(ToFileName, FImageOptions);
@@ -133,7 +134,8 @@ begin
           SetMaxValue(TableOut.RecordCount);
           TableOut.First;
           Pos := 0;
-          repeat
+          while not TableOut.Eof do
+          begin
             if BreakConverting then
               Break;
             Pos := Pos + 1;
@@ -150,7 +152,7 @@ begin
             TableOut.Next;
             if Terminated then
               Break;
-          until TableOut.Eof;
+          end;
         finally
           FreeDS(TableOut);
         end;

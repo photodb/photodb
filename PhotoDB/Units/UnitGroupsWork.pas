@@ -386,7 +386,7 @@ begin
 
   try
     try
-      OpenDS(Query);
+      OpenDS(Table);
     except
       FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(FileName));
       Exit;
