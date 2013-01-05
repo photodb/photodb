@@ -1,7 +1,7 @@
 Read forums of concurents
 
 Bugs:
-- uptime 203310 - 10250 for 3 min
+- uptime 203310 - 10250 for 3 min ??WTF??
 
 v4.0
 

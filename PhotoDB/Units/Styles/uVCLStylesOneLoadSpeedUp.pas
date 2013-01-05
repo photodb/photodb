@@ -96,5 +96,6 @@ initialization
 finalization
   TStyleManager.UnRegisterStyleClass(TCustomStyleEx);
   TStyleManager.RegisterStyleClass(TStyleEngine.FileExtension, SStyleFileDescription, TStyleEngine.ResourceTypeName, TCustomStyle);
+  FinalizeStyleAPI;
 
 end.
