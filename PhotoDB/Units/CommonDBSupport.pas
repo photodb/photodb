@@ -255,7 +255,7 @@ begin
   if E is EOleException then
     ErrorCode := EOleException(E).ErrorCode;
 
-  ShellExecute(0, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + 'ole-exception&code=' + IntToHex(ErrorCode, 8)), nil, nil, SW_NORMAL);
+  ShellExecute(0, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + 'ole-exception&code=' + IntToHex(ErrorCode, 8) + '&msg=' + E.Message), nil, nil, SW_NORMAL);
 end;
 
 procedure NotifyUserAboutErorrsInProviders;
@@ -842,7 +842,7 @@ begin
       on E: Exception do
       begin
         EventLog(':ADOCreateSettingsTable() throw exception: ' + E.message);
-        raise;
+        //ignore errors on this step because it's ok if table doesn't exist
       end;
     end;
 
@@ -1008,6 +1008,9 @@ procedure RemoveADORef(ADOConnection: TADOConnection);
 var
   I, J, Count: Integer;
 begin
+  if ADOConnections = nil then
+    Exit;
+
   for I := 0 to ADOConnections.Count - 1 do
   begin
     if ADOConnections[I].ADOConnection = ADOConnection then
@@ -1177,7 +1180,7 @@ end;
 
 destructor TADOConnections.Destroy;
 var
-  I : Integer;
+  I: Integer;
 begin
   for I := 0 to FConnections.Count - 1 do
     TADODBConnection(FConnections[I]).ADOConnection.Free;
