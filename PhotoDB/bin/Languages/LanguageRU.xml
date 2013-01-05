@@ -53,8 +53,9 @@
     <translate name="Error reading from file!" value="Ошибка чтения файла!" />
     <translate name="Error writing to file!" value="Ошибка записи в файл!" />
     <translate name="Unsupported version of file!" value="Неподдерживаемая версия файла" />
-    <translate name="Executing" value="Выполнение" />
-    <translate name="DAO engine could not be initialized to create database! Details:" value="Не удалось инициализировать DAO чтобы создать файл базы данных! Детали:" />
+    <translate name="Fatal error: at least one provider should be registered: {0}" value="Фатальная ошибка: как минимум один провайдер полжен быть зарегистрирован: {0}" />
+    <translate name="Error loading image: {0}, {1}" value="Ошибка загрузки изображения: {0}, {1}" />
+    <translate name="Error loading image: {0}" value="Ошибка загрузки изображения: {0}" />
   </scope>
   <scope name="InstallLanguage">
     <translate name="Select language" value="Выбор языка" />

@@ -176,12 +176,8 @@ var
         try
           ExifData.LoadFromGraphic(FData.FileName);
           Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-
-          //TODO: recheck
-          if GraphicClass = TRAWImage then
-            Rotation := DB_IMAGE_ROTATE_0;
         except
-          on e : Exception do
+          on e: Exception do
             EventLog(e.Message);
         end;
         F(ExifData);
@@ -588,7 +584,7 @@ begin
               try
                 TmpBitmap.PixelFormat := pf32Bit;
                 try
-                DoResize(Width, Height, Original, TmpBitmap);
+                  DoResize(Width, Height, Original, TmpBitmap);
                 except
                   on e: exception do
                     eventlog(e.Message);

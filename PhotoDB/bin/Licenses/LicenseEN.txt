@@ -26,7 +26,7 @@ All rights not expressly granted here are reserved by Ivan Komlev.
 Thank you for using the original Photo DataBase.
 
 E-Mail : illusDolphin@gmail.com
-HomePage : http://photodb.illusdolphin.net
+Home Page : http://photodb.illusdolphin.net
 
 Dmitry Veresov,
-(с) 2002-2012 Studio "Illusion Dolphin"
+(с) 2002-2013 Studio "Illusion Dolphin"
