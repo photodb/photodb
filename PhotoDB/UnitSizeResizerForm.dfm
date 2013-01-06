@@ -163,7 +163,7 @@ object FormSizeResizer: TFormSizeResizer
     object CbConvert: TCheckBox
       Left = 8
       Top = 28
-      Width = 114
+      Width = 118
       Height = 17
       Caption = 'Convert:'
       TabOrder = 2
@@ -206,7 +206,7 @@ object FormSizeResizer: TFormSizeResizer
     object CbRotate: TCheckBox
       Left = 8
       Top = 56
-      Width = 114
+      Width = 118
       Height = 17
       Caption = 'Rotate:'
       TabOrder = 6
@@ -215,7 +215,7 @@ object FormSizeResizer: TFormSizeResizer
     object CbResize: TCheckBox
       Left = 8
       Top = 84
-      Width = 114
+      Width = 118
       Height = 17
       Caption = 'Resize:'
       TabOrder = 7

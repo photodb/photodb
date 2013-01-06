@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<language name="English language" image="LanguageEN.png" autor="PhotoDB Team" code="en" langCode="9">
+<language name="English language" image="LanguageEN.png" author="PhotoDB team" code="en" langCode="9">
   <scope name="">
     <translate name="Example string" value="New string" />
   </scope>

@@ -1586,16 +1586,16 @@ begin
     end;
 
     if FFilesInfo.IsVariousWidth then
-      WidthMemo.Text := L('Differen width')
+      WidthMemo.Text := L('Different width')
     else
       WidthMemo.Text := Format(L('All - %spx.'), [IntToStr(FFilesInfo[0].Width)]);
 
     if FFilesInfo.IsVariousHeight then
-      HeightMemo.Text := L('Differen height')
+      HeightMemo.Text := L('Different height')
     else
       HeightMemo.Text := Format(L('All - %spx.'), [IntToStr(FFilesInfo[0].Height)]);
 
-    LabelName.Text := L('Diffrent files');
+    LabelName.Text := L('Different files');
     if FFilesInfo.IsVariousLocation then
       LabelPath.Text := L('Different directories')
     else
