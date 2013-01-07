@@ -2,6 +2,7 @@ Read forums of concurents
 
 Bugs:
 - uptime 203310 - 10250 for 3 min ??WTF??
+- Photo DataBase 4.0 on Windows XP , Service Pack 3Professional
 
 v4.0
 

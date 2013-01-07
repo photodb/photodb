@@ -66,11 +66,10 @@ begin
 //just marker of ExternalThreadProcedure end
 end;
 
-function InjectDll(TargetId: Cardinal; DllName: string): Cardinal;
+function InjectDll(hProcess: NativeInt; DllName: string): Cardinal;
 var
   BytesWrite    : NativeUInt;
   ParamAddr     : Pointer;
-  Hdl           : NativeUInt;
   hThread       : Cardinal;
   hRemoteThread : Cardinal;
   InjectParams  : TInjectLibParameters;
@@ -83,8 +82,8 @@ var
   var
     BytesWrite: NativeUInt;
   begin
-    Result := VirtualAllocEx(Hdl, nil, Length(Text) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if not WriteProcessMemory(Hdl, Result, PChar(Text), Length(Text) * 2 + 2, BytesWrite) then
+    Result := VirtualAllocEx(hProcess, nil, Length(Text) * 2 + 2, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if not WriteProcessMemory(hProcess, Result, PChar(Text), Length(Text) * 2 + 2, BytesWrite) then
       MessageBox(0, PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), 0);
   end;
 
@@ -92,16 +91,13 @@ var
   var
     BytesWrite: NativeUInt;
   begin
-    Result := VirtualAllocEx(Hdl, nil, Length(Text) + 1, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if not WriteProcessMemory(Hdl, Result, PAnsiChar(Text), Length(Text) + 1, BytesWrite) then
+    Result := VirtualAllocEx(hProcess, nil, Length(Text) + 1, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if not WriteProcessMemory(hProcess, Result, PAnsiChar(Text), Length(Text) + 1, BytesWrite) then
       MessageBox(0, PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), PChar('WriteProcessMemory fails: ' + IntToStr(GetLastError)), 0);
   end;
 
 begin
-  //A handle to the process in which the thread is to be created. The handle must have the PROCESS_CREATE_THREAD, PROCESS_QUERY_INFORMATION, PROCESS_VM_OPERATION, PROCESS_VM_WRITE, and PROCESS_VM_READ access rights, and may fail without these rights on certain platforms.
-  Hdl := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or PROCESS_VM_WRITE or PROCESS_VM_READ or PROCESS_QUERY_INFORMATION, False, TargetId);
-
-  if (Hdl = 0)  then
+  if (hProcess = 0)  then
     MessageBox(0, PChar('Can''t open remote process!'), PChar('Can''t open remote process!'), 0);
 
   ZeroMemory(@InjectParams, SizeOf(InjectParams));
@@ -116,20 +112,20 @@ begin
   InjectParams.ExitThreadProc := GetProcAddress(GetModuleHandle('KERNEL32.DLL'), PAnsiChar('ExitThread'));
   InjectParams.MessageBoxProc := GetProcAddress(GetModuleHandle('USER32.DLL'), PAnsiChar('MessageBoxW'));
 
-  ParamAddr := VirtualAllocEx(Hdl, nil, SizeOf(TInjectLibParameters), MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-  WriteProcessMemory(Hdl, ParamAddr, @InjectParams, SizeOf(TInjectLibParameters), BytesWrite);
+  ParamAddr := VirtualAllocEx(hProcess, nil, SizeOf(TInjectLibParameters), MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+  WriteProcessMemory(hProcess, ParamAddr, @InjectParams, SizeOf(TInjectLibParameters), BytesWrite);
 
   InjectCodeStart := NativeUInt(Addr(ExternalThreadProcedure));
   InjectCodeLength := NativeUInt(Addr(ExternalThreadProcedureEnd)) - InjectCodeStart;
-  InjectCode := VirtualAllocEx(Hdl, nil, InjectCodeLength, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-  WriteProcessMemory(Hdl, InjectCode, Pointer(InjectCodeStart), InjectCodeLength, BytesWrite);
+  InjectCode := VirtualAllocEx(hProcess, nil, InjectCodeLength, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+  WriteProcessMemory(hProcess, InjectCode, Pointer(InjectCodeStart), InjectCodeLength, BytesWrite);
 
   if InjectCode = nil then
     MessageBox(0, PChar('InjectCode is null'), PChar('InjectCode is null'), 0);
   if ParamAddr = nil then
     MessageBox(0, PChar('ParamAddr is null'), PChar('ParamAddr is null'), 0);
 
-  hThread  := CreateRemoteThread(Hdl, nil, 0,
+  hThread  := CreateRemoteThread(hProcess, nil, 0,
     InjectCode,
     ParamAddr,
     CREATE_SUSPENDED,
@@ -137,8 +133,6 @@ begin
 
   if hThread = 0 then
     MessageBox(0, PChar('Can''t create remote thread!'), PChar('Can''t create remote thread!'), 0);
-
-  CloseHandle(Hdl);
 
   Result := hThread;
 end;
@@ -175,7 +169,7 @@ begin
 
   if pi.dwProcessId > 0 then
   begin
-    hThread := InjectDll(PI.dwProcessId, HookDll);
+    hThread := InjectDll(PI.hProcess, HookDll);
 
     ResumeThread(hThread);
 
