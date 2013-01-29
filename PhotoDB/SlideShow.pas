@@ -558,7 +558,7 @@ begin
   MTimer1.Caption := L('Stop timer');
 
   if IsWindows8 then
-    TLoad.Instance.RequaredDBKernelIcons;
+    TLoad.Instance.RequiredDBKernelIcons;
 
   WlFaceCount.ImageList := DBkernel.ImageList;
   N01.ImageIndex := DB_IC_DELETE_INFO;

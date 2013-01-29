@@ -111,7 +111,7 @@ end;
 
 procedure TFormImportingImages.FormCreate(Sender: TObject);
 begin
-  TLoad.Instance.RequaredStyle;
+  TLoad.Instance.RequiredStyle;
   LsWorking.Color := Theme.WizardColor;
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;

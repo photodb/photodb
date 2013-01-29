@@ -185,7 +185,7 @@ begin
          if (OSVI_NT.dwMajorVersion = 5) and (OSVI_NT.dwMinorVersion = 0) then
            Result := 'Windows 2000 ';
          if  (OSVI_NT.dwMajorVersion = 5) and (OSVI_NT.dwMinorVersion = 1) then
-           Result := 'Windows XP ';
+           Result := 'Windows XP';
          if (OSVI_NT.dwMajorVersion = 6) and (OSVI_NT.dwMinorVersion = 0) then
            Result := 'Windows Vista ' + GetProductInfo;
          if (OSVI_NT.dwMajorVersion = 6) and (OSVI_NT.dwMinorVersion = 1) then
@@ -208,20 +208,20 @@ begin
              if OSVI_NT.wProductType = VER_NT_WORKSTATION then
              begin
                case OSVI_NT.wSuiteMask of
-                 512: Result := Result + 'Personal';
-                 768: Result := Result + 'Home Premium';
+                 512: Result := Result + ' Personal';
+                 768: Result := Result + ' Home Premium';
                else
-                 Result := Result + 'Professional';
+                 Result := Result + ' Professional';
                end;
              end
              else if OSVI_NT.wProductType = VER_NT_SERVER then
              begin
                if OSVI_NT.wSuiteMask = VER_SUITE_DATACENTER then
-                 Result := Result + 'DataCenter Server'
+                 Result := Result + ' DataCenter Server'
                else if OSVI_NT.wSuiteMask = VER_SUITE_ENTERPRISE then
-                 Result :=  Result + 'Advanced Server'
+                 Result :=  Result + ' Advanced Server'
                else
-                 Result := Result + 'Server';
+                 Result := Result + ' Server';
              end;
            end{ wProductType=VER_NT_WORKSTATION }
            else
@@ -233,9 +233,9 @@ begin
                    try
                      tmpStr := UpperCase(ReadString('ProductType'));
                      if tmpStr = 'WINNT' then
-                       Result := Result + 'Workstation';
+                       Result := Result + ' Workstation';
                      if tmpStr = 'SERVERNT' then
-                       Result := Result + 'Server';
+                       Result := Result + ' Server';
                    finally
                      CloseKey;
                    end;

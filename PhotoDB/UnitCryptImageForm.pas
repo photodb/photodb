@@ -293,5 +293,4 @@ end;
 initialization
   FormInterfaces.RegisterFormInterface(IEncryptForm, TCryptImageForm);
 
-
 end.

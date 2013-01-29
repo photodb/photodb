@@ -425,7 +425,7 @@ begin
   if Menu is TMainMenu then
     TMainMenuStyleHook.RegisterMenu(TMainMenu(Menu));
   if ClassName <> 'TFormManager' then
-    TLoad.Instance.RequaredStyle;
+    TLoad.Instance.RequiredStyle;
   FixLayout;
   ApplyStyle;
   ApplySettings;

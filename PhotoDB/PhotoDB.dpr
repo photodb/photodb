@@ -417,7 +417,8 @@ uses
   uEXIFDisplayControl in 'Units\Controls\uEXIFDisplayControl.pas',
   uProgramStatInfo in 'Units\uProgramStatInfo.pas',
   uImageListUtils in 'Units\uImageListUtils.pas',
-  uSysInfo in 'Units\uSysInfo.pas';
+  uSysInfo in 'Units\uSysInfo.pas',
+  uCommandLine in 'Units\uCommandLine.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -562,7 +563,6 @@ begin
         TLoad.Instance.StartDBKernelIconsThread;
         TLoad.Instance.StartDBSettingsThread;
       end;
-
     end;
 
     SetSplashProgress(60);
@@ -571,7 +571,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);
@@ -623,80 +623,9 @@ begin
           end;
         end;
 
-    if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp', 'ConvertDB', False) then
-      begin
-        CloseSplashWindow;
-        EventLog('Converting...');
-        Settings.WriteBool('StartUp', 'ConvertDB', False);
-        ConvertDB(dbname);
-      end;
+    TCommandLine.ProcessServiceCommands;
 
-    if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/PACKTABLE') or Settings.ReadBool('StartUp', 'Pack', False) then
-      begin
-        CloseSplashWindow;
-        EventLog('Packing...');
-        Settings.WriteBool('StartUp', 'Pack', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.PackPhotoTable;
-        R(CMDForm);
-      end;
-
-    if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/BACKUP') or Settings.ReadBool('StartUp', 'BackUp', False) then
-      begin
-        CloseSplashWindow;
-        EventLog('BackUp...');
-        Settings.WriteBool('StartUp', 'BackUp', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.BackUpTable;
-        R(CMDForm);
-      end;
-
-    if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/RECREATETHTABLE') or Settings.ReadBool('StartUp', 'RecreateIDEx', False) then
-      begin
-        CloseSplashWindow;
-        EventLog('Recreating thumbs in Table...');
-        Settings.WriteBool('StartUp', 'RecreateIDEx', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.RecreateImThInPhotoTable;
-        R(CMDForm);
-      end;
-
-    if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/SHOWBADLINKS') or Settings.ReadBool('StartUp', 'ScanBadLinks', False) then
-      begin
-        CloseSplashWindow;
-        EventLog('Show Bad Links in table...');
-        Settings.WriteBool('StartUp', 'ScanBadLinks', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.ShowBadLinks;
-        R(CMDForm);
-      end;
-
-    if not FolderView and not DBTerminating then
-      if GetParamStrDBBool('/OPTIMIZE_DUPLICTES') or Settings.ReadBool('StartUp', 'OptimizeDuplicates', False) then
-      begin
-        CloseSplashWindow;
-        EventLog('Optimizingduplicates in table...');
-        Settings.WriteBool('StartUp', 'OptimizeDuplicates', False);
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.OptimizeDuplicates;
-        R(CMDForm);
-      end;
-
-    if not FolderView and not DBTerminating then
-      if Settings.ReadBool('StartUp', 'Restore', False) then
-      begin
-        CloseSplashWindow;
-        Settings.WriteBool('StartUp', 'Restore', False);
-        EventLog('Restoring Table...' + Settings.ReadString('StartUp', 'RestoreFile'));
-        Application.CreateForm(TCMDForm, CMDForm);
-        CMDForm.RestoreTable(Settings.ReadString('StartUp', 'RestoreFile'));
-        R(CMDForm);
-      end;
+    TCommandLine.ProcessUserCommandLine;
 
     CMDInProgress := False;
 
@@ -740,6 +669,7 @@ begin
       end;
     end else if FormManager <> nil then
       FormManager.RunInBackground;
+
     EventLog('Application Started!...');
 
     if GetParamStrDBBool('/Execute') then
@@ -766,18 +696,6 @@ begin
       UpdaterDB.AddDirectory(s1);
     end;
 
-    if GetParamStrDBBool('/SQLExec') then
-    begin
-      ExecuteQuery(AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
-    end;
-
-    if GetParamStrDBBool('/SQLExecFile') then
-    begin
-      s1 := AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'), '"');
-      s1 := ReadTextFileInString(s1);
-      ExecuteQuery(s1);
-    end;
-
     if GetParamStrDBBool('/installExt') then
     begin
       s1 := GetParamStrDBValue('/installExt');
@@ -798,13 +716,13 @@ begin
 
     if DBTerminating then
       begin
-        TLoad.Instance.RequaredDBKernelIcons;
-        TLoad.Instance.RequaredCRCCheck;
-        TLoad.Instance.RequaredDBSettings;
-        TLoad.Instance.RequaredStyle;
+        TLoad.Instance.RequiredDBKernelIcons;
+        TLoad.Instance.RequiredCRCCheck;
+        TLoad.Instance.RequiredDBSettings;
+        TLoad.Instance.RequiredStyle;
       end;
 
-    UnReigisterPersonManager;
+    UnRegisterPersonManager;
     UnloadTranslateModule;
   except
     on e: Exception do

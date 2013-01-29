@@ -212,7 +212,7 @@ type
 
 function PersonManager: TPersonManager;
 
-procedure UnReigisterPersonManager;
+procedure UnRegisterPersonManager;
 
 implementation
 
@@ -227,7 +227,7 @@ begin
   Result := FManager;
 end;
 
-procedure UnReigisterPersonManager;
+procedure UnRegisterPersonManager;
 begin
   if FManager <> nil then
     FManager.Unregister;

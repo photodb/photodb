@@ -490,7 +490,7 @@ begin
   FDisplayImage := TBitmap.Create;
   LoadLanguage;
   PersonManager.InitDB;
-  TLoad.Instance.RequaredDBSettings;
+  TLoad.Instance.RequiredDBSettings;
   PmImageOptions.Images := DBKernel.ImageList;
   MiLoadotherimage.ImageIndex := DB_IC_LOADFROMFILE;
   MiEditImage.ImageIndex := DB_IC_IMEDITOR;

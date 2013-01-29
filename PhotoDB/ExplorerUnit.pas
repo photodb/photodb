@@ -1576,7 +1576,7 @@ begin
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
   if IsWindows8 then
-    TLoad.Instance.RequaredDBKernelIcons;
+    TLoad.Instance.RequiredDBKernelIcons;
 
   TW.I.Start('Script read');
   SetNamedValueStr(AScript, '$dbname', dbname);
@@ -1643,7 +1643,7 @@ begin
   FReloadESGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_GROUPS');
   FReloadRSPersonsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_PERSONS');
 
-  TLoad.Instance.RequaredDBSettings;
+  TLoad.Instance.RequiredDBSettings;
   FPictureSize := ThImageSize;
   LoadSizes;
 
@@ -3584,7 +3584,7 @@ begin
     RatingPopupMenu.Tag := FImageViewer.Item.ID
   else
   begin
-    Index := 0;
+    Index := -1;
     for I := 0 to FFilesInfo.Count - 1 do
       if AnsiLowerCase(FFilesInfo[I].FileName) = AnsiLowerCase(FImageViewer.Item.FileName) then
       begin
@@ -3592,18 +3592,18 @@ begin
         Break;
       end;
 
+    if Index = -1 then
+      Exit;
+
     RatingPopupMenu.Tag := -Index;
   end;
 
   if Sender = nil then
     Exit;
 
-  if RatingPopupMenu.Tag <> 0 then
-  begin
-    P := Point(TbPreviewRating.Left, TbPreviewRating.Top + TbPreviewRating.Height);
-    P := TbPreviewRating.Parent.ClientToScreen(P);
-    RatingPopupMenu.Popup(P.X, P.Y);
-  end;
+  P := Point(TbPreviewRating.Left, TbPreviewRating.Top + TbPreviewRating.Height);
+  P := TbPreviewRating.Parent.ClientToScreen(P);
+  RatingPopupMenu.Popup(P.X, P.Y);
 end;
 
 procedure TExplorerForm.TbPreviewRotateCWClick(Sender: TObject);
@@ -13191,7 +13191,7 @@ begin
   MiInfoGroupProperties.ImageIndex := DB_IC_PROPERTIES;
 
   if not IsWindows8 then
-    TLoad.Instance.RequaredDBKernelIcons;
+    TLoad.Instance.RequiredDBKernelIcons;
 
   SlideShowLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
   ShellLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);

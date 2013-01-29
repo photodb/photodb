@@ -34,11 +34,11 @@ type
     procedure StartPersonsThread;
     procedure StartStyleThread;
     //Requareds
-    procedure RequaredCRCCheck;
-    procedure RequaredDBKernelIcons;
-    procedure RequaredDBSettings;
+    procedure RequiredCRCCheck;
+    procedure RequiredDBKernelIcons;
+    procedure RequiredDBSettings;
     procedure RequaredPersons;
-    procedure RequaredStyle;
+    procedure RequiredStyle;
     procedure Stop;
   end;
 
@@ -164,7 +164,7 @@ begin
   end;
 end;
 
-procedure TLoad.RequaredCRCCheck;
+procedure TLoad.RequiredCRCCheck;
 begin
   TW.I.Start('TLoad.RequaredCRCCheck');
   if LoadCRCCheckThreadID <> GetEmptyGUID then
@@ -172,7 +172,7 @@ begin
   LoadCRCCheckThreadID := GetEmptyGUID;
 end;
 
-procedure TLoad.RequaredDBKernelIcons;
+procedure TLoad.RequiredDBKernelIcons;
 begin
   TW.I.Start('TLoad.RequaredDBKernelIcons');
   if LoadDBKernelIconsThreadID <> GetEmptyGUID then
@@ -180,7 +180,7 @@ begin
   LoadDBKernelIconsThreadID := GetEmptyGUID;
 end;
 
-procedure TLoad.RequaredDBSettings;
+procedure TLoad.RequiredDBSettings;
 begin
   TW.I.Start('TLoad.LoadDBSettingsThread');
   if LoadDBSettingsThreadID <> GetEmptyGUID then
@@ -196,7 +196,7 @@ begin
   LoadPersonsThreadID := GetEmptyGUID;
 end;
 
-procedure TLoad.RequaredStyle;
+procedure TLoad.RequiredStyle;
 begin
   TW.I.Start('TLoad.RequaredStyle');
   if LoadStyleThreadID <> GetEmptyGUID then
