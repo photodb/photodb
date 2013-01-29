@@ -78,7 +78,7 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Debugger_RunParams>&quot;c:\Program Files (x86)\Windows Media Player\wmplayer.exe&quot; &quot;D:\Wildlife.wmv&quot;</Debugger_RunParams>
+        <Debugger_RunParams>&quot;c:\Program Files (x86)\Windows Media Player\wmplayer.exe&quot; &quot;N:\SaM Fortune Party.mpg&quot;</Debugger_RunParams>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">

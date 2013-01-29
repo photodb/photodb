@@ -694,7 +694,7 @@ begin
 
   {$IFDEF TESTPASS}
   if Password = '' then
-    Password := '12';
+    Password := '1';
   {$ENDIF}
 
   if Password = '' then

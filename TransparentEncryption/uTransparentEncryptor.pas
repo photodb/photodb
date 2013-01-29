@@ -12,6 +12,7 @@ uses
   uTransparentEncryption;
 
 procedure CloseFileHandle(Handle: THandle);
+function IsEncryptedFileHandle(hFile: THandle): Boolean;
 procedure InitEncryptedFile(FileName: string; hFile: THandle; AsyncHandle: Boolean);
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped; Result: PBOOL);
 function FixFileSize(hFile: THandle; lDistanceToMove: DWORD; lpDistanceToMoveHigh: Pointer; dwMoveMethod: DWORD; SeekProc: TSetFilePointerNextHook): DWORD;
@@ -209,6 +210,24 @@ begin
   end;
 
   SetLastError(LastError);
+end;
+
+function IsEncryptedFileHandle(hFile: THandle): Boolean;
+begin
+  Result := False;
+
+  if SyncObj = nil then
+    Exit;
+
+  SyncObj.Enter;
+  try
+    if not FData.ContainsKey(hFile) then
+      Exit;
+
+    Result := True;
+  finally
+    SyncObj.Leave;
+  end;
 end;
 
 procedure ReplaceBufferContent(hFile: THandle; var Buffer; dwCurrentFilePosition: Int64; nNumberOfBytesToRead: DWORD; var lpNumberOfBytesRead: DWORD; lpOverlapped: POverlapped; Result: PBOOL);

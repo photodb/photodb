@@ -259,7 +259,7 @@ begin
     Exit(MapViewOfFileHookProc(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap));
 
   NotifyEncryptionError('MapViewOfFileEx, lpBaseAddress');
-  Result := MapViewOfFileNextHook(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap);
+  Result := MapViewOfFileExNextHook(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap, lpBaseAddress);
 end;
 
 function _lopenHookProc(const lpPathName: LPCSTR; iReadWrite: Integer): HFILE; stdcall;
@@ -767,11 +767,14 @@ var
   dwCurrentFilePosition: Int64;
   LastError: DWORD;
   lpNumberOfBytesTransferred: DWORD;
+  IsFileEncrypted: Boolean;
 begin
 
   LastError := GetLastError;
   dwCurrentFilePosition := FileSeek(hFile, Int64(0), FILE_CURRENT);
   SetLastError(LastError);
+
+  IsFileEncrypted := IsEncryptedFileHandle(hFile);
 
   if Assigned(lpOverlapped) then
   begin
@@ -780,6 +783,8 @@ begin
 
     Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
     LastError := GetLastError;
+
+    //TODO: MSDN: If the ReadFile function attempts to read past the end of the file, the function returns zero, and GetLastError returns ERROR_HANDLE_EOF.
     if not Result and (GetLastError = ERROR_IO_PENDING) then
     begin
       if GetOverlappedResult(hFile, lpOverlapped^, lpNumberOfBytesTransferred, True) then
@@ -790,10 +795,20 @@ begin
     end;
   end else
   begin
+    if IsFileEncrypted then
+    begin
+      //move to header size to have correct result code from OS, should be updated to use
+      FileSeek(hFile, SizeOf(TEncryptedFileHeader) + SizeOf(TEncryptFileHeaderExV1), FILE_CURRENT);
+    end;
+
     Result := ReadFileNextHook(hFile, Buffer, nNumberOfBytesToRead, lpNumberOfBytesRead, lpOverlapped);
 
     if (lpNumberOfBytesRead <> nil) and (lpNumberOfBytesRead^ > 0) then
     begin
+      //move back header size
+      if IsFileEncrypted then
+        FileSeek(hFile, -(SizeOf(TEncryptedFileHeader) + SizeOf(TEncryptFileHeaderExV1)), FILE_CURRENT);
+
       LastError := GetLastError;
       ReplaceBufferContent(hFile, Buffer, dwCurrentFilePosition, nNumberOfBytesToRead, lpNumberOfBytesRead^, nil, @Result);
       SetLastError(LastError);

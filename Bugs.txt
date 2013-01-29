@@ -3,6 +3,7 @@ Read forums of concurents
 Bugs:
 - uptime 203310 - 10250 for 3 min ??WTF??
 - Photo DataBase 4.0 on Windows XP , Service Pack 3Professional
+/?action=ole-exception&code=00000000&msg=Не найден указанный модуль (Windows NT 5.1)
 
 v4.0
 
