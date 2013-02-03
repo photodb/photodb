@@ -15,7 +15,7 @@ Possible CRs:
 [F] resize - raw use preview checkbox;
 [F] png watermarks;
 [F] Add new styles;
-[F] Command line encrypt/steno;
+-> Command line encrypt/steno;
 
 [F] Player russian (in registry);
 [F] XP dll injection update?;

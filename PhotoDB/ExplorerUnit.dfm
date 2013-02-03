@@ -2693,7 +2693,9 @@ object ExplorerForm: TExplorerForm
         Top = 0
         AutoSize = True
         Caption = 'TbbShare'
+        DropdownMenu = PmShareAdditionalTasks
         ImageIndex = 9
+        Style = tbsTextButton
         OnClick = WlShareClick
       end
       object TbbGeo: TToolButton
@@ -2789,7 +2791,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.870701898150000000
+      Date = 41177.726064062500000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3654,5 +3656,20 @@ object ExplorerForm: TExplorerForm
     ColorDepth = cd32Bit
     Left = 280
     Top = 548
+  end
+  object TmrReloadTreeView: TTimer
+    Enabled = False
+    Interval = 200
+    OnTimer = TmrReloadTreeViewTimer
+    Left = 672
+    Top = 568
+  end
+  object PmShareAdditionalTasks: TPopupActionBar
+    Left = 448
+    Top = 432
+    object MiShareImageAndGetUrl: TMenuItem
+      Caption = 'MiShareImageAndGetUrl'
+      OnClick = MiShareImageAndGetUrlClick
+    end
   end
 end

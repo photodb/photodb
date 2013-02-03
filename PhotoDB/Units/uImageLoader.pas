@@ -307,7 +307,7 @@ begin
                      TRAWImage(Graphic).HalfSizeLoad := True;
                 end;
 
-                if not (ilfDontUpdateInfo in flags) and (Info.ID = 0) and not IsDevicePath(Info.FileName) then
+                if not (ilfDontUpdateInfo in flags) and (Info.ID = 0) {and not IsDevicePath(Info.FileName)} then
                   Info.Rotation := EXIFRotation or DB_IMAGE_ROTATE_NO_DB;
 
                 S.Seek(0, soFromBeginning);

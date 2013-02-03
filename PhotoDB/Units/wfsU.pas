@@ -92,13 +92,13 @@ type
 
   TIoCompletionManager = class(TObject)
   private
-    FList : TList;
-    FCounter : Cardinal;
-    FSync : TCriticalSection;
+    FList: TList;
+    FCounter: Cardinal;
+    FSync: TCriticalSection;
   public
     constructor Create;
     destructor Destroy; override;
-    class function Instance : TIoCompletionManager;
+    class function Instance: TIoCompletionManager;
     function CreateIoCompletion(Handle: THandle; var CompletionKey: NativeUInt) : THandle;
     procedure FinishIoCompletion(CompletionPort: THandle);
     procedure GetQueuedCompletionStatus(CompletionPort: THandle;

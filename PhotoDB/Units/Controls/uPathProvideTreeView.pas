@@ -85,6 +85,7 @@ type
     procedure RefreshPathItem(PathItem: TPathItem);
     property OnSelectPathItem: TOnSelectPathItem read FOnSelectPathItem write FOnSelectPathItem;
     property OnGetPopupMenu;
+    property OnKeyAction;
     property PopupItem: TPathItem read FPopupItem;
   end;
 
@@ -594,6 +595,7 @@ procedure TPathProvideTreeView.LoadHomeDirectory(Form: TThreadForm);
 begin
   if not InitControl then
     Exit;
+
   FForm := Form;
   TThreadTask.Create(FForm, Pointer(nil),
     procedure(Thread: TThreadTask; Data: Pointer)

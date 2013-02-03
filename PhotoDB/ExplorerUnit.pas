@@ -193,6 +193,14 @@ type
   TMonthCalendar = class(TMonthCalendarEx);
   TValueListEditor = class(TEXIFDisplayControl);
 
+  TToolBarEx = class(Vcl.ComCtrls.TToolBar)
+  private
+  protected
+    procedure CreateWnd; override;
+  end;
+
+  TToolBar = class(TToolBarEx);
+
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource, IDirectoryWatcher)
     SizeImageList: TImageList;
@@ -553,6 +561,9 @@ type
     MiPreviewPersonProperties: TMenuItem;
     PnRightPreview: TPanel;
     ImlPreview: TImageList;
+    TmrReloadTreeView: TTimer;
+    PmShareAdditionalTasks: TPopupActionBar;
+    MiShareImageAndGetUrl: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -823,9 +834,11 @@ type
     procedure MiPreviewPersonUpdateAvatarClick(Sender: TObject);
     procedure TbPreviewRatingClick(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
+    procedure MiShareImageAndGetUrlClick(Sender: TObject);
     procedure SplRightPanelCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure SplLeftPanelMoved(Sender: TObject);
+    procedure TmrReloadTreeViewTimer(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -979,6 +992,7 @@ type
     function GetW7TaskBar: ITaskbarList3;
     property SecondStepHelp: string read GetSecondStepHelp;
     function GetPathDescription(Path: string; FileType: Integer): string;
+    procedure ListViewRefreshList;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
     procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
     procedure RestoreDragSelectedItems;
@@ -1001,6 +1015,7 @@ type
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
     procedure PathTreeViewGetPopupMenu(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; const P: TPoint;
       var AskParent: Boolean; var PopupMenu: TPopupMenu);
+    procedure PathTreeViewKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 
     procedure CreatePreview;
     procedure OnPersonsFoundOnPreview(Sender: TObject; FileName: string; Items: TFaceDetectionResult);
@@ -1029,6 +1044,8 @@ type
     procedure SetResizePreviewMode;
     procedure SetResizeListViewMode;
     property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
+    procedure TreeViewSelectCurrentPath;
+    procedure TreeViewReloadTree;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1283,6 +1300,13 @@ begin
   end;
 end;
 
+procedure TExplorerForm.PathTreeViewKeyAction(Sender: TBaseVirtualTree;
+  var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
+begin
+  if CharCode = VK_F5 then
+    TreeViewReloadTree;
+end;
+
 procedure TExplorerForm.PcRightPreviewChange(Sender: TObject);
 begin
   FActiveRightTab := TExplorerRightTab(PcRightPreview.ActivePageIndex);
@@ -1308,12 +1332,7 @@ begin
   FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
   Settings.WriteInteger('Explorer', 'LeftPanelTabIndex', PcTasks.ActivePageIndex);
   if PcTasks.ActivePageIndex = Integer(eltsExplorer) then
-  begin
-    if GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH then
-      TreeView.SelectPathItem(PePath.PathEx)
-    else
-      TreeView; //just start tree without any selection
-  end;
+    TreeViewSelectCurrentPath;
   if PcTasks.ActivePageIndex = Integer(eltsSearch) then
     ExtendedSearchInit;
   if PcTasks.ActivePageIndex = Integer(eltsEXIF) then
@@ -4484,6 +4503,10 @@ begin
         TbStopClick(Self);
     if (Msg.Wparam = VK_F5) then
     begin
+      //default action for explorer tree view
+      if (FShellTreeView <> nil) and (Msg.hwnd = FShellTreeView.Handle) then
+        Exit;
+
       SetNewPathW(GetCurrentPathW, True);
       Msg.Wparam := 0;
     end;
@@ -5641,6 +5664,7 @@ begin
 
   NotSetOldPath := False;
   ElvMain.SetFocus;
+  ToolBarBottom.SetDropDownButtonStyle(TbbShare);
 end;
 
 procedure TExplorerForm.NewWindow1Click(Sender: TObject);
@@ -5971,17 +5995,17 @@ var
     begin
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
       EncryptLink.Text := L('Encrypt');
-      TbbEncrypt.Caption := L('Encrypt');
+      TbbEncrypt.SetCaption(L('Encrypt'));
       TbbEncrypt.Tag := ACTION_ENCRYPT_IMAGES;
-      TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
+      TbbEncrypt.SetImageIndexEx(DB_IC_CRYPTIMAGE);
       EncryptLink.Tag := ACTION_ENCRYPT_IMAGES;
     end else
     begin
       EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
       EncryptLink.Text := L('Decrypt');
-      TbbEncrypt.Caption := L('Decrypt');
+      TbbEncrypt.SetCaption(L('Decrypt'));
       TbbEncrypt.Tag := ACTION_DECRYPT_IMAGES;
-      TbbEncrypt.ImageIndex := DB_IC_DECRYPTIMAGE;
+      TbbEncrypt.SetImageIndexEx(DB_IC_DECRYPTIMAGE);
       EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
     end;
     TbbEncrypt.Enabled := True;
@@ -6168,7 +6192,7 @@ begin
           WlGeoLocation.Text := L('Set map location');
         WlGeoLocation.Visible := True;
         TbbGeo.Enabled := True;
-        TbbGeo.Caption := WlGeoLocation.Text;
+        TbbGeo.SetCaption(WlGeoLocation.Text);
 
         WlGeoLocation.Top := NewTop + H;
         NewTop := WlGeoLocation.BoundsRect.Bottom;
@@ -7305,6 +7329,20 @@ begin
     InvalidateRect(PnFilter.Handle, PnFilter.ClientRect, True);
 end;
 
+procedure TExplorerForm.TreeViewReloadTree;
+begin
+  TreeView.Reload;
+  TreeViewSelectCurrentPath;
+end;
+
+procedure TExplorerForm.TreeViewSelectCurrentPath;
+begin
+  if GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH then
+    TreeView.SelectPathItem(PePath.PathEx)
+  else
+    TreeView; //just start tree without any selection
+end;
+
 procedure TExplorerForm.ShowHelp(Text, Link: string);
 begin
   WlLearnMoreLink.Text := Text;
@@ -7343,7 +7381,10 @@ begin
 
         if FImageViewer <> nil then
         begin
-          if (AnsiLowerCase(FImageViewer.Item.FileName) = FileName) and not FImageViewer.DisplayBitmap.Empty and (FImageViewer.Text = '') then
+          if (AnsiLowerCase(FImageViewer.Item.FileName) = FileName)
+            and not IsDevicePath(FileName)
+            and not FImageViewer.DisplayBitmap.Empty
+            and (FImageViewer.Text = '') then
             B := FImageViewer.DisplayBitmap;
         end;
 
@@ -7707,19 +7748,22 @@ begin
     LbEditComments.Caption := L('Comment') + ':';
 
     ToolBarBottom.ShowCaptions := False;
-    TbbPlay.Caption := L('Show');
-    TbbEncrypt.Caption := L('Encrypt');
-    TbbResize.Caption := L('Resize');
-    TbbConvert.Caption := L('Convert');
-    TbbCrop.Caption := L('Crop');
-    TbbPrint.Caption := L('Print');
-    TbbEditor.Caption := L('Image editor');
-    TbbGeo.Caption := L('Display on map');
-    TbbRename.Caption := L('Rename');
-    TbbProperties.Caption := L('Properties');
-    TbbShare.Caption := L('Share');
-    TbbOpenDirectory.Caption := L('Open directory');
-    ToolBarBottom.ShowCaptions := True;
+    try
+      TbbPlay.Caption := L('Show');
+      TbbEncrypt.Caption := L('Encrypt');
+      TbbResize.Caption := L('Resize');
+      TbbConvert.Caption := L('Convert');
+      TbbCrop.Caption := L('Crop');
+      TbbPrint.Caption := L('Print');
+      TbbEditor.Caption := L('Image editor');
+      TbbGeo.Caption := L('Display on map');
+      TbbRename.Caption := L('Rename');
+      TbbProperties.Caption := L('Properties');
+      TbbShare.Caption := L('Share');
+      TbbOpenDirectory.Caption := L('Open directory');
+    finally
+      ToolBarBottom.ShowCaptions := True;
+    end;
 
     TsGeoLocation.Caption := L('Map');
     TsMediaPreview.Caption := L('Preview');
@@ -10020,10 +10064,13 @@ begin
   ShellExecute(GetActiveWindow, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + WlLearnMoreLink.HelpKeyword), nil, nil, SW_NORMAL);
 end;
 
+procedure TExplorerForm.ListViewRefreshList;
+begin
+  ElvMain.Selection.ClearAll;
+  RefreshLinkClick(RefreshLink);
+end;
+
 procedure TExplorerForm.WMDeviceChange(var Msg: TMessage);
-var
-  Drive: string;
-  I, Index: Integer;
 
   function GetDrive(pDBVol: PDevBroadcastVolume): string;
   var
@@ -10039,38 +10086,52 @@ var
     end;
   end;
 
-begin
-  if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+  procedure RemoveDriveFromListView;
+  var
+    Drive: string;
+    I, Index: Integer;
   begin
-    case Msg.Wparam of
-      DBT_DeviceArrival:
-        if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
-        begin
-          // Drive := GetDrive(PDevBroadcastVolume(Msg.lParam));
-          ElvMain.Selection.ClearAll;
-          RefreshLinkClick(RefreshLink);
-        end;
-      DBT_DeviceRemoveComplete:
-        if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
-        begin
-          Drive := AnsiLowerCase(GetDrive(PDevBroadcastVolume(Msg.lParam)));
-          for I := 0 to ElvMain.Items.Count - 1 do
-          begin
-            Index := ItemIndexToMenuIndex(I);
-            if AnsiLowerCase(ExcludeTrailingPathDelimiter(FFilesInfo[Index].FileName)) = Drive then
-            begin
-              DeleteItemWithIndex(Index);
-              Break;
-            end;
-          end;
-        end;
-      DBT_DEVNODES_CHANGED:
-        begin
-          // just refresh list
-          ElvMain.Selection.ClearAll;
-          RefreshLinkClick(RefreshLink);
-        end;
+    Drive := AnsiLowerCase(GetDrive(PDevBroadcastVolume(Msg.lParam)));
+    for I := 0 to ElvMain.Items.Count - 1 do
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      if AnsiLowerCase(ExcludeTrailingPathDelimiter(FFilesInfo[Index].FileName)) = Drive then
+      begin
+        DeleteItemWithIndex(Index);
+        Break;
+      end;
     end;
+  end;
+
+begin
+
+  case Msg.Wparam of
+    DBT_DeviceArrival:
+      if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
+      begin
+        if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+          ListViewRefreshList;
+
+        if FShellTreeView <> nil then
+         TmrReloadTreeView.Restart(1000);
+      end;
+    DBT_DeviceRemoveComplete:
+      if PDevBroadcastHdr(Msg.lParam)^.dbcd_devicetype = DBT_DevTyp_Volume then
+      begin
+        if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+          RemoveDriveFromListView;
+
+        if FShellTreeView <> nil then
+         TmrReloadTreeView.Restart(1000);
+      end;
+    DBT_DEVNODES_CHANGED:
+      begin
+        if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+          ListViewRefreshList;
+
+        if FShellTreeView <> nil then
+         TmrReloadTreeView.Restart(1000);
+      end;
   end;
 end;
 
@@ -11693,6 +11754,9 @@ begin
     begin
       if FCurrentTypePath = EXPLORER_ITEM_COMPUTER then
         Reload;
+
+      if FShellTreeView <> nil then
+        TmrReloadTreeView.Restart(500);
     end;
     //peItemAdded:
     peItemRemoved:
@@ -13004,6 +13068,7 @@ begin
     FShellTreeView.LoadHomeDirectory(Self);
     FShellTreeView.OnGetPopupMenu := PathTreeViewGetPopupMenu;
     FShellTreeView.OnSelectPathItem := PathTreeViewChange;
+    FShellTreeView.OnKeyAction := PathTreeViewKeyAction;
   end;
 
   Result := FShellTreeView;
@@ -13229,6 +13294,45 @@ begin
   ExplorerUpdateManager.CleanUp(Self);
   inherited;
 end;
+
+procedure TExplorerForm.MiShareImageAndGetUrlClick(Sender: TObject);
+var
+  I, Index: Integer;
+  Files: TDBPopupMenuInfo;
+  EI: TExplorerFileInfo;
+begin
+  Files := TDBPopupMenuInfo.Create;
+  try
+    for I := 0 to ElvMain.Items.Count - 1 do
+      if ElvMain.Items[I].Selected then
+      begin
+        Index := ItemIndexToMenuIndex(I);
+        EI := FFilesInfo[Index];
+
+        if (EI.FileType = EXPLORER_ITEM_IMAGE) or (EI.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+          Files.Add(EI.Copy);
+      end;
+
+    if Files.Count > 0 then
+      ShareLinkForm.Execute(Self, Files);
+  finally
+    F(Files);
+  end;
+end;
+
+procedure TExplorerForm.TmrReloadTreeViewTimer(Sender: TObject);
+begin
+  TmrReloadTreeView.Enabled := False;
+  TreeViewReloadTree;
+end;
+
+{ TToolBarEx }
+
+procedure TToolBarEx.CreateWnd;
+begin
+  inherited;
+end;
+
 
 initialization
   PERegisterThreadEvent := RegisterPathEditThread;

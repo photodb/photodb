@@ -387,6 +387,10 @@ begin
   FImFacePopup := TImageList.Create(Self);
   FImFacePopup.ColorDepth := cd32Bit;
 
+  FWlFaceCount := nil;
+  FLsDetectingFaces := nil;
+  FTbrActions := nil;
+
   FDBCanDrag := False;
 
   FIsWaiting := False;
@@ -2233,6 +2237,8 @@ var
   IsDetectionActive: Boolean;
 begin
   if Visible and not HandleAllocated then
+    Exit;
+  if FWlFaceCount = nil then
     Exit;
 
   BeginScreenUpdate(Handle);

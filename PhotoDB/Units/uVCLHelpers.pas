@@ -8,6 +8,7 @@ uses
   System.Classes,
   Winapi.Windows,
   Winapi.Dwmapi,
+  Winapi.Commctrl,
   Vcl.ExtCtrls,
   Vcl.Forms,
   Vcl.Controls,
@@ -31,7 +32,7 @@ uses
 type
   TTimerHelper = class helper for TTimer
   public
-    procedure Restart;
+    procedure Restart(NewInterval: Integer = 0);
   end;
 
 type
@@ -120,7 +121,17 @@ type
   public
     procedure DisableToolBarForButtons;
     procedure EnableToolBarForButtons;
+    procedure SetDropDownButtonStyle(Button: TToolButton);
   end;
+
+
+  TToolButtonHelper = class helper for TToolButton
+    procedure SetImageIndexEx(Value: Integer);
+    procedure SetCaption(Value: string);
+  end;
+
+type
+  TToolButtonEx = class(TToolButton);
 
 type
   TNotifyEventRef = reference to procedure(Sender: TObject);
@@ -183,8 +194,10 @@ end;
 
 { TTimerHelper }
 
-procedure TTimerHelper.Restart;
+procedure TTimerHelper.Restart(NewInterval: Integer = 0);
 begin
+  if NewInterval <> 0 then
+    Interval := NewInterval;
   Enabled := False;
   Enabled := True;
 end;
@@ -540,5 +553,78 @@ begin
   for I := 0 to Self.ButtonCount - 1 do
     TToolBarButtonEx(Self.Buttons[I]).FToolBar := Self;
 end;
+
+type
+  TToolButtonRewrite = class(TGraphicControl)
+  private
+    FAllowAllUp: Boolean;
+    FAutoSize: Boolean;
+    FDown: Boolean;
+    FGrouped: Boolean;
+    FImageIndex: TImageIndex;
+    FIndeterminate: Boolean;
+    FMarked: Boolean;
+    FMenuItem: TMenuItem;
+    FDropdownMenu: TPopupMenu;
+    FEnableDropdown: Boolean;
+    FWrap: Boolean;
+    FStyle: TToolButtonStyle;
+  end;
+
+procedure TToolBarHelper.SetDropDownButtonStyle(Button: TToolButton);
+var
+  ButtonInfo: TTBButtonInfo;
+  Rect: TRect;
+begin
+  ButtonInfo.cbSize := SizeOf(ButtonInfo);
+  ButtonInfo.dwMask := TBIF_STYLE;
+
+  SendMessage(Self.Handle, TB_GETBUTTONINFO, Button.Index, LPARAM(@ButtonInfo));
+  ButtonInfo.fsStyle := ButtonInfo.fsStyle or BTNS_DROPDOWN;
+
+  SendMessage(Self.Handle, TB_SETBUTTONINFO, Button.Index, LPARAM(@ButtonInfo));
+
+  TToolButtonRewrite(Button).FStyle := tbsDropDown;
+end;
+
+procedure TToolButtonHelper.SetImageIndexEx(Value: Integer);
+var
+  TB: TToolBar;
+  ButtonIndex: Integer;
+begin
+  ButtonIndex := Index;
+
+  TB := TToolButtonEx(Self).FToolBar;
+  TToolButtonEx(Self).FToolBar := nil;
+
+  ImageIndex := Value;
+  TB.Perform(TB_CHANGEBITMAP, ButtonIndex, LPARAM(Value));
+  if TB.Transparent or TB.Flat then Invalidate;
+
+  TToolButtonEx(Self).FToolBar := TB;
+end;
+
+procedure TToolButtonHelper.SetCaption(Value: string);
+var
+  TB: TToolBar;
+  I, ButtonIndex: Integer;
+  ButtonInfo: TTBButtonInfo;
+begin
+  ButtonIndex := Index;
+
+  TB := TToolButtonEx(Self).FToolBar;
+  TToolButtonEx(Self).FToolBar := nil;
+
+  Caption := Value;
+
+  ButtonInfo.cbSize := SizeOf(ButtonInfo);
+  ButtonInfo.dwMask := TBIF_TEXT;
+  ButtonInfo.pszText := PChar(Value);
+  ButtonInfo.cchText := Length(Value);
+  SendMessage(TB.Handle, TB_SETBUTTONINFO, ButtonIndex, LPARAM(@ButtonInfo));
+
+  TToolButtonEx(Self).FToolBar := TB;
+end;
+
 
 end.

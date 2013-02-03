@@ -80,6 +80,8 @@ type
     function GetUserInfo(out Info: IPhotoServiceUserInfo): Boolean;
     function GetAlbumList(Albums: TList<IPhotoServiceAlbum>): Boolean;
     function CreateAlbum(Name, Description: string; Date: TDateTime; Access: Integer; out Album: IPhotoServiceAlbum): Boolean;
+    function UploadPhoto(AlbumID, FileName, Name, Description: string; Date: TDateTime; ContentType: string;
+      Stream: TStream; Progress: IUploadProgress; out Photo: IPhotoServiceItem): Boolean;
     function IsFeatureSupported(Feature: string): Boolean;
     function GetProviderImage(Bitmap: TBitmap): Boolean;
     function ChangeUser: Boolean;
@@ -97,7 +99,7 @@ type
   end;
 
 function PhotoShareManager: TPhotoShareManager;
-function GetFileContentType(FileName: string): string;
+function GetFileMIMEType(FileName: string): string;
 
 implementation
 
@@ -126,7 +128,7 @@ end;
     * video/x-msvideo
 }
 
-function GetFileContentType(FileName: string): string;
+function GetFileMIMEType(FileName: string): string;
 var
   Ext: string;
 begin

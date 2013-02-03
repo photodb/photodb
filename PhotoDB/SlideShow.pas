@@ -3481,24 +3481,30 @@ begin
   if not (ImageExists and not StaticImage) then
     Exit;
 
-  AnimatedImage.ProcessNextFrame(AnimatedBuffer, SlideNO, Theme.WindowColor, ImageFrameTimer,
-    procedure
-    begin
-      if CurrentFileNumber <= CurrentInfo.Count - 1 then
-        case Item.Rotation and DB_IMAGE_ROTATE_MASK of
-          DB_IMAGE_ROTATE_0:
-            FFullImage.Assign(AnimatedBuffer);
-          DB_IMAGE_ROTATE_90:
-            Rotate90(AnimatedBuffer, FFullImage);
-          DB_IMAGE_ROTATE_180:
-            Rotate180(AnimatedBuffer, FFullImage);
-          DB_IMAGE_ROTATE_270:
-            Rotate270(AnimatedBuffer, FFullImage)
-        end;
+  ImageFrameTimer.Enabled := False;
+  try
+    AnimatedImage.ProcessNextFrame(AnimatedBuffer, SlideNO, Theme.WindowColor, ImageFrameTimer,
+      procedure
+      begin
+        if CurrentFileNumber <= CurrentInfo.Count - 1 then
+          case Item.Rotation and DB_IMAGE_ROTATE_MASK of
+            DB_IMAGE_ROTATE_0:
+              FFullImage.Assign(AnimatedBuffer);
+            DB_IMAGE_ROTATE_90:
+              Rotate90(AnimatedBuffer, FFullImage);
+            DB_IMAGE_ROTATE_180:
+              Rotate180(AnimatedBuffer, FFullImage);
+            DB_IMAGE_ROTATE_270:
+              Rotate270(AnimatedBuffer, FFullImage)
+          end;
 
-      RecreateDrawImage(Self);
-    end
-  );
+        RecreateDrawImage(Self);
+      end
+    );
+
+  finally
+    ImageFrameTimer.Enabled := True;
+  end;
 end;
 
 function TViewer.GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;

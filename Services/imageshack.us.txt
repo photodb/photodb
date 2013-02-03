@@ -1,0 +1,18 @@
+
+API Key Request Form
+
+Use this form to request an API key for use with ImageShack or yfrog. All fields are required.
+
+For more information, please visit our Google Code Page.
+
+Thank you!
+
+Your imageshack API request has been submitted. Below are the API keys you requested.
+
+We have also sent you a follow-up email to illusdolphin@gmail.com.
+
+This API key can be used for both the yfrog API or the ImageShack API.
+
+If you use twitter in your API implementation, you must use the yfrog API.
+
+key 1: 5ZCFGJPO6e901252fb40bd7f959967c5f59ce129

@@ -1,0 +1,15 @@
+
+Great! Now you can get started with the API!
+
+For public read-only resources, such as getting image info, looking up user comments, etc. all you need to do is send an authorization header with your client_id along with your requests. This also works if you'd like to upload images anonymously (without the image being tied to an account). This lets us know which application is accessing the API.
+
+Authorization: Client-ID YOUR_CLIENT_ID
+
+For accessing a user's account, please visit the OAuth2 section of the docs.
+
+Client ID:2e7bbd20f391204
+Client secret:5aba50fc4218c63d47260c1621b30ba4a9378608
+
+https://api.imgur.com/oauth2/authorize?client_id=2e7bbd20f391204&response_type=token&state=share
+
+http://www.iana.org/domains/example#access_token=97110c16c072d6e074d7ece0a0c80aaf235c903a&expires_in=3600&token_type=bearer&refresh_token=13837a3784137fd5bdaf0b7d3ffebb3a744c5c81&account_username=illusdolphin

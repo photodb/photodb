@@ -418,7 +418,8 @@ uses
   uProgramStatInfo in 'Units\uProgramStatInfo.pas',
   uImageListUtils in 'Units\uImageListUtils.pas',
   uSysInfo in 'Units\uSysInfo.pas',
-  uCommandLine in 'Units\uCommandLine.pas';
+  uCommandLine in 'Units\uCommandLine.pas',
+  uFormShareLink in 'uFormShareLink.pas' {FormShareLink};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -571,7 +572,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

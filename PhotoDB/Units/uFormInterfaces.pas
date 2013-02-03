@@ -125,6 +125,11 @@ type
     procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
   end;
 
+  IShareLinkForm = interface(IFormInterface)
+    ['{25917009-223C-4012-8443-79E14C52C290}']
+    procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
+  end;
+
   IGroupsManagerForm =  interface(IFormInterface)
     ['{DD99ABFD-68C0-4757-88A8-D0F4BD558653}']
     procedure Execute;
@@ -188,6 +193,7 @@ function StringPromtForm: IStringPromtForm;
 function EncryptForm: IEncryptForm;
 function SteganographyForm: ISteganographyForm;
 function ShareForm: IShareForm;
+function ShareLinkForm: IShareLinkForm;
 function GroupsSelectForm: IGroupsSelectForm;
 function GroupInfoForm: IGroupInfoForm;
 function GroupCreateForm: IGroupCreateForm;
@@ -272,6 +278,11 @@ end;
 function ShareForm: IShareForm;
 begin
   Result := FormInterfaces.CreateForm<IShareForm>();
+end;
+
+function ShareLinkForm: IShareLinkForm;
+begin
+  Result := FormInterfaces.CreateForm<IShareLinkForm>();
 end;
 
 function GroupsSelectForm: IGroupsSelectForm;

@@ -428,7 +428,7 @@ begin
   end else
   begin
 
-    ContentType := GetFileContentType(Data.FileName);
+    ContentType := GetFileMIMEType(Data.FileName);
 
     FS := TFileStream.Create(Data.FileName, fmOpenRead or fmShareDenyWrite);
     try

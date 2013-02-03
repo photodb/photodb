@@ -169,6 +169,9 @@ implementation
 uses
   uPicasaOAuth2;
 
+type
+  TFindNodeCallBack = reference to procedure(Node: IXMLDOMNode);
+
 function ReadFile(FileName: string): string;
 var
   FS: TFileStream;
@@ -214,6 +217,17 @@ begin
       Result := ParentNode.childNodes.item[I];
       Exit;
     end;
+  end;
+end;
+
+procedure FindNodes(ParentNode: IXMLDOMNode; Name: string; CallBack: TFindNodeCallBack);
+var
+  I: Integer;
+begin
+  for I := 0 to ParentNode.childNodes.length - 1 do
+  begin
+    if ParentNode.childNodes[I].nodeName = Name then
+      CallBack(ParentNode.childNodes.item[I]);
   end;
 end;
 
@@ -355,6 +369,13 @@ var
   SW: TStreamWriter;
   S: AnsiString;
 begin
+  //Note: If you want to post a photo, but don't want the hassle of requiring the user of your app to choose an album,
+  //you can post the photo to the "Drop Box." This special album will automatically be created the first time
+  //it is used to store a photo. To post to the Drop Box,
+  //use an albumID value of default: https://picasaweb.google.com/data/feed/api/user/default/albumid/default.
+  if AlbumID = '' then
+    AlbumID := 'default';
+
   Result := False;
   Photo := nil;
   FSync.Enter;
@@ -374,26 +395,27 @@ begin
           S := 'Content-Length: ' + AnsiString(IntToStr(MS.Size)) + CRLF;
           S := S + 'MIME-version: 1.0' + CRLF+ CRLF;
           S := S + 'Media multipart posting' + CRLF;
-          MS.Write(PAnsiChar(S)^, length(S));//записали строку
+          MS.Write(PAnsiChar(S)^, length(S));
 
-         { составляем тело запроса }
+          { Create request body }
           S := '--END_OF_PART' + CRLF;
-          // MIME-тип первой части документа
+          // MIME-type of first part of the document
           S := S + 'Content-Type: application/atom+xml' + CRLF + CRLF;
-          MS.Write(PAnsiChar(S)^, length(S));//записали строку
-          //пишем в Document содержимое XML
+          MS.Write(PAnsiChar(S)^, length(S));
+          //write to document XML content
 
           SW.Write(RequestXML);
-          S := CRLF + CRLF + '--END_OF_PART' + CRLF;//первая часть документа закончена
-          { вторая часть - документ *.doc }
+          S := CRLF + CRLF + '--END_OF_PART' + CRLF;//end of the first part
+          { the second part - file *.doc }
           S := S + 'Content-Type: ' + AnsiString(ContentType) + CRLF + CRLF;
-          MS.Write(PAnsiChar(S)^, Length(S));//записали строку
-          {записываем doc-файл}
+          MS.Write(PAnsiChar(S)^, Length(S));
 
+          {write file}
           MS.CopyFrom(Stream, Stream.Size);
-          {завершаем тело запроса}
+
+          {end of request body}
           s := CRLF + '--END_OF_PART--' + CRLF;
-          MS.Write(PAnsiChar(S)^, Length(S));//завершили тело документа
+          MS.Write(PAnsiChar(S)^, Length(S));
 
           FTmpProgress := Progress;
           try
@@ -786,8 +808,29 @@ var
   SizeNode,
   WidthNode,
   HeightNode,
-  UrlAttr: IXMLDOMNode;
+  UrlAttr,
+  HrefAttr: IXMLDOMNode;
   TimeStamp: Int64;
+
+  function FindLink(LinkType: string): string;
+  var
+    Res: string;
+  begin
+    Res := '';
+    FindNodes(DocumentNode, 'link',
+      procedure(Node: IXMLDOMNode)
+      var
+        TypeAttr: IXMLDOMNode;
+      begin
+        TypeAttr := Node.attributes.getNamedItem('rel');
+        HrefAttr := Node.attributes.getNamedItem('href');
+        if (TypeAttr <> nil) and (HrefAttr <> nil) and (TypeAttr.nodeValue = LinkType) then
+          Res :=  HrefAttr.nodeValue;
+      end
+    );
+    Result := Res;
+  end;
+
 begin
   FXmlInfo := XmlInfo;
 
@@ -807,7 +850,9 @@ begin
 
       MediaGroup := FindNode(DocumentNode, 'media:group');
       if MediaGroup <> nil then
+      begin
         PreviewNode := FindNode(MediaGroup, 'media:thumbnail');
+      end;
 
       if TitleNode <> nil then
         FName := TitleNode.text;
@@ -831,6 +876,11 @@ begin
         FWidth := StrToIntDef(WidthNode.text, 0);
       if HeightNode <> nil then
         FHeight := StrToIntDef(HeightNode.text, 0);
+
+      FUrl := FindLink('http://schemas.google.com/photos/2007#canonical');
+      if FUrl = '' then
+        FUrl := FindLink('alternate');
+
     end;
   end;
 end;
