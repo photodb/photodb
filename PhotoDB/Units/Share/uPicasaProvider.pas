@@ -451,7 +451,7 @@ end;
 procedure TPicasaProvider.DoOperationProgress(Sender: TObject; Max,
   Position: Int64);
 begin
-  if FTmpProgress <> nil then
+  if (FTmpProgress <> nil) and (Max <> 0) then
     FTmpProgress.OnProgress(Self, Max, Position);
 end;
 

@@ -8,6 +8,7 @@ uses
   Math,
   Forms,
   ShellApi,
+  Winapi.CommCtrl,
   Windows,
   SysUtils,
   Classes,
@@ -947,7 +948,8 @@ begin
           B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2,
             FGroup.GroupImage);
           DoResize(16, 16, B, SmallB);
-          DBKernel.ImageList.Add(SmallB, nil);
+
+          ImageList_Add(DBKernel.ImageList.Handle, SmallB.Handle, 0);
         finally
           F(SmallB);
         end;

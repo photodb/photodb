@@ -1869,7 +1869,7 @@ begin
     ImageEditor2.Visible := True;
     CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
     ResetPassword1.Visible := not CryptFile1.Visible;
-    EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(info.FileName) = '');
+    EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(Info.FileName) = '');
 
     Convert1.Visible := not EnterPassword1.Visible;
     Resize1.Visible := not EnterPassword1.Visible;
@@ -7771,6 +7771,8 @@ begin
     MiInfoGroupFind.Caption := L('Find pictures');
     MiInfoGroupRemove.Caption := L('Remove from list');
     MiInfoGroupProperties.Caption := L('Properties');
+
+    MiShareImageAndGetUrl.Caption := L('Generate link');
   finally
     EndTranslate;
   end;
@@ -13287,7 +13289,6 @@ end;
 
 destructor TExplorerForm.Destroy;
 begin
-  FImageViewer := nil;
   F(FHistory);
   F(FFilesInfo);
   F(RefreshIDList);

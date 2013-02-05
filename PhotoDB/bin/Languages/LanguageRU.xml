@@ -447,6 +447,7 @@
 	<translate name="Select person" value="Отметить персону" />
 	<translate name="Middle mouse button or shift + selection using mouse" value="Средняя кнопка мыши или shift + выделение мышкой" />	
 	<translate name="File processing could be failed. Please try internal video player or current programm isn't suported! Internal details: {0}" value="Обнаружены ошибки во время обработки файла, попробуйте использовать встроенный плеер. Возможно, программа, которую Вы используете, не поддерживается. Детали ошибки: {0}" />
+	<translate name="Generate link" value="Создать ссылку" />
   </scope>
   <scope name="DBManager">
 	<translate name="Set" value="Установить" />
@@ -2373,4 +2374,12 @@
 	<translate name="Metering mode" value="Режим измерения"/>
 	<translate name="Exposure bias" value="Компенсация экспозиции"/>
   </scope>
+  <scope name="ShareLink">
+  	<translate name="Image link" value="Ссылка на изображение" />
+	<translate name="Make short url" value="Сделать короткую ссылку" />
+  	<translate name="Uploading: {0:0.#}%" value="Работа: {0:0.#}%" />
+  	<translate name="Authorizing: {0}" value="Авторизация: {0}" />
+  	<translate name="Link: &quot;{0}&quot; was copied to clipboard!" value="Ссылка: &quot;{0}&quot; скопирована в буфер обмена!" />
+  	<translate name="Settings" value="Настройки" />	
+  </scope>  	
 </language>

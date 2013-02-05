@@ -244,6 +244,7 @@ type
     FIsRestoring: Boolean;
     FIsMinimizing: Boolean;
     function GetTheme: TDatabaseTheme;
+    function GetFrameWidth: Integer;
   protected
     procedure WndProc(var Message: TMessage); override;
     function GetFormID: string; virtual; abstract;
@@ -279,6 +280,7 @@ type
     property Theme: TDatabaseTheme read GetTheme;
     property IsRestoring: Boolean read FIsRestoring;
     property IsMinimizing: Boolean read FIsMinimizing;
+    property FrameWidth: Integer read GetFrameWidth;
   end;
 
 type
@@ -557,8 +559,6 @@ end;
 procedure TDBForm.FixLayout;
 var
   StoredAnchors: TAnchorsArray;
-  Details: TThemedElementDetails;
-  Size: TSize;
 begin
   if ((BorderStyle = bsSingle) or (BorderStyle = bsToolWindow)) and StyleServices.Enabled then
   begin
@@ -567,10 +567,7 @@ begin
       DisableAlign;
       DisableAnchors(Self, StoredAnchors);
       try
-        Details := StyleServices.GetElementDetails(twFrameLeftActive);
-        StyleServices.GetElementSize(0, Details, esActual, Size);
-
-        ClientWidth := ClientWidth + Size.cx;
+        ClientWidth := ClientWidth + FrameWidth;
       finally
         EnableAnchors(StoredAnchors);
         EnableAlign;
@@ -579,6 +576,17 @@ begin
       StoredAnchors.Free;
     end;
   end;
+end;
+
+function TDBForm.GetFrameWidth: Integer;
+var
+  Size: TSize;
+  Details: TThemedElementDetails;
+begin
+  Details := StyleServices.GetElementDetails(twFrameLeftActive);
+  StyleServices.GetElementSize(0, Details, esActual, Size);
+
+  Result := Size.cx;
 end;
 
 function TDBForm.GetTheme: TDatabaseTheme;

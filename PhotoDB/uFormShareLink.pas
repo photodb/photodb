@@ -6,6 +6,7 @@ uses
   Generics.Collections,
   Winapi.Windows,
   Winapi.Messages,
+  Winapi.ShellApi,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -14,6 +15,7 @@ uses
   Vcl.StdCtrls,
   Vcl.Buttons,
   Vcl.ExtCtrls,
+  Vcl.Clipbrd,
 
   IdHTTP,
   IdMultipartFormData,
@@ -22,10 +24,16 @@ uses
 
   Data.DBXJSON,
 
+  Dmitry.Utils.System,
+  Dmitry.Graphics.LayeredBitmap,
   Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
   Dmitry.Controls.LoadingSign,
 
+  UnitDBDeclare,
+  UnitDBKernel,
 
+  uConstants,
   uMemory,
   uDBForm,
   uThreadForm,
@@ -33,39 +41,75 @@ uses
   uFormInterfaces,
   uThreadTask,
   uImageViewer,
+  uBitmapUtils,
   uInternetUtils,
-  uPhotoShareInterfaces;
+  uShellIntegration,
+  uPhotoShareInterfaces,
+  uSettings;
 
 type
   TFormShareLink = class(TThreadForm, IShareLinkForm)
-    EdPublicLink: TEdit;
-    SbCopy: TSpeedButton;
     CbShortUrl: TCheckBox;
     BtnClose: TButton;
-    LoadingSign1: TLoadingSign;
+    LsMain: TLoadingSign;
     PnPreview: TPanel;
+    LnkPublicLink: TWebLink;
+    SbCopyToClipboard: TSpeedButton;
+    WlSettings: TWebLink;
+    procedure BtnCloseClick(Sender: TObject);
     procedure CbShortUrlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure SbCopyClick(Sender: TObject);
+    procedure LnkPublicLinkClick(Sender: TObject);
+    procedure SbCopyToClipboardClick(Sender: TObject);
+    procedure WlSettingsClick(Sender: TObject);
   private
     { Private declarations }
+    FProvider: IPhotoShareProvider;
     FViewer: TImageViewer;
     FShortUrl: string;
     FShortUrlInProgress: Boolean;
     FUrl: string;
+    FProgressCount: Integer;
     procedure GetImageLink(Info: TDBPopupMenuInfo; Provider: IPhotoShareProvider);
     procedure CheckShortLink;
+    procedure LoadLanguage;
+    procedure StartProgress;
+    procedure EndProgress;
   protected
+    function GetFormID: string; override;
     procedure InterfaceDestroyed; override;
     procedure UploadCompleted(Link: string);
     procedure UpdateShortUrl(ShortLink: string);
   public
     { Public declarations }
+    destructor Destroy; override;
     procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
+    procedure UpdateProgress(Item: TDBPopupMenuInfoRecord; Max, Position: Int64);
+  end;
+
+type
+  TShareThreadTask = class
+  public
+    Info: TDBPopupMenuInfo;
+    Provider: IPhotoShareProvider
+  end;
+
+  TThreadTaskThread = TThreadTask<TShareThreadTask>;
+
+  TItemUploadProgress = class(TInterfacedObject, IUploadProgress)
+  private
+    FThread: TThreadTaskThread;
+    FItem: TDBPopupMenuInfoRecord;
+  public
+    constructor Create(Thread: TThreadTaskThread; Item: TDBPopupMenuInfoRecord);
+    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
   end;
 
 implementation
+
+uses
+  uShareSettings;
 
 {$R *.dfm}
 
@@ -98,8 +142,11 @@ begin
         ResponseText := IdHTTP.Post(ActionUrl, MS);
 
         FJSONObject := TJSONObject.ParseJSONValue(ResponseText) as TJSONObject;
-
-        Result := FJSONObject.Get('id').JsonValue.Value;
+        try
+          Result := FJSONObject.Get('id').JsonValue.Value;
+        finally
+          F(FJSONObject);
+        end;
       finally
         F(MS);
       end;
@@ -123,6 +170,7 @@ begin
   if (FUrl <> '') and (FShortUrl = '') and not FShortUrlInProgress and CbShortUrl.Checked then
   begin
     FShortUrlInProgress := True;
+    StartProgress;
 
     TThreadTask<string>.Create(Self, FUrl,
       procedure(Thread: TThreadTask<string>; Data: string)
@@ -142,30 +190,38 @@ begin
   end;
 end;
 
+destructor TFormShareLink.Destroy;
+begin
+  inherited;
+end;
+
+procedure TFormShareLink.EndProgress;
+begin
+  Dec(FProgressCount);
+  if FProgressCount <= 0 then
+  begin
+    LsMain.Visible := False;
+    SbCopyToClipboard.Visible := True;
+  end;
+end;
+
 procedure TFormShareLink.Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
 var
-  Providers: TList<IPhotoShareProvider>;
-  Provider: IPhotoShareProvider;
+  Photos: TDBPopupMenuInfo;
 begin
   if Info.Count = 0 then
     Exit;
 
-  Providers := TList<IPhotoShareProvider>.Create;
-  try
-    PhotoShareManager.FillProviders(Providers);
-    Provider := Providers[0];
+  FViewer := TImageViewer.Create;
+  FViewer.AttachTo(Self, PnPreview, 0, 0);
+  FViewer.ResizeTo(PnPreview.Width, PnPreview.Height);
+  Photos := TDBPopupMenuInfo.Create;
+  Photos.Assign(Info);
+  FViewer.LoadFiles(Photos);
 
-   { FViewer := TImageViewer.Create;
-    FViewer.AttachTo(Self, PnPreview, 0, 0);
-    FViewer.ResizeTo(PnPreview.Width, PnPreview.Height);
-    FViewer.LoadFiles(Info);   }
+  GetImageLink(Info, FProvider);
 
-    GetImageLink(Info, Provider);
-
-    ShowModal;
-  finally
-    F(Providers);
-  end;
+  ShowModal;
 end;
 
 procedure TFormShareLink.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -173,15 +229,15 @@ begin
   Action := caHide;
 end;
 
-type
-  TShareThreadTask = class
-  public
-    Info: TDBPopupMenuInfo;
-    Provider: IPhotoShareProvider
-  end;
+procedure TFormShareLink.BtnCloseClick(Sender: TObject);
+begin
+  Close;
+end;
 
 procedure TFormShareLink.CbShortUrlClick(Sender: TObject);
 begin
+  Settings.WriteBool('Share', 'ShowrtLink', CbShortUrl.Checked);
+
   if CbShortUrl.Checked then
   begin
     if FShortUrl = '' then
@@ -190,41 +246,59 @@ begin
       Exit;
     end;
 
-    EdPublicLink.Text := FShortUrl;
+    LnkPublicLink.Text := FShortUrl;
   end else
   begin
-
-    EdPublicLink.Text := FUrl;
+    if FUrl <> '' then
+      LnkPublicLink.Text := FUrl;
   end;
+end;
+
+function TFormShareLink.GetFormID: string;
+begin
+  Result := 'ShareLink';
 end;
 
 procedure TFormShareLink.GetImageLink(Info: TDBPopupMenuInfo; Provider: IPhotoShareProvider);
 var
   Task: TShareThreadTask;
+  Progress: IUploadProgress;
 begin
+  StartProgress;
+
   Task := TShareThreadTask.Create;
   Task.Info := Info;
   Task.Provider := Provider;
 
-  TThreadTask<TShareThreadTask>.Create(Self, Task,
-    procedure(Thread: TThreadTask<TShareThreadTask>; Data: TShareThreadTask)
+  TThreadTaskThread.Create(Self, Task,
+    procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
       FileName: string;
       FS: TFileStream;
       Photo: IPhotoServiceItem;
+      Item: TDBPopupMenuInfoRecord;
     begin
       try
-        FileName := Data.Info[0].FileName;
+        Item := Data.Info[0];
+
+        FileName := Item.FileName;
         FS := TFileStream.Create(FileName, fmOpenRead, fmShareDenyWrite);
         try
-          if Provider.UploadPhoto('', FileName, ExtractFileName(FileName), '', Now, 'image/jpeg', FS, nil, Photo) then
-          begin
-            Thread.SynchronizeTask(
-              procedure
-              begin
-                TFormShareLink(Thread.ThreadForm).UploadCompleted(Photo.Url);
-              end
-            );
+          Progress := TItemUploadProgress.Create(Thread, Item);
+          try
+
+            if Provider.UploadPhoto('', FileName, ExtractFileName(FileName), '', Now, 'image/jpeg', FS, Progress, Photo) then
+            begin
+              Thread.SynchronizeTask(
+                procedure
+                begin
+                  TFormShareLink(Thread.ThreadForm).UploadCompleted(Photo.Url);
+                end
+              );
+            end;
+
+          finally
+            Progress := nil;
           end;
 
         finally
@@ -238,9 +312,42 @@ begin
 end;
 
 procedure TFormShareLink.FormCreate(Sender: TObject);
+var
+  Providers: TList<IPhotoShareProvider>;
+  LB: TLayeredBitmap;
+  Icon: HIcon;
 begin
   FShortUrl := '';
   FShortUrlInProgress := False;
+  FProgressCount := 0;
+  CbShortUrl.Checked := Settings.ReadBool('Share', 'ShowrtLink', True);
+
+  Providers := TList<IPhotoShareProvider>.Create;
+  try
+    PhotoShareManager.FillProviders(Providers);
+    FProvider := Providers[0];
+  finally
+    F(Providers);
+  end;
+
+  LB := TLayeredBitmap.Create;
+  try
+    Icon := LoadIcon(HInstance, 'EXPLORER_COPY');
+    try
+      LB.LoadFromHIcon(Icon, 32, 32);
+    finally
+      DestroyIcon(Icon);
+    end;
+    KeepProportions(TBitmap(LB), 22, 22);
+    SbCopyToClipboard.Glyph := LB;
+  finally
+    F(LB);
+  end;
+  LoadLanguage;
+
+  WlSettings.LoadFromResource('SERIES_SETTINGS');
+  WlSettings.RefreshBuffer(True);
+  WlSettings.Left := ClientWidth - WlSettings.Width;
 end;
 
 procedure TFormShareLink.InterfaceDestroyed;
@@ -249,23 +356,86 @@ begin
   Release;
 end;
 
-procedure TFormShareLink.SbCopyClick(Sender: TObject);
+procedure TFormShareLink.LnkPublicLinkClick(Sender: TObject);
 begin
-  EdPublicLink.CopyToClipboard;
+  ShellExecute(GetActiveWindow, 'open', PWideChar(LnkPublicLink.Text), nil, nil, SW_NORMAL);
+end;
+
+procedure TFormShareLink.LoadLanguage;
+begin
+  BeginTranslate;
+  try
+    Caption := L('Image link');
+    BtnClose.Caption := L('Close');
+    CbShortUrl.Caption := L('Make short url');
+    LnkPublicLink.Text := FormatEx(L('Authorizing: {0}'), [FProvider.GetProviderName]);
+    WlSettings.Text := L('Settings');
+  finally
+    EndTranslate;
+  end;
+end;
+
+procedure TFormShareLink.SbCopyToClipboardClick(Sender: TObject);
+begin
+  Clipboard.AsText := LnkPublicLink.Text;
+  MessageBoxDB(Handle, FormatEx(L('Link: "{0}" was copied to clipboard!'), [LnkPublicLink.Text]), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+end;
+
+procedure TFormShareLink.StartProgress;
+begin
+  Inc(FProgressCount);
+  LsMain.Visible := True;
+  SbCopyToClipboard.Visible := False;
+end;
+
+procedure TFormShareLink.UpdateProgress(Item: TDBPopupMenuInfoRecord; Max,
+  Position: Int64);
+begin
+  LnkPublicLink.Text := FormatEx(L('Uploading: {0:0.#}%'), [100.0 * Position / Max]);
 end;
 
 procedure TFormShareLink.UpdateShortUrl(ShortLink: string);
 begin
+  EndProgress;
   FShortUrl := ShortLink;
   FShortUrlInProgress := False;
-  CheckShortLink;
+  if CbShortUrl.Checked then
+    LnkPublicLink.Text := ShortLink;
 end;
 
 procedure TFormShareLink.UploadCompleted(Link: string);
 begin
   FUrl := Link;
-  EdPublicLink.Text := Link;
+  LnkPublicLink.Text := Link;
+  LnkPublicLink.Enabled := True;
+  EndProgress;
   CheckShortLink;
+end;
+
+procedure TFormShareLink.WlSettingsClick(Sender: TObject);
+begin
+  if ShowShareSettings then
+    //Update smth
+end;
+
+{ TItemUploadProgress }
+
+constructor TItemUploadProgress.Create(Thread: TThreadTaskThread;
+  Item: TDBPopupMenuInfoRecord);
+begin
+  FThread := Thread;
+  FItem := Item;
+end;
+
+procedure TItemUploadProgress.OnProgress(Sender: IPhotoShareProvider; Max,
+  Position: Int64);
+begin
+  FThread.SynchronizeTask(
+    procedure
+    begin
+      TFormShareLink(FThread.ThreadForm).UpdateProgress(FItem, Max, Position);
+    end
+  );
 end;
 
 initialization

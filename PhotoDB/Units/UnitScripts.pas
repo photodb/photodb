@@ -16,22 +16,26 @@ interface
 {$ENDIF}
 
 uses
+  Winapi.Windows,
+  Winapi.ShellAPI,
+  Winapi.ShlObj,
+  Winapi.CommCtrl,
+  System.SysUtils,
+  System.StrUtils,
+  System.Classes,
+  System.Win.Registry,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Menus,
+  Vcl.Forms,
+  Vcl.ImgList,
+  Vcl.StdCtrls,
+
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+
   uMemory,
   uMemoryEx,
-  Windows,
-  Menus,
-  SysUtils,
-  Graphics,
-  ShellAPI,
-  StrUtils,
-  Dialogs,
-  Classes,
-  Controls,
-  Registry,
-  ShlObj,
-  Forms,
-  ImgList,
-  StdCtrls,
   uScript,
   uStringUtils,
   uGOM,
@@ -39,8 +43,6 @@ uses
   uTranslate,
   uRuntime,
   uActivationUtils,
-  Dmitry.Utils.System,
-  Dmitry.Utils.Files,
   uGUIDUtils,
   uPortableDeviceUtils,
   uPortableScriptUtils,
@@ -2161,7 +2163,7 @@ begin
     begin
       if ImageList.Count = 0 then
         Break;
-      ImageList.Delete(ImageList.Count - 1);
+      ImageList_Remove(ImageList.Handle, ImageList.Count - 1);
       ImagesCount := 0;
     end;
   LInitString := Length(InitStringCommand) * SizeOf(Char);

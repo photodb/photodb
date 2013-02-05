@@ -222,8 +222,7 @@ end;
 
 procedure DoHomeContactWithAuthor;
 begin
-  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName + ''''''), nil, nil,
-    SW_NORMAL);
+  ShellExecute(GetActiveWindow, 'open', PWideChar('mailto:' + ProgramMail + '?subject=''''' + ProductName + ''''''), nil, nil, SW_NORMAL);
 end;
 
 procedure DoBuyApplication;

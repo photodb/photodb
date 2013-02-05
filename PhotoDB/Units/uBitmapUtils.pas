@@ -2254,6 +2254,9 @@ begin
   begin
     B := TBitmap.Create;
     try
+      if Bitmap.PixelFormat = pf32bit then
+        B.PixelFormat := pf32bit;
+
       ProportionalSize(MaxWidth, MaxHeight, W, H);
       DoResize(W, H, Bitmap, B);
       Exchange(Bitmap, B);
