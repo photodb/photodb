@@ -45,6 +45,7 @@ uses
   uInternetUtils,
   uShellIntegration,
   uPhotoShareInterfaces,
+  uShareUtils,
   uSettings;
 
 type
@@ -56,6 +57,7 @@ type
     LnkPublicLink: TWebLink;
     SbCopyToClipboard: TSpeedButton;
     WlSettings: TWebLink;
+    procedure FormDestroy(Sender: TObject);
     procedure BtnCloseClick(Sender: TObject);
     procedure CbShortUrlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -195,6 +197,11 @@ begin
   inherited;
 end;
 
+procedure TFormShareLink.FormDestroy(Sender: TObject);
+begin
+  NewFormState;
+end;
+
 procedure TFormShareLink.EndProgress;
 begin
   Dec(FProgressCount);
@@ -273,37 +280,43 @@ begin
   TThreadTaskThread.Create(Self, Task,
     procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
-      FileName: string;
       FS: TFileStream;
-      Photo: IPhotoServiceItem;
       Item: TDBPopupMenuInfoRecord;
     begin
       try
         Item := Data.Info[0];
 
-        FileName := Item.FileName;
-        FS := TFileStream.Create(FileName, fmOpenRead, fmShareDenyWrite);
-        try
-          Progress := TItemUploadProgress.Create(Thread, Item);
-          try
 
-            if Provider.UploadPhoto('', FileName, ExtractFileName(FileName), '', Now, 'image/jpeg', FS, Progress, Photo) then
-            begin
-              Thread.SynchronizeTask(
-                procedure
-                begin
-                  TFormShareLink(Thread.ThreadForm).UploadCompleted(Photo.Url);
-                end
-              );
+
+        ProcessImageForSharing(Item, False,
+          procedure(Data: TDBPopupMenuInfoRecord; Preview: TGraphic)
+          begin
+            //no preview is available
+          end,
+          procedure(Data: TDBPopupMenuInfoRecord; S: TStream; ContentType: string)
+          var
+            Photo: IPhotoServiceItem;
+          begin
+            Progress := TItemUploadProgress.Create(Thread, Item);
+            try
+
+              if Provider.UploadPhoto('', ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+                  Data.Comment, Data.Date, ContentType, S, Progress, Photo) then
+              begin
+                Thread.SynchronizeTask(
+                  procedure
+                  begin
+                    TFormShareLink(Thread.ThreadForm).UploadCompleted(Photo.Url);
+                  end
+                );
+              end;
+
+            finally
+              Progress := nil;
             end;
+          end
+        );
 
-          finally
-            Progress := nil;
-          end;
-
-        finally
-          F(FS);
-        end;
       finally
         F(Data);
       end;

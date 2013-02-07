@@ -16,6 +16,7 @@ object FormShareLink: TFormShareLink
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     393
     141)

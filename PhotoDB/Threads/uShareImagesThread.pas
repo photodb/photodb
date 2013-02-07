@@ -3,39 +3,43 @@ unit uShareImagesThread;
 interface
 
 uses
-  uConstants,
-  uRuntime,
-  uMemory,
-  Dmitry.Utils.System,
-  uTranslate,
   Winapi.Windows,
+  Winapi.ActiveX,
   System.SysUtils,
   System.Classes,
-  uThreadEx,
-  uThreadForm,
   Vcl.Graphics,
+  Vcl.Imaging.Jpeg,
+  Vcl.Imaging.pngImage,
+  Vcl.ComCtrls,
+
+  Dmitry.Utils.System,
+
+  CCR.Exif,
+
   UnitDBDeclare,
-  uAssociations,
-  Winapi.ActiveX,
-  uPortableDeviceUtils,
   GraphicCrypt,
   UnitDBKernel,
   RAWImage,
+
+  uConstants,
+  uRuntime,
+  uMemory,
+  uTranslate,
+  uThreadEx,
+  uThreadForm,
+  uAssociations,
+  uPortableDeviceUtils,
   uJpegUtils,
   uGraphicUtils,
-  GraphicEx,
   uSettings,
   uBitmapUtils,
   uLogger,
   uShellThumbnails,
   uAssociatedIcons,
-  Vcl.Imaging.Jpeg,
-  Vcl.Imaging.pngImage,
-  Vcl.ComCtrls,
   uPhotoShareInterfaces,
   uShellIntegration,
   uExifUtils,
-  CCR.Exif,
+  uShareUtils,
   uImageLoader;
 
 type
@@ -268,123 +272,31 @@ end;
 
 procedure TShareImagesThread.ProcessImage(Data: TDBPopupMenuInfoRecord);
 var
-  ContentType: string;
-  UsePreviewForRAW: Boolean;
-  NewGraphic: TGraphic;
-  Original: TBitmap;
-  Width, Height: Integer;
-  IsJpegImageFormat,
-  ResizeImage: Boolean;
-  MS: TMemoryStream;
   PhotoItem: IPhotoServiceItem;
   ItemProgress: IUploadProgress;
-  Ico: TIcon;
-
-  Flags: TImageLoadFlags;
-  ImageInfo: ILoadImageInfo;
 begin
-  try
-    Width := 0;
-    Height := 0;
-    ResizeImage := Settings.ReadBool('Share', 'ResizeImage', True);
-    if ResizeImage then
+  ProcessImageForSharing(Data, FIsPreview,
+    procedure(Data: TDBPopupMenuInfoRecord; Preview: TGraphic)
     begin
-      Width := Settings.ReadInteger('Share', 'ImageWidth', 1920);
-      Height := Settings.ReadInteger('Share', 'ImageWidth', 1920);
-    end;
-    if FIsPreview then
-    begin
-      Width := 32;
-      Height := 32;
-    end;
-
-    UsePreviewForRAW := Settings.ReadBool('Share', 'RAWPreview', True);
-    IsJpegImageFormat := Settings.ReadInteger('Share', 'ImageFormat', 0) = 0;
-
-    Flags := [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword, ilfThrowError];
-    if not (UsePreviewForRAW or FIsPreview) then
-      Flags := Flags + [ilfFullRAW];
-
-    if LoadImageFromPath(Data, -1, '', Flags, ImageInfo, Width, Height) then
-    begin
-      Original := ImageInfo.GenerateBitmap(Data, Width, Height, pf24Bit, clWhite,
-        [ilboFreeGraphic, ilboRotate, ilboApplyICCProfile, ilboQualityResize]);
-      try
-        if Original <> nil then
+      SynchronizeEx(
+        procedure
         begin
-          if FIsPreview then
-          begin
-            SynchronizeEx(
-              procedure
-              begin
-                TFormSharePhotos(OwnerForm).UpdatePreview(Data, Original);
-              end
-            );
-          end else
-          begin
-            if IsJpegImageFormat then
-              NewGraphic := TJpegImage.Create
-            else
-              NewGraphic := TPngImage.Create;
-            try
-              AssignToGraphic(NewGraphic, Original);
-              F(Original);
-
-              SetJPEGGraphicSaveOptions('ShareImages', NewGraphic);
-              if NewGraphic is TJPEGImage then
-                FreeJpegBitmap(TJPEGImage(NewGraphic));
-
-              MS := TMemoryStream.Create;
-              try
-                NewGraphic.SaveToStream(MS);
-
-                if IsJpegImageFormat then
-                  ImageInfo.TryUpdateExif(MS, NewGraphic);
-                
-                MS.Seek(0, soFromBeginning);
-
-                if IsJpegImageFormat then
-                  ContentType := 'image/jpeg'
-                else
-                  ContentType := 'image/png';
-
-                 ItemProgress := TItemUploadProgress.Create(Self, Data);
-                 try
-                   FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
-                     ExtractFileName(Data.FileName), Data.Date, ContentType, MS, ItemProgress, PhotoItem);
-                 finally
-                   ItemProgress := nil;
-                 end;
-              finally
-                F(MS);
-              end;
-            finally
-              F(NewGraphic);
-            end;
-          end;
-
-        end;
-      finally
-        F(Original);
-      end;
-    end;
-  except
-    on e: Exception do
+          TFormSharePhotos(OwnerForm).UpdatePreview(Data, Preview);
+        end
+      );
+    end,
+    procedure(Data: TDBPopupMenuInfoRecord; S: TStream; ContentType: string)
     begin
-      Ico := TAIcons.Instance.GetIconByExt(Data.FileName, False, 32, False);
+      ItemProgress := TItemUploadProgress.Create(Self, Data);
       try
-        SynchronizeEx(
-          procedure
-          begin
-            TFormSharePhotos(OwnerForm).UpdatePreview(Data, Ico);
-          end
-        );
+        FAlbum.UploadItem(ExtractFileName(Data.FileName), ExtractFileName(Data.FileName),
+          Data.Comment, Data.Date, ContentType, S, ItemProgress, PhotoItem);
       finally
-        F(Ico);
+        ItemProgress := nil;
       end;
-      raise;
-    end;
-  end;
+    end
+  );
+
 end;
 
 procedure TShareImagesThread.ProcessVideo(Data: TDBPopupMenuInfoRecord);
@@ -427,7 +339,6 @@ begin
     end;
   end else
   begin
-
     ContentType := GetFileMIMEType(Data.FileName);
 
     FS := TFileStream.Create(Data.FileName, fmOpenRead or fmShareDenyWrite);
