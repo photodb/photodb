@@ -46,6 +46,7 @@ uses
   uShellIntegration,
   uPhotoShareInterfaces,
   uShareUtils,
+  uDBRepository,
   uSettings;
 
 type
@@ -280,13 +281,17 @@ begin
   TThreadTaskThread.Create(Self, Task,
     procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
-      FS: TFileStream;
       Item: TDBPopupMenuInfoRecord;
+      DBItemRepository: TDBItemRepository;
+      DBItem: TDBItem;
     begin
       try
         Item := Data.Info[0];
 
-
+        DBItemRepository := TDBItemRepository.Create;
+        DBItem := DBItemRepository.WithKey().Add(DBItemFields.Links).Table()
+          .SelectItem().ById(Item.Id)
+          .FirstOrDefault();
 
         ProcessImageForSharing(Item, False,
           procedure(Data: TDBPopupMenuInfoRecord; Preview: TGraphic)

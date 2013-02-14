@@ -50,6 +50,7 @@ procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
 procedure FillTransparentChannel(Bitmap: TBitmap; TransparentValue: Byte);
+procedure DrawTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0);
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
 procedure DrawImageEx32To32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
@@ -1341,27 +1342,61 @@ begin
   end;
 end;
 
+procedure DrawTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0);
+var
+  I, J: Integer;
+  p: PARGB;
+  R, G, B: Byte;
+  W, W1: Byte;
+  RM, GM, BM: array[0..255] of byte;
+begin
+  Bitmap.PixelFormat := pf24Bit;
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  W := TransparentValue;
+  W1 := 255 - W;
+  for I := 0 to 255 do
+  begin
+    RM[I] := (I * W1 + R * W + $7F) div $FF;
+    GM[I] := (I * W1 + G * W + $7F) div $FF;
+    BM[I] := (I * W1 + B * W + $7F) div $FF;
+  end;
+
+  for I := Max(0, Y) to Min(Y + Height - 1, Bitmap.Height - 1) do
+  begin
+    p := Bitmap.ScanLine[I];
+    for J := Max(0, X) to Min(X + Width - 1, Bitmap.Width - 1) do
+    begin
+      p[J].R := RM[p[J].R];
+      p[J].G := GM[p[J].G];
+      p[J].B := BM[p[J].B];
+    end;
+  end;
+end;
+
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
 var
   I, J: Integer;
-  p: PARGB32;
+  P: PARGB32;
   R, G, B: Byte;
+  Value: Integer;
 begin
   Bitmap.PixelFormat := pf32Bit;
   Color := ColorToRGB(Color);
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);
+  TRGB32(Value).R := R;
+  TRGB32(Value).G := G;
+  TRGB32(Value).B := B;
+  TRGB32(Value).L := TransparentValue;
   for I := 0 to Bitmap.Height - 1 do
   begin
-    p := Bitmap.ScanLine[I];
+    P := Bitmap.ScanLine[I];
     for J := 0 to Bitmap.Width - 1 do
-    begin
-      p[J].R := R;
-      p[J].G := G;
-      p[J].B := B;
-      p[J].L := TransparentValue;
-    end;
+      Integer(P[J]) := Value;
   end;
 end;
 

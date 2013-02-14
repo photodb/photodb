@@ -154,6 +154,7 @@ type
 
     function Buffer: TBitmap;
     procedure RecreateImage;
+    procedure DrawImageInfo;
     function GetIsFastDrawing: Boolean;
     procedure ReAlignScrolls(IsCenter: Boolean);
     function GetItem: TDBPopupMenuInfoRecord;
@@ -478,6 +479,11 @@ end;
 function TImageViewerControl.DrawElement(DC: HDC): Boolean;
 begin
   Result := BitBlt(DC, 0, 0, Buffer.Width, Buffer.Height, Buffer.Canvas.Handle, 0, 0, SRCCOPY);
+end;
+
+procedure TImageViewerControl.DrawImageInfo;
+begin
+  DrawTransparentColor(FDrawImage, Theme.PanelColor, 0, FDrawImage.Height - 100, FDrawImage.Width, 100, 200);
 end;
 
 procedure TImageViewerControl.Erased(var Message: TWMEraseBkgnd);
@@ -1808,6 +1814,8 @@ begin
   end else
     ShowErrorText(Item.FileName);
 
+  DrawImageInfo;
+
   BeginScreenUpdate(Handle);
   try
     RefreshFaces;
@@ -2197,7 +2205,7 @@ begin
       FItem.IsTime := Value.IsTime;
       FItem.InfoLoaded := True;
       FItem.Encrypted := Value.Encrypted;
-      FItem.Links := '';
+      FItem.Links := Value.Links;
     end;
   end;
 

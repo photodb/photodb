@@ -429,8 +429,6 @@ uses
 
 var
   S1: string;
-  DBItem: TDBItem;
-  DBItemRepository: TDBItemRepository;
 
 procedure StopApplication;
 begin
@@ -716,15 +714,6 @@ begin
     AllowDragAndDrop;
 
     TW.I.Start('Application.Run');
-
-    DBItemRepository := TDBItemRepository.Create;
-    DBItem := DBItemRepository.WithKey().Add(DBItemFields.Links).Table()
-      .SelectItem()
-      .ById(36389)
-      .FirstOrDefault();
-
-    F(DBItemRepository);
-    F(DBItem);
 
     Application.Run;
 

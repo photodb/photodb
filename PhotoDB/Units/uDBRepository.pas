@@ -5,6 +5,7 @@ interface
 uses
   System.SysUtils,
   Generics.Collections,
+  Data.DB,
 
   uConstants,
   uDBClasses,
@@ -13,8 +14,22 @@ uses
 type
 
   TSimpleEntity = class
-  protected
-    procedure ConnectWithQuery();
+  strict private 
+    DS: TDataSet;
+  protected 
+    FUC: TUpdateCommand;
+    function GetUC: TUpdateCommand;          
+    procedure InitUC; virtual; abstract;     
+    function GetTableName: string; virtual; abstract;
+    procedure ReadFromQuery(Query: TSqlCommand); virtual;
+    function ReadInteger(FieldName: string; Default: Integer = 0): Integer; 
+    function ReadString(FieldName: string; Default: string = ''): string;
+    property UC: TUpdateCommand read GetUC;
+    property TableName: string read GetTableName;
+  public
+    constructor Create; virtual;
+    destructor Destroy; override;
+    procedure SaveChanges; 
   end;
 
   ItemQueries = class;
@@ -23,7 +38,17 @@ type
   TDBQuery<T: TSimpleEntity, constructor> = class;
 
   TDBItem = class(TSimpleEntity)
-
+  strict private
+    FId: Integer;
+    FLinks: string;
+    procedure SetLinks(const Value: string);
+  protected             
+    procedure InitUC; override;                           
+    function GetTableName: string; override;
+    procedure ReadFromQuery(Query: TSqlCommand); override;
+  public
+    property Id: Integer read FId;
+    property Links: string read FLinks write SetLinks;
   end;
 
   TDBGroupItem = class(TSimpleEntity)
@@ -38,16 +63,18 @@ type
     const Links = 'Links';
     const GroupId = 'GroupId';
   end;
-
+  
   DBGroupFields = class sealed
   public
     const GroupId = 'GroupId';
   end;
 
   TDBRepository = class
-  private
+  strict private
     FFields: TDBFields<TDBItem>;
+    FObjects: TList<TObject>;
   protected
+    procedure AddObject(QueryObject: TObject);
     property Fields: TDBFields<TDBItem> read FFields;
   public
     constructor Create; virtual;
@@ -55,19 +82,19 @@ type
   end;
 
   TDBQueries<T: TSimpleEntity> = class
-  private
+  strict private
     FSelectCommand: TSelectCommand;
     FTable: TDBTable<T>;
   protected
     property Table: TDBTable<T> read FTable;
-    property SelectCommand: TSelectCommand read  FSelectCommand;
+    property SelectCommand: TSelectCommand read FSelectCommand write FSelectCommand;
   public
     constructor Create(Table: TDBTable<T>); virtual;
     destructor Destroy; override;
   end;
 
   TDBTable<T: TSimpleEntity> = class
-  private
+  strict private
     FFields: TDBFields<T>;
     FQueries: TDBQueries<TDBItem>;
   protected
@@ -94,10 +121,14 @@ type
   end;
 
   TDBFields<T: TSimpleEntity> = class
-  private
+  strict private
+    FRepository: TDBRepository;
     FFields: TList<string>;
+  protected
+    property Repository: TDBRepository read FRepository;
+    property Fields: TList<string> read FFields;
   public
-    constructor Create;
+    constructor Create(Repository: TDBRepository);
     destructor Destroy; override;
 
     function Add(FieldName: string): TDBFields<T>;
@@ -175,9 +206,11 @@ end;
 { TDBTable<T> }
 
 constructor TDBTable<T>.Create(Fields: TDBFields<T>);
-begin
+begin                
   FFields := Fields;
   FQueries := nil;
+
+  FFields.Repository.AddObject(Self);
 end;
 
 destructor TDBTable<T>.Destroy;
@@ -208,8 +241,9 @@ begin
   Result := Self;
 end;
 
-constructor TDBFields<T>.Create;
+constructor TDBFields<T>.Create(Repository: TDBRepository);
 begin
+  FRepository := Repository;
   FFields := TList<string>.Create;
 end;
 
@@ -259,7 +293,7 @@ end;
 
 function ItemQueries.ById(Id: Integer): TDBQuery<TDBItem>;
 begin
-  FSelectCommand.AddWhereParameter(TIntegerParameter.Create(DBItemFields.Id, Id));
+  SelectCommand.AddWhereParameter(TIntegerParameter.Create(DBItemFields.Id, Id));
 
   Result := TDBQuery<TDBItem>.Create(Self);
 end;
@@ -267,12 +301,11 @@ end;
 constructor ItemQueries.Create(Table: TDBTable<TDBItem>);
 begin
   inherited Create(Table);
-  FSelectCommand := TSelectCommand.Create(ImageTable);
+  SelectCommand := TSelectCommand.Create(ImageTable);
 end;
 
 destructor ItemQueries.Destroy;
-begin
-  F(FSelectCommand);
+begin       
   inherited;
 end;
 
@@ -281,6 +314,7 @@ end;
 constructor TDBQuery<T>.Create(Queries: TDBQueries<TDBItem>);
 begin
   FQueries := Queries;
+  Queries.Table.Fields.Repository.AddObject(Self);
 end;
 
 destructor TDBQuery<T>.Destroy;
@@ -296,18 +330,17 @@ end;
 function TDBQuery<T>.FirstOrDefault: T;
 var
   I: Integer;
-  Fields: TDBFields<T>;
 begin
   Result := nil;
 
-  for I := 0 to Queries.Table.Fields.FFields.Count - 1 do
-    SC.AddParameter(TStringParameter.Create(Queries.Table.Fields.FFields[I]));
+  for I := 0 to Queries.Table.Fields.Fields.Count - 1 do
+    SC.AddParameter(TStringParameter.Create(Queries.Table.Fields.Fields[I]));
   SC.TopRecords := 1;
 
   if SC.Execute > 0 then
   begin
     Result := T.Create;
-    Result.ConnectWithQuery();
+    Result.ReadFromQuery(SC);
   end;
 end;
 
@@ -333,14 +366,21 @@ end;
 
 { TDBRepository }
 
-constructor TDBRepository.Create;
+procedure TDBRepository.AddObject(QueryObject: TObject);
 begin
-  FFields := TDBFields<TDBItem>.Create;
+  FObjects.Add(QueryObject);
+end;
+
+constructor TDBRepository.Create;
+begin   
+  FFields := TDBFields<TDBItem>.Create(Self);  
+  FObjects := TList<TObject>.Create;
 end;
 
 destructor TDBRepository.Destroy;
 begin
   F(FFields);
+  FreeList(FObjects);
   inherited;
 end;
 
@@ -356,6 +396,7 @@ end;
 constructor TDBQueries<T>.Create(Table: TDBTable<T>);
 begin
   FTable := Table;
+  Table.Fields.Repository.AddObject(Self);
 end;
 
 destructor TDBQueries<T>.Destroy;
@@ -366,9 +407,85 @@ end;
 
 { TSimpleEntity }
 
-procedure TSimpleEntity.ConnectWithQuery;
+constructor TSimpleEntity.Create;
 begin
+  FUC := nil;
+end;
 
+destructor TSimpleEntity.Destroy;
+begin
+  F(FUC);
+  inherited;
+end;
+
+function TSimpleEntity.GetUC: TUpdateCommand;
+begin
+  if FUC = nil then
+  begin
+    FUC := TUpdateCommand.Create(TableName);
+    InitUC;
+  end;
+
+  Result := FUC;
+end;
+
+procedure TSimpleEntity.ReadFromQuery(Query: TSqlCommand);
+begin
+  DS := Query.DS;
+end;
+
+function TSimpleEntity.ReadInteger(FieldName: string; Default: Integer): Integer;
+var
+  F: TField;
+begin
+  F := DS.FindField(FieldName);
+  if F = nil then
+    Exit(Default);
+
+  Result := F.AsInteger;
+end;
+
+function TSimpleEntity.ReadString(FieldName, Default: string): string;
+var
+  F: TField;
+begin
+  F := DS.FindField(FieldName);
+  if F = nil then
+    Exit(Default);
+
+  Result := F.AsString;
+end;
+
+procedure TSimpleEntity.SaveChanges;
+begin
+  if UC <> nil then
+    UC.Execute;
+end;
+
+{ TDBItem }
+
+function TDBItem.GetTableName: string;
+begin
+  Result := ImageTable;
+end;
+
+procedure TDBItem.InitUC;
+begin
+  UC.AddWhereParameter(TIntegerParameter.Create(DBItemFields.Id, Id));
+end;
+
+procedure TDBItem.ReadFromQuery(Query: TSqlCommand);
+begin
+  inherited;
+  
+  FId := ReadInteger('Id');
+  FLinks := ReadString('Links');
+end;
+
+procedure TDBItem.SetLinks(const Value: string);
+begin
+  FLinks := Value;
+  UC.AddParameter(TStringParameter.Create(DBItemFields.Links, Value));
 end;
 
 end.
