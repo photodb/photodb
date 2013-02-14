@@ -11,9 +11,6 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.PngImage,
 
-  CCR.Exif.XMPUtils,
-  CCR.Exif,
-
   uMemory,
 
   lcms2dll;

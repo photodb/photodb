@@ -10,6 +10,9 @@ program PhotoDB;
 
 uses
   FastMM4,
+{$IFDEF DEBUG}
+  ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
+{$ENDIF DEBUG}
   uInit in 'Units\uInit.pas',
   uTime in 'Units\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
@@ -429,6 +432,7 @@ uses
 
 var
   S1: string;
+  _I: Integer;
 
 procedure StopApplication;
 begin
@@ -521,6 +525,9 @@ begin
    /SQLExecFile
   }
     TW.I.Start('START');
+    for _I := 0 to 10 do
+      if ParamStr(_I) <> '' then
+        TW.I.Start('Parameter: ' + ParamStr(_I));
 
     EventLog('');
     EventLog('');
@@ -731,7 +738,8 @@ begin
     on e: Exception do
     begin
       CloseSplashWindow;
-      ShowMessage('Fatal error: ' + e.Message);
+      EventLog(e);
+      ShowMessage('Fatal error: ' + e.ToString + sLineBreak + e.StackTrace);
     end;
   end;
 end.

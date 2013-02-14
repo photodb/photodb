@@ -13289,6 +13289,7 @@ end;
 
 destructor TExplorerForm.Destroy;
 begin
+  FImageViewer := nil;
   F(FHistory);
   F(FFilesInfo);
   F(RefreshIDList);

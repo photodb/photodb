@@ -508,6 +508,7 @@ end;
 
 procedure TFormManager.AeMainException(Sender: TObject; E: Exception);
 begin
+  CloseSplashWindow;
   EventLog(E);
   //{$IFDEF DEBUG}
   MessageBoxDB(Handle, FormatEx(TA('An unhandled error occurred: {0}!'), [e.Message]), L('Error'),  TD_BUTTON_OK, TD_ICON_ERROR);

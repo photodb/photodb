@@ -159,6 +159,7 @@ var
   Gsi: TGIFSubImage;
   TickCountStart: Cardinal;
 begin
+  Timer.Enabled := False;
   TickCountStart := GetTickCount;
   Del := 100;
   TimerEnabled := False;
@@ -216,14 +217,16 @@ begin
 
   end else if Self is TAnimatedJPEG then
   begin
-    TimerEnabled := True;
+    TimerEnabled := TAnimatedJPEG(Self).Count > 1;
+    if not TimerEnabled then
+      CurrentFrameNumber := 0;
+
     AnimatedBuffer.Assign(TAnimatedJPEG(Self).Images[CurrentFrameNumber]);
     Del := Animation3DDelay;
   end;
 
   DrawCallBack;
 
-  Timer.Enabled := False;
   Delta := Integer(GetTickCount - TickCountStart);
   Timer.Interval := Max(Del div 2, Del - Delta);
   Timer.Enabled := TimerEnabled;

@@ -15,7 +15,7 @@ uses
 type
   TLogger = class(TObject)
   private
-{$IFDEF LOG}
+{$IFDEF EVENTLOG}
     FFile: TFileStream;
     SW: TStreamWriter;
     FSync: TCriticalSection;
@@ -36,8 +36,31 @@ var
   Logger: TLogger = nil;
 
 procedure EventLog(Ex: Exception);
+var
+  Msg, Stack: String;
+  Inner: Exception;
 begin
-  EventLog(Ex.ToString);
+  Inner := Ex;
+  Msg := '';
+  while Inner <> nil do
+  begin
+    if Msg <> '' then
+      Msg := Msg + sLineBreak;
+    Msg := Msg + Inner.Message;
+    if (Msg <> '') and (Msg[Length(Msg)] > '.') then
+      Msg := Msg + '.';
+
+    Stack := Inner.StackTrace;
+    if Stack <> '' then
+    begin
+      if Msg <> '' then
+        Msg := Msg + sLineBreak + sLineBreak;
+      Msg := Msg + Stack + sLineBreak;
+    end;
+
+    Inner := Inner.InnerException;
+  end;
+  EventLog(Msg);
 end;
 
 procedure EventLog(Message: string);
@@ -51,7 +74,7 @@ end;
 
 constructor TLogger.Create;
 begin
-{$IFDEF LOG}
+{$IFDEF EVENTLOG}
   FSync := TCriticalSection.Create;
   SW := nil;
   try
@@ -61,16 +84,16 @@ begin
     on e: Exception do
       MessageBox(0, PChar(e.Message), PChar('ERROR!'), MB_OK + MB_ICONERROR);
   end;
-{$ENDIF LOG}
+{$ENDIF EVENTLOG}
 end;
 
 destructor TLogger.Destroy;
 begin        
-{$IFDEF LOG}
+{$IFDEF EVENTLOG}
   F(SW);
   F(FFile);
   F(FSync);
-{$ENDIF LOG}
+{$ENDIF EVENTLOG}
   inherited;
 end;
 
@@ -84,7 +107,7 @@ end;
 
 procedure TLogger.Message(Value: string);
 begin    
-{$IFDEF LOG}
+{$IFDEF EVENTLOG}
   FSync.Enter;
   try
     Value := Value + #13#10;
@@ -92,7 +115,7 @@ begin
   finally
     FSync.Leave;
   end;        
-{$ENDIF LOG}
+{$ENDIF EVENTLOG}
 end;
 
 initialization

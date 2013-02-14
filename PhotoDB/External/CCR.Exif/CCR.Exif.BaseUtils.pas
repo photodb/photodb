@@ -472,8 +472,8 @@ const
   jmAppSpecificFirst   = TJPEGMarker($E0);
   jmAppSpecificLast    = TJPEGMarker($EF);
   jmJFIF               = TJPEGMarker($E0);
-  jmICCProfile         = TJPEGMarker($E2);
   jmApp1               = TJPEGMarker($E1);
+  jmApp2               = TJPEGMarker($E2);
   jmApp13              = TJPEGMarker($ED);
   jmStartOfScan        = TJPEGMarker($DA);
 

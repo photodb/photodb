@@ -428,6 +428,14 @@ begin
     TMainMenuStyleHook.RegisterMenu(TMainMenu(Menu));
   if ClassName <> 'TFormManager' then
     TLoad.Instance.RequiredStyle;
+
+  if IsWindowsVista then
+  begin
+    Updating;
+    SetVistaFonts(Self);
+    Updated;
+  end;
+
   FixLayout;
   ApplyStyle;
   ApplySettings;
@@ -802,13 +810,6 @@ begin
     Exit;
 
   FForms.Add(Form);
-
-  if IsWindowsVista then
-  begin
-    Form.Updating;
-    SetVistaFonts(Form);
-    Form.Updated;
-  end;
 end;
 
 procedure TFormCollection.UnRegisterForm(Form: TDBForm);
