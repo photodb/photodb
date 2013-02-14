@@ -2307,7 +2307,7 @@ var
 begin
   NetworkItem := TNetworkItem.CreateFromPath(cNetworkPath, PATH_LOAD_NO_IMAGE, 0);
   try
-    LoadProviderItemEx(NetworkItem, 5, FIcoSize, L('Scaning network') + '...');
+    LoadProviderItemEx(NetworkItem, 5, FIcoSize, L('Scanning network') + '...');
   finally
     F(NetworkItem);
   end;
@@ -2457,7 +2457,7 @@ var
   WorkgroupItem: TPathItem;
 begin
   HideProgress;
-  ShowInfo(L('Scaning workgroup'), 1, 0);
+  ShowInfo(L('Scanning workgroup'), 1, 0);
   SynchronizeEx(BeginUpdate);
   try
     WorkgroupItem := TWorkgroupItem.CreateFromPath(FFolder, PATH_LOAD_NORMAL, 0);

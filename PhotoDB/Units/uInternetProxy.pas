@@ -331,5 +331,6 @@ initialization
 
 finalization
   F(FSync);
+  F(FProxyList);
 
 end.

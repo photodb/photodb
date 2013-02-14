@@ -480,8 +480,8 @@ type
     procedure SetX(const Value: TExifFraction);
     procedure SetY(const Value: TExifFraction);
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind;
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
+    procedure GetTagInfo(var Section: TExifSectionKind; 
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
       var XName, YName, UnitName: UnicodeString); virtual; abstract;
     property Owner: TCustomExifData read FOwner;
   public
@@ -500,22 +500,22 @@ type
 
   TImageResolution = class(TCustomExifResolution)
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind;
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
+    procedure GetTagInfo(var Section: TExifSectionKind; 
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
       var XName, YName, UnitName: UnicodeString); override;
   end;
 
   TFocalPlaneResolution = class(TCustomExifResolution)
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind;
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
+    procedure GetTagInfo(var Section: TExifSectionKind; 
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
       var XName, YName, UnitName: UnicodeString); override;
   end;
 
   TThumbnailResolution = class(TCustomExifResolution)
   protected
     procedure GetTagInfo(var Section: TExifSectionKind;
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
       var XName, YName, UnitName: UnicodeString); override;
   end;
 
@@ -1218,7 +1218,7 @@ const
   stMeasurementInInterop = stMeasurementVoid;
 
 function BinToHexStr(Data: Pointer; StartPos, Size: Integer): string; overload;
-function BinToHexStr(MemStream: TCustomMemoryStream): string; overload;
+function BinToHexStr(MemStream: TCustomMemoryStream): string; overload; 
 
 function ContainsOnlyASCII(const S: UnicodeString): Boolean; overload;
 function ContainsOnlyASCII(const S: RawByteString): Boolean; overload;
@@ -1623,7 +1623,7 @@ function TryExifStringToDateTime(const S: string; var DateTime: TDateTime): Bool
 var
   Year, Month, Day, Hour, Min, Sec: Integer;
 begin //'2007:09:02 02:30:49'
-  Result := (Length(S) = 19) and (S[5] = ':') and (S[8] = ':') and
+  Result := (Length(S) = 19) and (S[5] = ':') and (S[8] = ':') and 
     TryStrToInt(Copy(S, 1, 4), Year) and
     TryStrToInt(Copy(S, 6, 2), Month) and
     TryStrToInt(Copy(S, 9, 2), Day) and
@@ -2348,7 +2348,7 @@ begin
      tdLongIntFraction]) and (Tag.ElementCount > Index) and (Index >= 0) then
     Result := PExifFractionArray(Tag.Data)[Index]
   else
-    Result := Default;
+    Result := Default;     
 end;
 
 function TExifSection.GetLongIntValue(TagID: TExifTagID; Index: Integer): TLongIntTagValue;
@@ -3173,7 +3173,7 @@ begin
       Section.Remove(FXTagID);
       Section.Remove(FYTagID);
       Section.Remove(FUnitTagID);
-      if FSchema <> xsUnknown then
+      if FSchema <> xsUnknown then 
         FOwner.XMPPacket.RemoveProperties(FSchema, [FXName, FYName, FUnitName]);
     end
     else
@@ -3533,7 +3533,7 @@ var
   ValueAsString, XMPValue: string;
   I: Integer;
 begin
-  if NewChar = #0 then
+  if NewChar = #0 then 
   begin
     FOwner[esGPS].Remove(RefTagID);
     FOwner.XMPPacket.RemoveProperty(xsExif, XMPName);
@@ -3548,7 +3548,7 @@ begin
       XMPValue := Copy(XMPValue, 1, I) + ValueAsString;
       FOwner.XMPPacket.UpdateProperty(xsExif, XMPName, XMPValue);
       Break;
-    end;
+    end; 
 end;
 
 function TGPSCoordinate.GetValue(Index: Integer): TExifFraction;
@@ -5207,7 +5207,7 @@ var
   XMPName: string;
 begin
   FSections[esGPS].SetFractionValue(TagID, 0, Value);
-  if FindGPSTagXMPName(TagID, XMPName) then
+  if FindGPSTagXMPName(TagID, XMPName) then 
     XMPPacket.UpdateProperty(xsExif, XMPName, Value.AsString);
 end;
 
@@ -5250,7 +5250,7 @@ var
   XMPName: string;
 begin
   FSections[esGPS].SetStringValue(TagID, Value);
-  if FindGPSTagXMPName(TagID, XMPName) then
+  if FindGPSTagXMPName(TagID, XMPName) then 
     XMPPacket.UpdateProperty(xsExif, XMPName, Value);
 end;
 
@@ -5698,7 +5698,7 @@ begin
         Break;
       end;
     end;
-  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)
+  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)  
 end;
 
 procedure TExifData.DoSaveToPSD(InStream, OutStream: TStream);
@@ -6552,4 +6552,3 @@ initialization
 finalization
   TCustomExifData.FMakerNoteClasses.Free;
 end.
-

@@ -1,5 +1,5 @@
-SET DM=D:\dmitry\Dmitry
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\10.0
+SET DM=D:\dmitry\Dmitry
 SET NS=-NSSystem;System.Win;WinAPI;Vcl;Vcl.Imaging;Data;Xml;Data.Win;Vcl.Shell;Vcl.Samples;Soap
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
 SET DCC64=%DELPHI%\BIN\DCC64.EXE

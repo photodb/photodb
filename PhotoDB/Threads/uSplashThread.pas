@@ -146,7 +146,7 @@ begin
         if Terminated then
           Exit;
 
-        if GetSystemMetrics(SM_REMOTESESSION) = 0 then
+        if (GetSystemMetrics(SM_REMOTESESSION) = 0) and not GetParamStrDBBool('/cmd') then
           ShowWindow(hSplashWnd, SW_SHOWNOACTIVATE);
 
         while True do

@@ -805,13 +805,13 @@ begin
 
     if DBTerminating then
       begin
-        TLoad.Instance.RequaredDBKernelIcons;
-        TLoad.Instance.RequaredCRCCheck;
-        TLoad.Instance.RequaredDBSettings;
-        TLoad.Instance.RequaredStyle;
+        TLoad.Instance.RequiredDBKernelIcons;
+        TLoad.Instance.RequiredCRCCheck;
+        TLoad.Instance.RequiredDBSettings;
+        TLoad.Instance.RequiredStyle;
       end;
 
-    UnReigisterPersonManager;
+    UnRegisterPersonManager;
     UnloadTranslateModule;
   except
     on e: Exception do

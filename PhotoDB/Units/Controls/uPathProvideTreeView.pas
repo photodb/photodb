@@ -85,6 +85,7 @@ type
     procedure RefreshPathItem(PathItem: TPathItem);
     property OnSelectPathItem: TOnSelectPathItem read FOnSelectPathItem write FOnSelectPathItem;
     property OnGetPopupMenu;
+    property OnKeyAction;
     property PopupItem: TPathItem read FPopupItem;
   end;
 

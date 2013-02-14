@@ -1576,7 +1576,7 @@ begin
   AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
 
   if IsWindows8 then
-    TLoad.Instance.RequaredDBKernelIcons;
+    TLoad.Instance.RequiredDBKernelIcons;
 
   TW.I.Start('Script read');
   SetNamedValueStr(AScript, '$dbname', dbname);
@@ -1643,7 +1643,7 @@ begin
   FReloadESGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_GROUPS');
   FReloadRSPersonsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_PERSONS');
 
-  TLoad.Instance.RequaredDBSettings;
+  TLoad.Instance.RequiredDBSettings;
   FPictureSize := ThImageSize;
   LoadSizes;
 
@@ -13191,7 +13191,7 @@ begin
   MiInfoGroupProperties.ImageIndex := DB_IC_PROPERTIES;
 
   if not IsWindows8 then
-    TLoad.Instance.RequaredDBKernelIcons;
+    TLoad.Instance.RequiredDBKernelIcons;
 
   SlideShowLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
   ShellLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);

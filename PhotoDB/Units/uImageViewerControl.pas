@@ -387,6 +387,10 @@ begin
   FImFacePopup := TImageList.Create(Self);
   FImFacePopup.ColorDepth := cd32Bit;
 
+  FWlFaceCount := nil;
+  FLsDetectingFaces := nil;
+  FTbrActions := nil;
+
   FDBCanDrag := False;
 
   FIsWaiting := False;

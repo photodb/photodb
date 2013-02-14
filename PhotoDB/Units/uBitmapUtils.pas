@@ -1344,24 +1344,24 @@ end;
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
 var
   I, J: Integer;
-  p: PARGB32;
+  P: PARGB32;
   R, G, B: Byte;
+  Value: Integer;
 begin
   Bitmap.PixelFormat := pf32Bit;
   Color := ColorToRGB(Color);
   R := GetRValue(Color);
   G := GetGValue(Color);
   B := GetBValue(Color);
+  TRGB32(Value).R := R;
+  TRGB32(Value).G := G;
+  TRGB32(Value).B := B;
+  TRGB32(Value).L := TransparentValue;
   for I := 0 to Bitmap.Height - 1 do
   begin
-    p := Bitmap.ScanLine[I];
+    P := Bitmap.ScanLine[I];
     for J := 0 to Bitmap.Width - 1 do
-    begin
-      p[J].R := R;
-      p[J].G := G;
-      p[J].B := B;
-      p[J].L := TransparentValue;
-    end;
+      Integer(P[J]) := Value;
   end;
 end;
 
