@@ -13,6 +13,7 @@ uses
 {$DEFINE _PROFILER}
 {$DEFINE _MULTIFILES}
 {$DEFINE _MULTITHREAD}
+{$DEFINE _LOGGER}
 
 type
   TW = class(TObject)
@@ -42,6 +43,11 @@ type
   end;
 
 implementation
+
+{$IFDEF LOGGER}
+uses
+  uLogger;
+{$ENDIF}
 
 var
   W: TList = nil;
@@ -125,6 +131,9 @@ end;
 
 procedure TW.Start(Name: string);
 begin
+{$IFDEF LOGGER}
+  EventLog(Name);
+{$ENDIF}
 {$IFNDEF PROFILER}
   Exit;
 {$ENDIF}

@@ -49,7 +49,9 @@ end;
 
 destructor TThreadForm.Destroy;
 begin
-  TerminateAllThreads;
+  if FSync <> nil then
+    TerminateAllThreads;
+
   F(FThreadList);
   F(FSync);
   inherited;

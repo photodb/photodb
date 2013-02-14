@@ -2264,7 +2264,7 @@ var
 begin
   if StyleServices.Enabled then
   begin
-    //hack for scrollbars in easy lsit view
+    //hack for scrollbars in easy list view
     ElvMain.Scrollbars.VertEnabled := False;
     ElvMain.Scrollbars.VertEnabled := True;
     Repaint;

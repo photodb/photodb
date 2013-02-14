@@ -14,6 +14,9 @@ uses
 
   Dmitry.Utils.System,
 
+  CCR.Exif,
+  CCR.Exif.StreamHelper,
+
   uMemory,
   uBitmapUtils,
   uJpegUtils,
@@ -36,6 +39,44 @@ type
     property Count: Integer read GetCount;        
     property Images[Index: Integer]: TBitmap read GetImageByIndex;
     property IsRedCyan: Boolean read FIsRedCyan write FIsRedCyan;
+  end;
+
+const
+  MPOHeader: array[0..3] of Byte = (Ord('M'), Ord('P'), Ord('F'), $00);
+  LittleIndianHeader: array[0..3] of Byte = ($49, $49, $2A, $00);
+  BigIndianHeader: array[0..3] of Byte = ($4D, $4D, $00, $2A);
+
+const
+  Tag_MPFVersion      = $B000;
+  Tag_NumberOfImages  = $B001;
+  Tag_MPEntry         = $B002;
+  Tag_ImageUIDList    = $B003;
+  Tag_TotalFrames     = $B004;
+
+type
+  TMPEntry = record
+    IndividualImageAttributes: DWORD;
+    IndividualImageSize: DWORD;
+    IndividualImageDataOffset: DWORD;
+    DependentImage1EntryNumber: WORD;
+    DependentImage2EntryNumber: WORD;
+    function IsDependentParentImage: Boolean;
+    function IsDependentChildImage: Boolean;
+    function IsRepresentativeImage: Boolean;
+    function MPTypeCode: Integer;
+  end;
+
+type
+  TMPOData = class
+  private
+    FIsvalid: Boolean;
+    FEndianness: TEndianness;
+    MMEntries: array of TMPEntry;
+  public
+    procedure ReadFromStream(S: TCustomMemoryStream; HeaderOffset: Int64);
+    constructor Create;
+
+    property Isvalid: Boolean read FIsvalid;
   end;
 
 implementation
@@ -64,109 +105,105 @@ begin
   Result := FImages[Index];
 end;
 
-function AnsiPosEx(const SubStr, S: AnsiString; Offset: Integer): Integer;
-var
-  I, LIterCnt, L, J: Integer;
-  PSubStr, PS: PAnsiChar;
-begin
-  if SubStr = '' then
-    Exit(0);
-
-  { Calculate the number of possible iterations. Not valid if Offset < 1. }
-  LIterCnt := Length(S) - Offset - Length(SubStr) + 1;
-
-  { Only continue if the number of iterations is positive or zero (there is space to check) }
-  if (Offset > 0) and (LIterCnt >= 0) then
-  begin
-    L := Length(SubStr);
-    PSubStr := PAnsiChar(SubStr);
-    PS := PAnsiChar(S);
-    Inc(PS, Offset - 1);
-
-    for I := 0 to LIterCnt do
-    begin
-      J := 0;
-      while (J >= 0) and (J < L) do
-      begin
-        if (PS + I + J)^ = (PSubStr + J)^ then
-          Inc(J)
-        else
-          J := -1;
-      end;
-      if J >= L then
-        Exit(I + Offset);
-    end;
-  end;
-
-  Result := 0;
-end;
-
 procedure TAnimatedJPEG.LoadFromStream(Stream: TStream);
-const
-  JPEG_START: AnsiString = AnsiChar($FF) + AnsiChar($D8);
-  JPEG_END: AnsiString = AnsiChar($FF) + AnsiChar($D9);
 var
   I: Integer;
-  P, Pos: Int64;
+  Pos: Int64;
   J: TJpegImage;
   B, BHalf: TBitmap;
-  PosList: TList<Integer>;
-  S: AnsiString;
+  Exif: TExifData;
+  M: TMPOData;
+
+  procedure LoadImageFromImages;
+  begin
+    if FImages.Count > 0 then
+    begin
+      if not FIsRedCyan or (FImages.Count = 1) then
+        Assign(FImages[0])
+      else
+        LoadRedCyanImage;
+    end;
+  end;
+
+  procedure LoadJpegFromStream;
+  begin
+    J := TJpegImage.Create;
+    try
+      try
+        J.LoadFromStream(Stream);
+
+        B := TBitmap.Create;
+        try
+          AssignJpeg(B, J);
+          FImages.Add(B);
+          B := nil;
+        finally
+          F(B);
+        end;
+      except
+        //failed to load image
+        //don't throw any exceptions if this is not first image
+        if FImages.Count = 0 then
+          raise;
+      end;
+    finally
+      F(J);
+    end;
+  end;
+
 begin
-  FreeList(FImages, False);
   Pos := Stream.Position;
 
-  PosList := TList<Integer>.Create;
+  FreeList(FImages, False);
+
+  Exif := TExifData.Create;
   try
+    Exif.LoadFromGraphic(Stream);
 
-    if Stream.Size > 0 then
-    begin
-      SetLength(S, Stream.Size);
-      Stream.Read(Pointer(S)^, Stream.Size);
-    end;
 
-    P := 0;
-    repeat
-      P := AnsiPosEx(IIF(P = 0, JPEG_START, JPEG_END + JPEG_START), S, P + 1);
-      if P > 0 then
-        PosList.Add(IIF(PosList.Count = 0, P, P + 2));
-    until P = 0;
-    
-    for I := 0 to PosList.Count - 1 do
+    if Exif.HasMPOExtension then
     begin
-      Stream.Seek(Pos + PosList[I] - 1, soFromBeginning);
-      
-      J := TJpegImage.Create;
+      M := TMPOData.Create;
       try
-        try
-          J.LoadFromStream(Stream);
-          
-          B := TBitmap.Create;
-          try
-            AssignJpeg(B, J);
-            FImages.Add(B);
-            B := nil;
+        M.ReadFromStream(Exif.MPOData.Data, Exif.MPOBlockOffset + 8);
+
+        for I := 0 to Length(M.MMEntries) - 1 do
+        begin
+          //single representative image
+          if M.MMEntries[I].IsRepresentativeImage and not M.MMEntries[I].IsDependentChildImage then
+          begin
+            Stream.Seek(M.MMEntries[I].IndividualImageDataOffset, soFromBeginning);
+            LoadJpegFromStream;
+            LoadImageFromImages;
+
+            Exit;
+          end;
+        end;
+
+        //no representative image, load as animated
+        for I := 0 to Length(M.MMEntries) - 1 do
+        begin
+          if not M.MMEntries[I].IsDependentChildImage then
+          begin
+            Stream.Seek(M.MMEntries[I].IndividualImageDataOffset, soFromBeginning);
+            LoadJpegFromStream;
+
             if FImages.Count = 2 then
               Break;
-          finally
-            F(B);
           end;
-        except
-          //failed to load image
-          //don't throw any exceptions if this is not first image
-          if FImages.Count = 0 then
-            raise;
         end;
+        LoadImageFromImages;
+
       finally
-        F(J);
+       F(M);
       end;
     end;
-      
   finally
-    F(PosList);
+    F(Exif);
   end;
-  
+
   Stream.Seek(Pos, soFromBeginning);
+  LoadJpegFromStream;
   if FImages.Count = 1 then
   begin
     B := FImages[0];
@@ -195,14 +232,7 @@ begin
       F(BHalf);
     end;
   end;
-  if FImages.Count > 0 then
-  begin
-    if not FIsRedCyan or (FImages.Count = 1) then
-      Assign(FImages[0])
-    else
-      LoadRedCyanImage;
-
-  end;
+  LoadImageFromImages;
 end;
 
 procedure TAnimatedJPEG.LoadRedCyanImage;
@@ -267,6 +297,138 @@ begin
   finally
     F(B);
   end;
+end;
+
+{ TMPOData }
+
+constructor TMPOData.Create;
+begin
+  FIsvalid := False;
+  FEndianness := SmallEndian;
+end;
+
+//http://www.cipa.jp/english/hyoujunka/kikaku/pdf/DC-007_E.pdf
+procedure TMPOData.ReadFromStream(S: TCustomMemoryStream; HeaderOffset: Int64);
+var
+  SourceHeader: array[0..3] of Byte;
+  SourceByteOrder: array[0..3] of Byte;
+  OffsetToFirstIFD: DWORD;
+  Version: AnsiString;
+  NumberOfImages: DWORD;
+  OffsetOfNextIFD: DWORD;
+  MPEntryDataSize: DWORD;
+  MPEntryOffset: DWORD;
+  TotalNumberOfcapturedImages: DWORD;
+
+  I, J: Integer;
+  TagId: WORD;
+  TagCount: WORD;
+  TagSize: WORD;
+  DataSize: DWORD;
+begin
+  FIsvalid := False;
+
+  Version := '';
+  NumberOfImages := 0;
+  SetLength(MMEntries, 0);
+  if (S <> nil) then
+  begin
+    S.Seek(0, soFromBeginning);
+
+    S.ReadBuffer(SourceHeader, SizeOf(SourceHeader));
+
+    if CompareMem(@SourceHeader, @MPOHeader, SizeOf(MPOHeader)) then
+      FIsvalid := True;
+
+    if FIsvalid then
+    begin
+      S.ReadBuffer(SourceByteOrder, SizeOf(SourceByteOrder));
+
+      if CompareMem(@SourceByteOrder, @BigIndianHeader, SizeOf(BigIndianHeader)) then
+        FEndianness := BigEndian;
+
+      S.ReadLongWord(FEndianness, OffsetToFirstIFD);
+      OffsetOfNextIFD := S.Seek(OffsetToFirstIFD - 8, soFromCurrent);
+
+      if (OffsetOfNextIFD > 0) and (OffsetOfNextIFD < S.Size) then
+      begin
+        S.Seek(OffsetOfNextIFD, soFromBeginning);
+        S.ReadWord(FEndianness, TagCount);
+
+        MPEntryDataSize := 0;
+        MPEntryOffset := 0;
+
+        for I := 1 to TagCount do
+        begin
+          S.ReadWord(FEndianness, TagId);
+          S.ReadWord(FEndianness, TagSize);
+          S.ReadLongWord(FEndianness, DataSize);
+
+          if TagId = Tag_MPFVersion then
+          begin
+            SetLength(Version, 4);
+            S.Read(Version[1], 4);
+          end;
+
+          if TagId = Tag_NumberOfImages then
+            S.ReadLongWord(FEndianness, NumberOfImages);
+
+          if TagId = Tag_TotalFrames then
+            S.ReadLongWord(FEndianness, TotalNumberOfcapturedImages);
+
+          if TagId = Tag_MPEntry then
+          begin
+            if DataSize / 16 = NumberOfImages then
+            begin
+              MPEntryDataSize := DataSize;
+              S.ReadLongWord(FEndianness, MPEntryOffset);
+              MPEntryOffset := MPEntryOffset + 4;
+            end;
+          end;
+        end;
+
+        S.ReadLongWord(FEndianness, OffsetOfNextIFD);
+        if MPEntryDataSize > 0 then
+        begin
+          S.Seek(MPEntryOffset, soFromBeginning);
+          Setlength(MMEntries, NumberOfImages);
+          for J := 0 to NumberOfImages - 1 do
+          begin
+            S.ReadLongWord(FEndianness, DWORD(MMEntries[J].IndividualImageAttributes));
+            S.ReadLongWord(FEndianness, MMEntries[J].IndividualImageSize);
+            S.ReadLongWord(FEndianness, MMEntries[J].IndividualImageDataOffset);
+            if MMEntries[J].IndividualImageDataOffset > 0 then
+              MMEntries[J].IndividualImageDataOffset := MMEntries[J].IndividualImageDataOffset + HeaderOffset;
+            S.ReadWord(FEndianness, MMEntries[J].DependentImage1EntryNumber);
+            S.ReadWord(FEndianness, MMEntries[J].DependentImage2EntryNumber);
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+
+{ TMPEntry }
+
+function TMPEntry.IsDependentChildImage: Boolean;
+begin
+  Result := (Self.IndividualImageAttributes and $40000000) > 0;
+end;
+
+function TMPEntry.IsDependentParentImage: Boolean;
+begin
+  Result := (Self.IndividualImageAttributes and $80000000) > 0;
+end;
+
+function TMPEntry.IsRepresentativeImage: Boolean;
+begin
+  Result := (Self.IndividualImageAttributes and $20000000) > 0;
+end;
+
+function TMPEntry.MPTypeCode: Integer;
+begin
+  Result := Self.IndividualImageAttributes and $FFFFFF;
 end;
 
 end.

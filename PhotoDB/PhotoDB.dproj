@@ -116,14 +116,16 @@
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_UnitSearchPath>D:\Dmitry\Dmitry;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Debugger_RunParams>/x</Debugger_RunParams>
         <DCC_Optimize>false</DCC_Optimize>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Build>577</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.0.0.577;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.0;ProductVersion=4.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+        <VerInfo_Build>584</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.0.0.584;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.0;ProductVersion=4.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
@@ -134,6 +136,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
         <DCCReference Include="Units\uTime.pas"/>
         <DCCReference Include="Threads\uSplashThread.pas"/>

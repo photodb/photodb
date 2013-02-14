@@ -30,16 +30,18 @@ implementation
 
 procedure TLoadCRCCheckThread.Execute;
 type
-  ValidateApplicationProc = function(s: PChar): Boolean;
+  ValidateApplicationProc = function(S: PChar): Boolean;
 var
   ValidateProc: ValidateApplicationProc;
   KernelHandle: THandle;
+  LibName: string;
 begin
   FreeOnTerminate := True;
-  KernelHandle := LoadLibrary(PChar(ProgramDir + 'Kernel.dll'));
+  LibName := ProgramDir + 'Kernel.dll';
+  KernelHandle := LoadLibrary(PChar(LibName));
   if KernelHandle <> 0 then
   begin
-    @ValidateProc := GetProcAddress(KernelHandle, 'ValidateApplication');
+    @ValidateProc := GetProcAddress(KernelHandle, PAnsiChar('ValidateApplication'));
     EventLog('Verifyng....');
     {$IFDEF LICENCE}
     if not Assigned(ValidateProc) or not ValidateProc(PChar(ParamStr(0))) then

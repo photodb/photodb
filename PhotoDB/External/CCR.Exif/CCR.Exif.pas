@@ -480,8 +480,8 @@ type
     procedure SetX(const Value: TExifFraction);
     procedure SetY(const Value: TExifFraction);
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind; 
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
+    procedure GetTagInfo(var Section: TExifSectionKind;
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
       var XName, YName, UnitName: UnicodeString); virtual; abstract;
     property Owner: TCustomExifData read FOwner;
   public
@@ -500,22 +500,22 @@ type
 
   TImageResolution = class(TCustomExifResolution)
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind; 
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
+    procedure GetTagInfo(var Section: TExifSectionKind;
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
       var XName, YName, UnitName: UnicodeString); override;
   end;
 
   TFocalPlaneResolution = class(TCustomExifResolution)
   protected
-    procedure GetTagInfo(var Section: TExifSectionKind; 
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
+    procedure GetTagInfo(var Section: TExifSectionKind;
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
       var XName, YName, UnitName: UnicodeString); override;
   end;
 
   TThumbnailResolution = class(TCustomExifResolution)
   protected
     procedure GetTagInfo(var Section: TExifSectionKind;
-      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace; 
+      var XTag, YTag, UnitTag: TExifTagID; var Schema: TXMPNamespace;
       var XName, YName, UnitName: UnicodeString); override;
   end;
 
@@ -934,14 +934,14 @@ type
   strict protected
     FMetadataInSource: TJPEGMetadataKinds;
     FXMPSegmentPosition, FXMPPacketSizeInSource: Int64;
-    FICCSegmentPosition, FICCPacketSizeInSource: Int64;
+    FApp2SegmentPosition, FApp2PacketSizeInSource: Int64;
     FIsPSDICCFormat: Boolean;
-    FICCData: IMetadataBlock;
+    FApp2Data: IMetadataBlock;
     property MetadataInSource: TJPEGMetadataKinds read FMetadataInSource; //set in LoadFromGraphic
   protected
     const MaxThumbnailSize = $F000;
     class function SectionClass: TExifSectionClass; virtual;
-    procedure AddFromStream(Stream: TStream; TiffImageSource: Boolean = False); 
+    procedure AddFromStream(Stream: TStream; TiffImageSource: Boolean = False);
     procedure Changed(Section: TExifSection); virtual;
     function GetEmpty: Boolean;
     function LoadFromGraphic(Stream: TStream): Boolean;
@@ -957,11 +957,21 @@ type
       Priority: TMakerNoteTypePriority = mtTestForFirst);
     class procedure UnregisterMakerNoteType(AClass: TExifMakerNoteClass);
   public
-    constructor Create(AOwner: TComponent = nil); overload; override; 
+    constructor Create(AOwner: TComponent = nil); overload; override;
     destructor Destroy; override;
     function GetEnumerator: TEnumerator;
+
+    //ICC SUPPORT BEGIN
     function HasICCProfile: Boolean;
     function ExtractICCProfile(Stream: TStream): Boolean;
+    //ICC SUPPORT END
+
+    //MPO SUPPOR BEGIN
+    function HasMPOExtension: Boolean;
+    property MPOData: IMetadataBlock read FApp2Data;
+    property MPOBlockOffset: Int64 read FApp2SegmentPosition;
+    //MPO SUPPORT END
+
     procedure Clear(XMPPacketToo: Boolean = True);
     procedure BeginUpdate;
     procedure EndUpdate;
@@ -1208,7 +1218,7 @@ const
   stMeasurementInInterop = stMeasurementVoid;
 
 function BinToHexStr(Data: Pointer; StartPos, Size: Integer): string; overload;
-function BinToHexStr(MemStream: TCustomMemoryStream): string; overload; 
+function BinToHexStr(MemStream: TCustomMemoryStream): string; overload;
 
 function ContainsOnlyASCII(const S: UnicodeString): Boolean; overload;
 function ContainsOnlyASCII(const S: RawByteString): Boolean; overload;
@@ -1613,7 +1623,7 @@ function TryExifStringToDateTime(const S: string; var DateTime: TDateTime): Bool
 var
   Year, Month, Day, Hour, Min, Sec: Integer;
 begin //'2007:09:02 02:30:49'
-  Result := (Length(S) = 19) and (S[5] = ':') and (S[8] = ':') and 
+  Result := (Length(S) = 19) and (S[5] = ':') and (S[8] = ':') and
     TryStrToInt(Copy(S, 1, 4), Year) and
     TryStrToInt(Copy(S, 6, 2), Month) and
     TryStrToInt(Copy(S, 9, 2), Day) and
@@ -2338,7 +2348,7 @@ begin
      tdLongIntFraction]) and (Tag.ElementCount > Index) and (Index >= 0) then
     Result := PExifFractionArray(Tag.Data)[Index]
   else
-    Result := Default;     
+    Result := Default;
 end;
 
 function TExifSection.GetLongIntValue(TagID: TExifTagID; Index: Integer): TLongIntTagValue;
@@ -3163,7 +3173,7 @@ begin
       Section.Remove(FXTagID);
       Section.Remove(FYTagID);
       Section.Remove(FUnitTagID);
-      if FSchema <> xsUnknown then 
+      if FSchema <> xsUnknown then
         FOwner.XMPPacket.RemoveProperties(FSchema, [FXName, FYName, FUnitName]);
     end
     else
@@ -3523,7 +3533,7 @@ var
   ValueAsString, XMPValue: string;
   I: Integer;
 begin
-  if NewChar = #0 then 
+  if NewChar = #0 then
   begin
     FOwner[esGPS].Remove(RefTagID);
     FOwner.XMPPacket.RemoveProperty(xsExif, XMPName);
@@ -3538,7 +3548,7 @@ begin
       XMPValue := Copy(XMPValue, 1, I) + ValueAsString;
       FOwner.XMPPacket.UpdateProperty(xsExif, XMPName, XMPValue);
       Break;
-    end; 
+    end;
 end;
 
 function TGPSCoordinate.GetValue(Index: Integer): TExifFraction;
@@ -3760,10 +3770,10 @@ function TCustomExifData.HasICCProfile: Boolean;
 var
   Words: PWordArray;
 begin
-  Result := (FICCData <> nil) and (FICCPacketSizeInSource > 14);
+  Result := (FApp2Data <> nil) and (FApp2PacketSizeInSource > 14);
   if Result and not FIsPSDICCFormat then
   begin
-    Words := FICCData.Data.Memory;
+    Words := FApp2Data.Data.Memory;
     Result := CompareMem(Words, @TJPEGSegment.ICCHeader, SizeOf(TJPEGSegment.ICCHeader));
   end;
 end;
@@ -3775,12 +3785,12 @@ begin
   begin
     if not FIsPSDICCFormat then
     begin
-      FICCData.Data.Seek(14, soFromBeginning);
-      Stream.CopyFrom(FICCData.Data, FICCData.Data.Size - 14);
+      FApp2Data.Data.Seek(14, soFromBeginning);
+      Stream.CopyFrom(FApp2Data.Data, FApp2Data.Data.Size - 14);
     end else
     begin
-      FICCData.Data.Seek(0, soFromBeginning);
-      Stream.CopyFrom(FICCData.Data, FICCData.Data.Size);
+      FApp2Data.Data.Seek(0, soFromBeginning);
+      Stream.CopyFrom(FApp2Data.Data, FApp2Data.Data.Size);
     end;
   end;
 end;
@@ -3930,6 +3940,14 @@ begin
   Result := FSections[esDetails].TagExists(ttMakerNote, [tdUndefined], 5)
 end;
 
+function TCustomExifData.HasMPOExtension: Boolean;
+begin
+  Result := False;
+  //MP Format Identifier (4 bytes: MPF#0)
+  if (FApp2Data <> nil) and (FApp2Data.Data <> nil) then
+    Result := PAnsiChar(FApp2Data.Data.Memory) = 'MPF';
+end;
+
 function TCustomExifData.HasThumbnail: Boolean;
 begin
   Result := not IsGraphicEmpty(FThumbnailOrNil);
@@ -3946,10 +3964,10 @@ begin
   FMetadataInSource := [];
   FXMPSegmentPosition := 0;
   FXMPPacketSizeInSource := 0;
-  FICCSegmentPosition := 0;
-  FICCPacketSizeInSource := 0;
+  FApp2SegmentPosition := 0;
+  FApp2PacketSizeInSource := 0;
   FIsPSDICCFormat := False;
-  FICCData := nil;
+  FApp2Data := nil;
   Result := False;
   BeginUpdate;
   try
@@ -3957,13 +3975,13 @@ begin
     if HasJPEGHeader(Stream) then
     begin
       Result := True;
-      for Segment in JPEGHeader(Stream, [jmApp1, jmICCProfile]) do
+      for Segment in JPEGHeader(Stream, [jmApp1, jmApp2]) do
       begin
-        if Segment.MarkerNum = jmICCProfile then
+        if Segment.MarkerNum = jmApp2 then
         begin
-          FICCSegmentPosition := Segment.Offset;
-          FICCPacketSizeInSource := Segment.Data.Size;
-          FICCData := Segment;
+          FApp2SegmentPosition := Segment.Offset;
+          FApp2PacketSizeInSource := Segment.Data.Size;
+          FApp2Data := Segment;
         end
         else if not (mkExif in MetadataInSource) and Segment.IsExifBlock then
         begin
@@ -3997,8 +4015,8 @@ begin
           XMPPacket.DataToLazyLoad := ResBlock;
         end else if ResBlock.HasICCData then
         begin
-          FICCData := ResBlock;
-          FICCPacketSizeInSource := ResBlock.Data.Size;
+          FApp2Data := ResBlock;
+          FApp2PacketSizeInSource := ResBlock.Data.Size;
           FIsPSDICCFormat := True;
         end else if ResBlock.HasICCUntaggedProfileMarker then
         begin
@@ -4007,7 +4025,7 @@ begin
         end;
 
       if IsIccProfileShouldBeIgnored then
-        FICCData := nil;
+        FApp2Data := nil;
     end
     else if HasTiffHeader(Stream) then
     begin
@@ -5189,7 +5207,7 @@ var
   XMPName: string;
 begin
   FSections[esGPS].SetFractionValue(TagID, 0, Value);
-  if FindGPSTagXMPName(TagID, XMPName) then 
+  if FindGPSTagXMPName(TagID, XMPName) then
     XMPPacket.UpdateProperty(xsExif, XMPName, Value.AsString);
 end;
 
@@ -5232,7 +5250,7 @@ var
   XMPName: string;
 begin
   FSections[esGPS].SetStringValue(TagID, Value);
-  if FindGPSTagXMPName(TagID, XMPName) then 
+  if FindGPSTagXMPName(TagID, XMPName) then
     XMPPacket.UpdateProperty(xsExif, XMPName, Value);
 end;
 
@@ -5680,7 +5698,7 @@ begin
         Break;
       end;
     end;
-  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)  
+  UpdateApp1JPEGSegments(InStream, OutStream, Self, XMPPacket); //!!!IPTC (also TJPEGImageEx)
 end;
 
 procedure TExifData.DoSaveToPSD(InStream, OutStream: TStream);
@@ -6534,3 +6552,4 @@ initialization
 finalization
   TCustomExifData.FMakerNoteClasses.Free;
 end.
+

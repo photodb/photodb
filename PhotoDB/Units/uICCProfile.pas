@@ -11,9 +11,6 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.PngImage,
 
-  CCR.Exif.XMPUtils,
-  CCR.Exif,
-
   uMemory,
 
   lcms2dll;
@@ -37,7 +34,7 @@ function InSignatures(Signature: cmsProfileClassSignature; dwFlags: DWORD): Bool
 function ConvertBitmapToDisplayICCProfile(ThreadContext: Pointer; Bitmap: TBitmap; SourceMem: Pointer; MemSize: Cardinal; SourceICCProfileName: string; DisplayProfileName: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function ConvertPngToDisplayICCProfile(ThreadContext: Pointer; Png: TPngImage; SourceMem: Pointer; MemSize: Cardinal; DestinationICCProfileFile: string = DEFAULT_ICC_DISPLAY_PROFILE): Boolean;
 function FillDisplayProfileList(List: TStrings): Boolean;
-function GetICCProfileName(ThreadContext: Pointer;  SourceMem: Pointer; MemSize: Cardinal): string;
+function GetICCProfileName(ThreadContext: Pointer; SourceMem: Pointer; MemSize: Cardinal): string;
 
 implementation
 
