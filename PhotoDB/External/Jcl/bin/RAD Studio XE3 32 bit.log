@@ -1,0 +1,209 @@
+================================================================================
+JCL 2.4 Release Build 4571
+==========RAD Studio XE3 32 bit=================================================
+Installed personalities :
+32 bit Delphi
+64 bit Delphi
+32 bit Delphi for OSX
+================================================================================
+Multiple profile installation
+Single profile installation
+================================================================================
+Saving conditional defines...
+Loaded template for include file D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include\jcl.template.inc
+Saved include file D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include\jcld17win32.inc
+Building source\common library units for RAD Studio XE3 32 bit...
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" bzip2 Jcl8087 JclAbstractContainers JclAlgorithms JclAnsiStrings JclArrayLists JclArraySets JclBase JclBinaryTrees JclCharsets JclCompilerUtils JclComplex JclCompression JclContainerIntf JclCounter JclDateTime JclDevToolsResources JclExprEval JclFileUtils JclHashMaps JclHashSets JclIDEUtils JclIniFiles JclLinkedLists JclLogic JclMath JclMIDI JclMime JclNotify JclPCRE JclPreProcessorAlgorithmsTemplates JclPreProcessorArrayListsTemplates JclPreProcessorArraySetsTemplates JclPreProcessorBinaryTreesTemplates JclPreProcessorContainer1DTemplates JclPreProcessorContainer2DTemplates JclPreProcessorContainerIntfTemplates JclPreProcessorContainerKnownMaps JclPreProcessorContainerKnownTypes JclPreProcessorContainerTemplates JclPreProcessorContainerTypes JclPreProcessorExcDlgTemplates JclPreProcessorHashMapsTemplates JclPreProcessorHashSetsTemplates JclPreProcessorLexer JclPreProcessorLinkedListsTemplates JclPreProcessorParser JclPreProcessorQueuesTemplates JclPreProcessorSortedMapsTemplates JclPreProcessorStacksTemplates JclPreProcessorTemplates JclPreProcessorTreesTemplates JclPreProcessorVectorsTemplates JclQueues JclResources JclRTTI JclSchedule JclSimpleXml JclSortedMaps JclStacks JclStatistics JclStreams JclStrHashMap JclStringConversions JclStringLists JclStrings JclSynch JclSysInfo JclSysUtils JclTrees JclUnicode JclUnitConv JclUnitVersioning JclUnitVersioningProviders JclUsesUtils JclValidation JclVectors JclWideStrings pcre zlibh --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -M -$X+ -$G+ -$H+ -$P+ -$U- -$T- -$V+ -$J+ -$Z1 -$J+ -$C- -$D- -$I- -$L- -$O+ -$Q- -$R- -$W- -$Y- -N0"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32" -n"sSystem;System.Win;WinAPI;Vcl;Vcl.Imaging" -I"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" -R"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+575239 lines, 2.68 seconds, 53533 bytes code, 16932 bytes data.
+Building source\windows library units for RAD Studio XE3 32 bit...
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" Hardlinks JclAppInst JclCIL JclCLR JclCOM JclConsole JclCppException JclDebug JclDebugSerialization JclDebugXMLDeserializer JclDebugXMLSerializer JclDotNet JclHelpUtils JclHookExcept JclLANMan JclLocales JclMapi JclMetadata JclMiscel JclMsBuild JclMsdosSys JclMultimedia JclNTFS JclPeImage JclRegistry JclSecurity JclShell JclStructStorage JclSvcCtrl JclTask JclTD32 JclTimeZones JclWin32 JclWin32Ex JclWinMIDI mscoree_TLB mscorlib_TLB MSHelpServices_TLB MSTask sevenzip Snmp --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -M -$X+ -$G+ -$H+ -$P+ -$U- -$T- -$V+ -$J+ -$Z1 -$J+ -$C- -$D- -$I- -$L- -$O+ -$Q- -$R- -$W- -$Y- -N0"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32" -n"sSystem;System.Win;WinAPI;Vcl;Vcl.Imaging" -I"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" -R"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+185377 lines, 0.87 seconds, 4288 bytes code, 628 bytes data.
+Building source\vcl library units for RAD Studio XE3 32 bit...
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" JclFont JclGraphics JclGraphUtils JclOpenDialogFavorites JclOpenDialogHooks JclPrint JclVclResources JclVersionControl JclVersionCtrlCVSImpl JclVersionCtrlGITImpl JclVersionCtrlSVNImpl --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -M -$X+ -$G+ -$H+ -$P+ -$U- -$T- -$V+ -$J+ -$Z1 -$J+ -$C- -$D- -$I- -$L- -$O+ -$Q- -$R- -$W- -$Y- -N0"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32" -n"sSystem;System.Win;WinAPI;Vcl;Vcl.Imaging" -I"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" -R"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+36727 lines, 0.45 seconds, 7692 bytes code, 56 bytes data.
+Building source\common library debug units for RAD Studio XE3 32 bit...
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" bzip2 Jcl8087 JclAbstractContainers JclAlgorithms JclAnsiStrings JclArrayLists JclArraySets JclBase JclBinaryTrees JclCharsets JclCompilerUtils JclComplex JclCompression JclContainerIntf JclCounter JclDateTime JclDevToolsResources JclExprEval JclFileUtils JclHashMaps JclHashSets JclIDEUtils JclIniFiles JclLinkedLists JclLogic JclMath JclMIDI JclMime JclNotify JclPCRE JclPreProcessorAlgorithmsTemplates JclPreProcessorArrayListsTemplates JclPreProcessorArraySetsTemplates JclPreProcessorBinaryTreesTemplates JclPreProcessorContainer1DTemplates JclPreProcessorContainer2DTemplates JclPreProcessorContainerIntfTemplates JclPreProcessorContainerKnownMaps JclPreProcessorContainerKnownTypes JclPreProcessorContainerTemplates JclPreProcessorContainerTypes JclPreProcessorExcDlgTemplates JclPreProcessorHashMapsTemplates JclPreProcessorHashSetsTemplates JclPreProcessorLexer JclPreProcessorLinkedListsTemplates JclPreProcessorParser JclPreProcessorQueuesTemplates JclPreProcessorSortedMapsTemplates JclPreProcessorStacksTemplates JclPreProcessorTemplates JclPreProcessorTreesTemplates JclPreProcessorVectorsTemplates JclQueues JclResources JclRTTI JclSchedule JclSimpleXml JclSortedMaps JclStacks JclStatistics JclStreams JclStrHashMap JclStringConversions JclStringLists JclStrings JclSynch JclSysInfo JclSysUtils JclTrees JclUnicode JclUnitConv JclUnitVersioning JclUnitVersioningProviders JclUsesUtils JclValidation JclVectors JclWideStrings pcre zlibh --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\debug" -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -M -$X+ -$G+ -$H+ -$P+ -$U- -$T- -$V+ -$J+ -$Z1 -$J+ -$C+ -$D+ -$I+ -$L+ -$O- -$Q+ -$R+ -$W+ -$Y+ -N0"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32\debug" -n"sSystem;System.Win;WinAPI;Vcl;Vcl.Imaging" -I"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" -R"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+575239 lines, 1.72 seconds, 53709 bytes code, 16932 bytes data.
+Building source\windows library debug units for RAD Studio XE3 32 bit...
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" Hardlinks JclAppInst JclCIL JclCLR JclCOM JclConsole JclCppException JclDebug JclDebugSerialization JclDebugXMLDeserializer JclDebugXMLSerializer JclDotNet JclHelpUtils JclHookExcept JclLANMan JclLocales JclMapi JclMetadata JclMiscel JclMsBuild JclMsdosSys JclMultimedia JclNTFS JclPeImage JclRegistry JclSecurity JclShell JclStructStorage JclSvcCtrl JclTask JclTD32 JclTimeZones JclWin32 JclWin32Ex JclWinMIDI mscoree_TLB mscorlib_TLB MSHelpServices_TLB MSTask sevenzip Snmp --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\debug" -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -M -$X+ -$G+ -$H+ -$P+ -$U- -$T- -$V+ -$J+ -$Z1 -$J+ -$C+ -$D+ -$I+ -$L+ -$O- -$Q+ -$R+ -$W+ -$Y+ -N0"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32\debug" -n"sSystem;System.Win;WinAPI;Vcl;Vcl.Imaging" -I"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" -R"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+185377 lines, 0.70 seconds, 4433 bytes code, 628 bytes data.
+Building source\vcl library debug units for RAD Studio XE3 32 bit...
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" JclFont JclGraphics JclGraphUtils JclOpenDialogFavorites JclOpenDialogHooks JclPrint JclVclResources JclVersionControl JclVersionCtrlCVSImpl JclVersionCtrlGITImpl JclVersionCtrlSVNImpl --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\debug" -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -M -$X+ -$G+ -$H+ -$P+ -$U- -$T- -$V+ -$J+ -$Z1 -$J+ -$C+ -$D+ -$I+ -$L+ -$O- -$Q+ -$R+ -$W+ -$Y+ -N0"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32\debug" -n"sSystem;System.Win;WinAPI;Vcl;Vcl.Imaging" -I"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" -R"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+36727 lines, 0.31 seconds, 8255 bytes code, 56 bytes data.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\Jcl.dpk...
+Cleaning package cache for Jcl170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\Jcl.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\Jcl.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+127 lines, 0.33 seconds, 2216748 bytes code, 739520 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclContainers.dpk...
+Cleaning package cache for JclContainers170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclContainers.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclContainers.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;Jcl;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+68 lines, 0.22 seconds, 2137116 bytes code, 1232 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclDeveloperTools.dpk...
+Cleaning package cache for JclDeveloperTools170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclDeveloperTools.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclDeveloperTools.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;Jcl;JclContainers;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+85 lines, 0.19 seconds, 518796 bytes code, 15484 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclVcl.dpk...
+Cleaning package cache for JclVcl170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclVcl.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclVcl.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;vclimg;Jcl;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+66 lines, 0.16 seconds, 144688 bytes code, 1948 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclBaseExpert.dpk...
+Cleaning package cache for JclBaseExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclBaseExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclBaseExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;vclx;designide;Jcl;JclDeveloperTools;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+33551 lines, 0.30 seconds, 69900 bytes code, 884 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclDebugExpert.dpk...
+Cleaning package cache for JclDebugExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclDebugExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclDebugExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;designide;Jcl;JclBaseExpert;JclDeveloperTools;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+6604 lines, 0.25 seconds, 39316 bytes code, 496 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclProjectAnalysisExpert.dpk...
+Cleaning package cache for JclProjectAnalysisExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclProjectAnalysisExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclProjectAnalysisExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;designide;Jcl;JclBaseExpert;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+5512 lines, 0.20 seconds, 28328 bytes code, 356 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclFavoriteFoldersExpert.dpk...
+Cleaning package cache for JclFavoriteFoldersExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclFavoriteFoldersExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclFavoriteFoldersExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;designide;Jcl;JclVcl;JclBaseExpert;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+2312 lines, 0.19 seconds, 9560 bytes code, 216 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclRepositoryExpert.dpk...
+Cleaning package cache for JclRepositoryExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclRepositoryExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclRepositoryExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;designide;Jcl;JclContainers;JclBaseExpert;JclDeveloperTools;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgFileFrame
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgFormFrame
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgSystemFra
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgLogFrame.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgTraceFram
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgThreadFra
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgIgnoreFra
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgWizard.pa
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\repository\ExceptionDialog\JclOtaExcDlgRepositor
+25536 lines, 0.33 seconds, 49428 bytes code, 724 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclSIMDViewExpert.dpk...
+Cleaning package cache for JclSIMDViewExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclSIMDViewExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclSIMDViewExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;designide;Jcl;JclBaseExpert;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\debug\simdview\JclSIMDUtils.pas(867) Warning: W1000 Symbol 'TOTAThreadContext' is deprecated
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\debug\simdview\JclSIMDUtils.pas(867) Warning: W1000 Symbol 'TOTAThreadContext' is deprecated
+14148 lines, 0.25 seconds, 59672 bytes code, 992 bytes data.
+Compilation success
+...done.
+Building D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclStackTraceViewerExpert.dpk...
+Cleaning package cache for JclStackTraceViewerExpert170.bpl
+Cleaning ok
+Compiling package D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclStackTraceViewerExpert.dpk
+"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\bin\dcc32.exe" "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\packages\d17\JclStackTraceViewerExpert.dpk" --no-config -U"C:\Program Files (x86)\Embarcadero\RAD Studio\10.0\lib\Win32\release" -N"..\..\lib\d17\win32" -I"..\..\lib\d17\win32;..\..\source\include" -R"..\..\lib\d17\win32;..\..\source\include" -DBCB;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE;BCB;WIN32;CONDITIONALEXPRESSIONS;RELEASE -U"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32\;C:\Users\Public\Documents\RAD Studio\10.0\Dcp;..\..\lib\d17\win32;..\..\source\include" -LU"rtl;vcl;designide;Jcl;JclBaseExpert;" -n"sSystem;System.Win;WinApi;Vcl;Vcl.Imaging" -LN"D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\jcl\lib\d17\win32" -LE"C:\Users\Public\Documents\RAD Studio\10.0\Bpl"
+Embarcadero Delphi for Win32 compiler version 24.0
+Copyright (c) 1983,2012 Embarcadero Technologies, Inc.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerOptions.pas(
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerStackCodeUti
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerStackFrame.p
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerModuleFrame.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerClasses.pas(
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerExceptInfoFr
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerThreadFrame.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerAPIImpl.pas(
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerStackUtils.p
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerConfigFrame.
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerImpl.pas(330
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerMainFormBDS7
+D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\experts\stacktraceviewer\JclStackTraceViewerMainFrame.pa
+33523 lines, 0.30 seconds, 73208 bytes code, 792 bytes data.
+Compilation success
+...done.
+Added "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\include" to library search path.
+Added "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\source\vcl" to library browsing path.
+Added "D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32\debug" to Debug DCU Path.
+Cleaning package cache for JclBaseExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclBaseExpert170.bpl
+Registration ok
+Cleaning package cache for JclDebugExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclDebugExpert170.bpl
+Registration ok
+Cleaning package cache for JclProjectAnalysisExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclProjectAnalysisExpert170.bpl
+Registration ok
+Cleaning package cache for JclFavoriteFoldersExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclFavoriteFoldersExpert170.bpl
+Registration ok
+Cleaning package cache for JclRepositoryExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclRepositoryExpert170.bpl
+Registration ok
+Cleaning package cache for JclSIMDViewExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclSIMDViewExpert170.bpl
+Registration ok
+Cleaning package cache for JclStackTraceViewerExpert170.bpl
+Cleaning ok
+Registering package C:\Users\Public\Documents\RAD Studio\10.0\Bpl\JclStackTraceViewerExpert170.bpl
+Registration ok
