@@ -172,7 +172,12 @@ begin
         else
           Graphic.LoadFromDevice(FInfo.FileName);
       end;
-      JPEGScale(Graphic, Max(FMonWidth, FMonHeight), Max(FMonWidth, FMonHeight));
+      case FInfo.Rotate and DB_IMAGE_ROTATE_MASK of
+        DB_IMAGE_ROTATE_0, DB_IMAGE_ROTATE_180:
+          JPEGScale(Graphic, FMonWidth, FMonHeight);
+        DB_IMAGE_ROTATE_90, DB_IMAGE_ROTATE_270:
+          JPEGScale(Graphic, FMonHeight, FMonWidth);
+      end;
 
       //statistics
       if Graphic is TAnimatedJPEG then
@@ -195,8 +200,8 @@ begin
             DB_IMAGE_ROTATE_0:
             begin
               ProportionalSize(FMonWidth, FMonHeight, W, H);
-              if Image.Width <> 0 then
-                Zoom := W / Image.Width
+              if (Image.Width <> 0) and (Image.Height <> 0) then
+                Zoom := Max(W / Image.Width, H / Image.Height)
               else
                 Zoom := 1;
 
@@ -218,12 +223,12 @@ begin
             end;
             DB_IMAGE_ROTATE_270:
             begin
-              ProportionalSize(FMonWidth, FMonHeight, W, H);
+              ProportionalSize(FMonHeight, FMonWidth, W, H);
               StretchCoolEx270(FMonWidth div 2 - H div 2, FMonHeight div 2 - W div 2, W, H, Image, ScreenImage, $000000)
             end;
             DB_IMAGE_ROTATE_90:
             begin
-              ProportionalSize(FMonWidth, FMonHeight, W, H);
+              ProportionalSize(FMonHeight, FMonWidth, W, H);
               StretchCoolEx90(FMonWidth div 2 - H div 2, FMonHeight div 2 - W div 2, W, H, Image, ScreenImage, $000000)
             end;
             DB_IMAGE_ROTATE_180:

@@ -4,21 +4,24 @@ interface
 
 uses
   System.Types,
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ExtCtrls,
-  AppEvnts,
-  ImgList,
-  ComCtrls,
-  ToolWin,
-  Themes,
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Vcl.ExtCtrls,
+  Vcl.AppEvnts,
+  Vcl.ImgList,
+  Vcl.ComCtrls,
+  Vcl.ToolWin,
+  Vcl.Themes,
+
   Dmitry.Utils.System,
+
+  uWinApi,
   uFormInterfaces;
 
 type
@@ -43,6 +46,7 @@ type
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure DestroyTimerTimer(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FOldPoint: TPoint;
@@ -247,6 +251,13 @@ begin
   if FloatPanel = nil then
     Application.CreateForm(TFloatPanel, FloatPanel);
   FloatPanel.Show;
+
+  DisableSleep;
+end;
+
+procedure TFullScreenView.FormDestroy(Sender: TObject);
+begin
+  EnableSleep;
 end;
 
 procedure TFullScreenView.DestroyTimerTimer(Sender: TObject);

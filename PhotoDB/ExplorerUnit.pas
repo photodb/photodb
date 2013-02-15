@@ -3584,7 +3584,7 @@ begin
     RatingPopupMenu.Tag := FImageViewer.Item.ID
   else
   begin
-    Index := 0;
+    Index := -1;
     for I := 0 to FFilesInfo.Count - 1 do
       if AnsiLowerCase(FFilesInfo[I].FileName) = AnsiLowerCase(FImageViewer.Item.FileName) then
       begin
@@ -3592,18 +3592,18 @@ begin
         Break;
       end;
 
+    if Index = -1 then
+      Exit;
+
     RatingPopupMenu.Tag := -Index;
   end;
 
   if Sender = nil then
     Exit;
 
-  if RatingPopupMenu.Tag <> 0 then
-  begin
-    P := Point(TbPreviewRating.Left, TbPreviewRating.Top + TbPreviewRating.Height);
-    P := TbPreviewRating.Parent.ClientToScreen(P);
-    RatingPopupMenu.Popup(P.X, P.Y);
-  end;
+  P := Point(TbPreviewRating.Left, TbPreviewRating.Top + TbPreviewRating.Height);
+  P := TbPreviewRating.Parent.ClientToScreen(P);
+  RatingPopupMenu.Popup(P.X, P.Y);
 end;
 
 procedure TExplorerForm.TbPreviewRotateCWClick(Sender: TObject);
