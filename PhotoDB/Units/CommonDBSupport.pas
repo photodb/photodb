@@ -28,6 +28,7 @@ uses
   uAppUtils,
   uSettings,
   uSplashThread,
+  uShellUtils,
                
   UnitINI,
   UnitDBCommon,
@@ -187,6 +188,7 @@ function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
 
 function ActiveTable(Table: TDataSet; Active: Boolean): Boolean;
 
+function GetConnectionString(ConnectionString: string; Dbname: string; ReadOnly: Boolean): string; overload;
 function GetConnectionString(Dbname: string; ReadOnly: Boolean): string; overload;
 function GetConnectionString: string; overload;
 
@@ -240,6 +242,7 @@ procedure ReadOnlyQuery(DS: TDataSet);
 function DBReadOnly: Boolean;
 function GroupsTableFileNameW(FileName: string): string;
 procedure NotifyOleException(E: Exception);
+function GetProviderConnectionString(ProviderName: string): string;
 
 implementation
 
@@ -289,6 +292,51 @@ begin
   NotifyUserAboutErorrsInProviders;
 end;
 
+function IsProviderValidAndCanBeUsed(ProviderName: string): Boolean;
+var
+  DBFileName, ConnectionString: string;
+  Connection: TADOConnection;
+  List: TStrings;
+begin
+  Result := True;
+
+  DBFileName := GetTempFileName;
+
+  CreateMSAccessDatabase(DBFileName);
+  try
+    //test database by reading it
+    Connection := TADOConnection.Create(nil);
+    try
+      Connection := TADOConnection.Create(nil);
+
+      ConnectionString := GetProviderConnectionString(ProviderName);
+      ConnectionString := GetConnectionString(ConnectionString, DBFileName, False);
+
+      Connection.ConnectionString := ConnectionString;
+      Connection.LoginPrompt := False;
+      Connection.IsolationLevel := ilReadCommitted;
+      List := TStringList.Create;
+      try
+        try
+          Connection.GetTableNames(List, True);
+        except
+          on e: Exception do
+          begin
+            EventLog(e);
+            Exit(False);
+          end;
+        end;
+      finally
+        F(List);
+      end;
+    finally
+      F(Connection);
+    end;
+  finally
+    DeleteFile(DBFileName);
+  end;
+end;
+
 function DataBaseProvider: string;
 const
   ProviderList: array[0..2] of string = (Jet40ProviderName, ACE12ProviderName, ACE14ProviderName);
@@ -318,15 +366,33 @@ begin
       for J := 0 to S.Count - 1 do
       begin
         if AnsiLowerCase(S[J]) = AnsiLowerCase(ProviderList[I]) then
-        begin
-          Settings.WriteString('Settings', 'DatabaseProvider', ProviderList[I]);
-          Exit(ProviderList[I]);
-        end;
+          if IsProviderValidAndCanBeUsed(ProviderList[I]) then
+          begin
+            Settings.WriteString('Settings', 'DatabaseProvider', ProviderList[I]);
+            Exit(ProviderList[I]);
+          end;
       end;
     end;
   finally
     F(S);
   end;
+end;
+
+function GetProviderConnectionString(ProviderName: string): string;
+begin
+  if ProviderName = '' then
+    RaiseProviderNotFoundException;
+
+  if (ProviderName = ACE12ProviderName) or GetParamStrDBBool('/ace12') then
+    Exit(ACE12ConnectionString);
+
+  if (ProviderName = ACE14ProviderName) or GetParamStrDBBool('/ace14') then
+    Exit(ACE14ConnectionString);
+
+  if FolderView and DBReadOnly then
+    Exit(Jet40ReadOnlyConnectionString);
+
+  Result := Jet40ConnectionString;
 end;
 
 function ConnectionString: string;
@@ -335,19 +401,7 @@ var
 begin
   Provider := DataBaseProvider;
 
-  if Provider = '' then
-    RaiseProviderNotFoundException;
-
-  if (Provider = ACE12ProviderName) or GetParamStrDBBool('/ace12') then
-    Exit(ACE12ConnectionString);
-
-  if (Provider = ACE14ProviderName) or GetParamStrDBBool('/ace14') then
-    Exit(ACE14ConnectionString);
-
-  if FolderView and DBReadOnly then
-    Exit(Jet40ReadOnlyConnectionString);
-
-  Result := Jet40ConnectionString;
+  Result := GetProviderConnectionString(Provider);
 end;
 
 function GroupsTableFileNameW(FileName: string): string;
@@ -523,6 +577,12 @@ begin
   Result := Format(ConnectionString, [Dbname]);
 end;
 
+function GetConnectionString(ConnectionString: string; Dbname: string; ReadOnly: Boolean): string;
+begin
+  Result := StringReplace(ConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
+  Result := Format(Result, [Dbname]);
+end;
+
 function GetConnectionString(Dbname: string; ReadOnly: Boolean): string;
 begin
   Result := StringReplace(ConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
@@ -535,7 +595,7 @@ begin
     (SQL as TADOQuery).ExecSQL;
 end;
 
-procedure SetSQL(SQL : TDataSet; SQLText : String);
+procedure SetSQL(SQL: TDataSet; SQLText : String);
 var
   I: Integer;
 begin
@@ -639,7 +699,7 @@ end;
 
 function GetTable : TDataSet;
 begin
-  Result:=GetTable(dbname,DB_TABLE_IMAGES);
+  Result := GetTable(dbname,DB_TABLE_IMAGES);
 end;
 
 function GetTable(Table: String; TableID: Integer = DB_TABLE_UNKNOWN) : TDataSet;
@@ -1093,21 +1153,6 @@ begin
   end;
 end;
 
-function OpenConnection(ConnectionString: AnsiString): Integer;
-var
-  ADODBConnection: OleVariant;
-begin
-  ADODBConnection := CreateOleObject('ADODB.Connection');
-  ADODBConnection.CursorLocation := 3; // User client
-  ADODBConnection.ConnectionString := ConnectionString;
-  Result := 0;
-  try
-    ADODBConnection.Open;
-  except
-    Result := -1;
-  end;
-end;
-
 procedure CompactDatabase_JRO(DatabaseName:string;DestDatabaseName:string='';Password:string='');
 const
    Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;';
@@ -1128,7 +1173,7 @@ begin
            TempPath:=ExtractFilePath(DatabaseName);
            if TempPath='' Then TempPath:=GetCurrentDir;
            //получаем имя временного файла
-           GetTempFileName(PWideChar(TempPath),'mdb',0,TempName);
+           Winapi.Windows.GetTempFileName(PWideChar(TempPath),'mdb',0,TempName);
            Name:=StrPas(TempName);
        end;
        DeleteFile(Name);// этого файла не должно существовать :))

@@ -134,6 +134,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
         <DCCReference Include="Units\uTime.pas"/>
         <DCCReference Include="Threads\uSplashThread.pas"/>
@@ -744,6 +745,7 @@
         </DCCReference>
         <DCCReference Include="Units\uShareUtils.pas"/>
         <DCCReference Include="Units\uDBRepository.pas"/>
+        <DCCReference Include="Units\uWinApi.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

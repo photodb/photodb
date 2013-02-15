@@ -511,7 +511,7 @@ begin
   CloseSplashWindow;
   EventLog(E);
   //{$IFDEF DEBUG}
-  MessageBoxDB(Handle, FormatEx(TA('An unhandled error occurred: {0}!'), [e.Message]), L('Error'),  TD_BUTTON_OK, TD_ICON_ERROR);
+  MessageBoxDB(Handle, FormatEx(TA('An unhandled error occurred: {0}!'), [E.ToString + sLineBreak + E.StackTrace]), L('Error'),  TD_BUTTON_OK, TD_ICON_ERROR);
   //{$ENDIF}
 end;
 

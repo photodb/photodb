@@ -139,7 +139,7 @@ begin
   ShowWindow(Application.Handle, SW_HIDE);
 end;
 
-function ProgramDir : string;
+function ProgramDir: string;
 begin
   Result := ExtractFileDir(ParamStr(0)) + '\';
 end;

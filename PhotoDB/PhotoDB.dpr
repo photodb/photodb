@@ -424,7 +424,8 @@ uses
   uCommandLine in 'Units\uCommandLine.pas',
   uFormShareLink in 'uFormShareLink.pas' {FormShareLink},
   uShareUtils in 'Units\uShareUtils.pas',
-  uDBRepository in 'Units\uDBRepository.pas';
+  uDBRepository in 'Units\uDBRepository.pas',
+  uWinApi in 'Units\uWinApi.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -537,7 +538,7 @@ begin
     if FolderView then
       DBID := ReadInternalFSContent('ID');
     // Lazy init enviroment procedure
-    TW.i.Start('TScriptEnviroments');
+    TW.I.Start('TScriptEnviroments');
     TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
 
     // PREPAIRING ----------------------------------------------------

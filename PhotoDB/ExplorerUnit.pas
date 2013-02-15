@@ -5207,6 +5207,7 @@ end;
 
 procedure TExplorerForm.SaveCurrentImageInfoToMap;
 begin
+  //could throw Could not complete the operation due to error 80020101. at startup when map is active
   if (FGeoHTMLWindow <> nil) then
     FGeoHTMLWindow.execScript
       (FormatEx('SaveImageInfo("{0}", "{1}");',

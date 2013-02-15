@@ -20,9 +20,13 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.AppEvnts,
-  DDraw,
-  uGUIDUtils,
+
   Dmitry.Utils.System,
+
+  DDraw,
+
+  uWinApi,
+  uGUIDUtils,
   uDBForm,
   uDXUtils,
   uMemory,
@@ -311,6 +315,8 @@ begin
   if FloatPanel = nil then
     Application.CreateForm(TFloatPanel, FloatPanel);
   FormResize(Sender);
+
+  DisableSleep;
 end;
 
 procedure TDirectShowForm.LoadDirectX;
@@ -413,6 +419,8 @@ begin
   SystemParametersInfo(SPI_SCREENSAVERRUNNING, 0, nil, 0);
 
   DirectXSlideShowCreatorManagers.DestroyManager(FManager);
+
+  EnableSleep;
 end;
 
 //По Paint копируем внеэкранный буфер (Offscreen) на экран.

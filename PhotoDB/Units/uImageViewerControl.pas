@@ -483,7 +483,7 @@ end;
 
 procedure TImageViewerControl.DrawImageInfo;
 begin
-  DrawTransparentColor(FDrawImage, Theme.PanelColor, 0, FDrawImage.Height - 100, FDrawImage.Width, 100, 200);
+//  DrawTransparentColor(FDrawImage, Theme.PanelColor, 0, FDrawImage.Height - 100, FDrawImage.Width, 100, 200);
 end;
 
 procedure TImageViewerControl.Erased(var Message: TWMEraseBkgnd);
