@@ -41,6 +41,7 @@ function GetNoHistogramImage: TPNGImage;
 {$R PathSeparator.res}
 {$R NoHistogram.res}
 {$R SampleDB.res}
+{$R Import.res}
 
 //Icons
 {$R icons.res}

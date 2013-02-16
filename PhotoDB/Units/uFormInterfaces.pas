@@ -95,6 +95,11 @@ type
     procedure Execute(Section: string = '');
   end;
 
+  ISelectSourceForm = interface(IFormInterface)
+    ['{1945B6CD-8BA1-4D0B-B4CE-F57291FA5419}']
+    procedure Execute;
+  end;
+
   IImportForm = interface(IFormInterface)
     ['{64D665EF-5407-410D-8B4B-E18CE9F35FC3}']
     procedure FromDevice(DeviceName: string);
@@ -188,6 +193,7 @@ function OptionsForm: IOptionsForm;
 function RequestPasswordForm: IRequestPasswordForm;
 function BatchProcessingForm: IBatchProcessingForm;
 function JpegOptionsForm: IJpegOptionsForm;
+function SelectSourceForm: ISelectSourceForm;
 function ImportForm: IImportForm;
 function StringPromtForm: IStringPromtForm;
 function EncryptForm: IEncryptForm;
@@ -253,6 +259,11 @@ end;
 function JpegOptionsForm: IJpegOptionsForm;
 begin
   Result := FormInterfaces.GetSingleForm<IJpegOptionsForm>(True);
+end;
+
+function SelectSourceForm: ISelectSourceForm;
+begin
+  Result := FormInterfaces.CreateForm<ISelectSourceForm>();
 end;
 
 function ImportForm: IImportForm;

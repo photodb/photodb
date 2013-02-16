@@ -3042,8 +3042,6 @@ begin
 
   AddScriptFunction(Enviroment, 'REGISTER_SCRIPT', F_TYPE_FUNCTION_REGISTER_SCRIPT, nil);
 
- // AddScriptFunction(Enviroment, 'START_DEBUG', F_TYPE_FUNCTION_DEBUG_START, nil);
- // AddScriptFunction(Enviroment, 'STOP_DEBUG', F_TYPE_FUNCTION_DEBUG_END, nil);
   AddScriptFunction(Enviroment, 'LOAD_VARS', F_TYPE_FUNCTION_LOAD_VARS, nil);
   AddScriptFunction(Enviroment, 'SAVE_VAR', F_TYPE_FUNCTION_SAVE_VAR, nil);
   AddScriptFunction(Enviroment, 'DELETE_VAR', F_TYPE_FUNCTION_DELETE_VAR, nil);

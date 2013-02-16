@@ -10,9 +10,9 @@ program PhotoDB;
 
 uses
   FastMM4,
-{$IFDEF DEBUG}
+  {$IFDEF DEBUG}
   ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
-{$ENDIF DEBUG}
+  {$ENDIF}
   uInit in 'Units\uInit.pas',
   uTime in 'Units\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
@@ -425,7 +425,8 @@ uses
   uFormShareLink in 'uFormShareLink.pas' {FormShareLink},
   uShareUtils in 'Units\uShareUtils.pas',
   uDBRepository in 'Units\uDBRepository.pas',
-  uWinApi in 'Units\uWinApi.pas';
+  uWinApi in 'Units\uWinApi.pas',
+  uImportSource in 'uImportSource.pas' {FormImportSource};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

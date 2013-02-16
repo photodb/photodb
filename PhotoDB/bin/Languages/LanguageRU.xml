@@ -2380,6 +2380,11 @@
   	<translate name="Uploading: {0:0.#}%" value="Работа: {0:0.#}%" />
   	<translate name="Authorizing: {0}" value="Авторизация: {0}" />
   	<translate name="Link: &quot;{0}&quot; was copied to clipboard!" value="Ссылка: &quot;{0}&quot; скопирована в буфер обмена!" />
-  	<translate name="Settings" value="Настройки" />	
-  </scope>  	
+  	<translate name="Settings" value="Настройки" />
+  </scope>
+  <scope name="ImportSource">
+	<translate name="Import photos and video" value="Импорт фото и видео" />
+	<translate name="Please wait until program searches for sources with images" value="Программа ищет доступные устройства. Пожалуйста, ждите." />
+  	<translate name="Select a folder" value="Выбрать папку" />
+  </scope>
 </language>

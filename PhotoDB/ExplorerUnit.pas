@@ -564,6 +564,25 @@ type
     TmrReloadTreeView: TTimer;
     PmShareAdditionalTasks: TPopupActionBar;
     MiShareImageAndGetUrl: TMenuItem;
+    TbImport: TToolButton;
+    TbHelp: TToolButton;
+    ToolButton1: TToolButton;
+    PmHelp: TPopupActionBar;
+    MiActivation: TMenuItem;
+    MiAbout: TMenuItem;
+    MiHomePage: TMenuItem;
+    MiAuthorEmail: TMenuItem;
+    MiCheckUpdates: TMenuItem;
+    PmOptions: TPopupActionBar;
+    MiTreeView: TMenuItem;
+    MenuItem5: TMenuItem;
+    MiUpdater: TMenuItem;
+    MiManageDB: TMenuItem;
+    MiEditGroups: TMenuItem;
+    MiSplitDB: TMenuItem;
+    MiCDActionsSeparator: TMenuItem;
+    MiCDExport: TMenuItem;
+    MiCDMapping: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -839,6 +858,7 @@ type
       var Accept: Boolean);
     procedure SplLeftPanelMoved(Sender: TObject);
     procedure TmrReloadTreeViewTimer(Sender: TObject);
+    procedure TbImportClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1603,7 +1623,6 @@ begin
   TW.I.Start('Script Execure');
   Menu := nil;
   LoadMenuFromScript(ScriptMainMenu.Items, DBKernel.ImageList, MainMenuScript, AScript, ScriptExecuted, FExtImagesInImageList, True);
-  Menu := ScriptMainMenu;
   ScriptMainMenu.Images := DBKernel.ImageList;
 
   TW.I.Start('LoadLanguage');
@@ -3509,6 +3528,11 @@ begin
       Explorer.Show;
     end;
   end;
+end;
+
+procedure TExplorerForm.TbImportClick(Sender: TObject);
+begin
+  SelectSourceForm.Execute;
 end;
 
 procedure TExplorerForm.TbPreviewClick(Sender: TObject);
@@ -11586,6 +11610,8 @@ begin
   AddIcon('EXPLORER_SEARCH');
   AddIcon('EXPLORER_OPTIONS');
   AddIcon('EXPLORER_PREVIEW');
+  AddIcon('EXPLORER_IMPORT');
+  AddIcon('EXPLORER_HELP');
 end;
 
 procedure TExplorerForm.LoadToolBarGrayedIcons;
@@ -11627,6 +11653,8 @@ begin
   AddIcon('EXPLORER_SEARCH_GRAY');
   AddIcon('EXPLORER_OPTIONS_GRAY');
   AddIcon('EXPLORER_PREVIEW_GRAY');
+  AddIcon('EXPLORER_IMPORT_GRAY');
+  AddIcon('EXPLORER_HELP_GRAY');
 end;
 
 procedure TExplorerForm.TbBackMouseDown(Sender: TObject; Button: TMouseButton;

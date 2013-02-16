@@ -50,8 +50,9 @@ procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
 procedure FillTransparentChannel(Bitmap: TBitmap; TransparentValue: Byte);
+procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0); overload;
 procedure DrawTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0);
-procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0);
+procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0); overload;
 procedure DrawImageEx32To32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
 procedure GrayScale(Image: TBitmap);
@@ -1077,7 +1078,7 @@ begin
       if (XD >= DW) then
         Break;
 
-      W1 := pS[J].R;
+      W1 := (pS[J].R * 77 + pS[J].G * 151 + pS[J].B * 28) shr 8;
       W := 255 - W1;
       pD[XD].R := (R * W + pD[XD].R * W1 + $7F) div $FF;
       pD[XD].G := (G * W + pD[XD].G * W1 + $7F) div $FF;
@@ -1366,13 +1367,37 @@ begin
 
   for I := Max(0, Y) to Min(Y + Height - 1, Bitmap.Height - 1) do
   begin
-    p := Bitmap.ScanLine[I];
+    P := Bitmap.ScanLine[I];
     for J := Max(0, X) to Min(X + Width - 1, Bitmap.Width - 1) do
     begin
-      p[J].R := RM[p[J].R];
-      p[J].G := GM[p[J].G];
-      p[J].B := BM[p[J].B];
+      P[J].R := RM[P[J].R];
+      P[J].G := GM[P[J].G];
+      P[J].B := BM[P[J].B];
     end;
+  end;
+end;
+
+procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0);
+var
+  I, J: Integer;
+  P: PARGB32;
+  R, G, B: Byte;
+  Value: Integer;
+begin
+  Bitmap.PixelFormat := pf32Bit;
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  TRGB32(Value).R := R;
+  TRGB32(Value).G := G;
+  TRGB32(Value).B := B;
+  TRGB32(Value).L := TransparentValue;
+  for I := Max(0, Y) to Min(Y + Height - 1, Bitmap.Height - 1) do
+  begin
+    P := Bitmap.ScanLine[I];
+    for J := Max(0, X) to Min(X + Width - 1, Bitmap.Width - 1) do
+      Integer(P[J]) := Value;
   end;
 end;
 

@@ -78,7 +78,6 @@ function GetUSBDrives: TArrayOfString;
 function GetCDROMDrives: TArrayOfString;
 function GetAllDrives: TArrayOfString;
 function DriveState(DriveLetter: AnsiChar): TSDriveState;
-Function GetCDVolumeLabel(CDName: AnsiChar): String;
 function GetDriveName(Drive: string; DefString: string): string;
 function GetMyPicturesFolder: string;
 function GetMyDocumentsFolder: string;
@@ -810,24 +809,6 @@ begin
   end;
 end;
 
-function GetCDVolumeLabel(CDName: AnsiChar) : String;
-var
-  VolumeName,
-  FileSystemName: array [0..MAX_PATH-1] of Char;
-  VolumeSerialNo: DWord;
-  MaxComponentLength,FileSystemFlags: Cardinal;
-  OldMode: Cardinal;
-begin
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  try
-    GetVolumeInformation(PChar(CDName + ':\'), VolumeName, MAX_PATH, @VolumeSerialNo, MaxComponentLength,
-      FileSystemFlags, FileSystemName, MAX_PATH);
-  finally
-    SetErrorMode(OldMode);
-  end;
-  Result := VolumeName;
-end;
-
 function MrsGetFileType(StrFilename: string): string;
 begin
   Result := Dmitry.Utils.Files.MrsGetFileType(StrFilename);
@@ -847,7 +828,7 @@ begin
     DS := DriveState(AnsiChar(Drive[1]));
     if (DS = DSS_DISK_WITH_FILES) or (DS = DSS_EMPTY_DISK) then
     begin
-      S := GetCDVolumeLabel(AnsiChar(Drive[1]));
+      S := GetDriveVolumeLabel(AnsiChar(Drive[1]));
       if S <> '' then
         Result := S + ' (' + Drive[1] + ':)'
       else
