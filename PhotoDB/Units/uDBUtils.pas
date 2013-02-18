@@ -1412,7 +1412,7 @@ begin
   end;
 end;
 
-function SelectDB(Caller : TDBForm; DB: string) : Boolean;
+function SelectDB(Caller: TDBForm; DB: string) : Boolean;
 var
   EventInfo: TEventValues;
   DBVersion: Integer;

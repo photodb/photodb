@@ -3,25 +3,25 @@ unit UnitSplitExportForm;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ComCtrls,
-  ExtCtrls,
-  StdCtrls,
-  DropSource,
-  DropTarget,
-  ImgList,
-  Menus,
-  DB,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.CommCtrl,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.ComCtrls,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+  Vcl.ImgList,
+  Vcl.Menus,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+  DB,
 
+  DropSource,
+  DropTarget,
   DragDrop,
   DragDropFile,
 
@@ -30,11 +30,13 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   CommonDBSupport,
+  UnitDBKernel,
   UnitGroupsWork,
   UnitDBDeclare,
   UnitDBFileDialogs,
   UnitDBCommon,
 
+  uFormInterfaces,
   uGroupTypes,
   uVistaFuncs,
   uLogger,
@@ -49,7 +51,7 @@ uses
   uDBUtils;
 
 type
-  TSplitExportForm = class(TDBForm)
+  TSplitExportForm = class(TDBForm, ISplitCollectionForm)
     LvMain: TListView;
     DropFileTarget1: TDropFileTarget;
     ImlListView: TImageList;
@@ -103,38 +105,18 @@ type
     function GetFormID: string; override;
   public
     { Public declarations }
+    procedure Execute;
   end;
-
-procedure SplitDB;
-
-const
-  MethodColumnWidth = 60;
-
-var
-  Split_Opened: Boolean = False;
-  SplitExportForm: TSplitExportForm;
 
 implementation
 
 uses
-  UnitDBKernel,
-  CommCtrl,
   ProgressActionUnit;
 
-{$R *.dfm}
+const
+  MethodColumnWidth = 60;
 
-procedure SplitDB;
-begin
-  if Split_Opened then
-  begin
-    SplitExportForm.Show;
-    Exit;
-  end;
-  Split_Opened := True;
-  Application.CreateForm(TSplitExportForm, SplitExportForm);
-  SplitExportForm.Show;
-  Split_Opened := True;
-end;
+{$R *.dfm}
 
 procedure TSplitExportForm.FormCreate(Sender: TObject);
 begin
@@ -232,6 +214,11 @@ begin
   FFiles.Assign(DropFileTarget1.Files);
   Point := LvMain.ClientToScreen(Point);
   PmInsertMethod.Popup(Point.X, Point.Y);
+end;
+
+procedure TSplitExportForm.Execute;
+begin
+  Show;
 end;
 
 procedure TSplitExportForm.BtnChooseFileClick(Sender: TObject);
@@ -337,8 +324,7 @@ end;
 
 procedure TSplitExportForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Split_Opened := False;
-  Release;
+  Action := caFree;
 end;
 
 procedure TSplitExportForm.BtnOkClick(Sender: TObject);
@@ -545,5 +531,8 @@ begin
     Items.Delete(Index);
   end;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ISplitCollectionForm, TSplitExportForm);
 
 end.

@@ -5,6 +5,7 @@ Bugs:
 
 - Site
  + Free activation form on the site
+ + Site search
 
 Possible CRs:
 [F] Folder list in menu;

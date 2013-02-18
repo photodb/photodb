@@ -41,8 +41,6 @@ type
   TUpdaterDB = class(TObject)
   private
     { Private declarations }
-    FProcessScript: TScript;
-    ScriptProcessString: string;
     FPosition: Integer;
     FShowWindow: Boolean;
     FMaxSize: Int64;
@@ -279,9 +277,6 @@ begin
   FIsSaved := False;
   FSync := TCriticalSection.Create;
   FFilesInfo := TDBPopupMenuInfo.Create;
-  ScriptProcessString := Include('Scripts\Adding_AddFile.dbini');
-  FProcessScript := TScript.Create(nil, '');
-  FProcessScript.Description := 'Add File script';
 
   NoLimit := False;
   FUseFileNameScaning := False;
@@ -301,7 +296,6 @@ end;
 
 destructor TUpdaterDB.Destroy;
 begin
-  F(FProcessScript);
   F(FFilesInfo);
   F(FSync);
 end;
@@ -658,12 +652,8 @@ begin
 end;
 
 procedure TUpdaterDB.ProcessFile(var FileName: string);
-var
-  C: Integer;
 begin
-  SetNamedValueStr(FProcessScript, '$File', FileName);
-  ExecuteScript(nil, FProcessScript, ScriptProcessString, C, nil);
-  FileName := GetNamedValueString(FProcessScript, '$File');
+  //do nothing
 end;
 
 procedure TUpdaterDB.LoadWork;

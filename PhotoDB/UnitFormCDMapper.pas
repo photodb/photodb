@@ -3,41 +3,42 @@ unit UnitFormCDMapper;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  ExtCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.ExtCtrls,
+  Vcl.Imaging.pngimage,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Vcl.ImgList,
+  Vcl.Menus,
+  Data.DB,
+
   Dolphin_DB,
   UnitDBKernel,
-  ImgList,
   UnitCDMappingSupport,
   UnitDBCommonGraphics,
-  Menus,
-  DB,
   CommonDBSupport,
+  UnitDBDeclare,
+
   uVistaFuncs,
   uLogger,
   uDBForm,
   uMemory,
-  UnitDBDeclare,
   uDBPopupMenuInfo,
   uShellIntegration,
   uConstants,
-  uCDMappingTypes,
-  pngimage,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup
-  ;
+  uFormInterfaces,
+  uCDMappingTypes;
 
 type
-  TFormCDMapper = class(TDBForm)
+  TFormCDMapper = class(TDBForm, ICDMapperForm)
     Image1: TImage;
     LabelInfo: TLabel;
     CDMappingListView: TListView;
@@ -68,7 +69,8 @@ type
     { Private declarations }
     procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure Execute;
@@ -121,7 +123,7 @@ end;
 procedure TFormCDMapper.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  Release;
+  Action := caFree;
 end;
 
 procedure TFormCDMapper.LoadLanguage;
@@ -155,6 +157,12 @@ end;
 function TFormCDMapper.GetFormID: string;
 begin
   Result := 'CDMapper';
+end;
+
+procedure TFormCDMapper.InterfaceDestroyed;
+begin
+  inherited;
+  Release;
 end;
 
 procedure TFormCDMapper.ButtonAddocationClick(Sender: TObject);
@@ -307,5 +315,8 @@ begin
       end;
     end;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ICDMapperForm, TFormCDMapper);
 
 end.

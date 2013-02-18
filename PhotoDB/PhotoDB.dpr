@@ -426,7 +426,8 @@ uses
   uShareUtils in 'Units\uShareUtils.pas',
   uDBRepository in 'Units\uDBRepository.pas',
   uWinApi in 'Units\uWinApi.pas',
-  uImportSource in 'uImportSource.pas' {FormImportSource};
+  uImportSource in 'uImportSource.pas' {FormImportSource},
+  uPopupActionBarEx in 'Units\Styles\uPopupActionBarEx.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -543,7 +544,6 @@ begin
     TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
 
     // PREPAIRING ----------------------------------------------------
-
     if GetParamStrDBBool('/SLEEP') then
       Sleep(1000);
 

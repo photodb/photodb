@@ -168,6 +168,26 @@ type
     procedure Execute(Info: TDBPopupMenuInfoRecord);
   end;
 
+  ICDExportForm = interface(IFormInterface)
+    ['{72359017-3ABA-4C8F-ACB0-FB2D37798CB4}']
+    procedure Execute;
+  end;
+
+  ICDMapperForm = interface(IFormInterface)
+    ['{B45F759D-40DD-4BA5-BA24-950389A5CB3A}']
+    procedure Execute;
+  end;
+
+  ISplitCollectionForm = interface(IFormInterface)
+    ['{D21B87CE-8B72-4A09-B124-C4CB5A199EC4}']
+    procedure Execute;
+  end;
+
+  ICollectionTreeForm = interface(IFormInterface)
+    ['{953A80A5-B6E2-47F8-BC40-333E9E1FD263}']
+    procedure Execute;
+  end;
+
 type
   TFormInterfaces = class(TObject)
   private
@@ -207,6 +227,10 @@ function CollectionManagerForm: ICollectionManagerForm;
 function GroupsManagerForm: IGroupsManagerForm;
 function CurrentGroupsManagerForm: IGroupsManagerForm;
 function CollectionAddItemForm: ICollectionAddItemForm;
+function CDExportForm: ICDExportForm;
+function CDMapperForm: ICDMapperForm;
+function SplitCollectionForm: ISplitCollectionForm;
+function CollectionTreeForm: ICollectionTreeForm;
 
 implementation
 
@@ -329,6 +353,26 @@ end;
 function CollectionAddItemForm: ICollectionAddItemForm;
 begin
   Result := FormInterfaces.CreateForm<ICollectionAddItemForm>();
+end;
+
+function CDExportForm: ICDExportForm;
+begin
+  Result := FormInterfaces.GetSingleForm<ICDExportForm>(True);
+end;
+
+function CDMapperForm: ICDMapperForm;
+begin
+  Result := FormInterfaces.GetSingleForm<ICDMapperForm>(True);
+end;
+
+function SplitCollectionForm: ISplitCollectionForm;
+begin
+  Result := FormInterfaces.GetSingleForm<ISplitCollectionForm>(True);
+end;
+
+function CollectionTreeForm: ICollectionTreeForm;
+begin
+  Result := FormInterfaces.GetSingleForm<ICollectionTreeForm>(True);
 end;
 
 { TFormInterfaces }

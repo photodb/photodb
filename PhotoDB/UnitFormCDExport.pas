@@ -3,28 +3,26 @@ unit UnitFormCDExport;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  ShellApi,
-  Forms,
-  Dialogs,
-  ExtCtrls,
-  ComCtrls,
-  StdCtrls,
-  Menus,
-  pngimage,
-  ImgList,
-  Dolphin_DB,
-  UnitDBKernel,
-  Buttons,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ShellApi,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.ExtCtrls,
+  Vcl.ComCtrls,
+  Vcl.StdCtrls,
+  Vcl.Menus,
+  Vcl.ImgList,
+  Vcl.Buttons,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+  Vcl.AppEvnts,
+  Vcl.Imaging.pngimage,
+
   DragDrop,
-  AppEvnts,
   DropTarget,
 
   Dmitry.Utils.Files,
@@ -37,6 +35,8 @@ uses
   UnitCDMappingSupport,
   UnitDBFileDialogs,
   UnitDBCommonGraphics,
+  Dolphin_DB,
+  UnitDBKernel,
 
   uAssociatedIcons,
   uMemory,
@@ -49,7 +49,7 @@ uses
   uFormInterfaces;
 
 type
-  TFormCDExport = class(TDBForm)
+  TFormCDExport = class(TDBForm, ICDExportForm)
     CDListView: TListView;
     PanelBottom: TPanel;
     PanelTop: TPanel;
@@ -636,5 +636,8 @@ begin
     F(List);
   end;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ICDExportForm, TFormCDExport);
 
 end.

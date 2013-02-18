@@ -46,7 +46,8 @@ begin
             if Reg.OpenKey(DBKeyName, False) then
             begin
               FileName := Reg.ReadString('FileName');
-              System.SysUtils.DeleteFile(FileName);
+
+              SilentDeleteFile(0, FileName, True);
             end;
           end;
         finally

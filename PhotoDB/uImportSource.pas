@@ -14,6 +14,7 @@ uses
   Vcl.Forms,
   Vcl.Buttons,
   Vcl.StdCtrls,
+  Vcl.ExtCtrls,
   Vcl.Imaging.PngImage,
 
   Dmitry.Utils.Files,
@@ -33,7 +34,8 @@ uses
   uThreadForm,
   uThreadTask,
   uPortableClasses,
-  uPortableDeviceManager;
+  uPortableDeviceManager,
+  uVCLHelpers;
 
 type
   TImportType = (itRemovableDevice, itUSB, itCD, itDirectory);
@@ -49,8 +51,10 @@ type
   TFormImportSource = class(TThreadForm, ISelectSourceForm)
     LsLoading: TLoadingSign;
     LbLoadingMessage: TLabel;
+    TmrDeviceChanges: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure TmrDeviceChangesTimer(Sender: TObject);
   private
     { Private declarations }
     FLoadingCount: Integer;
@@ -62,6 +66,8 @@ type
     procedure LoadingThreadFinished;
     procedure ReorderForm;
     procedure SelectSourceClick(Sender: TObject);
+    procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
+    procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
   protected
     function GetFormID: string; override;
   public
@@ -291,6 +297,8 @@ begin
   FLoadingCount := 0;
   FButtons := TList<TSpeedButton>.Create;
   LoadLanguage;
+
+  GetDeviceEventManager.RegisterNotification([peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
 end;
 
 procedure TFormImportSource.FormDestroy(Sender: TObject);
@@ -323,6 +331,16 @@ begin
     LbLoadingMessage.Caption := L('Please wait until program searches for sources with images');
   finally
     EndTranslate;
+  end;
+end;
+
+procedure TFormImportSource.PortableEventsCallBack(
+  EventType: TPortableEventType; DeviceID, ItemKey, ItemPath: string);
+begin
+  case EventType of
+    peDeviceConnected,
+    peDeviceDisconnected:
+      TmrDeviceChanges.Restart;
   end;
 end;
 
@@ -389,6 +407,9 @@ end;
 
 procedure TFormImportSource.StartLoadingSourceList;
 begin
+  LbLoadingMessage.Show;
+  LsLoading.Show;
+
   //load CDs
   Inc(FLoadingCount);
   TThreadTask.Create(Self, Pointer(nil),
@@ -480,6 +501,32 @@ begin
   );
 
   AddLocation(L('Select a folder'), itDirectory, '', nil);
+end;
+
+procedure TFormImportSource.TmrDeviceChangesTimer(Sender: TObject);
+var
+  I: Integer;
+begin
+  TmrDeviceChanges.Enabled := False;
+
+  BeginScreenUpdate(Handle);
+  try
+    //Refresh buttons
+    for I := 0 to FButtons.Count - 1 do
+      TObject(FButtons[I].Tag).Free;
+    for I := 0 to FButtons.Count - 1 do
+      FButtons[I].Free;
+
+    FButtons.Clear;
+    StartLoadingSourceList;
+  finally
+    EndScreenUpdate(Handle, False);
+  end;
+end;
+
+procedure TFormImportSource.WMDeviceChange(var Msg: TMessage);
+begin
+  TmrDeviceChanges.Restart;
 end;
 
 initialization

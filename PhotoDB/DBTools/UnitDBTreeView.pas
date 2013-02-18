@@ -3,49 +3,52 @@ unit UnitDBTreeView;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  ImgList,
-  DB,
-  UnitDBDeclare,
-  ExtCtrls,
-  JPEG,
-  CommCtrl,
-  UnitDBKernel,
-  GraphicCrypt,
-  DBCMenu,
-  Menus,
-  uListViewUtils,
-  AppEvnts,
-  DropSource,
-  DropTarget,
-  CommonDBSupport,
-  DragDropFile,
-  DragDrop,
-  UnitDBCommon,
-  uBitmapUtils,
-  uDBDrawing,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.CommCtrl,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.ComCtrls,
+  Vcl.ImgList,
+  Vcl.ExtCtrls,
+  Vcl.Imaging.JPEG,
+  Vcl.Menus,
+  Vcl.AppEvnts,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
+  Data.DB,
 
   Dmitry.Utils.Files,
 
+  DropSource,
+  DropTarget,
+  DragDropFile,
+  DragDrop,
+
+  UnitDBDeclare,
+  UnitDBKernel,
+  GraphicCrypt,
+  DBCMenu,
+  CommonDBSupport,
+  UnitDBCommon,
+  Dolphin_DB,
+
+  uListViewUtils,
+  uBitmapUtils,
+  uDBDrawing,
   uDBPopupMenuInfo,
   uMemory,
+  uRuntime,
   uDBForm,
   uGraphicUtils,
   uDBUtils,
-  Dolphin_DB,
   uThemesUtils,
   uConstants,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup;
+  uFormInterfaces;
 
 type
   TItemData = record
@@ -56,7 +59,7 @@ type
   PItemData = ^TItemData;
 
 type
-  TFormCreateDBFileTree = class(TDBForm)
+  TFormCreateDBFileTree = class(TDBForm, ICollectionTreeForm)
     TreeView1: TTreeView;
     ImageList1: TImageList;
     Panel1: TPanel;
@@ -77,30 +80,23 @@ type
     procedure TreeView1GetSelectedIndex(Sender: TObject; Node: TTreeNode);
     procedure TreeView1GetImageIndex(Sender: TObject; Node: TTreeNode);
     procedure TreeView1Expanded(Sender: TObject; Node: TTreeNode);
-    procedure TreeView1Expanding(Sender: TObject; Node: TTreeNode;
-      var AllowExpansion: Boolean);
+    procedure TreeView1Expanding(Sender: TObject; Node: TTreeNode; var AllowExpansion: Boolean);
     procedure Button1Click(Sender: TObject);
-    procedure AddFile(FileName : String; ID : Integer; Crypted, Deleted : boolean);
-    procedure Execute;
     procedure DestroyTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure TreeView1Click(Sender: TObject);
-    procedure ImMainContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
-    procedure TreeView1ContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure ImMainContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
+    procedure TreeView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure OpeninExplorer1Click(Sender: TObject);
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure SelectTimerTimer(Sender: TObject);
     procedure ImMainMouseDown(Sender: TObject; Button: TMouseButton;  Shift: TShiftState; X, Y: Integer);
     procedure ImMainMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure ImMainMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ImMainMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure FormDestroy(Sender: TObject);
-    procedure DBOpened(Sender : TObject; DS : TDataSet);
-    procedure DropFileSource1Feedback(Sender: TObject; Effect: Integer;
-      var UseDefaultCursors: Boolean);
+    procedure DBOpened(Sender: TObject; DS: TDataSet);
+    procedure DropFileSource1Feedback(Sender: TObject; Effect: Integer; var UseDefaultCursors: Boolean);
   private
     { Private declarations }
     DBInOpening: Boolean;
@@ -111,18 +107,18 @@ type
     DBDragPoint: TPoint;
     WorkTable, TempTable: TDataSet;
     FDataList: TList;
-    procedure LoadLanguage;
-  protected
-    procedure CreateParams(var Params: TCreateParams); override;
-    function GetFormID : string; override;
-  public
-    { Public declarations }
     FDBFileName: string;
     FTerminating: Boolean;
     FCanFree: Boolean;
+    procedure AddFile(FileName: String; ID: Integer; Crypted, Deleted: Boolean);
+    procedure LoadLanguage;
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
+    function GetFormID: string; override;
+  public
+    { Public declarations }
+    procedure Execute;
   end;
-
-procedure MakeDBFileTree(DBFileName: string);
 
 implementation
 
@@ -132,15 +128,6 @@ uses
   ProgressActionUnit;
 
 {$R *.dfm}
-
-procedure MakeDBFileTree(DBFileName: string);
-var
-  FormCreateDBFileTree: TFormCreateDBFileTree;
-begin
-  Application.CreateForm(TFormCreateDBFileTree, FormCreateDBFileTree);
-  FormCreateDBFileTree.FDBFileName := DBFileName;
-  FormCreateDBFileTree.Execute;
-end;
 
 procedure TFormCreateDBFileTree.TreeView1GetSelectedIndex(Sender: TObject;
   Node: TTreeNode);
@@ -214,7 +201,7 @@ begin
   Button1.Enabled := True;
 end;
 
-procedure TFormCreateDBFileTree.AddFile(FileName: String; ID : Integer; Crypted, Deleted : boolean);
+procedure TFormCreateDBFileTree.AddFile(FileName: String; ID: Integer; Crypted, Deleted: Boolean);
 var
   I: Integer;
   S: string;
@@ -290,6 +277,7 @@ var
   OpenProgress: TProgressActionForm;
   C, I: Integer;
 begin
+  FDBFileName := dbname;
   WorkTable := GetQuery;
   TempTable := GetQuery;
   SetSQL(WorkTable, 'Select ID, Name, Access, Thum,Rotated,Rating,Keywords,Groups,FFileName,FileSize,Attr,Comment,DateToAdd,aTime,IsDate,IsTime,StrTh,Width,Height,Include,Links from $DB$');
@@ -735,5 +723,8 @@ procedure TFormCreateDBFileTree.DropFileSource1Feedback(Sender: TObject; Effect:
 begin
   UseDefaultCursors := False;
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ICollectionTreeForm, TFormCreateDBFileTree);
 
 end.

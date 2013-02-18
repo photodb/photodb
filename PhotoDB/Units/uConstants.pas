@@ -110,6 +110,8 @@ const
   DB_VER_2_3 = 6;
   DB_VER_4_0 = 6; //the same, no DB structure changes
 
+  DB_VER_CURRENT = DB_VER_4_0;
+
 const
   DB_IC_SHELL          = 0;
   DB_IC_SLIDE_SHOW     = 1;

@@ -40,4 +40,10 @@ object FormImportSource: TFormImportSource
     SignColor = clBlack
     MaxTransparencity = 255
   end
+  object TmrDeviceChanges: TTimer
+    Enabled = False
+    OnTimer = TmrDeviceChangesTimer
+    Left = 8
+    Top = 8
+  end
 end

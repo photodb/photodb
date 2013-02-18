@@ -14,8 +14,8 @@ uses
   Vcl.ExtCtrls,
   Vcl.StdCtrls,
   Vcl.Menus,
-  jpeg,
-  pngimage,
+  Vcl.Imaging.jpeg,
+  Vcl.Imaging.pngimage,
 
   Dmitry.Controls.WatermarkedEdit,
 

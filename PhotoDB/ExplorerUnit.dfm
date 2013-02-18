@@ -1441,8 +1441,17 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 13
         Style = tbsSeparator
       end
-      object TbOptions: TToolButton
+      object TbDatabase: TToolButton
         Left = 280
+        Top = 0
+        AutoSize = True
+        DropdownMenu = PmDBList
+        ImageIndex = 15
+        Style = tbsDropDown
+        Visible = False
+      end
+      object TbOptions: TToolButton
+        Left = 313
         Top = 0
         AutoSize = True
         Caption = 'Options'
@@ -1452,7 +1461,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Options1Click
       end
       object ToolButton1: TToolButton
-        Left = 313
+        Left = 346
         Top = 0
         Width = 8
         Caption = 'ToolButton1'
@@ -1460,13 +1469,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbHelp: TToolButton
-        Left = 321
+        Left = 354
         Top = 0
         AutoSize = True
         DropdownMenu = PmHelp
         EnableDropdown = True
         ImageIndex = 14
         Style = tbsDropDown
+        OnClick = TbHelpClick
       end
     end
   end
@@ -2745,7 +2755,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.998757395840000000
+      Date = 41177.972700868060000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2800,6 +2810,7 @@ object ExplorerForm: TExplorerForm
     end
     object SlideShow1: TMenuItem
       Caption = 'Show'
+      Default = True
       OnClick = SlideShow1Click
     end
     object NewWindow1: TMenuItem
@@ -3362,7 +3373,7 @@ object ExplorerForm: TExplorerForm
     Height = 18
     Width = 18
     Left = 201
-    Top = 144
+    Top = 152
   end
   object PmSearchMode: TPopupActionBar
     AutoPopup = False
@@ -3457,8 +3468,8 @@ object ExplorerForm: TExplorerForm
   object ImFacePopup: TImageList
     ColorDepth = cd32Bit
     BkColor = 15790320
-    Left = 280
-    Top = 144
+    Left = 288
+    Top = 152
   end
   object ImExtendedSearchPersons: TImageList
     ColorDepth = cd32Bit
@@ -3646,53 +3657,114 @@ object ExplorerForm: TExplorerForm
     end
   end
   object PmHelp: TPopupActionBar
+    OnPopup = PmHelpPopup
     Left = 448
     Top = 480
     object MiActivation: TMenuItem
       Caption = 'MiActivation'
+      OnClick = MiActivationClick
     end
     object MiAbout: TMenuItem
       Caption = 'MiAbout'
+      OnClick = MiAboutClick
     end
     object MiHomePage: TMenuItem
       Caption = 'MiHomePage'
+      OnClick = MiHomePageClick
     end
     object MiAuthorEmail: TMenuItem
       Caption = 'MiAuthorEmail'
+      OnClick = MiAuthorEmailClick
     end
     object MiCheckUpdates: TMenuItem
       Caption = 'MiCheckUpdates'
+      OnClick = MiCheckUpdatesClick
     end
   end
   object PmOptions: TPopupActionBar
+    OnPopup = PmOptionsPopup
     Left = 448
     Top = 528
+    object MiListOfKeywords: TMenuItem
+      Caption = 'MiListOfKeywords'
+      OnClick = MiListOfKeywordsClick
+    end
     object MiTreeView: TMenuItem
       Caption = 'MiTreeView'
-    end
-    object MenuItem5: TMenuItem
-      Caption = 'MiAbout'
+      OnClick = MiTreeViewClick
     end
     object MiUpdater: TMenuItem
       Caption = 'MiUpdater'
+      OnClick = MiUpdaterClick
     end
     object MiManageDB: TMenuItem
       Caption = 'MiManageDB'
+      OnClick = MiManageDBClick
     end
     object MiEditGroups: TMenuItem
       Caption = 'MiEditGroups'
+      OnClick = MiEditGroupsClick
     end
     object MiSplitDB: TMenuItem
       Caption = 'MiSplitDB'
+      OnClick = MiSplitDBClick
     end
     object MiCDActionsSeparator: TMenuItem
       Caption = '-'
     end
     object MiCDExport: TMenuItem
       Caption = 'MiCDExport'
+      OnClick = MiCDExportClick
     end
     object MiCDMapping: TMenuItem
       Caption = 'MiCDMapping'
+      OnClick = MiCDMappingClick
+    end
+  end
+  object ImDBList: TImageList
+    ColorDepth = cd32Bit
+    Left = 289
+    Top = 200
+  end
+  object PmDBList: TPopupActionBar
+    Images = ImDBList
+    OnPopup = PmOptionsPopup
+    Left = 448
+    Top = 576
+    object MenuItem1: TMenuItem
+      Caption = 'MiListOfKeywords'
+      OnClick = MiListOfKeywordsClick
+    end
+    object MenuItem5: TMenuItem
+      Caption = 'MiTreeView'
+      OnClick = MiTreeViewClick
+    end
+    object MenuItem7: TMenuItem
+      Caption = 'MiUpdater'
+      OnClick = MiUpdaterClick
+    end
+    object MenuItem8: TMenuItem
+      Caption = 'MiManageDB'
+      OnClick = MiManageDBClick
+    end
+    object MenuItem9: TMenuItem
+      Caption = 'MiEditGroups'
+      OnClick = MiEditGroupsClick
+    end
+    object MenuItem10: TMenuItem
+      Caption = 'MiSplitDB'
+      OnClick = MiSplitDBClick
+    end
+    object MenuItem11: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem12: TMenuItem
+      Caption = 'MiCDExport'
+      OnClick = MiCDExportClick
+    end
+    object MenuItem13: TMenuItem
+      Caption = 'MiCDMapping'
+      OnClick = MiCDMappingClick
     end
   end
 end

@@ -245,7 +245,7 @@ end;
 
 procedure AMakeDBFileTree;
 begin
-  MakeDBFileTree(Dbname);
+  CollectionTreeForm.Execute;
 end;
 
 function ImageFile(FileName: string): Boolean;
@@ -722,7 +722,7 @@ begin
   GroupsManagerForm.Execute;
 end;
 
-Procedure LoadDBFunctions(Enviroment : TScriptEnviroment);
+procedure LoadDBFunctions(Enviroment : TScriptEnviroment);
 begin
  //Crypt
 
@@ -838,8 +838,6 @@ begin
  AddScriptFunction(Enviroment,'GetProgressWindow',F_TYPE_FUNCTION_STRING_IS_STRING,@GetProgressWindow);
 
  AddScriptFunction(Enviroment,'SetProgressWindowProgress',F_TYPE_FUNCTION_STRING_INTEGER_INTEGER_IS_STRING,@SetProgressWindowProgress);
-
- AddScriptFunction(Enviroment,'SplitDB',F_TYPE_PROCEDURE_NO_PARAMS,@SplitDB);
 
  AddScriptFunction(Enviroment,'SetJPEGOptions',F_TYPE_PROCEDURE_NO_PARAMS,@SetJPEGOptions);
 

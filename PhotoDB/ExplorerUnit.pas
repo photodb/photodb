@@ -146,6 +146,7 @@ uses
   PDB.uVCLRewriters,
   uActivationUtils,
 
+  uMachMask,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
   uManagerExplorer,
@@ -575,7 +576,6 @@ type
     MiCheckUpdates: TMenuItem;
     PmOptions: TPopupActionBar;
     MiTreeView: TMenuItem;
-    MenuItem5: TMenuItem;
     MiUpdater: TMenuItem;
     MiManageDB: TMenuItem;
     MiEditGroups: TMenuItem;
@@ -583,6 +583,19 @@ type
     MiCDActionsSeparator: TMenuItem;
     MiCDExport: TMenuItem;
     MiCDMapping: TMenuItem;
+    MiListOfKeywords: TMenuItem;
+    ImDBList: TImageList;
+    PmDBList: TPopupActionBar;
+    MenuItem1: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem7: TMenuItem;
+    MenuItem8: TMenuItem;
+    MenuItem9: TMenuItem;
+    MenuItem10: TMenuItem;
+    MenuItem11: TMenuItem;
+    MenuItem12: TMenuItem;
+    MenuItem13: TMenuItem;
+    TbDatabase: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -859,6 +872,22 @@ type
     procedure SplLeftPanelMoved(Sender: TObject);
     procedure TmrReloadTreeViewTimer(Sender: TObject);
     procedure TbImportClick(Sender: TObject);
+    procedure TbHelpClick(Sender: TObject);
+    procedure MiActivationClick(Sender: TObject);
+    procedure PmOptionsPopup(Sender: TObject);
+    procedure MiAboutClick(Sender: TObject);
+    procedure MiHomePageClick(Sender: TObject);
+    procedure MiAuthorEmailClick(Sender: TObject);
+    procedure MiCheckUpdatesClick(Sender: TObject);
+    procedure MiListOfKeywordsClick(Sender: TObject);
+    procedure MiTreeViewClick(Sender: TObject);
+    procedure MiUpdaterClick(Sender: TObject);
+    procedure PmHelpPopup(Sender: TObject);
+    procedure MiManageDBClick(Sender: TObject);
+    procedure MiEditGroupsClick(Sender: TObject);
+    procedure MiSplitDBClick(Sender: TObject);
+    procedure MiCDMappingClick(Sender: TObject);
+    procedure MiCDExportClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -870,7 +899,6 @@ type
     ListView: Integer;
     ElvMain: TEasyListView;
     AScript: TScript;
-    MainMenuScript: string;
     RefreshIDList: TStrings;
     Rdown: Boolean;
     Outdrag: Boolean;
@@ -966,16 +994,8 @@ type
     procedure Reload;
     function GetCurrentPathW: TExplorerPath;
     function UpdatingNow(FileName: string): Boolean;
-    function CanUp: Boolean;
     function SelCount: Integer;
-    function SelectedIndex: Integer;
-    function GetSelectedType: Integer;
     function CanCopySelection: Boolean;
-    function GetPath: string;
-    function GetPathByIndex(Index: Integer): string;
-    function GetSelectedFiles: TArrayOfString;
-    function CanPasteInSelection: Boolean;
-    function ShowPrivate: Boolean;
     procedure ReallignToolInfo;
     function GetPathPartName(PP: TPathItem): string;
     procedure ReallignInfo;
@@ -1066,6 +1086,8 @@ type
     property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
     procedure TreeViewSelectCurrentPath;
     procedure TreeViewReloadTree;
+    procedure LoadDBList;
+    procedure ChangeDBClick(Sender: TObject);
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -1194,11 +1216,11 @@ uses
   UnitBigImagesSize,
   uOperationProgress,
 
+  UnitListOfKeywords,
   ExplorerThreadUnit,
   UnitHintCeator,
   UnitExplorerThumbnailCreatorThread,
   UnitHelp,
-  uMachMask,
   DBScriptFunctions,
   UnitUpdateDBObject;
 
@@ -1575,7 +1597,42 @@ begin
   TW.I.Start('LoadToolBarGrayedIcons');
   LoadToolBarGrayedIcons;
 
-  TW.I.Start('aScript');
+  MiActivation.Caption := L('Activation');
+  MiAbout.Caption := L('About');
+  MiHomePage.Caption := L('Go to home page');
+  MiAuthorEmail.Caption := L('Email author');
+  MiCheckUpdates.Caption := L('Check for updates');
+
+  MiListOfKeywords.Caption := L('List of keywords');
+  MiTreeView.Caption := L('Show collection tree');
+  MiUpdater.Caption := L('Show updater');
+  MiManageDB.Caption := L('Collection Manager');
+  MiEditGroups.Caption := L('Manage groups');
+  MiSplitDB.Caption := L('Split collection');
+
+  MiCDExport.Caption := L('Export images to CD');
+  MiCDMapping.Caption := L('CD mapping');
+
+  PmHelp.Images := DBKernel.ImageList;
+  PmOptions.Images := DBKernel.ImageList;
+
+  MiActivation.ImageIndex := DB_IC_NOTES;
+  MiAbout.ImageIndex := DB_IC_HELP;
+  MiHomePage.ImageIndex := DB_IC_NETWORK;
+  MiAuthorEmail.ImageIndex := DB_IC_E_MAIL;
+  MiCheckUpdates.ImageIndex := DB_IC_UPDATING;
+
+  MiListOfKeywords.ImageIndex := DB_IC_SEARCH;
+  MiTreeView.ImageIndex := DB_IC_TREE;
+  MiUpdater.ImageIndex := DB_IC_BOX;
+  MiManageDB.ImageIndex := DB_IC_ADMINTOOLS;
+  MiEditGroups.ImageIndex := DB_IC_GROUPS;
+  MiSplitDB.ImageIndex := DB_IC_SPLIT;
+
+  MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
+  MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
+
+{  TW.I.Start('aScript');
   AScript := TScript.Create(Self, '');
 
   AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
@@ -1612,18 +1669,20 @@ begin
   AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'ShowPrivateNow',     ShowPrivate);
   AddScriptObjFunctionIntegerIsString(aScript.PrivateEnviroment, 'GetPathByIndex',     GetPathByIndex);
 
-  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);
+  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);    }
 
   if IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
 
-  TW.I.Start('Script read');
+  {TW.I.Start('Script read');
   SetNamedValueStr(AScript, '$dbname', dbname);
   MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');
   TW.I.Start('Script Execure');
   Menu := nil;
   LoadMenuFromScript(ScriptMainMenu.Items, DBKernel.ImageList, MainMenuScript, AScript, ScriptExecuted, FExtImagesInImageList, True);
-  ScriptMainMenu.Images := DBKernel.ImageList;
+  ScriptMainMenu.Images := DBKernel.ImageList;    }
+
+  LoadDBList;
 
   TW.I.Start('LoadLanguage');
   LoadLanguage;
@@ -3100,6 +3159,15 @@ begin
     ElvMain.Selection.FocusedItem.Tag := IIF(IsFocusedVisible, 1, 0);
 end;
 
+procedure TExplorerForm.ChangeDBClick(Sender: TObject);
+var
+  DBIndex: Integer;
+begin
+  DBIndex := TMenuItem(Sender).Tag;
+
+  SelectDB(Self, DBKernel.DBs[DBIndex].FileName);
+end;
+
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
   Params: TEventFields; Value: TEventValues);
 var
@@ -3358,6 +3426,7 @@ begin
   begin
     FPictureSize := ThImageSize;
     LoadSizes;
+    LoadDBList;
   end;
 
   if (EventID_Param_Name in Params) then
@@ -3528,6 +3597,11 @@ begin
       Explorer.Show;
     end;
   end;
+end;
+
+procedure TExplorerForm.TbHelpClick(Sender: TObject);
+begin
+  DoHelp;
 end;
 
 procedure TExplorerForm.TbImportClick(Sender: TObject);
@@ -5549,6 +5623,36 @@ begin
   end;
 end;
 
+procedure TExplorerForm.MiAboutClick(Sender: TObject);
+begin
+  DoAbout;
+end;
+
+procedure TExplorerForm.MiActivationClick(Sender: TObject);
+begin
+  DoActivation;
+end;
+
+procedure TExplorerForm.MiAuthorEmailClick(Sender: TObject);
+begin
+  DoHomeContactWithAuthor;
+end;
+
+procedure TExplorerForm.MiCDExportClick(Sender: TObject);
+begin
+  CDExportForm.Execute;
+end;
+
+procedure TExplorerForm.MiCDMappingClick(Sender: TObject);
+begin
+  CDMapperForm.Execute;
+end;
+
+procedure TExplorerForm.MiCheckUpdatesClick(Sender: TObject);
+begin
+  GetUpdates(False);
+end;
+
 procedure TExplorerForm.MiCopyAddressClick(Sender: TObject);
 begin
   Clipboard.AsText := FCurrentPath;
@@ -5562,6 +5666,11 @@ end;
 procedure TExplorerForm.MiEditAddressClick(Sender: TObject);
 begin
   PePath.Edit;
+end;
+
+procedure TExplorerForm.MiEditGroupsClick(Sender: TObject);
+begin
+  GroupsManagerForm.Execute;
 end;
 
 procedure TExplorerForm.MiShelfClick(Sender: TObject);
@@ -5600,6 +5709,11 @@ begin
   end;
 end;
 
+procedure TExplorerForm.MiSplitDBClick(Sender: TObject);
+begin
+  SplitCollectionForm.Execute;
+end;
+
 procedure TExplorerForm.MiESShowHiddenClick(Sender: TObject);
 begin
   FExtendedSearchParams.ShowHidden := not FExtendedSearchParams.ShowHidden;
@@ -5615,6 +5729,11 @@ begin
   FExtendedSearchParams.SortMode := TDatabaseSortMode(TControl(Sender).Tag);
 
   ExtendedSearchRealign;
+end;
+
+procedure TExplorerForm.MiHomePageClick(Sender: TObject);
+begin
+  DoHomePage;
 end;
 
 procedure TExplorerForm.MiInfoGroupFindClick(Sender: TObject);
@@ -5657,6 +5776,16 @@ begin
   InitEditGroups;
 
   BtnSaveInfo.Enabled := True;
+end;
+
+procedure TExplorerForm.MiListOfKeywordsClick(Sender: TObject);
+begin
+  GetListOfKeyWords;
+end;
+
+procedure TExplorerForm.MiManageDBClick(Sender: TObject);
+begin
+  DoManager;
 end;
 
 procedure TExplorerForm.LockItems;
@@ -5726,6 +5855,13 @@ begin
   end;
 
   Paste1.Visible := CanCopyFromClipboard;
+end;
+
+procedure TExplorerForm.PmOptionsPopup(Sender: TObject);
+begin
+  MiUpdater.Visible := not FolderView;
+  MiManageDB.Visible := not FolderView;
+  MiCDExport.Visible := not FolderView;
 end;
 
 procedure TExplorerForm.ShowProgress;
@@ -7837,6 +7973,11 @@ begin
     TLoadPathList.Create(Self, FHistory.GetForwardHistory, TPopupActionBar(Sender));
 end;
 
+procedure TExplorerForm.MiTreeViewClick(Sender: TObject);
+begin
+  CollectionTreeForm.Execute;
+end;
+
 procedure TExplorerForm.MiTreeViewOpenInNewWindowClick(Sender: TObject);
 var
   Explorer: TCustomExplorerForm;
@@ -7850,6 +7991,11 @@ end;
 procedure TExplorerForm.MiTreeViewRefreshClick(Sender: TObject);
 begin
   TreeView.RefreshPathItem(TreeView.PopupItem);
+end;
+
+procedure TExplorerForm.MiUpdaterClick(Sender: TObject);
+begin
+  ShowUpdateWindow;
 end;
 
 procedure TExplorerForm.AddLinkClick(Sender: TObject);
@@ -10403,32 +10549,9 @@ begin
   Result := FW7TaskBar;
 end;
 
-function TExplorerForm.CanUp: Boolean;
-begin
-  Result := AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(MyComputer);
-  if GetCurrentPath = '' then
-    Result := False;
-end;
-
 function TExplorerForm.SelCount: Integer;
 begin
   Result := ElvMain.Selection.Count;
-end;
-
-function TExplorerForm.SelectedIndex: Integer;
-begin
-  if ListView1Selected = nil then
-    Result := -1
-  else
-    Result := ListView1Selected.Index;
-end;
-
-function TExplorerForm.GetSelectedType: Integer;
-begin
-  if ListView1Selected = nil then
-    Result := -1
-  else
-    Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileType;
 end;
 
 function CanCopyFileByType(FileType: Integer): Boolean;
@@ -10460,11 +10583,6 @@ begin
       Result := False;
 end;
 
-function TExplorerForm.GetPath: string;
-begin
-  Result := GetCurrentPath;
-end;
-
 function CanPasteFileInByType(FileType : integer) : boolean;
 begin
   Result := ((FileType=EXPLORER_ITEM_DRIVE) or (FileType=EXPLORER_ITEM_FOLDER) or (FileType=EXPLORER_ITEM_SHARE));
@@ -10473,41 +10591,6 @@ end;
 function TExplorerForm.GetSecondStepHelp: string;
 begin
   Result := '     ' + L('Click the "Add item (s)" to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$', 'Help');
-end;
-
-function TExplorerForm.GetSelectedFiles: TArrayOfString;
-var
-  I, Index: Integer;
-begin
-  SetLength(Result, 0);
-
-  for I := 0 to ElvMain.Items.Count - 1 do
-    if ElvMain.Items[I].Selected then
-    begin
-      Index := ItemIndexToMenuIndex(I);
-      if CanCopyFileByType(FFilesInfo[index].FileType) then
-      begin
-        SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1] := FFilesInfo[index].FileName;
-      end;
-    end;
-end;
-
-function TExplorerForm.CanPasteInSelection: Boolean;
-var
-  Index: Integer;
-begin
-  Result := False;
-  if SelCount > 1 then
-    Exit;
-  if SelCount = 1 then
-  begin
-    index := ItemIndexToMenuIndex(ListView1Selected.Tag);
-    if CanPasteFileInByType(FFilesInfo[index].FileType) then
-      Result := True;
-
-  end else
-    Result := CanPasteFileInByType(GetCurrentPathW.PType);
 end;
 
 procedure TExplorerForm.CloseTimerTimer(Sender: TObject);
@@ -10519,19 +10602,6 @@ end;
 procedure TExplorerForm.CloseWindow(Sender: TObject);
 begin
   CloseTimer.Enabled := True;
-end;
-
-function TExplorerForm.ShowPrivate: Boolean;
-begin
-  Result := ExplorerManager.ShowPrivate;
-end;
-
-function TExplorerForm.GetPathByIndex(Index: Integer): string;
-begin
-  if ListView1Selected = nil then
-    Result := ''
-  else
-    Result := FFilesInfo[ItemIndexToMenuIndex(ListView1Selected.Index)].FileName;
 end;
 
 procedure TExplorerForm.FileName1Click(Sender: TObject);
@@ -12806,6 +12876,11 @@ begin
   MiESSortByImageSize.Checked := FExtendedSearchParams.SortMode = dsmImageSize;
 end;
 
+procedure TExplorerForm.PmHelpPopup(Sender: TObject);
+begin
+  MiActivation.Visible := not FolderView;
+end;
+
 procedure TExplorerForm.ExtendedSearchShow;
 begin
   TbSearch.Down := True;
@@ -13128,6 +13203,72 @@ begin
   FSelectedItem := nil;
   FIsPanaramio := False;
   inherited Create(AOwner);
+end;
+
+procedure TExplorerForm.LoadDBList;
+var
+  I: Integer;
+  MI: TMenuItem;
+  DB: TPhotoDBFile;
+  Ico: HIcon;
+  IconFileName: string;
+  LB: TLayeredBitmap;
+begin
+  IconFileName := '';
+  TbDatabase.Visible := DBkernel.DBs.Count > 1;
+
+  ImDBList.Clear;
+  PmDBList.Items.Clear;
+  for I := 0 to DBkernel.DBs.Count - 1 do
+  begin
+    DB := DBkernel.DBs[I];
+
+    MI := TMenuItem.Create(PmDBList);
+    MI.Caption := DB.Name;
+    MI.ImageIndex := I;
+    MI.OnClick := ChangeDBClick;
+    MI.Tag := I;
+
+    Ico := ExtractSmallIconByPath(DB.Icon);
+    try
+      ImageList_ReplaceIcon(ImDBList.Handle, -1, Ico);
+    finally
+      DestroyIcon(Ico);
+    end;
+
+    if AnsiLowerCase(DB.FileName) = AnsiLowerCase(dbname) then
+    begin
+      MI.Default := True;
+      IconFileName := DB.Icon;
+    end;
+
+    PmDBList.Items.Add(MI);
+  end;
+
+  if IconFileName = '' then
+    IconFileName := Application.ExeName + ',0';
+
+  if TbDatabase.Visible then
+  begin
+    Ico := ExtractSmallIconByPath(IconFileName, not Settings.Readbool('Options', 'UseSmallToolBarButtons', False));
+    try
+      LB := TLayeredBitmap.Create;
+      try
+        LB.LoadFromHIcon(Ico, ToolBarNormalImageList.Width, ToolBarNormalImageList.Height);
+
+        if ToolbarNormalImageList.Count <= TbDatabase.ImageIndex then
+          ToolbarNormalImageList.Add(LB, nil)
+        else
+          ToolbarNormalImageList.Replace(TbDatabase.ImageIndex, LB, nil);
+
+      finally
+        F(LB);
+      end;
+    finally
+      DestroyIcon(Ico);
+    end;
+
+  end;
 end;
 
 procedure TExplorerForm.LoadIcons;
