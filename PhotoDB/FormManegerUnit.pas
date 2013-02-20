@@ -33,6 +33,7 @@ uses
   uFastLoad,
   uMemory,
   uInterfaces,
+  uShellUtils,
   uMultiCPUThreadManager,
   uShellIntegration,
   uRuntime,
@@ -81,6 +82,7 @@ type
     function ProcessEncryptionErrorMessage(S: string): Boolean;
     function GetCount: Integer;
     function GetFormByIndex(Index: Integer): TForm;
+    procedure CheckSampleDB;
   protected
     function GetFormID: string; override;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
@@ -541,6 +543,19 @@ begin
     ExifPatchManager.AddPatchInfo(ID, Params, Value);
 end;
 
+procedure TFormManager.CheckSampleDB;
+var
+  FileName: string;
+begin
+  //if program was uninstalled with registered databases - restore database or create new database
+  FileName := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+  if not FileExistsSafe(FileName) then
+    CreateExampleDB(FileName, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
+
+  DBKernel.AddDB(TA('My collection'), FileName, Application.ExeName + ',0');
+  DBKernel.SetDataBase(FileName);
+end;
+
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
 {$IFDEF LICENCE}
 var
@@ -687,27 +702,33 @@ begin
       begin
         TW.I.Start('FM -> DoChooseDBFile');
         CloseSplashWindow;
-        DBFile := DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
-        try
-          if DBKernel.TestDB(DBFile.FileName) then
-            DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
-          DBKernel.SetDataBase(DBFile.FileName);
 
-          DBVersion := DBKernel.TestDBEx(Dbname, True);
-          if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
-          begin
-            DBTerminating := True;
-            Exit;
+        CheckSampleDB;
+
+        if not FileExistsSafe(Dbname) then
+        begin
+          DBFile := DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
+          try
+            if DBKernel.TestDB(DBFile.FileName) then
+              DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
+            DBKernel.SetDataBase(DBFile.FileName);
+
+            DBVersion := DBKernel.TestDBEx(Dbname, True);
+            if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
+            begin
+              DBTerminating := True;
+              Exit;
+            end;
+
+          finally
+            F(DBFile);
           end;
-
-        finally
-          F(DBFile);
         end;
       end;
 
       TW.I.Start('FM -> check valid db version');
       // check valid db version
-      StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(Dbname)), DB_VER_2_3]);
+      StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(Dbname)), DB_VER_CURRENT]);
       if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
       begin
         TW.I.Start('FM -> TestDBEx');

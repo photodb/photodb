@@ -1172,10 +1172,7 @@ var
   PTempScript: TScript;
   SF: TScriptFunction;
 
-  LineCounter: Integer;
-
 begin
-  LineCounter := 0;
   Apos := 1;
   Fb := 1;
 
@@ -1191,8 +1188,6 @@ begin
   TW.I.Start('Script: ' + Copy(Script, 1, 100));
 
   repeat
-    Inc(LineCounter);
-
     Af := Fb;
 
     R := PosExR('=', Script, Fb);

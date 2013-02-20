@@ -421,7 +421,8 @@ uses
   uProgramStatInfo in 'Units\uProgramStatInfo.pas',
   uImageListUtils in 'Units\uImageListUtils.pas',
   uSysInfo in 'Units\uSysInfo.pas',
-  uWinApi in 'Units\uWinApi.pas';
+  uWinApi in 'Units\uWinApi.pas',
+  uPopupActionBarEx in 'Units\Styles\uPopupActionBarEx.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

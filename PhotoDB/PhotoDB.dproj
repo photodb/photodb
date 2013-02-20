@@ -124,8 +124,8 @@
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Build>584</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.0.0.584;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.0;ProductVersion=4.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+        <VerInfo_Build>597</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.0.0.597;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.0;ProductVersion=4.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
@@ -740,6 +740,7 @@
         <DCCReference Include="Units\uProgramStatInfo.pas"/>
         <DCCReference Include="Units\uImageListUtils.pas"/>
         <DCCReference Include="Units\uSysInfo.pas"/>
+        <DCCReference Include="Units\uWinApi.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
@@ -882,9 +883,9 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
             </Deployment>
             <ActiveXProjectInfo>
                 <version>1</version>

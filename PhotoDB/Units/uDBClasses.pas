@@ -3,6 +3,7 @@ unit uDBClasses;
 interface
 
 uses
+  Generics.Collections,
   System.SysUtils,
   System.Classes,
   System.Variants,
@@ -111,7 +112,7 @@ type
 
   FParameterCollection = class
   private
-    FList: TList;
+    FList: TList<TParameter>;
     function GetCount: Integer;
     function GetItemByID(Index: Integer): TParameter;
   public
@@ -518,7 +519,7 @@ end;
 
 constructor FParameterCollection.Create;
 begin
-  FList := TList.Create;
+  FList := TList<TParameter>.Create;
 end;
 
 destructor FParameterCollection.Destroy;
