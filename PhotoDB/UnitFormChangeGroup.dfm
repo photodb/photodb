@@ -9,6 +9,7 @@ object FormChangeGroup: TFormChangeGroup
   Color = clBtnFace
   Constraints.MinHeight = 375
   Constraints.MinWidth = 250
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

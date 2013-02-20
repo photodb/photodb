@@ -21,8 +21,10 @@ uses
   Vcl.Graphics,
   Vcl.Themes,
   Vcl.Menus,
+  Vcl.ExtCtrls,
 
   Dmitry.Utils.System,
+  Dmitry.Graphics.Types,
 
   uMemory,
   uGOM,
@@ -33,6 +35,7 @@ uses
   {$IFDEF PHOTODB}
   uFastLoad,
   uMainMenuStyleHook,
+  uGraphicUtils,
   {$ENDIF}
   uThemesUtils,
   uImageSource;
@@ -243,6 +246,9 @@ type
     FRefCount: Integer;
     FIsRestoring: Boolean;
     FIsMinimizing: Boolean;
+
+    FMaskPanel: TPanel;
+    FMaskImage: TImage;
     function GetTheme: TDatabaseTheme;
     function GetFrameWidth: Integer;
   protected
@@ -261,6 +267,7 @@ type
     function _AddRef: Integer; stdcall;
     function _Release: Integer; stdcall;
     procedure InterfaceDestroyed; virtual;
+    function CanUseMaskingForModal: Boolean; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -275,6 +282,11 @@ type
     procedure EndTranslate;
     procedure FixFormPosition;
     function QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
+
+    procedure ShowMask;
+    procedure HideMask;
+    function ShowModal: Integer; override;
+
     property FormID: string read GetFormID;
     property WindowID: string read FWindowID;
     property Theme: TDatabaseTheme read GetTheme;
@@ -379,8 +391,15 @@ begin
 
   FIsMinimizing := False;
   FIsRestoring := False;
+  FMaskPanel := nil;
+  FMaskImage := nil;
   {$IFDEF PHOTODB}
   {$ENDIF}
+end;
+
+function TDBForm.CanUseMaskingForModal: Boolean;
+begin
+  Result := True;
 end;
 
 class constructor TDBForm.Create;
@@ -602,6 +621,19 @@ begin
   Result := {$IFDEF PHOTODB}uThemesUtils.Theme{$ELSE}nil{$ENDIF};
 end;
 
+procedure TDBForm.HideMask;
+begin
+  {$IFDEF PHOTODB}
+  BeginScreenUpdate(Handle);
+  try
+    FMaskPanel.Hide;
+    FMaskImage.Picture.Graphic := nil;
+  finally
+    EndScreenUpdate(Handle, False);
+  end;
+  {$ENDIF}
+end;
+
 procedure TDBForm.InterfaceDestroyed;
 begin
   //do nothing
@@ -626,6 +658,92 @@ procedure TDBForm.Restore;
 begin
   if IsIconic(Handle) then
     ShowWindow(Handle, SW_RESTORE);
+end;
+
+procedure TDBForm.ShowMask;
+{$IFDEF PHOTODB}
+var
+ Mask: TBitmap;
+ I, J: Integer;
+ P: PARGB;
+ R, G, B, W, W1: Byte;
+ Color: TColor;
+{$ENDIF}
+begin
+{$IFDEF PHOTODB}
+  Color := StyleServices.GetStyleColor(scWindow);
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  Mask := TBitmap.Create;
+  try
+    Mask.PixelFormat := pf24Bit;
+    Mask.SetSize(ClientWidth, ClientHeight);
+    Mask.Canvas.CopyRect(ClientRect, Canvas, ClientRect);
+
+    W := 128;
+    W1 := 255 - W;
+    for I := 0 to Mask.Height - 1 do
+    begin
+      P := Mask.ScanLine[I];
+      for J := 0 to Mask.Width - 1 do
+      begin
+        P[J].R := (R * W + P[J].R * W1) shr 8;
+        P[J].G := (G * W + P[J].G * W1) shr 8;
+        P[J].B := (B * W + P[J].B * W1) shr 8;
+      end;
+    end;
+
+    if FMaskPanel = nil then
+    begin
+      FMaskPanel := TPanel.Create(Self);
+      FMaskPanel.Visible := False;
+      FMaskPanel.Parent := Self;
+      FMaskPanel.BevelOuter := bvNone;
+      FMaskPanel.ParentBackground := False;
+    end;
+    FMaskPanel.SetBounds(0, 0, ClientWidth, ClientHeight);
+
+    if FMaskImage = nil then
+    begin
+      FMaskImage := TImage.Create(Self);
+      FMaskImage.Parent := FMaskPanel;
+      FMaskImage.Align := alClient;
+    end;
+
+    FMaskImage.Picture.Graphic := Mask;
+  finally
+    Mask.Free;
+  end;
+  FMaskPanel.BringToFront;
+  FMaskPanel.Show;
+{$ENDIF}
+end;
+
+function TDBForm.ShowModal: Integer;
+var
+  I: Integer;
+  Form: TDBForm;
+begin
+  Form := nil;
+
+  for I := 0 to Screen.FormCount - 1 do
+  begin
+    if Screen.Forms[I] is TDBForm then
+      Form := TDBForm(Screen.Forms[I]);
+
+    Break;
+  end;
+
+  if (Form <> nil) and Form.CanUseMaskingForModal then
+    Form.ShowMask;
+  try
+    Result := inherited ShowModal;
+  finally
+    if (Form <> nil) and Form.CanUseMaskingForModal then
+      Form.HideMask;
+  end;
 end;
 
 function TDBForm.QueryInterfaceEx(const IID: TGUID; out Obj): HResult;

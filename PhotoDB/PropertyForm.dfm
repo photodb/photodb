@@ -6,6 +6,7 @@ object PropertiesForm: TPropertiesForm
   ClientWidth = 314
   Color = clBtnFace
   Constraints.MinWidth = 330
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -188,10 +189,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1068,8 +1065,6 @@ object PropertiesForm: TPropertiesForm
         Text = 'Add link'
         OnClick = Addnewlink1Click
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False

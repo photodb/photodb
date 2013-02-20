@@ -3873,11 +3873,12 @@ begin
     Info.Add(Item.Copy);
     Info[0].Selected := True;
     Item.Encrypted := ValidCryptGraphicFile(Item.FileName);
+
     if not Item.Encrypted then
       EncryptForm.Encrypt(Self, L('photo'), Info)
-    else if ID_OK = MessageBoxDB(Handle, L('Do you really want to decrypt this file?'), L('Decrypt confirmation'),
-    TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+    else if ID_OK = MessageBoxDB(Handle, L('Do you really want to decrypt this file?'), L('Decrypt confirmation'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       EncryptForm.Decrypt(Self, Info);
+
   finally
     F(Info);
   end;

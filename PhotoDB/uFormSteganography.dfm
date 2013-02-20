@@ -7,6 +7,7 @@ object FormSteganography: TFormSteganography
   ClientHeight = 364
   ClientWidth = 621
   Color = clWhite
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

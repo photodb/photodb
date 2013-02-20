@@ -265,6 +265,7 @@ type
     function GetZoom: Extended; override;
     function GetFileName: string; override;
     function GetExifData: TExifData; override;
+    function CanUseMaskingForModal: Boolean; override;
   public
     { Public declarations }
     FScript: string;
@@ -1817,6 +1818,11 @@ begin
   ReAllignScrolls(False);
   MakeImageAndPaint;
   MakeCaption;
+end;
+
+function TImageEditor.CanUseMaskingForModal: Boolean;
+begin
+  Result := False;
 end;
 
 function TImageEditor.CheckEditingMode: Boolean;

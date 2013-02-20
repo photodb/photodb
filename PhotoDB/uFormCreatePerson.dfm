@@ -8,6 +8,7 @@ object FormCreatePerson: TFormCreatePerson
   Color = clBtnFace
   Constraints.MinHeight = 360
   Constraints.MinWidth = 570
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -326,7 +327,6 @@ object FormCreatePerson: TFormCreatePerson
     OnClick = WlPersonNameStatusClick
     ImageIndex = 0
     IconWidth = 0
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
