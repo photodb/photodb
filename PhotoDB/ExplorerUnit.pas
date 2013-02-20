@@ -40,6 +40,7 @@ uses
   Vcl.ActnPopup,
   Vcl.Grids,
   Vcl.ValEdit,
+  Vcl.ActnMan,
   Data.DB,
 
   Dmitry.Utils.System,
@@ -440,7 +441,6 @@ type
     ImGroups: TImageList;
     WlDeleteLocation: TWebLink;
     MiDisplayOnMap: TMenuItem;
-    CoolBarBottom: TCoolBar;
     ToolBarBottom: TToolBar;
     TbbPlay: TToolButton;
     PcRightPreview: TPageControl;
@@ -888,6 +888,9 @@ type
     procedure MiSplitDBClick(Sender: TObject);
     procedure MiCDMappingClick(Sender: TObject);
     procedure MiCDExportClick(Sender: TObject);
+    procedure TbDatabaseClick(Sender: TObject);
+    procedure PmShareAdditionalTasksGetControlClass(Sender: TCustomActionBar;
+      AnItem: TActionClient; var ControlClass: TCustomActionControlClass);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1088,6 +1091,7 @@ type
     procedure TreeViewReloadTree;
     procedure LoadDBList;
     procedure ChangeDBClick(Sender: TObject);
+    procedure PmShareAdditionalTasksEnterMenuLoop(Sender: TObject);
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -4607,6 +4611,33 @@ begin
 
       SetNewPathW(GetCurrentPathW, True);
       Msg.Wparam := 0;
+    end;
+
+    if CtrlKeyDown and (Msg.Wparam = Ord('Q')) then
+      MiShelfClick(Self);
+
+    if CtrlKeyDown and (Msg.Wparam = Ord('P')) then
+      PrintLinkClick(Self);
+
+    if CtrlKeyDown and (Msg.Wparam = Ord('R')) then
+      Resize1Click(Self);
+
+    if CtrlKeyDown and (Msg.Wparam = Ord('S')) then
+      WlShareClick(Self);
+
+    if CtrlKeyDown and (Msg.Wparam = Ord('M')) then
+      MiDisplayOnMapClick(Self);
+
+    if CtrlKeyDown and ShiftKeyDown and (Msg.Wparam = Ord('E')) then
+    begin
+      PmItemPopup.Tag := -1;
+      CryptFile1Click(Self);
+    end;
+
+    if CtrlKeyDown and ShiftKeyDown and (Msg.Wparam = Ord('D')) then
+    begin
+      PmItemPopup.Tag := -1;
+      ResetPassword1Click(Self);
     end;
   end;
 
@@ -11774,6 +11805,15 @@ begin
   end;
 end;
 
+procedure TExplorerForm.TbDatabaseClick(Sender: TObject);
+var
+  APoint: TPoint;
+begin
+  APoint := Point(Tbdatabase.Left, Tbdatabase.Top + Tbdatabase.Height);
+  APoint := ToolBarMain.ClientToScreen(APoint);
+  PmDBList.DoPopupEx(APoint.X, APoint.Y);
+end;
+
 procedure TExplorerForm.TbDeleteClick(Sender: TObject);
 begin
   DeleteFiles(True);
@@ -12551,6 +12591,29 @@ begin
   finally
     F(SelectedPersons);
   end;
+end;
+
+procedure TExplorerForm.PmShareAdditionalTasksEnterMenuLoop(Sender: TObject);
+var
+  R: TRect;
+  P: TPoint;
+  Menu: TCustomActionPopupMenuEx;
+begin
+  Menu := PmShareAdditionalTasks.PopupMenu;
+  R := Menu.BoundsRect;
+  P := TbbShare.ClientRect.TopLeft;
+  P := ToolBarBottom.ClientToScreen(P);
+
+  R.Top := P.Y - R.Height;
+  R.Bottom := P.Y;
+  Menu.SetBounds(R.Left, R.Top, R.Width, R.Height);
+end;
+
+procedure TExplorerForm.PmShareAdditionalTasksGetControlClass(
+  Sender: TCustomActionBar; AnItem: TActionClient;
+  var ControlClass: TCustomActionControlClass);
+begin
+  PmShareAdditionalTasks.PopupMenu.OnEnterMenuLoop := PmShareAdditionalTasksEnterMenuLoop;
 end;
 
 procedure TExplorerForm.SelectPersonClick(Sender: TObject);

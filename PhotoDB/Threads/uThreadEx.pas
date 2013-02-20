@@ -93,8 +93,8 @@ end;
 
 function TThreadEx.CheckForm: Boolean;
 begin
-  Result := GOM.IsObj(FThreadForm);
-  if Result and not IsTerminated {$IFNDEF EXTERNAL}and not DBTerminating{$ENDIF} then
+  Result := False;
+  if GOM.IsObj(FThreadForm) and not IsTerminated {$IFNDEF EXTERNAL}and not DBTerminating{$ENDIF} then
   begin
     if FThreadForm.IsActualState(FState) then
       Result := True;

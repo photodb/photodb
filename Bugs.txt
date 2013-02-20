@@ -1,14 +1,16 @@
 Read forums of concurents
 
 Bugs:
+[F] Folder list in bottom menu;
+[F] Explorer preview zoom? (icons could be hidden)
 - Dll could be attached to some process (install update)
+http://answers.microsoft.com/ru-ru/windows/forum/windows_7-system/%D0%BA%D0%B0%D0%BA/132df38c-5efa-4880-a957-094b96dbcccf
 
 - Site
  + Free activation form on the site
  + Site search
 
 Possible CRs:
-[F] Folder list in menu;
 [F] Prevew pane for Video, non-image files;
 [F] Explorer tasks panel review;
 [F] Import tool button;
@@ -20,7 +22,6 @@ Possible CRs:
 
 [F] Player russian (in registry);
 [F] XP dll injection update?;
-[F] Explorer preview zoom?
 [CR] Private group -> Hidden group;
 [CR] DB -> Collection in RU
 [F] Update info in bottom => remove update form;

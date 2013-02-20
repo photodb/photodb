@@ -18,31 +18,41 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   uDBForm,
-  uSettings;
+  uSettings, Vcl.ComCtrls;
 
 const
   Settings_Watermark = 'Watermark settings';
 
 type
   TFrmWatermarkOptions = class(TDBForm)
-    LbBlocksX: TLabel;
-    CbColor: TColorBox;
-    SeBlocksX: TSpinEdit;
-    LbTextColor: TLabel;
-    SeBlocksY: TSpinEdit;
-    LbBlocksY: TLabel;
-    SeTransparency: TSpinEdit;
-    LbTransparency: TLabel;
     BtnOk: TButton;
     BtnCancel: TButton;
-    EdWatermarkText: TWatermarkedEdit;
+    PcWatermarkType: TPageControl;
+    TsText: TTabSheet;
+    TsImage: TTabSheet;
+    LbBlocksX: TLabel;
+    LbTextColor: TLabel;
+    LbBlocksY: TLabel;
+    LbTransparency: TLabel;
     LbWatermarkText: TLabel;
     LbFontName: TLabel;
+    CbColor: TColorBox;
+    SeBlocksX: TSpinEdit;
+    SeBlocksY: TSpinEdit;
+    SeTransparency: TSpinEdit;
+    EdWatermarkText: TWatermarkedEdit;
     CbFonts: TComboBox;
+    PaintBox1: TPaintBox;
+    Label1: TLabel;
+    SpinEdit1: TSpinEdit;
+    SpinEdit2: TSpinEdit;
+    Label2: TLabel;
+    Label3: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure PcWatermarkTypeChange(Sender: TObject);
   private
     { Private declarations }
     procedure LoadLanguage;
@@ -141,6 +151,14 @@ begin
   for I := 0 to CbFonts.Items.Count - 1 do
     if AnsiLowerCase(CbFonts.Items[I]) = FontName then
       CbFonts.ItemIndex := I;
+end;
+
+procedure TFrmWatermarkOptions.PcWatermarkTypeChange(Sender: TObject);
+begin
+  if PcWatermarkType.ActivePageIndex = 1 then
+  begin
+
+  end;
 end;
 
 procedure TFrmWatermarkOptions.SaveSettings;

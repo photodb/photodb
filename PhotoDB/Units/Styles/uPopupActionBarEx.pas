@@ -3,17 +3,23 @@ unit uPopupActionBarEx;
 interface
 
 uses
+  Winapi.Windows,
+  System.Types,
+  System.UITypes,
+  System.SysUtils,
+  System.Classes,
+  System.Actions,
   Vcl.Consts,
   Vcl.ActnPopup,
-{$IF DEFINED(CLR)}
-  Variants,
-{$ENDIF}
-  System.SysUtils,
   Vcl.Graphics,
-  Winapi.Windows,
   Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnMan, Vcl.ActnMenus, Vcl.ActnCtrls,
-  System.Classes, System.Actions, Vcl.Controls, Vcl.Menus, Vcl.ActnList, Vcl.XPActnCtrls,
+  Vcl.ActnMan,
+  Vcl.ActnMenus,
+  Vcl.ActnCtrls,
+  Vcl.Controls,
+  Vcl.Menus,
+  Vcl.ActnList,
+  Vcl.XPActnCtrls,
   Vcl.ThemedActnCtrls,
   Vcl.Forms;
 
@@ -36,7 +42,9 @@ type
 implementation
 
 uses
-  Vcl.ListActns, Vcl.ActnColorMaps, Vcl.Themes,
+  Vcl.ListActns,
+  Vcl.ActnColorMaps,
+  Vcl.Themes,
   Vcl.StdActnMenus;
 
 var
@@ -167,7 +175,6 @@ var
   LFormats: TTextFormat;
   LColor: TColor;
   LDetails: TThemedElementDetails;
-  TF: TTextFormatFlags;
   DrawFlags: Cardinal;
   Canvas: TCanvas;
   LFontRecall: TGDIHandleRecall;

@@ -55,6 +55,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TmrDeviceChangesTimer(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     FLoadingCount: Integer;
@@ -222,6 +223,7 @@ var
           FillTransparentColor(B, Theme.WindowTextColor, 0, B.Height - 4 + Font.Height, B.Width, 4 - Font.Height, 0);
 
           DrawText32Bit(B, Name, Font, Rect(0, B.Height - 4 + Font.Height, B.Width, B.Height), DT_CENTER or DT_END_ELLIPSIS);
+
           Button.Glyph := B;
         finally
           F(Font);
@@ -309,6 +311,13 @@ begin
     TObject(FButtons[I].Tag).Free;
 
   F(FButtons);
+end;
+
+procedure TFormImportSource.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 function TFormImportSource.GetFormID: string;
