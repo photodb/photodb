@@ -141,11 +141,11 @@ begin
   end else
   begin
     case AssociationState of
-      TAS_NOT_INSTALLED,
       TAS_INSTALLED_OTHER:
         Result := cbUnchecked;
       TAS_PHOTODB_HANDLER:
         Result := cbGrayed;
+      TAS_NOT_INSTALLED,
       TAS_PHOTODB_DEFAULT:
         Result := cbChecked;
       else

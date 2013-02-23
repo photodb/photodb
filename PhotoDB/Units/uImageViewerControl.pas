@@ -3,10 +3,12 @@ unit uImageViewerControl;
 interface
 
 uses
+  Generics.Collections,
   System.Types,
   System.Math,
   System.Classes,
   System.SysUtils,
+  System.DateUtils,
   Winapi.Windows,
   Winapi.Messages,
   Winapi.Dwmapi,
@@ -36,6 +38,7 @@ uses
   Effects,
   UnitDBKernel,
   DBCMenu,
+  Dolphin_db,
 
   uMemory,
   uConstants,
@@ -57,9 +60,11 @@ uses
   uFormInterfaces,
   uThemesUtils,
   uSettings,
+  uExifInfo,
   uPortableDeviceUtils,
   uManagerExplorer,
   uAnimationHelper,
+  uStringUtils,
   uTranslate;
 
 type
@@ -69,6 +74,10 @@ type
   TImageViewerControl = class(TBaseWinControl)
   private
     FImageViewer: IImageViewer;
+
+    FExifInfo: IExifInfo;
+    FShowInfo: Boolean;
+    FLastInfoHeight: Integer;
 
     FLsLoading: TLoadingSign;
     FHorizontalScrollBar: TScrollBar;
@@ -201,6 +210,7 @@ type
     procedure RequestPreviousImage;
     function GetExplorer: TCustomExplorerForm;
     procedure SetExplorer(const Value: TCustomExplorerForm);
+    procedure SetShowInfo(const Value: Boolean);
   protected
     procedure Erased(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
 
@@ -226,8 +236,8 @@ type
     destructor Destroy; override;
     procedure StartLoadingImage;
     procedure StopLoadingImage;
-    procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
-    procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
+    procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
+    procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
     procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
@@ -268,6 +278,7 @@ type
     property OnStopPersonSelection: TNotifyEvent read FOnStopPersonSelection write FOnStopPersonSelection;
     property Text: string read FText write SetText;
     property Explorer: TCustomExplorerForm read GetExplorer write SetExplorer;
+    property ShowInfo: Boolean read FShowInfo write SetShowInfo;
   end;
 
 implementation
@@ -393,6 +404,8 @@ begin
   FTbrActions := nil;
 
   FDBCanDrag := False;
+  FShowInfo := Settings.ReadBool('Viewer', 'DisplayInfo', False);
+  FLastInfoHeight := 0;
 
   FIsWaiting := False;
   FZoomerOn := False;
@@ -482,8 +495,146 @@ begin
 end;
 
 procedure TImageViewerControl.DrawImageInfo;
+const
+  PaddingVertical = 3;
+var
+  I: Integer;
+  Infos: TList<string>;
+  InfoHeightMax,
+  InfoWidthMax,
+  InfoHeight,
+  InfoBarHeight,
+  InfoWidth: Integer;
+  InfosCountByColumn: Integer;
+  Val, Make, Model: string;
+
+  LineInfos: TStringList;
+
+  function GetInfo(Name: string): string;
+  begin
+    if FExifInfo = nil then
+      Exit('');
+
+    Val := FExifInfo.GetValueByKey(Name);
+    if Val <> '' then
+      Result := Val;
+  end;
+
+  function AddInfo(Name: string; Format: string): Boolean;
+  begin
+    Result := False;
+    if FExifInfo = nil then
+      Exit;
+
+    Val := FExifInfo.GetValueByKey(Name);
+    if Val <> '' then
+    begin
+      LineInfos.Add(FormatEx(Format, [Val]));
+      Result := True;
+    end;
+  end;
+
+  procedure AppendInfo(Name: string; Format: string; DefaultValue: string);
+  begin
+    if FExifInfo = nil then
+      Exit;
+
+    Val := FExifInfo.GetValueByKey(Name);
+    if (Val <> '') and (Val <> DefaultValue) then
+      LineInfos[LineInfos.Count - 1] := LineInfos[LineInfos.Count - 1] + FormatEx(Format, [Val]);
+  end;
+
 begin
-//  DrawTransparentColor(FDrawImage, Theme.PanelColor, 0, FDrawImage.Height - 100, FDrawImage.Width, 100, 200);
+  if not ShowInfo then
+    Exit;
+
+  //Prepaire draw information
+  Infos := TList<string>.Create;
+  try
+    Infos.Add(FormatEx('{0} x {1} - {2}', [FItem.Width, FItem.Height, SizeInText(FItem.FileSize)]));
+
+    if YearOf(FItem.Date) > 1900 then
+      Infos.Add(FormatDateTime('yyyy.mm.dd HH:MM:SS', FItem.Date + FItem.Time))
+    else
+    begin
+      if FExifInfo <> nil then
+      begin
+        Val := FExifInfo.GetValueByKey('DateTime');
+        if Val <> '' then
+          Infos.Add(Val);
+      end;
+    end;
+
+    LineInfos := TStringList.Create;
+    try
+      AddInfo('FNumber', 'F/{0}');
+      if AddInfo('ExposureTime', '{0}') then
+        AppendInfo('ExposureBiasValue', ' {0}', '0');
+      AddInfo('ISOSpeedRatings', 'ISO {0}');
+      AddInfo('FocalLength', '{0}');
+
+      if LineInfos.Count > 0 then
+        Infos.Add(LineInfos.Join('  '));
+    finally
+      F(LineInfos);
+    end;
+
+    LineInfos := TStringList.Create;
+    try
+      AddInfo('CameraModel', '{0}');
+      if LineInfos.Count = 0 then
+      begin
+        Make := GetInfo('Make');
+        Model := GetInfo('Model');
+        if (Model <> '') and (Make <> '') and (Model.IndexOf(Make) = -1) then
+          Infos.Add(Make + ' ' + Model)
+        else if Model <> '' then
+          Infos.Add(Model);
+      end;
+      AddInfo('Lens', '{0}');
+
+      if LineInfos.Count > 0 then
+        Infos.Add(LineInfos.Join(' + '));
+    finally
+      F(LineInfos);
+    end;
+
+    InfoHeightMax := 0;
+    InfoWidthMax := 0;
+    InfosCountByColumn := Min(4, Infos.Count);
+    for I := 0 to InfosCountByColumn - 1 do
+    begin
+      InfoHeight := FDrawImage.Canvas.TextHeight(Infos[I]) + 2;
+      InfoWidth := FDrawImage.Canvas.TextHeight(Infos[I]);
+      if InfoHeight > InfoHeightMax then
+        InfoHeightMax := InfoHeight;
+      if InfoWidthMax > InfoWidthMax then
+        InfoWidthMax := InfoWidthMax;
+    end;
+
+    InfoBarHeight := InfosCountByColumn * InfoHeightMax + PaddingVertical * 2;
+    if (FLastInfoHeight > InfoBarHeight) and (FExifInfo = nil) then
+      InfoBarHeight := FLastInfoHeight
+    else
+      FLastInfoHeight := InfoBarHeight;
+
+   // AddFontResourceEx('N:\MyriadPro\MyriadPro-Regular.otf', FR_PRIVATE or FR_NOT_ENUM, 0);
+
+    FDrawImage.Canvas.Font.Quality := fqAntialiased;
+    //FDrawImage.Canvas.Font.Quality := fqClearTypeNatural;
+    FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular';//'MS Sans Serif';
+    //FDrawImage.Canvas.Font.Name := 'MS Sans Serif';
+    FDrawImage.Canvas.Font.Size := 10;
+
+    DrawTransparentColorGradient(FDrawImage, Theme.ListViewColor, 0, FDrawImage.Height - InfoBarHeight, FDrawImage.Width, InfoBarHeight, 200, 0);
+
+    for I := 0 to InfosCountByColumn - 1 do
+    begin
+      FDrawImage.Canvas.TextOut(5, FDrawImage.Height - InfoBarHeight + I * InfoHeightMax + PaddingVertical, Infos[I]);
+    end;
+  finally
+    F(Infos);
+  end;
 end;
 
 procedure TImageViewerControl.Erased(var Message: TWMEraseBkgnd);
@@ -509,11 +660,12 @@ begin
 end;
 
 procedure TImageViewerControl.LoadAnimatedImage(Item: TDBPopupMenuInfoRecord;
-  Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
+  Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   FText := '';
   F(FItem);
   FItem := Item.Copy;
+  FExifInfo := Exif;
 
   F(FAnimatedImage);
   FAnimatedImage := Image;
@@ -572,11 +724,12 @@ begin
   StopLoadingImage;
 end;
 
-procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double);
+procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   FText := '';
   F(FItem);
   FItem := Item.Copy;
+  FExifInfo := Exif;
 
   FImageScale := ImageScale;
 
@@ -616,6 +769,7 @@ begin
   Cursor := crDefault;
   FRealImageHeight := 0;
   FRealImageWidth := 0;
+  FExifInfo := nil;
   //RealZoomInc := FRealZoomScale;
   //ViewerForm.Item.Encrypted := FIsEncrypted;
   //if FIsNewDBInfo then
@@ -2131,6 +2285,13 @@ begin
   FWlFaceCount.OnMouseLeave := WlFaceCountMouseLeave;
   FLsDetectingFaces := ALsDetectingFaces;
   FTbrActions := ATbrActions;
+end;
+
+procedure TImageViewerControl.SetShowInfo(const Value: Boolean);
+begin
+  FShowInfo := Value;
+  Settings.WriteBool('Viewer', 'DisplayInfo', Value);
+  RecreateImage;
 end;
 
 procedure TImageViewerControl.SetText(Text: string);

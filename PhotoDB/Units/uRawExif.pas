@@ -58,6 +58,237 @@ begin
   Result := TTranslateManager.Instance.TA(S, 'EXIF');
 end;
 
+
+(**
+Convert a tag to a C string
+*)
+function ConvertAnyTag(tag: PFITAG): string;
+const
+  MAX_TEXT_EXTENT	= 512;
+var
+  Buffer: AnsiString;
+  I: Integer;
+  tag_type: FREE_IMAGE_MDTYPE;
+  tag_count: Cardinal;
+
+  max_size: Integer;
+  TagValue: Pointer;
+begin
+	if (tag = nil) then
+		Exit('');
+
+	buffer := '';
+
+	// convert the tag value to a string buffer
+  tag_type := FreeImage_GetTagType(tag);
+	tag_count := FreeImage_GetTagCount(tag);
+
+	case (tag_type) of
+		FIDT_BYTE:		// N x 8-bit unsigned integer
+		begin
+			{BYTE *pvalue := (BYTE*)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld',	(LONG) pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %ld',	(LONG) pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+		FIDT_SHORT:	// N x 16-bit unsigned integer
+		begin
+			{unsigned SmallInt *pvalue := (unsigned SmallInt *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%hu', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %hu',	pvalue[i]);
+				buffer + := format;
+			end;
+			break;  }
+		end;
+		FIDT_LONG:		// N x 32-bit unsigned integer
+		begin
+			{DWORD *pvalue := (DWORD *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%lu', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %lu',	pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+		FIDT_RATIONAL: // N x 64-bit unsigned fraction
+		begin
+			{DWORD *pvalue := (DWORD*)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld/%ld', pvalue[0], pvalue[1]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %ld/%ld', pvalue[2*i], pvalue[2*i+1]);
+				buffer + := format;
+			end;
+			break;  }
+		end;
+		FIDT_SBYTE:	// N x 8-bit signed integer
+		begin
+			{char *pvalue := (char*)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld',	(LONG) pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %ld',	(LONG) pvalue[i]);
+				buffer + := format;
+			end;
+			break;}
+		end;
+		FIDT_SSHORT:	// N x 16-bit signed integer
+		begin
+			{SmallInt *pvalue := (SmallInt *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%hd', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %hd',	pvalue[i]);
+				buffer + := format;
+			end;
+			break;}
+		end;
+		FIDT_SLONG:	// N x 32-bit signed integer
+		begin
+			{LONG *pvalue := (LONG *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %ld',	pvalue[i]);
+				buffer + := format;
+			end;
+			break;  }
+		end;
+		FIDT_SRATIONAL:// N x 64-bit signed fraction
+		begin
+			{LONG *pvalue := (LONG*)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld/%ld', pvalue[0], pvalue[1]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %ld/%ld', pvalue[2*i], pvalue[2*i+1]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+		FIDT_FLOAT:	// N x 32-bit IEEE floating point
+		begin
+			{Single *pvalue := (Single *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%f', (Double) pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, '%f', (Double) pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+		FIDT_DOUBLE:	// N x 64-bit IEEE floating point
+		begin
+			{Double *pvalue := (Double *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%f', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, '%f', pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+		FIDT_IFD:		// N x 32-bit unsigned integer (offset)
+		begin
+			{DWORD *pvalue := (DWORD *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%X', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' %X',	pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+		FIDT_PALETTE:	// N x 32-bit RGBQUAD
+		begin
+			{RGBQUAD *pvalue := (RGBQUAD *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '(%d,%d,%d,%d)', pvalue[0].rgbRed, pvalue[0].rgbGreen, pvalue[0].rgbBlue, pvalue[0].rgbReserved);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, ' (%d,%d,%d,%d)', pvalue[i].rgbRed, pvalue[i].rgbGreen, pvalue[i].rgbBlue, pvalue[i].rgbReserved);
+				buffer + := format;
+			end;
+			break;}
+		end;
+
+		FIDT_LONG8:	// N x 64-bit unsigned integer
+		begin
+			{UINT64 *pvalue := (UINT64 *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, '%ld', pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+
+		FIDT_IFD8:		// N x 64-bit unsigned integer (offset)
+		begin
+			{UINT64 *pvalue := (UINT64 *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%X', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, '%X', pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+
+		FIDT_SLONG8:	// N x 64-bit signed integer
+		begin
+			{INT64 *pvalue := (INT64 *)FreeImage_GetTagValue(tag);
+
+			sprintf(format, '%ld', pvalue[0]);
+			buffer + := format;
+			for(i := 1; i < tag_count; i++) begin
+				sprintf(format, '%ld', pvalue[i]);
+				buffer + := format;
+			end;
+			break; }
+		end;
+
+		//FIDT_ASCII,	// 8-bit bytes w/ last byte null
+		//FIDT_UNDEFINED:// 8-bit untyped data
+		else
+    begin
+      max_size := Min(FreeImage_GetTagLength(tag), MAX_TEXT_EXTENT);
+      if max_size > 0 then
+      begin
+        SetLength(Buffer, max_size);
+
+        TagValue := FreeImage_GetTagValue(tag);
+        CopyMemory(PAnsiChar(Buffer), TagValue, max_size);
+
+        if buffer[Length(buffer)] = #0 then
+          SetLength(buffer, Length(buffer) - 1);
+      end;
+		end;
+	end;
+
+	Result := string(buffer);
+end;
+
 //
 //Convert a Exif tag to a string
 //*/
@@ -130,6 +361,8 @@ begin
 					Result := 'left side, bottom';
 			end;
       Result := L(Result);
+
+      Exit;
 		end;
 
 {		TAG_REFERENCE_BLACK_WHITE:
@@ -167,6 +400,8 @@ begin
 			end else begin
 				Result := 'Unknown';
 			end;
+
+      Exit;
 		end;
 
 		TAG_COMPONENTS_CONFIGURATION:
@@ -178,6 +413,8 @@ begin
 				if (j > 0) and (j < 7) then
 					Result := Result + componentStrings[j];
 			end;
+
+      Exit;
 		end;
 
 		TAG_COMPRESSED_BITS_PER_PIXEL:
@@ -189,7 +426,7 @@ begin
           Result := Result + ' ' + L('bit/pixel')
         else
           Result := Result + ' ' + L('bits/pixel');
-
+        Exit;
       finally
         F(R);
       end;
@@ -208,6 +445,8 @@ begin
       finally
         F(R);
       end;
+
+      Exit;
 		end;
 
 		TAG_RESOLUTION_UNIT,
@@ -222,6 +461,8 @@ begin
 				3:
 					Result := L('cm');
 			end;
+
+      Exit;
 		end;
 
 		{TAG_YCBCR_POSITIONING:
@@ -240,6 +481,8 @@ begin
       R := TFIRational.Create(tag);
 			try
         Result := R.ToString() + ' ' + L('sec');
+
+        Exit;
       finally
         F(R);
       end;
@@ -252,6 +495,8 @@ begin
         apexValue := r.longValue;
         apexPower := 1 shl apexValue;
 			  Result := FormatEx(L('1/{0} sec'), [Integer(apexPower)]);
+
+        Exit;
       finally
         F(R);
       end;
@@ -266,6 +511,8 @@ begin
         rootTwo := sqrt(2);
         fStop := Power(rootTwo, apertureApex);
         Result := FormatEx(L('F{0:0.#}'), [fStop]);
+
+        Exit;
       finally
         F(R);
       end;
@@ -355,6 +602,8 @@ begin
 					Result := FormatEx(L('Unknown ({0})'), [flash]);
 			end;
       Result := L(Result);
+
+      Exit;
 		end;
 
 {		TAG_SCENE_TYPE:
@@ -384,6 +633,8 @@ begin
       finally
         F(R);
       end;
+
+      Exit;
 		end;
 
 		TAG_METERING_MODE:
@@ -410,6 +661,8 @@ begin
 					(* C2PAS: Exit *) Result := '';
 			end;   
       Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_LIGHT_SOURCE:
@@ -462,6 +715,8 @@ begin
 					(* C2PAS: Exit *) Result := '';
 			end;  
       Result := L(Result);
+
+      Exit;
 		end;
 
 {		TAG_SENSING_METHOD:
@@ -526,6 +781,8 @@ begin
 					Result := FormatEx(L('Unknown program ({0})'), [ExposureProgram]);
 			end;
       Result := L(Result);
+
+      Exit;
 		end;
 
 (*		TAG_CUSTOM_RENDERED:
@@ -556,7 +813,9 @@ begin
 				else
 					Result := FormatEx('Unknown mode ({0})', [exposureMode]);
 			end; 
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_WHITE_BALANCE:
@@ -571,7 +830,9 @@ begin
 				else
 					Result := FormatEx('Unknown ({0})', [whiteBalance]);
 			end; 
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_SCENE_CAPTURE_TYPE:
@@ -590,7 +851,9 @@ begin
 				else
 					Result := FormatEx('Unknown ({0})', [sceneType]);
 			end;  
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 (*	TAG_GAIN_CONTROL:
@@ -627,7 +890,9 @@ begin
 				else
 					Result := FormatEx('Unknown ({0})', [contrast]);
 			end;
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_SATURATION:
@@ -644,7 +909,9 @@ begin
 				else
           Result := FormatEx('Unknown ({0})', [saturation]);
 			end;
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_SHARPNESS:
@@ -661,7 +928,9 @@ begin
 				else
 					Result := FormatEx('Unknown ({0})', [sharpness]);
 			end;  
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_SUBJECT_DISTANCE_RANGE:
@@ -680,7 +949,9 @@ begin
 				else
 					Result := FormatEx('Unknown ({0})', [distanceRange]);
 			end;
-      Result := L(Result); 
+      Result := L(Result);
+
+      Exit;
 		end;
 
 		TAG_ISO_SPEED_RATINGS:
@@ -690,6 +961,8 @@ begin
 				isoEquiv := isoEquiv * 200;
 
 			Result := IntToStr(isoEquiv);
+
+      Exit;
 		end;
 
 		TAG_USER_COMMENT:
@@ -699,7 +972,7 @@ begin
 			userComment := FreeImage_GetTagValue(tag);
 			for I := 8 to FreeImage_GetTagLength(tag) - 1 do
 				Result := Result + string(AnsiChar(userComment[I]));
-
+      Exit;
 		end;
 
 		TAG_COMPRESSION:
@@ -761,9 +1034,11 @@ begin
 				else
 					Result := FormatEx('Unknown type ({0})', [compression]);
 			end;
-
+      Exit;
 		end;
 	end;
+
+  Result := ConvertAnyTag(tag);
 end;
 
 
@@ -827,7 +1102,7 @@ begin
 	 		Exit(ConvertExifGPSTag(tag));
 	end;
 
-//	Exit(ConvertAnyTag(tag));
+	Exit(ConvertAnyTag(tag));
 end;
 
 { TRAWExif }
@@ -940,7 +1215,6 @@ var
     Value := FreeImageTagToString(I, TagData);
     if Description <> nil then
     begin
-
       Add(string(Description), string(Key), string(Value));
     end;
   end;

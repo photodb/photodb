@@ -3,10 +3,12 @@ unit uJpegUtils;
 interface
 
 uses
-  jpeg,
-  Graphics,
-  Math,
-  Classes,
+  System.Math,
+  System.Classes,
+
+  Vcl.Imaging.jpeg,
+  Vcl.Graphics,
+
   uMemory,
   uSettings,
   uBitmapUtils;

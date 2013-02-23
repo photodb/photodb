@@ -247,8 +247,11 @@ type
     FIsRestoring: Boolean;
     FIsMinimizing: Boolean;
 
+    {$IFDEF PHOTODB}
     FMaskPanel: TPanel;
     FMaskImage: TImage;
+    FMaskCount: Integer;
+    {$ENDIF PHOTODB}
     function GetTheme: TDatabaseTheme;
     function GetFrameWidth: Integer;
   protected
@@ -391,9 +394,10 @@ begin
 
   FIsMinimizing := False;
   FIsRestoring := False;
+  {$IFDEF PHOTODB}
   FMaskPanel := nil;
   FMaskImage := nil;
-  {$IFDEF PHOTODB}
+  FMaskCount := 0;
   {$ENDIF}
 end;
 
@@ -624,12 +628,16 @@ end;
 procedure TDBForm.HideMask;
 begin
   {$IFDEF PHOTODB}
-  BeginScreenUpdate(Handle);
-  try
-    FMaskPanel.Hide;
-    FMaskImage.Picture.Graphic := nil;
-  finally
-    EndScreenUpdate(Handle, False);
+  Dec(FMaskCount);
+  if FMaskCount = 0 then
+  begin
+    BeginScreenUpdate(Handle);
+    try
+      FMaskPanel.Hide;
+      FMaskImage.Picture.Graphic := nil;
+    finally
+      EndScreenUpdate(Handle, False);
+    end;
   end;
   {$ENDIF}
 end;
@@ -660,6 +668,35 @@ begin
     ShowWindow(Handle, SW_RESTORE);
 end;
 
+procedure BitmapBlur(Bitmap: TBitmap);
+var
+  x, y: Integer;
+  yLine,
+  xLine: PByteArray;
+begin
+  for y := 1 to Bitmap.Height -2 do begin
+    yLine := Bitmap.ScanLine[y -1];
+    xLine := Bitmap.ScanLine[y];
+    for x := 1 to Bitmap.Width -2 do begin
+      xLine^[x * 3] := (
+        xLine^[x * 3 -3] + xLine^[x * 3 +3] +
+        yLine^[x * 3 -3] + yLine^[x * 3 +3] +
+        yLine^[x * 3] + xLine^[x * 3 -3] +
+        xLine^[x * 3 +3] + xLine^[x * 3]) div 8;
+      xLine^[x * 3 +1] := (
+        xLine^[x * 3 -2] + xLine^[x * 3 +4] +
+        yLine^[x * 3 -2] + yLine^[x * 3 +4] +
+        yLine^[x * 3 +1] + xLine^[x * 3 -2] +
+        xLine^[x * 3 +4] + xLine^[x * 3 +1]) div 8;
+      xLine^[x * 3 +2] := (
+        xLine^[x * 3 -1] + xLine^[x * 3 +5] +
+        yLine^[x * 3 -1] + yLine^[x * 3 +5] +
+        yLine^[x * 3 +2] + xLine^[x * 3 -1] +
+        xLine^[x * 3 +5] + xLine^[x * 3 +2]) div 8;
+    end;
+  end;
+end;
+
 procedure TDBForm.ShowMask;
 {$IFDEF PHOTODB}
 var
@@ -671,6 +708,10 @@ var
 {$ENDIF}
 begin
 {$IFDEF PHOTODB}
+  Inc(FMaskCount);
+  if FMaskCount <> 1 then
+    Exit;
+
   Color := StyleServices.GetStyleColor(scWindow);
   Color := ColorToRGB(Color);
   R := GetRValue(Color);
@@ -694,6 +735,7 @@ begin
         P[J].B := (B * W + P[J].B * W1) shr 8;
       end;
     end;
+    BitmapBlur(Mask);
 
     if FMaskPanel = nil then
     begin
@@ -730,19 +772,28 @@ begin
 
   for I := 0 to Screen.FormCount - 1 do
   begin
-    if Screen.Forms[I] is TDBForm then
+    if (Screen.Forms[I] is TDBForm) and (Screen.Forms[I] <> Self) and (Screen.Forms[I].Visible) then
+    begin
       Form := TDBForm(Screen.Forms[I]);
 
-    Break;
+      if Form.CanUseMaskingForModal then
+        Form.ShowMask;
+    end;
   end;
 
-  if (Form <> nil) and Form.CanUseMaskingForModal then
-    Form.ShowMask;
   try
     Result := inherited ShowModal;
   finally
-    if (Form <> nil) and Form.CanUseMaskingForModal then
-      Form.HideMask;
+    for I := 0 to Screen.FormCount - 1 do
+    begin
+      if (Screen.Forms[I] is TDBForm) and (Screen.Forms[I] <> Self) and (Screen.Forms[I].Visible) then
+      begin
+        Form := TDBForm(Screen.Forms[I]);
+
+        if Form.CanUseMaskingForModal then
+          Form.HideMask;
+      end;
+    end;
   end;
 end;
 

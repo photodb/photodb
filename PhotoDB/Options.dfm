@@ -270,20 +270,6 @@ object OptionsForm: TOptionsForm
       DesignSize = (
         566
         413)
-      object LbDisplayPlacesIn: TLabel
-        Left = 223
-        Top = 157
-        Width = 41
-        Height = 13
-        Caption = 'Show in:'
-      end
-      object LbPlacesList: TLabel
-        Left = 3
-        Top = 157
-        Width = 98
-        Height = 13
-        Caption = 'User defined places:'
-      end
       object Bevel1: TBevel
         Left = 3
         Top = 344
@@ -299,7 +285,7 @@ object OptionsForm: TOptionsForm
         Width = 278
         Height = 24
         Caption = 'Clear Icon Cache'
-        TabOrder = 18
+        TabOrder = 2
         OnClick = BtnClearIconCacheClick
       end
       object BtnClearThumbnailCache: TButton
@@ -308,172 +294,112 @@ object OptionsForm: TOptionsForm
         Width = 278
         Height = 24
         Caption = 'Clear Folder Thumbnails Cache'
-        TabOrder = 17
+        TabOrder = 1
         OnClick = BtnClearThumbnailCacheClick
       end
-      object BtnChooseNewPlace: TButton
-        Left = 3
-        Top = 312
-        Width = 89
-        Height = 25
-        Caption = 'Select Folder'
-        TabOrder = 15
-        OnClick = BtnChooseNewPlaceClick
-      end
-      object BtnChoosePlaceIcon: TButton
-        Left = 98
-        Top = 312
-        Width = 81
-        Height = 25
-        Caption = 'Icon'
-        Enabled = False
-        TabOrder = 16
-        OnClick = BtnChoosePlaceIconClick
-      end
-      object PlacesListView: TListView
-        Left = 3
-        Top = 176
-        Width = 214
-        Height = 130
-        Columns = <
-          item
-            Caption = 'Places'
-            Width = 115
-          end>
-        HideSelection = False
-        SmallImages = PlacesImageList
-        TabOrder = 11
-        ViewStyle = vsReport
-        OnContextPopup = PlacesListViewContextPopup
-        OnEdited = PlacesListViewEdited
-        OnSelectItem = PlacesListViewSelectItem
-      end
-      object CblPlacesDisplayIn: TCheckListBox
-        Left = 223
-        Top = 176
-        Width = 324
-        Height = 132
-        OnClickCheck = CblPlacesDisplayInClickCheck
-        Anchors = [akLeft, akTop, akRight]
-        Enabled = False
-        ItemHeight = 13
-        Items.Strings = (
-          'My Computer'
-          'My Picures'
-          'My Documents'
-          'Other folders')
-        TabOrder = 12
-      end
-      object CbExplorerShowPlaces: TCheckBox
-        Left = 7
-        Top = 134
-        Width = 241
-        Height = 17
-        Caption = 'Show "Other Places"'
-        TabOrder = 5
-      end
       object CbExplorerShowEXIF: TCheckBox
-        Left = 7
-        Top = 118
-        Width = 241
+        Left = 17
+        Top = 293
+        Width = 270
         Height = 17
         Caption = 'Show EXIF marker'
-        TabOrder = 4
-      end
-      object CbExplorerShowThumbsForImages: TCheckBox
-        Left = 194
-        Top = 72
-        Width = 368
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Show Thumbnails For Images'
-        TabOrder = 9
-      end
-      object CbExplorerSaveThumbsForFolders: TCheckBox
-        Left = 194
-        Top = 56
-        Width = 368
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Save Thumbnails For Folders'
-        TabOrder = 8
-      end
-      object CbExplorerShowThumbsForFolders: TCheckBox
-        Left = 194
-        Top = 40
-        Width = 368
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Show Thumbnails For Folders'
-        TabOrder = 7
-      end
-      object CbExplorerShowAttributes: TCheckBox
-        Left = 194
-        Top = 24
-        Width = 368
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Show Attributes'
-        TabOrder = 6
-      end
-      object Label13: TStaticText
-        Left = 194
-        Top = 3
-        Width = 217
-        Height = 17
-        AutoSize = False
-        Caption = 'Thumbnails options:'
-        TabOrder = 13
-      end
-      object Label12: TStaticText
-        Left = 3
-        Top = 3
-        Width = 185
-        Height = 17
-        AutoSize = False
-        Caption = 'Show current objects:'
-        TabOrder = 14
-      end
-      object CbExplorerShowFolders: TCheckBox
-        Left = 7
-        Top = 24
-        Width = 171
-        Height = 17
-        Caption = 'Folders'
         TabOrder = 0
       end
-      object CbExplorerShowSimpleFiles: TCheckBox
-        Left = 7
-        Top = 40
-        Width = 171
-        Height = 17
-        Caption = 'Simple Files'
-        TabOrder = 1
-      end
-      object CbExplorerShowImages: TCheckBox
-        Left = 7
-        Top = 56
-        Width = 171
-        Height = 17
-        Caption = 'Image Files'
-        TabOrder = 2
-      end
-      object CbExplorerShowHidden: TCheckBox
-        Left = 7
-        Top = 72
-        Width = 171
-        Height = 17
-        Caption = 'Hidden Files'
+      object GbExplorerObjects: TGroupBox
+        Left = 3
+        Top = 9
+        Width = 292
+        Height = 124
+        Caption = 'GbExplorerObjects'
         TabOrder = 3
+        object CbExplorerShowHidden: TCheckBox
+          Left = 14
+          Top = 94
+          Width = 270
+          Height = 17
+          Caption = 'Hidden Files'
+          TabOrder = 0
+        end
+        object CbExplorerShowImages: TCheckBox
+          Left = 14
+          Top = 71
+          Width = 270
+          Height = 17
+          Caption = 'Image Files'
+          TabOrder = 1
+        end
+        object CbExplorerShowSimpleFiles: TCheckBox
+          Left = 14
+          Top = 48
+          Width = 270
+          Height = 17
+          Caption = 'Simple Files'
+          TabOrder = 2
+        end
+        object CbExplorerShowFolders: TCheckBox
+          Left = 14
+          Top = 25
+          Width = 270
+          Height = 17
+          Caption = 'Folders'
+          TabOrder = 3
+        end
       end
-      object CbExplorerShowThumbsForVideo: TCheckBox
-        Left = 194
-        Top = 88
-        Width = 368
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Show Thumbnails For Video'
-        TabOrder = 10
+      object GbThumbnailOptions: TGroupBox
+        Left = 3
+        Top = 139
+        Width = 292
+        Height = 148
+        Caption = 'GbThumbnailOptions'
+        TabOrder = 4
+        DesignSize = (
+          292
+          148)
+        object CbExplorerShowAttributes: TCheckBox
+          Left = 14
+          Top = 27
+          Width = 270
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Show Attributes'
+          TabOrder = 0
+        end
+        object CbExplorerShowThumbsForFolders: TCheckBox
+          Left = 14
+          Top = 50
+          Width = 270
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Show Thumbnails For Folders'
+          TabOrder = 1
+        end
+        object CbExplorerSaveThumbsForFolders: TCheckBox
+          Left = 14
+          Top = 73
+          Width = 270
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Save Thumbnails For Folders'
+          TabOrder = 2
+        end
+        object CbExplorerShowThumbsForImages: TCheckBox
+          Left = 14
+          Top = 96
+          Width = 270
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Show Thumbnails For Images'
+          TabOrder = 3
+        end
+        object CbExplorerShowThumbsForVideo: TCheckBox
+          Left = 14
+          Top = 119
+          Width = 270
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Show Thumbnails For Video'
+          TabOrder = 4
+        end
       end
     end
     object TsView: TTabSheet
@@ -1314,8 +1240,6 @@ object OptionsForm: TOptionsForm
           Cursor = crHandPoint
           Text = 'BlowFish - 56'
           ImageIndex = 0
-          IconWidth = 16
-          IconHeight = 16
           UseEnterColor = False
           EnterColor = clBlack
           EnterBould = False
@@ -1669,8 +1593,6 @@ object OptionsForm: TOptionsForm
         Text = 'Add'
         OnClick = WlAddPlayerExtensionClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -1692,8 +1614,6 @@ object OptionsForm: TOptionsForm
         Text = 'Remove'
         OnClick = WlRemovePlayerExtensionClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -1716,8 +1636,6 @@ object OptionsForm: TOptionsForm
         Visible = False
         OnClick = WlSavePlayerChangesClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False

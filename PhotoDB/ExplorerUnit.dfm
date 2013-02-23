@@ -2,7 +2,7 @@ object ExplorerForm: TExplorerForm
   Left = 221
   Top = 233
   Width = 1024
-  Height = 759
+  Height = 771
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
   AutoScroll = True
@@ -27,14 +27,14 @@ object ExplorerForm: TExplorerForm
   OnShow = FormShow
   DesignSize = (
     1008
-    721)
+    733)
   PixelsPerInch = 96
   TextHeight = 13
   object SplLeftPanel: TSplitter
     Left = 140
     Top = 48
     Width = 5
-    Height = 654
+    Height = 658
     Constraints.MaxWidth = 150
     ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
@@ -47,7 +47,7 @@ object ExplorerForm: TExplorerForm
     Left = 145
     Top = 48
     Width = 1
-    Height = 654
+    Height = 658
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -58,7 +58,7 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 140
-    Height = 654
+    Height = 658
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
@@ -68,8 +68,8 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 0
       Width = 140
-      Height = 625
-      ActivePage = TsDetailedSearch
+      Height = 629
+      ActivePage = TsTasks
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -86,7 +86,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 597
+          Height = 601
           Align = alClient
           BevelOuter = bvNone
           ParentColor = True
@@ -96,7 +96,7 @@ object ExplorerForm: TExplorerForm
             Left = 0
             Top = 0
             Width = 132
-            Height = 597
+            Height = 601
             HorzScrollBar.Increment = 10
             HorzScrollBar.Visible = False
             VertScrollBar.Smooth = True
@@ -129,7 +129,7 @@ object ExplorerForm: TExplorerForm
             object TasksLabel: TLabel
               Tag = 1
               Left = 8
-              Top = 340
+              Top = 230
               Width = 33
               Height = 13
               Caption = 'Tasks'
@@ -164,20 +164,6 @@ object ExplorerForm: TExplorerForm
               Font.Height = -11
               Font.Name = 'Tahoma'
               Font.Style = []
-              ParentFont = False
-            end
-            object OtherPlacesLabel: TLabel
-              Tag = 1
-              Left = 8
-              Top = 559
-              Width = 71
-              Height = 13
-              Caption = 'Other Places'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = [fsBold]
               ParentFont = False
             end
             object NameLabel: TLabel
@@ -243,279 +229,9 @@ object ExplorerForm: TExplorerForm
               Font.Style = []
               ParentFont = False
             end
-            object ImageTasksLabel: TLabel
-              Tag = 1
-              Left = 8
-              Top = 227
-              Width = 73
-              Height = 13
-              Caption = 'Image Tasks'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = [fsBold]
-              ParentFont = False
-            end
-            object SlideShowLink: TWebLink
-              Left = 5
-              Top = 355
-              Width = 72
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Slide Show'
-              OnClick = SlideShowLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object ShellLink: TWebLink
-              Left = 5
-              Top = 369
-              Width = 47
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Open'
-              OnClick = Open1Click
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object RenameLink: TWebLink
-              Left = 5
-              Top = 430
-              Width = 60
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Rename'
-              OnClick = Rename1Click
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object RefreshLink: TWebLink
-              Left = 5
-              Top = 460
-              Width = 59
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Refresh'
-              OnClick = RefreshLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object PropertiesLink: TWebLink
-              Left = 5
-              Top = 445
-              Width = 70
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Properties'
-              OnClick = PropertiesLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object PrintLink: TWebLink
-              Left = 5
-              Top = 293
-              Width = 43
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Print'
-              OnClick = PrintLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object MyPicturesLink: TWebLink
-              Left = 5
-              Top = 588
-              Width = 76
-              Height = 16
-              Cursor = crHandPoint
-              OnContextPopup = MyPicturesLinkContextPopup
-              Text = 'My Pictures'
-              OnClick = MyPicturesLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = True
-              CanClick = True
-            end
-            object MyDocumentsLink: TWebLink
-              Left = 5
-              Top = 604
-              Width = 91
-              Height = 16
-              Cursor = crHandPoint
-              OnContextPopup = MyPicturesLinkContextPopup
-              Text = 'My Documents'
-              OnClick = MyDocumentsLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = True
-              CanClick = True
-            end
-            object MyComputerLink: TWebLink
-              Left = 5
-              Top = 572
-              Width = 85
-              Height = 16
-              Cursor = crHandPoint
-              OnContextPopup = MyPicturesLinkContextPopup
-              Text = 'My Computer'
-              OnClick = MyComputerLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = True
-              CanClick = True
-            end
-            object MoveToLink: TWebLink
-              Left = 5
-              Top = 415
-              Width = 62
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Move To'
-              OnClick = MoveToLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object ImageEditorLink: TWebLink
-              Left = 5
-              Top = 306
-              Width = 82
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Image Editor'
-              OnClick = ImageEditorLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object DesktopLink: TWebLink
-              Left = 5
-              Top = 620
-              Width = 60
-              Height = 16
-              Cursor = crHandPoint
-              OnContextPopup = MyPicturesLinkContextPopup
-              Text = 'Desktop'
-              OnClick = DesktopLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = True
-              CanClick = True
-            end
-            object DeleteLink: TWebLink
-              Left = 5
-              Top = 474
-              Width = 52
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Delete'
-              OnClick = Delete1Click
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object CopyToLink: TWebLink
-              Left = 5
-              Top = 398
-              Width = 61
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Copy To'
-              OnClick = CopyToLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
             object AddLink: TWebLink
               Left = 5
-              Top = 505
+              Top = 270
               Width = 75
               Height = 16
               Cursor = crHandPoint
@@ -531,27 +247,9 @@ object ExplorerForm: TExplorerForm
               StretchImage = False
               CanClick = True
             end
-            object EncryptLink: TWebLink
-              Left = 5
-              Top = 238
-              Width = 58
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Encrypt'
-              OnClick = EncryptLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
             object WlCreateObject: TWebLink
               Left = 5
-              Top = 384
+              Top = 250
               Width = 54
               Height = 16
               Cursor = crHandPoint
@@ -568,123 +266,14 @@ object ExplorerForm: TExplorerForm
               StretchImage = False
               CanClick = True
             end
-            object WlResize: TWebLink
-              Left = 5
-              Top = 252
-              Width = 52
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Resize'
-              OnClick = Resize1Click
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlConvert: TWebLink
-              Left = 5
-              Top = 266
-              Width = 60
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Convert'
-              OnClick = Convert1Click
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlCrop: TWebLink
-              Left = 5
-              Top = 280
-              Width = 44
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Crop'
-              OnClick = WlCropClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlImportPictures: TWebLink
-              Left = 5
-              Top = 488
-              Width = 94
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Import pictures'
-              OnClick = WlImportPicturesClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlGeoLocation: TWebLink
-              Left = 5
-              Top = 320
-              Width = 93
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Display on map'
-              OnClick = WlGeoLocationClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
             object WlClear: TWebLink
               Left = 5
-              Top = 521
+              Top = 290
               Width = 46
               Height = 16
               Cursor = crHandPoint
               Text = 'Clear'
               OnClick = WlClearClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlShare: TWebLink
-              Left = 5
-              Top = 537
-              Width = 49
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Share'
-              Visible = False
-              OnClick = WlShareClick
               ImageIndex = 0
               UseEnterColor = False
               EnterColor = clBlack
@@ -701,9 +290,13 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 589
         object PnResetFilter: TPanel
           Left = 0
-          Top = 576
+          Top = 580
           Width = 132
           Height = 21
           Align = alBottom
@@ -711,6 +304,7 @@ object ExplorerForm: TExplorerForm
           TabOrder = 0
           Visible = False
           OnResize = PnResetFilterResize
+          ExplicitTop = 568
           object WlResetFilter: TWebLink
             Left = 31
             Top = 4
@@ -743,14 +337,14 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 597
+          Height = 601
           Align = alClient
           BevelOuter = bvNone
           ParentBackground = False
           TabOrder = 0
           DesignSize = (
             132
-            597)
+            601)
           object LbEditComments: TLabel
             Tag = 2
             Left = 5
@@ -898,16 +492,21 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 589
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
           Width = 132
-          Height = 597
+          Height = 601
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
           TabOrder = 0
           OnDrawCell = VleExifDrawCell
+          ExplicitHeight = 589
           ColWidths = (
             70
             56)
@@ -922,7 +521,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 597
+          Height = 601
           Align = alClient
           BevelOuter = bvNone
           Ctl3D = True
@@ -931,7 +530,7 @@ object ExplorerForm: TExplorerForm
           TabOrder = 0
           DesignSize = (
             132
-            597)
+            601)
           object BvRating: TBevel
             Left = 3
             Top = 75
@@ -1238,7 +837,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnShelf: TPanel
       Left = 0
-      Top = 625
+      Top = 629
       Width = 140
       Height = 29
       Align = alBottom
@@ -1339,25 +938,29 @@ object ExplorerForm: TExplorerForm
         Left = 86
         Top = 0
         AutoSize = True
+        DropdownMenu = PmCut
         ImageIndex = 3
+        Style = tbsDropDown
         OnClick = CutClick
       end
       object TbCopy: TToolButton
-        Left = 98
+        Left = 119
         Top = 0
         AutoSize = True
+        DropdownMenu = PmCopy
         ImageIndex = 4
+        Style = tbsDropDown
         OnClick = CopyClick
       end
       object TbPaste: TToolButton
-        Left = 110
+        Left = 152
         Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = PasteClick
       end
       object ToolButton17: TToolButton
-        Left = 122
+        Left = 164
         Top = 0
         Width = 8
         Caption = 'ToolButton17'
@@ -1365,14 +968,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbDelete: TToolButton
-        Left = 130
+        Left = 172
         Top = 0
         AutoSize = True
         ImageIndex = 6
         OnClick = TbDeleteClick
       end
       object ToolButton10: TToolButton
-        Left = 142
+        Left = 184
         Top = 0
         Width = 8
         Caption = 'ToolButton10'
@@ -1380,7 +983,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButtonView: TToolButton
-        Left = 150
+        Left = 192
         Top = 0
         AutoSize = True
         DropdownMenu = PmListViewType
@@ -1388,8 +991,16 @@ object ExplorerForm: TExplorerForm
         Style = tbsDropDown
         OnClick = ToolButtonViewClick
       end
+      object TbSort: TToolButton
+        Left = 225
+        Top = 0
+        AutoSize = True
+        Caption = 'TbSort'
+        ImageIndex = 15
+        Style = tbsDropDown
+      end
       object TbSearch: TToolButton
-        Left = 183
+        Left = 258
         Top = 0
         AutoSize = True
         ImageIndex = 10
@@ -1397,21 +1008,21 @@ object ExplorerForm: TExplorerForm
       end
       object TbPreview: TToolButton
         Tag = 1
-        Left = 195
+        Left = 270
         Top = 0
         AutoSize = True
         ImageIndex = 12
         OnClick = TbPreviewClick
       end
       object TbImport: TToolButton
-        Left = 207
+        Left = 282
         Top = 0
         AutoSize = True
         ImageIndex = 13
         OnClick = TbImportClick
       end
       object ToolButton11: TToolButton
-        Left = 219
+        Left = 294
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -1419,14 +1030,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbZoomOut: TToolButton
-        Left = 227
+        Left = 302
         Top = 0
         AutoSize = True
         ImageIndex = 8
         OnClick = TbZoomOutClick
       end
       object TbZoomIn: TToolButton
-        Left = 239
+        Left = 314
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -1435,7 +1046,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbZoomInClick
       end
       object ToolButton20: TToolButton
-        Left = 272
+        Left = 347
         Top = 0
         Width = 8
         Caption = 'ToolButton20'
@@ -1443,7 +1054,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbDatabase: TToolButton
-        Left = 280
+        Left = 355
         Top = 0
         AutoSize = True
         DropdownMenu = PmDBList
@@ -1453,7 +1064,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbDatabaseClick
       end
       object TbOptions: TToolButton
-        Left = 313
+        Left = 388
         Top = 0
         AutoSize = True
         Caption = 'Options'
@@ -1463,7 +1074,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Options1Click
       end
       object ToolButton1: TToolButton
-        Left = 346
+        Left = 421
         Top = 0
         Width = 8
         Caption = 'ToolButton1'
@@ -1471,7 +1082,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbHelp: TToolButton
-        Left = 354
+        Left = 429
         Top = 0
         AutoSize = True
         DropdownMenu = PmHelp
@@ -1658,7 +1269,7 @@ object ExplorerForm: TExplorerForm
     Left = 146
     Top = 48
     Width = 862
-    Height = 654
+    Height = 658
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
@@ -1668,7 +1279,7 @@ object ExplorerForm: TExplorerForm
       Left = 507
       Top = 33
       Width = 5
-      Height = 588
+      Height = 592
       ResizeStyle = rsUpdate
       Visible = False
       OnCanResize = SplRightPanelCanResize
@@ -1676,7 +1287,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 621
+      Top = 625
       Width = 862
       Height = 33
       Align = alBottom
@@ -2271,14 +1882,14 @@ object ExplorerForm: TExplorerForm
       Left = 512
       Top = 33
       Width = 350
-      Height = 588
+      Height = 592
       Align = alClient
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
       DesignSize = (
         350
-        588)
+        592)
       object SbCloseRightPanel: TSpeedButton
         Left = 325
         Top = 1
@@ -2319,7 +1930,7 @@ object ExplorerForm: TExplorerForm
         Left = 1
         Top = 1
         Width = 348
-        Height = 586
+        Height = 590
         ActivePage = TsMediaPreview
         Align = alClient
         TabOrder = 0
@@ -2332,7 +1943,7 @@ object ExplorerForm: TExplorerForm
             Left = 0
             Top = 0
             Width = 340
-            Height = 558
+            Height = 562
             Align = alClient
             BevelOuter = bvNone
             DoubleBuffered = True
@@ -2342,11 +1953,11 @@ object ExplorerForm: TExplorerForm
             TabOrder = 0
             DesignSize = (
               340
-              558)
+              562)
             object ToolBarPreview: TToolBar
-              Left = 110
-              Top = 535
-              Width = 222
+              Left = 75
+              Top = 539
+              Width = 263
               Height = 22
               Align = alNone
               Anchors = [akLeft, akBottom]
@@ -2412,8 +2023,23 @@ object ExplorerForm: TExplorerForm
                 ImageIndex = 3
                 Style = tbsSeparator
               end
-              object TbPreviewOpen: TToolButton
+              object TbPreviewInfo: TToolButton
                 Left = 189
+                Top = 0
+                ImageIndex = 3
+                Style = tbsCheck
+                OnClick = TbPreviewInfoClick
+              end
+              object TbPreviewInfoSeparator: TToolButton
+                Left = 222
+                Top = 0
+                Width = 8
+                Caption = 'TbPreviewInfoSeparator'
+                ImageIndex = 3
+                Style = tbsSeparator
+              end
+              object TbPreviewOpen: TToolButton
+                Left = 230
                 Top = 0
                 ImageIndex = 2
                 OnClick = SlideShowLinkClick
@@ -2421,7 +2047,7 @@ object ExplorerForm: TExplorerForm
             end
             object WlFaceCount: TWebLink
               Left = 24
-              Top = 540
+              Top = 544
               Width = 41
               Height = 13
               Cursor = crHandPoint
@@ -2461,7 +2087,7 @@ object ExplorerForm: TExplorerForm
             end
             object LsDetectingFaces: TLoadingSign
               Left = 3
-              Top = 538
+              Top = 542
               Width = 18
               Height = 18
               Visible = False
@@ -2479,7 +2105,7 @@ object ExplorerForm: TExplorerForm
           Caption = 'TsGeoLocation'
           object PnGeoSearch: TPanel
             Left = 0
-            Top = 523
+            Top = 527
             Width = 340
             Height = 35
             Align = alBottom
@@ -2582,14 +2208,14 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 33
       Width = 507
-      Height = 588
+      Height = 592
       Align = alLeft
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 3
       object StatusBarMain: TStatusBar
         Left = 0
-        Top = 568
+        Top = 572
         Width = 507
         Height = 20
         Panels = <
@@ -2615,7 +2241,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.926583958330000000
+      Date = 41177.974216585650000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2653,128 +2279,140 @@ object ExplorerForm: TExplorerForm
     ImageCanRegenerate = True
     CanSelectRange = False
   end
-  object ToolBarBottom: TToolBar
+  object PnBottomToolBar: TPanel
     Left = 0
-    Top = 702
+    Top = 706
     Width = 1008
-    Height = 19
+    Height = 27
     Align = alBottom
     AutoSize = True
-    ButtonHeight = 19
-    ButtonWidth = 100
-    EdgeInner = esNone
-    List = True
-    ParentShowHint = False
-    ShowCaptions = True
-    ShowHint = True
+    BevelOuter = bvNone
     TabOrder = 7
-    Transparent = True
-    Wrapable = False
-    OnResize = CoolBarBottomResize
-    object TbbPlay: TToolButton
+    object ToolBarBottom: TToolBar
       Left = 0
       Top = 0
+      Width = 1008
+      Height = 27
+      Align = alBottom
       AutoSize = True
-      Caption = 'TbbPlay'
-      ImageIndex = 0
-      OnClick = SlideShowLinkClick
-    end
-    object TbbEncrypt: TToolButton
-      Left = 54
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbEncrypt'
-      ImageIndex = 1
-      OnClick = EncryptLinkClick
-    end
-    object TbbShare: TToolButton
-      Left = 125
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbShare'
-      DropdownMenu = PmShareAdditionalTasks
-      ImageIndex = 9
-      Style = tbsTextButton
-      OnClick = WlShareClick
-    end
-    object TbbGeo: TToolButton
-      Left = 187
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbGeo'
-      ImageIndex = 6
-      OnClick = WlGeoLocationClick
-    end
-    object TbbResize: TToolButton
-      Left = 240
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbResize'
-      ImageIndex = 2
-      OnClick = Resize1Click
-    end
-    object TbbConvert: TToolButton
-      Left = 305
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbConvert'
-      ImageIndex = 10
-      OnClick = Convert1Click
-    end
-    object TbbCrop: TToolButton
-      Left = 378
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbCrop'
-      ImageIndex = 3
-      OnClick = WlCropClick
-    end
-    object TbbEditor: TToolButton
-      Left = 435
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbEditor'
-      ImageIndex = 5
-      OnClick = ImageEditorLinkClick
-    end
-    object TbbPrint: TToolButton
-      Left = 497
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbPrint'
-      ImageIndex = 4
-      OnClick = PrintLinkClick
-    end
-    object TbBottomFileActionsSeparator: TToolButton
-      Left = 553
-      Top = 0
-      Width = 8
-      ImageIndex = 9
-      Style = tbsSeparator
-    end
-    object TbbOpenDirectory: TToolButton
-      Left = 561
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbOpenDirectory'
-      ImageIndex = 9
-      OnClick = TbbOpenDirectoryClick
-    end
-    object TbbRename: TToolButton
-      Left = 665
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbRename'
-      ImageIndex = 7
-      OnClick = Rename1Click
-    end
-    object TbbProperties: TToolButton
-      Left = 738
-      Top = 0
-      AutoSize = True
-      Caption = 'TbbProperties'
-      ImageIndex = 8
-      OnClick = PropertiesLinkClick
+      ButtonHeight = 27
+      ButtonWidth = 106
+      EdgeInner = esNone
+      List = True
+      ParentShowHint = False
+      ShowCaptions = True
+      ShowHint = True
+      TabOrder = 0
+      Transparent = True
+      Wrapable = False
+      OnResize = CoolBarBottomResize
+      object TbbPlay: TToolButton
+        Left = 0
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbPlay'
+        ImageIndex = 0
+        OnClick = SlideShowLinkClick
+      end
+      object TbbEncrypt: TToolButton
+        Left = 54
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbEncrypt'
+        ImageIndex = 1
+        OnClick = EncryptLinkClick
+      end
+      object TbbShare: TToolButton
+        Left = 125
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbShare'
+        DropdownMenu = PmShareAdditionalTasks
+        ImageIndex = 9
+        Style = tbsTextButton
+        OnClick = WlShareClick
+      end
+      object TbbGeo: TToolButton
+        Left = 187
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbGeo'
+        ImageIndex = 6
+        OnClick = WlGeoLocationClick
+      end
+      object TbbResize: TToolButton
+        Left = 240
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbResize'
+        ImageIndex = 2
+        OnClick = Resize1Click
+      end
+      object TbbConvert: TToolButton
+        Left = 305
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbConvert'
+        ImageIndex = 10
+        OnClick = Convert1Click
+      end
+      object TbbCrop: TToolButton
+        Left = 378
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbCrop'
+        ImageIndex = 3
+        OnClick = WlCropClick
+      end
+      object TbbEditor: TToolButton
+        Left = 435
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbEditor'
+        ImageIndex = 5
+        OnClick = ImageEditorLinkClick
+      end
+      object TbbPrint: TToolButton
+        Left = 497
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbPrint'
+        ImageIndex = 4
+        OnClick = PrintLinkClick
+      end
+      object TbBottomFileActionsSeparator: TToolButton
+        Left = 553
+        Top = 0
+        Width = 8
+        ImageIndex = 9
+        Style = tbsSeparator
+      end
+      object TbbOpenDirectory: TToolButton
+        Left = 561
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbOpenDirectory'
+        DropdownMenu = PmLocations
+        ImageIndex = 9
+        Style = tbsDropDown
+        OnClick = TbbOpenDirectoryClick
+      end
+      object TbbRename: TToolButton
+        Left = 686
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbRename'
+        ImageIndex = 7
+        OnClick = Rename1Click
+      end
+      object TbbProperties: TToolButton
+        Left = 759
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbProperties'
+        ImageIndex = 8
+        OnClick = PropertiesLinkClick
+      end
     end
   end
   object SizeImageList: TImageList
@@ -2981,7 +2619,6 @@ object ExplorerForm: TExplorerForm
     end
     object MiImportImages: TMenuItem
       Caption = 'Import Images'
-      OnClick = WlImportPicturesClick
     end
     object N13: TMenuItem
       Caption = '-'
@@ -2999,7 +2636,7 @@ object ExplorerForm: TExplorerForm
   object PmListPopup: TPopupActionBar
     OnPopup = PmListPopupPopup
     Left = 360
-    Top = 512
+    Top = 480
     object OpenInNewWindow1: TMenuItem
       Caption = 'Open In New Window'
       OnClick = OpenInNewWindow1Click
@@ -3009,6 +2646,7 @@ object ExplorerForm: TExplorerForm
     end
     object Paste1: TMenuItem
       Caption = 'Paste'
+      ShortCut = 16470
       OnClick = PasteClick
     end
     object N5: TMenuItem
@@ -3039,10 +2677,12 @@ object ExplorerForm: TExplorerForm
     end
     object Refresh2: TMenuItem
       Caption = 'Refresh'
+      ShortCut = 116
       OnClick = Refresh2Click
     end
     object SelectAll1: TMenuItem
       Caption = 'Select All'
+      ShortCut = 16449
       OnClick = SelectAll1Click
     end
     object N19: TMenuItem
@@ -3087,6 +2727,7 @@ object ExplorerForm: TExplorerForm
     end
     object SetFilter1: TMenuItem
       Caption = 'Set Filter'
+      ShortCut = 16454
       OnClick = SetFilter1Click
     end
     object N2: TMenuItem
@@ -3117,7 +2758,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmTreeView: TPopupActionBar
     Left = 361
-    Top = 192
+    Top = 144
     object MiTreeViewOpenInNewWindow: TMenuItem
       Caption = 'Open in new window'
       OnClick = MiTreeViewOpenInNewWindowClick
@@ -3138,13 +2779,13 @@ object ExplorerForm: TExplorerForm
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuBackPopup
     Left = 360
-    Top = 468
+    Top = 436
   end
   object PopupMenuForward: TPopupActionBar
     Images = ImPathDropDownMenu
     OnPopup = PopupMenuForwardPopup
     Left = 360
-    Top = 420
+    Top = 388
   end
   object DragTimer: TTimer
     Enabled = False
@@ -3199,21 +2840,9 @@ object ExplorerForm: TExplorerForm
     Left = 536
     Top = 440
   end
-  object PmLinkOptions: TPopupActionBar
-    Left = 360
-    Top = 144
-    object Open2: TMenuItem
-      Caption = 'Open'
-      OnClick = Open2Click
-    end
-    object OpeninNewWindow2: TMenuItem
-      Caption = 'Open in New Window'
-      OnClick = OpeninNewWindow2Click
-    end
-  end
   object PmDragMode: TPopupActionBar
     Left = 360
-    Top = 240
+    Top = 192
     object Copy4: TMenuItem
       Caption = 'Copy'
       OnClick = Copy4Click
@@ -3236,10 +2865,6 @@ object ExplorerForm: TExplorerForm
     Left = 535
     Top = 300
   end
-  object ScriptMainMenu: TMainMenu
-    Left = 537
-    Top = 96
-  end
   object CloseTimer: TTimer
     Enabled = False
     Interval = 1
@@ -3249,7 +2874,7 @@ object ExplorerForm: TExplorerForm
   end
   object RatingPopupMenu: TPopupActionBar
     Left = 361
-    Top = 376
+    Top = 336
     object N00: TMenuItem
       Caption = '0'
       ShortCut = 16432
@@ -3288,7 +2913,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmListViewType: TPopupActionBar
     Left = 360
-    Top = 328
+    Top = 288
     object Thumbnails1: TMenuItem
       Caption = 'Thumbnails'
       Checked = True
@@ -3350,7 +2975,7 @@ object ExplorerForm: TExplorerForm
   object PopupMenuZoomDropDown: TPopupActionBar
     OnPopup = PopupMenuZoomDropDownPopup
     Left = 362
-    Top = 282
+    Top = 242
   end
   object SearchImageList: TImageList
     Height = 18
@@ -3363,7 +2988,7 @@ object ExplorerForm: TExplorerForm
     Images = ImSearchMode
     OnPopup = PmSearchModePopup
     Left = 360
-    Top = 608
+    Top = 576
     object Searchfiles1: TMenuItem
       Caption = 'Search files'
       ImageIndex = 0
@@ -3392,7 +3017,7 @@ object ExplorerForm: TExplorerForm
   end
   object PmPathMenu: TPopupActionBar
     Left = 360
-    Top = 560
+    Top = 528
     object MiCopyAddress: TMenuItem
       Caption = 'Copy Address'
       OnClick = MiCopyAddressClick
@@ -3422,7 +3047,7 @@ object ExplorerForm: TExplorerForm
   end
   object ImlBottomToolBar: TImageList
     ColorDepth = cd32Bit
-    Left = 280
+    Left = 288
     Top = 596
   end
   object ImExtendedSearchGroups: TImageList
@@ -3621,7 +3246,7 @@ object ExplorerForm: TExplorerForm
   end
   object ImlPreview: TImageList
     ColorDepth = cd32Bit
-    Left = 280
+    Left = 288
     Top = 548
   end
   object TmrReloadTreeView: TTimer
@@ -3749,6 +3374,36 @@ object ExplorerForm: TExplorerForm
     object MenuItem13: TMenuItem
       Caption = 'MiCDMapping'
       OnClick = MiCDMappingClick
+    end
+  end
+  object PmLocations: TPopupActionBar
+    Images = ImLocations
+    OnPopup = PmLocationsPopup
+    OnGetControlClass = PmShareAdditionalTasksGetControlClass
+    Left = 656
+    Top = 272
+  end
+  object ImLocations: TImageList
+    ColorDepth = cd32Bit
+    Left = 656
+    Top = 320
+  end
+  object PmCopy: TPopupActionBar
+    OnPopup = PmCopyPopup
+    Left = 816
+    Top = 224
+    object MiCopyTo: TMenuItem
+      Caption = 'MiCopyTo'
+      OnClick = CopyToLinkClick
+    end
+  end
+  object PmCut: TPopupActionBar
+    OnPopup = PmCutPopup
+    Left = 816
+    Top = 272
+    object MiCutTo: TMenuItem
+      Caption = 'MiCutTo'
+      OnClick = MoveToLinkClick
     end
   end
 end

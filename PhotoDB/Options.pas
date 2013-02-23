@@ -106,24 +106,7 @@ type
     TsExplorer: TTabSheet;
     BtnClearIconCache: TButton;
     BtnClearThumbnailCache: TButton;
-    BtnChooseNewPlace: TButton;
-    BtnChoosePlaceIcon: TButton;
-    PlacesListView: TListView;
-    CblPlacesDisplayIn: TCheckListBox;
-    LbDisplayPlacesIn: TLabel;
-    LbPlacesList: TLabel;
-    CbExplorerShowPlaces: TCheckBox;
     CbExplorerShowEXIF: TCheckBox;
-    CbExplorerShowThumbsForImages: TCheckBox;
-    CbExplorerSaveThumbsForFolders: TCheckBox;
-    CbExplorerShowThumbsForFolders: TCheckBox;
-    CbExplorerShowAttributes: TCheckBox;
-    Label13: TStaticText;
-    Label12: TStaticText;
-    CbExplorerShowFolders: TCheckBox;
-    CbExplorerShowSimpleFiles: TCheckBox;
-    CbExplorerShowImages: TCheckBox;
-    CbExplorerShowHidden: TCheckBox;
     Bevel1: TBevel;
     TsView: TTabSheet;
     TrackBar1: TTrackBar;
@@ -209,7 +192,6 @@ type
     N4: TMenuItem;
     SelectAll1: TMenuItem;
     DeselectAll1: TMenuItem;
-    CbExplorerShowThumbsForVideo: TCheckBox;
     cbViewerFaceDetection: TCheckBox;
     lbDetectionSize: TLabel;
     CbDetectionSize: TComboBox;
@@ -256,6 +238,17 @@ type
     CbShowStatusBar: TCheckBox;
     CbSmoothScrolling: TCheckBox;
     CbUseProxyServer: TCheckBox;
+    GbExplorerObjects: TGroupBox;
+    CbExplorerShowHidden: TCheckBox;
+    CbExplorerShowImages: TCheckBox;
+    CbExplorerShowSimpleFiles: TCheckBox;
+    CbExplorerShowFolders: TCheckBox;
+    GbThumbnailOptions: TGroupBox;
+    CbExplorerShowAttributes: TCheckBox;
+    CbExplorerShowThumbsForFolders: TCheckBox;
+    CbExplorerSaveThumbsForFolders: TCheckBox;
+    CbExplorerShowThumbsForImages: TCheckBox;
+    CbExplorerShowThumbsForVideo: TCheckBox;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -290,7 +283,6 @@ type
     procedure ReadPlaces;
     procedure WritePlaces;
     procedure PlacesListViewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-    procedure CblPlacesDisplayInClickCheck(Sender: TObject);
     procedure BtnChoosePlaceIconClick(Sender: TObject);
     procedure DeleteItem1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
@@ -328,7 +320,7 @@ type
     FThemeList: TStringList;
     FUserMenu: TUserMenuItemArray;
     FLoadedPages: array [0..7] of Boolean;
-    FPlaces: TPlaceFolderArray;
+    //FPlaces: TPlaceFolderArray;
     ReloadData: Boolean;
     FReadingPlayerChanges: Boolean;
     FPlayerExtensions: TDictionary<string, string>;
@@ -423,7 +415,6 @@ begin
     CbExplorerShowThumbsForImages.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
     CbExplorerShowThumbsForVideo.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
     CbExplorerShowEXIF.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
-    CbExplorerShowPlaces.Checked := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
 
     ReadPlaces;
   end;
@@ -690,9 +681,6 @@ begin
     Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForVideo', CbExplorerShowThumbsForVideo.Checked);
 
     Settings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
-    Settings.WriteBool('Options', 'ShowOtherPlaces', CbExplorerShowPlaces.Checked);
-
-    ExplorerManager.ShowQuickLinks := CbExplorerShowPlaces.Checked;
     WritePlaces;
   end;
   // 3 :
@@ -894,12 +882,12 @@ begin
     Usethisprogramasdefault1.Caption := L('Use PhotoDB as default association');
     Usemenuitem1.Caption := L('Add menu item');
     CbListViewShowPreview.Caption := L('Show previews');
-    Label12.Caption := L('Show object types') + ':';
+    GbExplorerObjects.Caption := L('Show object types');
     CbExplorerShowFolders.Caption := L('Folders');
     CbExplorerShowSimpleFiles.Caption := L('Simple files');
     CbExplorerShowImages.Caption := L('Images');
     CbExplorerShowHidden.Caption := L('Hidden files');
-    Label13.Caption := L('Preview options') + ':';
+    GbThumbnailOptions.Caption := L('Preview options');
     CbExplorerShowAttributes.Caption := L('Display attributes');
     CbExplorerShowThumbsForFolders.Caption := L('Display previews for folders');
     CbExplorerSaveThumbsForFolders.Caption := L('Save preview for folders');
@@ -942,7 +930,6 @@ begin
     BtnClearThumbnailCache.Caption := L('Clear previews cache');
     BtnClearIconCache.Caption := L('Clear icons cache');
     CbExplorerShowEXIF.Caption := L('Show EXIF marker');
-    CbExplorerShowPlaces.Caption := L('Display links "Other places"');
     CbViewerNextOnClick.Caption := L('"Next" by click');
     CbListViewHotSelect.Caption := L('Use the selection by hover on the list');
     WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
@@ -951,21 +938,11 @@ begin
     CbSmoothScrolling.Caption := L('Smooth scrolling');
     BlBackupInterval.Caption := L('Create backup every') + ':';
     Label30.Caption := L('days');
-    CblPlacesDisplayIn.Clear;
-    CblPlacesDisplayIn.Items.Add(L('My computer'));
-    CblPlacesDisplayIn.Items.Add(L('My documents'));
-    CblPlacesDisplayIn.Items.Add(L('My pictures'));
-    CblPlacesDisplayIn.Items.Add(L('Other places'));
-    BtnChooseNewPlace.Caption := L('New place');
-    LbDisplayPlacesIn.Caption := L('Display in') + ':';
-    LbPlacesList.Caption := L('User defined places') + ':';
-    PlacesListView.Columns[0].Caption := L('Places') + ':';
 
     Additem1.Caption := L('New place');
     DeleteItem1.Caption := L('Delete');
     Up1.Caption := L('Up');
     Down1.Caption := L('Down');
-    BtnChoosePlaceIcon.Caption := L('Icon');
     Rename1.Caption := L('Rename');
     CblEditorVirtuaCursor.Caption := L('Virtual cursor to the Editor');
     Default1.Caption := L('Default');
@@ -1653,7 +1630,7 @@ procedure TOptionsForm.PlacesListViewContextPopup(Sender: TObject;
 var
   Item: TListItem;
 begin
-  Item := PlacesListView.GetItemAt(MousePos.X, MousePos.Y);
+{  Item := PlacesListView.GetItemAt(MousePos.X, MousePos.Y);
   if Item = nil then
   begin
     Up1.Visible := False;
@@ -1668,7 +1645,7 @@ begin
     Rename1.Visible := True;
     DeleteItem1.Visible := True;
   end;
-  PmPlaces.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);
+  PmPlaces.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);   }
 end;
 
 procedure TOptionsForm.BtnApplyThemeClick(Sender: TObject);
@@ -1707,7 +1684,7 @@ var
 const
   DefaultIcon = '%SystemRoot%\system32\shell32.dll,3';
 begin
-  if PlacesListView.Selected = nil then
+{  if PlacesListView.Selected = nil then
   begin
     NewPlace := UnitDBFileDialogs.DBSelectDir(Handle,
       L('Please, select a folder'), UseSimpleSelectFolderDialog);
@@ -1717,10 +1694,6 @@ begin
       FPlaces[Length(FPlaces) - 1].Name := GetFileNameWithoutExt(NewPlace);
       FPlaces[Length(FPlaces) - 1].FolderName := NewPlace;
       FPlaces[Length(FPlaces) - 1].Icon := DefaultIcon;
-      FPlaces[Length(FPlaces) - 1].MyComputer := True;
-      FPlaces[Length(FPlaces) - 1].MyDocuments := True;
-      FPlaces[Length(FPlaces) - 1].MyPictures := True;
-      FPlaces[Length(FPlaces) - 1].OtherFolder := True;
       AddIconToListFromPath(PlacesImageList, DefaultIcon);
       with PlacesListView.Items.AddItem(nil) do
       begin
@@ -1739,7 +1712,7 @@ begin
     FPlaces[PlacesListView.Selected.Index].Name := GetFileNameWithoutExt
       (NewPlace);
     PlacesListView.Selected.Caption := GetFileNameWithoutExt(NewPlace);
-  end;
+  end;  }
 end;
 
 procedure TOptionsForm.RbPlayerInternalClick(Sender: TObject);
@@ -1771,10 +1744,9 @@ var
   Reg: TBDRegistry;
   S: TStrings;
   FName, FFolderName, FIcon: string;
-  FMyComputer, FMyDocuments, FMyPictures, FOtherFolder: Boolean;
   I: Integer;
 begin
-  PlacesImageList.Clear;
+{  PlacesImageList.Clear;
   PlacesImageList.Width := 16;
   PlacesImageList.Height := 16;
 
@@ -1801,14 +1773,6 @@ begin
           FFolderName := Reg.ReadString('FolderName');
         if Reg.ValueExists('Icon') then
           FIcon := Reg.ReadString('Icon');
-        if Reg.ValueExists('MyComputer') then
-          FMyComputer := Reg.Readbool('MyComputer');
-        if Reg.ValueExists('MyDocuments') then
-          FMyDocuments := Reg.Readbool('MyDocuments');
-        if Reg.ValueExists('MyPictures') then
-          FMyPictures := Reg.Readbool('MyPictures');
-        if Reg.ValueExists('OtherFolder') then
-          FOtherFolder := Reg.Readbool('OtherFolder');
 
         if (FName <> '') and (FFolderName <> '') then
         begin
@@ -1816,10 +1780,6 @@ begin
           FPlaces[Length(FPlaces) - 1].name := FName;
           FPlaces[Length(FPlaces) - 1].FolderName := FFolderName;
           FPlaces[Length(FPlaces) - 1].Icon := FIcon;
-          FPlaces[Length(FPlaces) - 1].MyComputer := FMyComputer;
-          FPlaces[Length(FPlaces) - 1].MyDocuments := FMyDocuments;
-          FPlaces[Length(FPlaces) - 1].MyPictures := FMyPictures;
-          FPlaces[Length(FPlaces) - 1].OtherFolder := FOtherFolder;
 
           AddIconToListFromPath(PlacesImageList, fIcon);
 
@@ -1835,7 +1795,7 @@ begin
     end;
   finally
     F(Reg);
-  end;
+  end;   }
 end;
 
 procedure TOptionsForm.WlAddPlayerExtensionClick(Sender: TObject);
@@ -1915,7 +1875,7 @@ var
   Reg: TBDRegistry;
   S: TStrings;
 begin
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+ { Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
     Reg.OpenKey(GetRegRootKey + '\Places', true);
     S := TStringList.Create;
@@ -1934,15 +1894,11 @@ begin
       Reg.WriteString('Name', FPlaces[I].Name);
       Reg.WriteString('FolderName', FPlaces[I].FolderName);
       Reg.WriteString('Icon', FPlaces[I].Icon);
-      Reg.WriteBool('MyComputer', FPlaces[I].MyComputer);
-      Reg.WriteBool('MyDocuments', FPlaces[I].MyDocuments);
-      Reg.WriteBool('MyPictures', FPlaces[I].MyPictures);
-      Reg.WriteBool('OtherFolder', FPlaces[I].OtherFolder);
       Reg.CloseKey;
     end;
   finally
     F(Reg);
-  end;
+  end;  }
 end;
 
 procedure TOptionsForm.PlacesListViewSelectItem(Sender: TObject;
@@ -1950,21 +1906,13 @@ procedure TOptionsForm.PlacesListViewSelectItem(Sender: TObject;
 var
   I: Integer;
 begin
-  if not Selected then
+ { if not Selected then
   begin
-    for I := 0 to 3 do
-      CblPlacesDisplayIn.Checked[I] := False;
-    CblPlacesDisplayIn.Enabled := False;
     BtnChoosePlaceIcon.Enabled := False;
   end else
   begin
-    CblPlacesDisplayIn.Checked[0] := FPlaces[Item.Index].MyComputer;
-    CblPlacesDisplayIn.Checked[1] := FPlaces[Item.Index].MyDocuments;
-    CblPlacesDisplayIn.Checked[2] := FPlaces[Item.Index].MyPictures;
-    CblPlacesDisplayIn.Checked[3] := FPlaces[Item.Index].OtherFolder;
-    CblPlacesDisplayIn.Enabled := True;
     BtnChoosePlaceIcon.Enabled := True;
-  end;
+  end; }
 end;
 
 procedure TOptionsForm.CblExtensionsClick(Sender: TObject);
@@ -2033,20 +1981,6 @@ begin
   end;
 end;
 
-procedure TOptionsForm.CblPlacesDisplayInClickCheck(Sender: TObject);
-var
-  I: Integer;
-begin
-  if PlacesListView.Selected <> nil then
-  begin
-    I := PlacesListView.Selected.Index;
-    FPlaces[I].MyComputer := CblPlacesDisplayIn.Checked[0];
-    FPlaces[I].MyDocuments := CblPlacesDisplayIn.Checked[1];
-    FPlaces[I].MyPictures := CblPlacesDisplayIn.Checked[2];
-    FPlaces[I].OtherFolder := CblPlacesDisplayIn.Checked[3];
-  end;
-end;
-
 procedure TOptionsForm.CbUseProxyServerClick(Sender: TObject);
 begin
   WebProxyUserName.Enabled := CbUseProxyServer.Checked;
@@ -2059,12 +1993,12 @@ var
   IconIndex: Integer;
   Ic: HIcon;
   S, Icon: string;
-  I, index: Integer;
+  I, Index: Integer;
   Ico: TIcon;
 begin
-  if PlacesListView.Selected = nil then
+{  if PlacesListView.Selected = nil then
     Exit;
-  index := PlacesListView.Selected.index;
+  Index := PlacesListView.Selected.index;
   S := FPlaces[index].Icon;
   I := Pos(',', S);
   FileName := Copy(S, 1, I - 1);
@@ -2083,14 +2017,14 @@ begin
     PlacesImageList.ReplaceIcon(index, Ico);
   finally
     F(Ico);
-  end;
+  end;     }
 end;
 
 procedure TOptionsForm.DeleteItem1Click(Sender: TObject);
 var
   I: Integer;
 begin
-  if PmPlaces.Tag <> -1 then
+ { if PmPlaces.Tag <> -1 then
   begin
     for I := PmPlaces.Tag to Length(FPlaces) - 2 do
       FPlaces[i] := FPlaces[I + 1];
@@ -2099,7 +2033,7 @@ begin
     PlacesImageList.Delete(PmPlaces.Tag);
     for I := PmPlaces.Tag to Length(FPlaces) - 1 do
       PlacesListView.Items[I].ImageIndex := PlacesListView.Items[I].ImageIndex - 1;
-  end;
+  end;}
 end;
 
 procedure TOptionsForm.Up1Click(Sender: TObject);
@@ -2107,7 +2041,7 @@ var
   Info: TPlaceFolder;
   Icon1, Icon2: Ticon;
 begin
-  if PlacesListView.Selected = nil then
+{  if PlacesListView.Selected = nil then
     Exit;
   Info := FPlaces[PlacesListView.Selected.index];
   FPlaces[PlacesListView.Selected.index] := FPlaces
@@ -2130,7 +2064,7 @@ begin
   finally
     F(Icon1);
     F(Icon2);
-  end;
+  end; }
 end;
 
 procedure TOptionsForm.Down1Click(Sender: TObject);
@@ -2138,7 +2072,7 @@ var
   info: TPlaceFolder;
   Icon1, Icon2: Ticon;
 begin
-  if PlacesListView.Selected = nil then
+{  if PlacesListView.Selected = nil then
     Exit;
 
   Info := FPlaces[PlacesListView.Selected.index];
@@ -2162,20 +2096,20 @@ begin
   finally
     F(Icon1);
     F(Icon2);
-  end;
+  end; }
 end;
 
 procedure TOptionsForm.Rename1Click(Sender: TObject);
 begin
-  if PlacesListView.Selected = nil then
+{  if PlacesListView.Selected = nil then
     exit;
-  PlacesListView.Selected.EditCaption;
+  PlacesListView.Selected.EditCaption;   }
 end;
 
 procedure TOptionsForm.PlacesListViewEdited(Sender: TObject; Item: TListItem;
   var S: String);
 begin
-  FPlaces[Item.Index].Name := S;
+  //FPlaces[Item.Index].Name := S;
 end;
 
 procedure TOptionsForm.DeselectAll1Click(Sender: TObject);

@@ -375,6 +375,9 @@ const
   FIDT_DOUBLE    = FREE_IMAGE_MDTYPE(12); // 64-bit IEEE floating point
   FIDT_IFD       = FREE_IMAGE_MDTYPE(13); // 32-bit unsigned integer (offset)
   FIDT_PALETTE   = FREE_IMAGE_MDTYPE(14); // 32-bit RGBQUAD
+  FIDT_LONG8     = FREE_IMAGE_MDTYPE(16); // 64-bit unsigned integer
+  FIDT_SLONG8    = FREE_IMAGE_MDTYPE(17); // 64-bit signed integer
+  FIDT_IFD8      = FREE_IMAGE_MDTYPE(18); // 64-bit unsigned integer (offset)
 
   // Metadata models supported by FreeImage
   FIMD_NODATA         = FREE_IMAGE_MDMODEL(-1);

@@ -51,37 +51,32 @@ type
 
 // Added in v2.0
 type
-  TPlaceFolder = record
-    name: string;
+  TPlaceFolder = class
+  public
+    Name: string;
     FolderName: string;
     Icon: string;
-    MyComputer: Boolean;
-    MyDocuments: Boolean;
-    MyPictures: Boolean;
-    OtherFolder: Boolean;
   end;
-
-  TPlaceFolderArray = array of TPlaceFolder;
 
 type
   // Added in 2.2 version
   TCallBackBigSizeProc = procedure(Sender: TObject; SizeX, SizeY: Integer) of object;
 
   TWatermarkOptions = record
-    Text : string;
-    BlockCountX : Integer;
-    BlockCountY : Integer;
-    Transparenty : Byte;
-    Color : TColor;
-    FontName : string;
-    IsBold : Boolean;
-    IsItalic : Boolean;
+    Text: string;
+    BlockCountX: Integer;
+    BlockCountY: Integer;
+    Transparenty: Byte;
+    Color: TColor;
+    FontName: string;
+    IsBold: Boolean;
+    IsItalic: Boolean;
   end;
 
   TPreviewOptions = record
-    GeneratePreview : Boolean;
-    PreviewWidth : Integer;
-    PreviewHeight : Integer;
+    GeneratePreview: Boolean;
+    PreviewWidth: Integer;
+    PreviewHeight: Integer;
   end;
 
   TProcessingParams = record

@@ -2515,7 +2515,7 @@ begin
         C := Theme.ListColor;
       end;
 
-      if GroupExists(FShowenRegGroups[Index].GroupCode) then
+      if (Index < Length(FShowenRegGroups)) and GroupExists(FShowenRegGroups[Index].GroupCode) then
         ACanvas.Font.Color := ColorDiv2(FC, C)
       else
         ACanvas.Font.Color := FC;

@@ -576,7 +576,8 @@ var
   ButtonInfo: TTBButtonInfo;
   Rect: TRect;
 begin
-  ButtonInfo.cbSize := SizeOf(ButtonInfo);
+  Button.Style := tbsDropDown;
+  {ButtonInfo.cbSize := SizeOf(ButtonInfo);
   ButtonInfo.dwMask := TBIF_STYLE;
 
   SendMessage(Self.Handle, TB_GETBUTTONINFO, Button.Index, LPARAM(@ButtonInfo));
@@ -584,7 +585,7 @@ begin
 
   SendMessage(Self.Handle, TB_SETBUTTONINFO, Button.Index, LPARAM(@ButtonInfo));
 
-  TToolButtonRewrite(Button).FStyle := tbsDropDown;
+  TToolButtonRewrite(Button).FStyle := tbsDropDown;  }
 end;
 
 procedure TToolButtonHelper.SetImageIndexEx(Value: Integer);
@@ -592,6 +593,8 @@ var
   TB: TToolBar;
   ButtonIndex: Integer;
 begin
+  ImageIndex := Value;
+  {
   ButtonIndex := Index;
 
   TB := TToolButtonEx(Self).FToolBar;
@@ -601,7 +604,7 @@ begin
   TB.Perform(TB_CHANGEBITMAP, ButtonIndex, LPARAM(Value));
   if TB.Transparent or TB.Flat then Invalidate;
 
-  TToolButtonEx(Self).FToolBar := TB;
+  TToolButtonEx(Self).FToolBar := TB;  }
 end;
 
 procedure TToolButtonHelper.SetCaption(Value: string);
@@ -610,7 +613,8 @@ var
   I, ButtonIndex: Integer;
   ButtonInfo: TTBButtonInfo;
 begin
-  ButtonIndex := Index;
+  Caption := Value;
+  {ButtonIndex := Index;
 
   TB := TToolButtonEx(Self).FToolBar;
   TToolButtonEx(Self).FToolBar := nil;
@@ -623,7 +627,7 @@ begin
   ButtonInfo.cchText := Length(Value);
   SendMessage(TB.Handle, TB_SETBUTTONINFO, ButtonIndex, LPARAM(@ButtonInfo));
 
-  TToolButtonEx(Self).FToolBar := TB;
+  TToolButtonEx(Self).FToolBar := TB;  }
 end;
 
 

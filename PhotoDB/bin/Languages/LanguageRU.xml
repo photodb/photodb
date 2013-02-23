@@ -1522,20 +1522,20 @@
 	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
 	<translate name="Display name" value="Отображаемое имя"/>
 	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
-	<translate name="Select file" value="Выбрать файл"/>	
+	<translate name="Select file" value="Выбрать файл"/>
 	<translate name="Choose\create\edit collection wizard" value="Диалог выбора\создания\редактирования БД"/>
 	<translate name="Choose an action from the list and click &quot;Next&quot; button" value="Выберите нужное действие из списка и нажмите на кнопку &quot;Далее&quot;" />
-	<translate name="Use as default collection" value="Использовать БД по умолчанию"/>	
+	<translate name="Use as default collection" value="Использовать БД по умолчанию"/>
 	<translate name="File name" value="Имя файла"/>
-	<translate name="Select name for new collection" value="Введите имя для новой базы"/>	
+	<translate name="Select name for new collection" value="Введите имя для новой базы"/>
 	<translate name="Select collection" value="Выбрать базу"/>
 	<translate name="Options" value="Настройки"/>
 	<translate name="Choose an icon" value="Выбрать иконку"/>
 	<translate name="Choose file for new collection" value="Выберите файл для новой базы"/>
 	<translate name="File name and location" value="Название и месторасположение файлов"/>
-	<translate name="New collection" value="Новая база"/>	
+	<translate name="New collection" value="Новая база"/>
 	<translate name="Collection type" value="Тип БД"/>
-	<translate name="Value" value="Значение"/>	
+	<translate name="Value" value="Значение"/>
 	<translate name="Select an file" value="Выбрать файл"/>
 	<translate name="Select an action" value="Выберите действие"/>
 	<translate name="Short collection description" value="Описание базы"/>	
@@ -1594,12 +1594,12 @@
 	<translate name="Size" value="Размер"/>	
 	<translate name="Item #%d from %d" value="Запись #%d из %d" />
 	<translate name="Saving groups" value="Сохранение групп"/>
-	<translate name="Saving group: %s" value="Сохранение группы: %s"/>	
+	<translate name="Saving group: %s" value="Сохранение группы: %s"/>
 	<translate name="An error occurred during converting the collection! (%s)" value="Произошла ошибка во время конвертации базы! (%s)"/>
 	<translate name="Can not delete file %s, maybe he's busy with another program or process. Will use a different name (file_name_1)" value="Не удаётся удалить файл %s, возможно он занят другой программой или процессом. Будет использовано другое имя (имя_файла_1)"/>
-	<translate name="Converting the structure..." value="Конвертирование структуры..."/>	
+	<translate name="Converting the structure..." value="Конвертирование структуры..."/>
 	<translate name="Opening collection" value="Открытие БД"/>
-	<translate name="Creating collection" value="Создание базы данных"/>	
+	<translate name="Creating collection" value="Создание базы данных"/>
 	<translate name="Creating collection: success!" value="Создание БД успешно завершено"/>	
 	<translate name="Update collection configuration is complete!" value="Обновление настроек базы завершено!"/>
   </scope>
@@ -1619,7 +1619,7 @@
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
 	<translate name="Locations to import" value="Папки для импорта"/>
 	<translate name="Ask me" value="Спросить меня"/>
-	<translate name="Add all" value="Добавить все"/>	
+	<translate name="Add all" value="Добавить все"/>
 	<translate name="Skip all" value="Пропустить все"/>
 	<translate name="Replace all" value="Заменить все"/>
 	<translate name="Add folder" value="Добавить папку"/>
@@ -1659,33 +1659,33 @@
 	<translate name="Rename" value="Переименовать"/>
 	<translate name="Delete" value="Удалить"/>
 	<translate name="Save" value="Сохранить"/>
-	<translate name="Caption" value="Заголовок"/>	
+	<translate name="Caption" value="Заголовок"/>
 	<translate name="Width" value="Ширина"/>
-	<translate name="Height" value="Высота"/>	
+	<translate name="Height" value="Высота"/>
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
-	<translate name="Add" value="Добавить"/>	
-	<translate name="User menu" value="Меню"/>	
+	<translate name="Add" value="Добавить"/>
+	<translate name="User menu" value="Меню"/>
 	<translate name="Security" value="Безопасность"/>
-	<translate name="Global" value="Общие"/>	
-	<translate name="Programs" value="Программы"/>	
+	<translate name="Global" value="Общие"/>
+	<translate name="Programs" value="Программы"/>
 	<translate name="Don't use this extension" value="Не использовать это расширение"/>
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
-	<translate name="Add menu item" value="Использовать пункт в меню"/>	
-	<translate name="Show previews" value="Показывать предпросмотр"/>	
-	<translate name="Show object types" value="Показывать объекты"/>	
+	<translate name="Add menu item" value="Использовать пункт в меню"/>
+	<translate name="Show previews" value="Показывать предпросмотр"/>
+	<translate name="Show object types" value="Показывать объекты"/>
 	<translate name="Folders" value="Папки"/>
 	<translate name="Simple files" value="Простые файлы"/>
 	<translate name="Images" value="Изображения"/>
-	<translate name="Hidden files" value="Скрытые файлы"/>	
-	<translate name="Preview options" value="Опции предпросмотров"/>	
-	<translate name="Display attributes" value="Показывать атрибуты"/>	
+	<translate name="Hidden files" value="Скрытые файлы"/>
+	<translate name="Preview options" value="Опции предпросмотров"/>
+	<translate name="Display attributes" value="Показывать атрибуты"/>
 	<translate name="Display previews for folders" value="Показывать предпросмотр для папок"/>
 	<translate name="Save preview for folders" value="Сохранять предпросмотр для папок"/>
 	<translate name="Display previews for images" value="Показывать предпросмотр для изображений"/>
 	<translate name="Display previews for video" value="Показывать предпросмотр для видео"/>
 	<translate name="Use high-quality rendering" value="Использовать качественную прорисовку"/>
-	<translate name="Extensions" value="Текущие расширения"/>	
+	<translate name="Extensions" value="Текущие расширения"/>
 	<translate name="WARNING: Use encryption carefully. If you have forgotten the password to any images, they can not be restored!" value="ВНИМАНИЕ: Используйте возможности шифрования осторожно. Если Вы забыли пароль к каким-либо изображениям, их восстановить невозможно!"/>
 	<translate name="Speed of displaying images for fullscreen: %d ms." value="Скорость слайдов для полноэкранного режима: %d мс."/>
 	<translate name="Slide show delay: %d ms." value="Дополнительная задержка для Слайд-Шоу: %d мс."/>
@@ -1700,7 +1700,7 @@
 	<translate name="Executable file" value="Исполняемый файл"/>
 	<translate name="Parameters" value="Параметры запуска"/>
 	<translate name="Icon" value="Иконка"/>
-	<translate name="Add to submenu" value="Добавить в субменю"/>	
+	<translate name="Add to submenu" value="Добавить в субменю"/>
 	<translate name="Additional" value="Дополнительно"/>
 	<translate name="Refresh data in windows?" value="Перезагрузить данные в окнах?"/>
 	<translate name="Please select folder" value="Выберите папку"/>
@@ -1711,35 +1711,26 @@
 	<translate name="Remove" value="Удалить"/>
 	<translate name="Up" value="Вверх"/>
 	<translate name="Down" value="Вниз"/>
-	<translate name="Display menu for" value="Отображать меню для"/>	
+	<translate name="Display menu for" value="Отображать меню для"/>
 	<translate name="ID Menu" value="ID Меню"/>
 	<translate name="Viewer window" value="Просмотра"/>
 	<translate name="Explorer window" value="Проводника"/>
-	<translate name="Clear previews cache" value="Очистить кэш предпросмотров"/>	
-	<translate name="Clear icons cache" value="Очистить кэш иконок"/>	
+	<translate name="Clear previews cache" value="Очистить кэш предпросмотров"/>
+	<translate name="Clear icons cache" value="Очистить кэш иконок"/>
 	<translate name="Show EXIF marker" value="Показывать EXIF заголовок"/>
 	<translate name="Associations" value="Ассоциации" />
-	<translate name="Display links &quot;Other places&quot;" value="Отображать ссылки &quot;Другие места&quot;"/>
 	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
 	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>
 	<translate name="Sort groups" value="Сортировать группы"/>
 	<translate name="Show status bar" value="Показывать статус бар"/>
-	<translate name="Smooth scrolling" value="Плавная прокрутка"/>	
+	<translate name="Smooth scrolling" value="Плавная прокрутка"/>
 	<translate name="Backups" value="Резервные копии" />
 	<translate name="Create backup every" value="Создавать резервную копию каждые"/>
 	<translate name="days" value="дней"/>
-	<translate name="My documents" value="Мои документы"/>
-	<translate name="My computer" value="Мой компьютер"/>
-	<translate name="My pictures" value="Мои изображения"/>
-	<translate name="Other places" value="Другие места"/>	
-	<translate name="New place" value="Новое место"/>	
-	<translate name="Display in" value="Отображать в"/>
-	<translate name="User defined places" value="Дополнительные места"/>	
-	<translate name="Places" value="Места"/>	
 	<translate name="Virtual cursor to the Editor" value="Виртуальный курсор в редакторе"/>
-	<translate name="Default" value="По умолчанию"/>	
+	<translate name="Default" value="По умолчанию"/>
 	<translate name="Check changes of files and update links (may slow down program)" value="Следить за изменением файлов и обновлять ссылки (может замедлять работу)"/>
-	<translate name="Passwords" value="Пароли"/>	
+	<translate name="Passwords" value="Пароли"/>
 	<translate name="Use small icons for toolbars" value="Использовать маленькие иконки для тулбаров"/>
 	<translate name="Viewer" value="Просмотр"/>
 	<translate name="Explorer" value="Проводник"/>
@@ -1773,7 +1764,7 @@
 	<translate name="Internal video player" value="Встроенный видео плеер"/>
 	<translate name="KMPlayer" value="KMPlayer"/>
 	<translate name="Media Player Classic" value="Media Player Classic"/>
-	<translate name="Windows Media Player" value="Windows Media Player"/>	
+	<translate name="Windows Media Player" value="Windows Media Player"/>
 	<translate name="Other programm" value="Другая программа"/>
 	<translate name="Save changes" value="Сохранить изменения"/>
 	<translate name="Do you really want to delete mapping for extension &quot;{0}&quot;?" value="Вы действительно хотите удалить ассоциации для расширения: &quot;{0}&quot;?"/>
@@ -2271,6 +2262,8 @@
 	<translate name="inches" value="дюймы"/>
 	<translate name="cm" value="см"/>
 	<translate name="sec" value="сек"/>
+	<translate name="mm" value="мм"/>
+	<translate name="s" value="c"/>
 	<translate name="1/{0} sec" value="1/{0} сек"/>
 	<translate name="F{0:0.#}" value="F{0:0.#}"/>
 	<translate name="{0:0.#} mm" value="{0:0.#} мм"/>

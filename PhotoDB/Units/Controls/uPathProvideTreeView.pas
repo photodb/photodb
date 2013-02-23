@@ -442,6 +442,7 @@ procedure TPathProvideTreeView.LoadBitmaps;
 
   procedure LoadFromRes(Bitmap: TBitmap; Name: string; Color: TColor);
   begin
+    Bitmap.AlphaFormat := afIgnored;
     Bitmap.LoadFromResourceName(hInstance, Name);
     ApplyColor(Bitmap, Color);
     Bitmap.AlphaFormat := afDefined;

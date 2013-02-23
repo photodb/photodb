@@ -30,7 +30,8 @@ uses
   uGUIDUtils,
   uTranslate,
   uInterfaces,
-  uImageSource;
+  uImageSource,
+  uExifInfo;
 
 type
   TImageViewer = class(TInterfacedObject, IImageViewer, IFaceResultForm)
@@ -79,11 +80,9 @@ type
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
-    function GetText: string;
-    procedure SetText(Text: string);
     procedure ResizeTo(Width, Height: Integer);
-    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
-    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
+    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
     procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
@@ -102,6 +101,10 @@ type
     function GetCurentFile: string;
     function GetIsAnimatedImage: Boolean;
 
+    function GetText: string;
+    procedure SetText(Text: string);
+    function GetShowInfo: Boolean;
+    procedure SetShowInfo(Value: Boolean);
     procedure SetOnBeginLoadingImage(Event: TBeginLoadingImageEvent);
     function GetOnBeginLoadingImage: TBeginLoadingImageEvent;
     procedure SetOnRequestNextImage(Event: TNotifyEvent);
@@ -254,6 +257,11 @@ begin
   Result := FOnUpdateButtonsState;
 end;
 
+function TImageViewer.GetShowInfo: Boolean;
+begin
+  Result := FImageControl.ShowInfo;
+end;
+
 {$ENDREGION}
 
 function TImageViewer.GetText: string;
@@ -295,7 +303,7 @@ begin
     try
       if FImageSource.GetImage(FileInfo.FileName, Bitmap, Width, Height) then
       begin
-        FImageControl.LoadStaticImage(FileInfo, Bitmap, Width, Height, FileInfo.Rotation, 1);
+        FImageControl.LoadStaticImage(FileInfo, Bitmap, Width, Height, FileInfo.Rotation, 1, nil);
         Bitmap := nil;
       end;
     finally
@@ -394,6 +402,10 @@ begin
       Buttons[ivbRating].AddState(ivbsVisible).AddState(ivbsEnabled);
       Buttons[ivbRotateCW].AddState(ivbsVisible).AddState(ivbsEnabled);
       Buttons[ivbRotateCCW].AddState(ivbsVisible).AddState(ivbsEnabled);
+
+      Buttons[ivbInfo].AddState(ivbsVisible).AddState(ivbsEnabled);
+      if FImageControl.ShowInfo then
+        Buttons[ivbInfo].AddState(ivbsDown);
     end;
     Buttons[ivbPrevious].AddState(ivbsVisible).AddState(ivbsEnabled);
     Buttons[ivbNext].AddState(ivbsVisible).AddState(ivbsEnabled);
@@ -486,25 +498,30 @@ begin
   FOnUpdateButtonsState := Event;
 end;
 
-procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+procedure TImageViewer.SetShowInfo(Value: Boolean);
+begin
+  FImageControl.ShowInfo := Value;
+end;
+
+procedure TImageViewer.SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   if FFiles.Position < 0 then
     Exit;
   if FFiles.Position > FFiles.Count - 1 then
     Exit;
 
-  FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+  FImageControl.LoadStaticImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale, Exif);
   NotifyButtonsUpdate;
 end;
 
-procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+procedure TImageViewer.SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   if FFiles.Position < 0 then
     Exit;
   if FFiles.Position > FFiles.Count - 1 then
     Exit;
 
-  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale);
+  FImageControl.LoadAnimatedImage(FFiles[FFiles.Position], Image, RealWidth, RealHeight, Rotation, ImageScale, Exif);
   NotifyButtonsUpdate;
   if Assigned(FOnPersonsFoundOnImage) then
     FOnPersonsFoundOnImage(Self, '', nil);

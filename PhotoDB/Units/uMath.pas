@@ -3,7 +3,7 @@ unit uMath;
 interface
 
 const
-  CHalf64 : Double = 0.5;
+  CHalf64: Double = 0.5;
 
 function FastTrunc(const Value: Double): Integer; overload;
 function FastRound(Sample: Double): Integer;

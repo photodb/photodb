@@ -52,6 +52,7 @@ procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparen
 procedure FillTransparentChannel(Bitmap: TBitmap; TransparentValue: Byte);
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0); overload;
 procedure DrawTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0);
+procedure DrawTransparentColorGradient(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValueFrom, TransparentValueTo: Byte);
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; TransparentValue: Byte = 0); overload;
 procedure DrawImageEx32To32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawTransparent(S, D: TBitmap; Transparent: Byte);
@@ -1373,6 +1374,43 @@ begin
       P[J].R := RM[P[J].R];
       P[J].G := GM[P[J].G];
       P[J].B := BM[P[J].B];
+    end;
+  end;
+end;
+
+procedure DrawTransparentColorGradient(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValueFrom, TransparentValueTo: Byte);
+var
+  I, J: Integer;
+  p: PARGB;
+  R, G, B: Byte;
+  W, W1: Byte;
+  TDArray: array of byte;
+
+  function Sqr(Value: Extended): Extended;
+  begin
+    Result := Value * Value;
+  end;
+
+begin
+  Bitmap.PixelFormat := pf24Bit;
+  Color := ColorToRGB(Color);
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+  SetLength(TDArray, Width);
+  for I := 0 to Width - 1 do
+    TDArray[I] := Round(TransparentValueFrom + (TransparentValueTo - TransparentValueFrom) * Sqr(I / Width));
+
+  for I := Max(0, Y) to Min(Y + Height - 1, Bitmap.Height - 1) do
+  begin
+    P := Bitmap.ScanLine[I];
+    for J := Max(0, X) to Min(X + Width - 1, Bitmap.Width - 1) do
+    begin
+      W := TDArray[J - X];
+      W1 := 255 - W;
+      P[J].R := (P[J].R * W1 + R * W + $7F) div $FF;
+      P[J].G := (P[J].G * W1 + G * W + $7F) div $FF;
+      P[J].B := (P[J].B * W1 + B * W + $7F) div $FF;
     end;
   end;
 end;

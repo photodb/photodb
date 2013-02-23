@@ -19,9 +19,7 @@ type
     FForms: TList<TForm>;
     FShowPrivate: Boolean;
     FShowEXIF: Boolean;
-    FShowQuickLinks: Boolean;
     FSync: TCriticalSection;
-    procedure SetShowQuickLinks(const Value: Boolean);
     function GetExplorerByIndex(Index: Integer): TCustomExplorerForm;
   public
     constructor Create;
@@ -37,7 +35,6 @@ type
     function GetExplorerBySID(SID: string): TCustomExplorerForm;
     property ShowPrivate: Boolean read FShowPrivate write FShowPrivate;
     function IsExplorerForm(Explorer: TForm): Boolean;
-    property ShowQuickLinks: Boolean read FShowQuickLinks write SetShowQuickLinks;
     property Items[Index: Integer]: TCustomExplorerForm read GetExplorerByIndex; default;
   end;
 
@@ -63,7 +60,6 @@ end;
 procedure TManagerExplorer.AddExplorer(Explorer: TCustomExplorerForm);
 begin
   FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
-  ShowQuickLinks := Settings.ReadBool('Options', 'ShowOtherPlaces', True);
 
   if FExplorers.IndexOf(Explorer) = -1 then
     FExplorers.Add(Explorer);
@@ -194,11 +190,6 @@ begin
   finally
     FSync.Leave;
   end;
-end;
-
-procedure TManagerExplorer.SetShowQuickLinks(const Value: Boolean);
-begin
-  FShowQuickLinks := Value;
 end;
 
 function TManagerExplorer.GetExplorerByIndex(index: Integer): TCustomExplorerForm;

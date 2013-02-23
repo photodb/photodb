@@ -266,6 +266,7 @@ type
     function GetFileName: string; override;
     function GetExifData: TExifData; override;
     function CanUseMaskingForModal: Boolean; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     FScript: string;
@@ -1027,7 +1028,6 @@ var
   AFScript: TScript;
   C: Integer;
 begin
-  Hide;
   try
     if ToolClass <> nil then
       ToolClass.ClosePanel;
@@ -1035,7 +1035,12 @@ begin
     on E: Exception do
       EventLog(':TImageEditor::FormClose() throw exception: ' + E.message);
   end;
-  DestroyTimer.Enabled := True;
+
+  Action := caHide;
+
+  if not FIsEditImage then
+    DestroyTimer.Enabled := True;
+
   if FScript <> '' then
     if ScriptsManager.ScriptExists(FScript) then
     begin
@@ -2678,6 +2683,12 @@ begin
   (ToolClass as TCustomSelectToolClass).ProcRecteateImage := RecteareImageProc;
   ToolClass.OnClosePanel := ShowTools;
   ToolClass.Show;
+end;
+
+procedure TImageEditor.InterfaceDestroyed;
+begin
+  if FIsEditImage then
+    Release;
 end;
 
 { TManagerEditors }

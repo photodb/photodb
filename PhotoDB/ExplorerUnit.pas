@@ -41,6 +41,7 @@ uses
   Vcl.Grids,
   Vcl.ValEdit,
   Vcl.ActnMan,
+  Vcl.XPActnCtrls,
   Data.DB,
 
   Dmitry.Utils.System,
@@ -195,14 +196,6 @@ type
   TMonthCalendar = class(TMonthCalendarEx);
   TValueListEditor = class(TEXIFDisplayControl);
 
-  TToolBarEx = class(Vcl.ComCtrls.TToolBar)
-  private
-  protected
-    procedure CreateWnd; override;
-  end;
-
-  TToolBar = class(TToolBarEx);
-
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource, IDirectoryWatcher)
     SizeImageList: TImageList;
@@ -275,9 +268,6 @@ type
     Othertasks1: TMenuItem;
     ExportImages1: TMenuItem;
     Print1: TMenuItem;
-    PmLinkOptions: TPopupActionBar;
-    OpeninNewWindow2: TMenuItem;
-    Open2: TMenuItem;
     TextFile1: TMenuItem;
     Directory2: TMenuItem;
     TextFile2: TMenuItem;
@@ -290,7 +280,6 @@ type
     SelectTimer: TTimer;
     N17: TMenuItem;
     MiTreeViewRefresh: TMenuItem;
-    ScriptMainMenu: TMainMenu;
     CloseTimer: TTimer;
     N19: TMenuItem;
     Sortby1: TMenuItem;
@@ -312,27 +301,12 @@ type
     ScrollBox1: TScrollPanel;
     TypeLabel: TLabel;
     TasksLabel: TLabel;
-    SlideShowLink: TWebLink;
     SizeLabel: TLabel;
-    ShellLink: TWebLink;
-    RenameLink: TWebLink;
-    RefreshLink: TWebLink;
     RatingLabel: TLabel;
-    PropertiesLink: TWebLink;
-    PrintLink: TWebLink;
-    OtherPlacesLabel: TLabel;
     NameLabel: TLabel;
-    MyPicturesLink: TWebLink;
-    MyDocumentsLink: TWebLink;
-    MyComputerLink: TWebLink;
-    MoveToLink: TWebLink;
-    ImageEditorLink: TWebLink;
     ImPreview: TImage;
     IDLabel: TLabel;
     DimensionsLabel: TLabel;
-    DesktopLink: TWebLink;
-    DeleteLink: TWebLink;
-    CopyToLink: TWebLink;
     AddLink: TWebLink;
     AccessLabel: TLabel;
     PmListViewType: TPopupActionBar;
@@ -401,16 +375,10 @@ type
     ImFilterWarning: TImage;
     SearchfileswithEXIF1: TMenuItem;
     ImPathDropDownMenu: TImageList;
-    EncryptLink: TWebLink;
     WlCreateObject: TWebLink;
     PmPathMenu: TPopupActionBar;
     MiCopyAddress: TMenuItem;
     MiEditAddress: TMenuItem;
-    ImageTasksLabel: TLabel;
-    WlResize: TWebLink;
-    WlConvert: TWebLink;
-    WlCrop: TWebLink;
-    WlImportPictures: TWebLink;
     MiImportImages: TMenuItem;
     PnInfo: TPanel;
     WlLearnMoreLink: TWebLink;
@@ -418,7 +386,6 @@ type
     PnRight: TPanel;
     SplRightPanel: TSplitter;
     PnGeoTop: TPanel;
-    WlGeoLocation: TWebLink;
     WlSaveLocation: TWebLink;
     WlPanoramio: TWebLink;
     PnGeoSearch: TPanel;
@@ -428,7 +395,6 @@ type
     PnShelf: TPanel;
     WlGoToShelf: TWebLink;
     WlClear: TWebLink;
-    WlShare: TWebLink;
     TmrDelayedStart: TTimer;
     TmrCheckItemVisibility: TTimer;
     MiShare: TMenuItem;
@@ -441,24 +407,11 @@ type
     ImGroups: TImageList;
     WlDeleteLocation: TWebLink;
     MiDisplayOnMap: TMenuItem;
-    ToolBarBottom: TToolBar;
-    TbbPlay: TToolButton;
     PcRightPreview: TPageControl;
     TsGeoLocation: TTabSheet;
     TsMediaPreview: TTabSheet;
     TsDetailedSearch: TTabSheet;
-    TbbEncrypt: TToolButton;
-    TbbResize: TToolButton;
-    TbbCrop: TToolButton;
-    TbbPrint: TToolButton;
-    TbbEditor: TToolButton;
-    TbbGeo: TToolButton;
-    TbbRename: TToolButton;
-    TbbProperties: TToolButton;
-    TbbShare: TToolButton;
     ImlBottomToolBar: TImageList;
-    TbbConvert: TToolButton;
-    TbBottomFileActionsSeparator: TToolButton;
     SbCloseRightPanel: TSpeedButton;
     ToolBarPreview: TToolBar;
     TbPreviewPrevious: TToolButton;
@@ -503,7 +456,6 @@ type
     MiESGroupRemove: TMenuItem;
     MenuItem4: TMenuItem;
     MiESGroupProperties: TMenuItem;
-    TbbOpenDirectory: TToolButton;
     PmESOptions: TPopupActionBar;
     MiESShowHidden: TMenuItem;
     MiESShowPrivate: TMenuItem;
@@ -596,6 +548,30 @@ type
     MenuItem12: TMenuItem;
     MenuItem13: TMenuItem;
     TbDatabase: TToolButton;
+    PmLocations: TPopupActionBar;
+    TbSort: TToolButton;
+    TbPreviewInfoSeparator: TToolButton;
+    TbPreviewInfo: TToolButton;
+    ImLocations: TImageList;
+    PnBottomToolBar: TPanel;
+    ToolBarBottom: TToolBar;
+    TbbPlay: TToolButton;
+    TbbEncrypt: TToolButton;
+    TbbShare: TToolButton;
+    TbbGeo: TToolButton;
+    TbbResize: TToolButton;
+    TbbConvert: TToolButton;
+    TbbCrop: TToolButton;
+    TbbEditor: TToolButton;
+    TbbPrint: TToolButton;
+    TbBottomFileActionsSeparator: TToolButton;
+    TbbOpenDirectory: TToolButton;
+    TbbRename: TToolButton;
+    TbbProperties: TToolButton;
+    PmCopy: TPopupActionBar;
+    PmCut: TPopupActionBar;
+    MiCopyTo: TMenuItem;
+    MiCutTo: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -696,8 +672,6 @@ type
     procedure ImageEditorLinkClick(Sender: TObject);
     procedure ExportImages1Click(Sender: TObject);
     procedure PrintLinkClick(Sender: TObject);
-    procedure MyPicturesLinkContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-    procedure Open2Click(Sender: TObject);
     procedure OpeninNewWindow2Click(Sender: TObject);
     procedure TextFile2Click(Sender: TObject);
     procedure GetPhotosClick(Sender: TObject);
@@ -715,8 +689,7 @@ type
     procedure EasyListview1ItemEdited(Sender: TCustomEasyListview;
       Item: TEasyItem; var NewValue: Variant; var Accept: Boolean);
     procedure ListView1Resize(Sender: TObject);
-    procedure ListViewOnCanResize(Sender: TObject; var NewWidth, NewHeight: Integer;
-      var Resize: Boolean);
+    procedure ListViewOnCanResize(Sender: TObject; var NewWidth, NewHeight: Integer; var Resize: Boolean);
     procedure N05Click(Sender: TObject);
     procedure EasyListview1DblClick(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint;
       ShiftState: TShiftState; var Handled: Boolean);
@@ -730,10 +703,10 @@ type
     procedure EasyListview1ItemImageDraw(Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
       const RectArray: TEasyRectArrayObject; AlphaBlender: TEasyAlphaBlender);
     procedure EasyListview1ItemImageDrawIsCustom(Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn;
-     var IsCustom: Boolean);
+      var IsCustom: Boolean);
     procedure EasyListview1ItemImageGetSize(Sender: TCustomEasyListview;
-     Item: TEasyItem; Column: TEasyColumn; var ImageWidth, ImageHeight: Integer);
-    function ListViewTypeToSize(ListViewType : Integer) : Integer;
+      Item: TEasyItem; Column: TEasyColumn; var ImageWidth, ImageHeight: Integer);
+    function ListViewTypeToSize(ListViewType: Integer) : Integer;
     procedure SmallIcons1Click(Sender: TObject);
     procedure Icons1Click(Sender: TObject);
     procedure List1Click(Sender: TObject);
@@ -779,7 +752,6 @@ type
     procedure MiCopyAddressClick(Sender: TObject);
     procedure MiEditAddressClick(Sender: TObject);
     procedure WlCropClick(Sender: TObject);
-    procedure WlImportPicturesClick(Sender: TObject);
     procedure WlLearnMoreLinkClick(Sender: TObject);
     procedure PnInfoResize(Sender: TObject);
     procedure SbCloseHelpClick(Sender: TObject);
@@ -841,8 +813,7 @@ type
     procedure MiESGroupRemoveClick(Sender: TObject);
     procedure MiESGroupPropertiesClick(Sender: TObject);
     procedure TbSearchClick(Sender: TObject);
-    procedure McDateSelectPopupKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure McDateSelectPopupKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure TbbOpenDirectoryClick(Sender: TObject);
     procedure PmESSortingPopup(Sender: TObject);
     procedure WlExtendedSearchOptionsClick(Sender: TObject);
@@ -856,8 +827,7 @@ type
     procedure WlResetFilterClick(Sender: TObject);
     procedure PnResetFilterResize(Sender: TObject);
     procedure CoolBarBottomResize(Sender: TObject);
-    procedure VleExifDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect;
-      State: TGridDrawState);
+    procedure VleExifDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
     procedure MiInfoGroupPropertiesClick(Sender: TObject);
     procedure MiInfoGroupFindClick(Sender: TObject);
     procedure MiInfoGroupRemoveClick(Sender: TObject);
@@ -867,8 +837,7 @@ type
     procedure TbPreviewRatingClick(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
     procedure MiShareImageAndGetUrlClick(Sender: TObject);
-    procedure SplRightPanelCanResize(Sender: TObject; var NewSize: Integer;
-      var Accept: Boolean);
+    procedure SplRightPanelCanResize(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
     procedure SplLeftPanelMoved(Sender: TObject);
     procedure TmrReloadTreeViewTimer(Sender: TObject);
     procedure TbImportClick(Sender: TObject);
@@ -891,6 +860,10 @@ type
     procedure TbDatabaseClick(Sender: TObject);
     procedure PmShareAdditionalTasksGetControlClass(Sender: TCustomActionBar;
       AnItem: TActionClient; var ControlClass: TCustomActionControlClass);
+    procedure TbPreviewInfoClick(Sender: TObject);
+    procedure PmLocationsPopup(Sender: TObject);
+    procedure PmCopyPopup(Sender: TObject);
+    procedure PmCutPopup(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -940,8 +913,7 @@ type
     RenameResult: Boolean;
     FChangeHistoryOnChPath: Boolean;
     WindowsMenuTickCount: Cardinal;
-    UserLinks: array of TWebLink;
-    FPlaces: TPlaceFolderArray;
+    FPlaces: TList<TPlaceFolder>;
     DragFilesPopup: TStrings;
     Lock: Boolean;
     SlashHandled: Boolean;
@@ -1022,7 +994,6 @@ type
     procedure UnLockItems;
     procedure ReadPlaces;
     procedure UserDefinedPlaceClick(Sender: TObject);
-    procedure UserDefinedPlaceContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure DoSelectItem;
     procedure LoadIcons;
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
@@ -1550,8 +1521,7 @@ begin
 
   RefreshIDList := TStringList.Create;
 
-  SetLength(UserLinks, 0);
-  SetLength(FPlaces, 0);
+  FPlaces := TList<TPlaceFolder>.Create;
   DragFilesPopup := TStringList.Create;
 
   //month popup looks very strange in XP
@@ -1594,8 +1564,6 @@ begin
 
   SlashHandled := False;
 
-  TW.I.Start('ReadPlaces');
-  ReadPlaces;
   TW.I.Start('LoadToolBarNormaIcons');
   LoadToolBarNormaIcons;
   TW.I.Start('LoadToolBarGrayedIcons');
@@ -1636,55 +1604,8 @@ begin
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
 
-{  TW.I.Start('aScript');
-  AScript := TScript.Create(Self, '');
-
-  AddScriptObjFunction(aScript.PrivateEnviroment,'CloseWindow',        F_TYPE_OBJ_PROCEDURE_TOBJECT, CloseWindow);
-
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SelectAll',         F_TYPE_OBJ_PROCEDURE_TOBJECT, SelectAll1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoUp',              F_TYPE_OBJ_PROCEDURE_TOBJECT, Up1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoBack',            F_TYPE_OBJ_PROCEDURE_TOBJECT, Back1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'GoForward',         F_TYPE_OBJ_PROCEDURE_TOBJECT, Forward1Click);
-
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'Copy',              F_TYPE_OBJ_PROCEDURE_TOBJECT, CopyClick);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'Paste',             F_TYPE_OBJ_PROCEDURE_TOBJECT, PasteClick);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'Cut',               F_TYPE_OBJ_PROCEDURE_TOBJECT, CutClick);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowPrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowPrivate1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'HidePrivate',       F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowOnlyCommon1Click);
-
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetThumbnailsView', F_TYPE_OBJ_PROCEDURE_TOBJECT, Thumbnails1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetTilesView',      F_TYPE_OBJ_PROCEDURE_TOBJECT, Tile2Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetIconsView',      F_TYPE_OBJ_PROCEDURE_TOBJECT, Icons1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetListView',       F_TYPE_OBJ_PROCEDURE_TOBJECT, List1Click);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetList2View',      F_TYPE_OBJ_PROCEDURE_TOBJECT, SmallIcons1Click);
-
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowHideFilter',    F_TYPE_OBJ_PROCEDURE_TOBJECT, ShowHideFilter);
-
-  AddScriptObjFunctionIsString(       aScript.PrivateEnviroment, 'GetPath',            GetPath);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanBack',            FHistory.CanBack);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanForward',         FHistory.CanForward);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanUp',              CanUp);
-  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'SelCount',           SelCount);
-  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'SelectedIndex',      SelectedIndex);
-  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetSelectedType',    GetSelectedType);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanCopySelection',   CanCopySelection);
-  AddScriptObjFunctionIsArrayStrings( aScript.PrivateEnviroment, 'GetSelectedFiles',   GetSelectedFiles);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'CanPasteInSelection',CanPasteInSelection);
-  AddScriptObjFunctionIsBool(         aScript.PrivateEnviroment, 'ShowPrivateNow',     ShowPrivate);
-  AddScriptObjFunctionIntegerIsString(aScript.PrivateEnviroment, 'GetPathByIndex',     GetPathByIndex);
-
-  AddScriptObjFunctionIsInteger(      aScript.PrivateEnviroment, 'GetView',            GetView);    }
-
   if IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
-
-  {TW.I.Start('Script read');
-  SetNamedValueStr(AScript, '$dbname', dbname);
-  MainMenuScript := ReadScriptFile('scripts\ExplorerMainMenu.dbini');
-  TW.I.Start('Script Execure');
-  Menu := nil;
-  LoadMenuFromScript(ScriptMainMenu.Items, DBKernel.ImageList, MainMenuScript, AScript, ScriptExecuted, FExtImagesInImageList, True);
-  ScriptMainMenu.Images := DBKernel.ImageList;    }
 
   LoadDBList;
 
@@ -1720,19 +1641,8 @@ begin
 
   if FGoToLastSavedPath then
     LoadLastPath;
+
   FCanPasteFromClipboard := CanCopyFromClipboard;
-
-  TW.I.Start('BackGround');
-  for I := 0 to ScrollBox1.ComponentCount - 1 do
-  begin
-    C := ScrollBox1.Components[I];
-    if C is TWebLink then
-      if C <> WlLearnMoreLink then
-        TWebLink(C).GetBackGround := BackGround;
-  end;
-
-  for I := 0 to Length(UserLinks) - 1 do
-    UserLinks[I].GetBackGround := BackGround;
 
   TW.I.Start('LoadIcons');
   LoadIcons;
@@ -2355,6 +2265,7 @@ begin
   UnRegisterMainForm(Self);
   F(FFilesInfo);
   F(FEditorInfo);
+  FreeList(FPlaces);
 
   FWebBorwserFactory := nil;
 end;
@@ -3002,8 +2913,12 @@ begin
 
     TbPreviewRating.Visible := Buttons[ivbRating].HasState(ivbsVisible);
     TbPreviewRating.Enabled := Buttons[ivbRating].HasState(ivbsEnabled);
-
     TbPreviewRatingSeparator.Visible := TbPreviewRating.Visible;
+
+    TbPreviewInfo.Visible := Buttons[ivbInfo].HasState(ivbsVisible);
+    TbPreviewInfo.Enabled := Buttons[ivbInfo].HasState(ivbsEnabled);
+    TbPreviewInfo.Down := Buttons[ivbInfo].HasState(ivbsDown);
+    TbPreviewInfoSeparator.Visible := TbPreviewInfo.Visible;
 
     ToolBarPreview.Left := PnRightPreview.Width div 2 - ToolBarPreview.Width div 2;
   finally
@@ -3254,7 +3169,7 @@ begin
     if EventID_PersonAdded in Params then
     begin
       ElvMain.Selection.ClearAll;
-      RefreshLinkClick(RefreshLink);
+      RefreshLinkClick(Self);
     end;
     if EventID_PersonChanged in Params then
     begin
@@ -3286,7 +3201,7 @@ begin
     if EventID_GroupAdded in Params then
     begin
       ElvMain.Selection.ClearAll;
-      RefreshLinkClick(RefreshLink);
+      RefreshLinkClick(Self);
     end;
     if EventID_GroupChanged in Params then
     begin
@@ -3445,7 +3360,7 @@ begin
     if IsExplorerTreeViewVisible then
       TreeView.Reload;
     ElvMain.Selection.ClearAll;
-    RefreshLinkClick(RefreshLink);
+    RefreshLinkClick(Self);
   end;
 
 end;
@@ -3624,6 +3539,12 @@ begin
     HideRightPanel;
 
   Settings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down);
+end;
+
+procedure TExplorerForm.TbPreviewInfoClick(Sender: TObject);
+begin
+  if FImageViewer <> nil then
+    FImageViewer.ShowInfo := TbPreviewInfo.Down;
 end;
 
 procedure TExplorerForm.TbPreviewNextClick(Sender: TObject);
@@ -5888,6 +5809,11 @@ begin
   Paste1.Visible := CanCopyFromClipboard;
 end;
 
+procedure TExplorerForm.PmLocationsPopup(Sender: TObject);
+begin
+  ReadPlaces;
+end;
+
 procedure TExplorerForm.PmOptionsPopup(Sender: TObject);
 begin
   MiUpdater.Visible := not FolderView;
@@ -6125,10 +6051,10 @@ var
   Index, I, NewTop: Integer;
   B: Boolean;
   S: string;
-  PersonalPath, MyPicturesPath: string;
+  //PersonalPath, MyPicturesPath: string;
   OldMode: Cardinal;
 
-  function GetShellPath(Name: string): string;
+  {function GetShellPath(Name: string): string;
   var
     Reg: TRegIniFile;
   begin
@@ -6152,58 +6078,22 @@ var
     if MyPicturesPath = '' then
       MyPicturesPath := GetShellPath('My Pictures');
     Result := MyPicturesPath;
-  end;
-
-  function ValidLink(Index: Integer): Boolean;
-  var
-    Path: string;
-  begin
-    Path := AnsiLowerCase(GetCurrentPath);
-    Result := False;
-
-    if FPlaces[Index].MyComputer and (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
-      Result := True
-    else if FPlaces[Index].MyDocuments and (Path = AnsiLowerCase(GetPersonalFolder)) then
-      Result := True
-    else if FPlaces[Index].MyPictures and (Path = AnsiLowerCase(MyPicturesPath)) then
-      Result := True;
-
-    if not Result then
-      if FPlaces[Index].OtherFolder then
-      begin
-        Result := True;
-        if (GetCurrentPathW.PType = EXPLORER_ITEM_MYCOMPUTER) then
-          Result := False
-        else if (Path = AnsiLowerCase(GetPersonalFolder)) then
-          Result := False
-        else if (Path = AnsiLowerCase(MyPicturesPath)) then
-          Result := False;
-      end;
-  end;
+  end;   }
 
   procedure AddEncryptMenu;
   begin
     if not FSelectedInfo.Encrypted then
     begin
-      EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CRYPTIMAGE + 1]);
-      EncryptLink.Text := L('Encrypt');
       TbbEncrypt.SetCaption(L('Encrypt'));
       TbbEncrypt.Tag := ACTION_ENCRYPT_IMAGES;
       TbbEncrypt.SetImageIndexEx(DB_IC_CRYPTIMAGE);
-      EncryptLink.Tag := ACTION_ENCRYPT_IMAGES;
     end else
     begin
-      EncryptLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DECRYPTIMAGE + 1]);
-      EncryptLink.Text := L('Decrypt');
       TbbEncrypt.SetCaption(L('Decrypt'));
       TbbEncrypt.Tag := ACTION_DECRYPT_IMAGES;
       TbbEncrypt.SetImageIndexEx(DB_IC_DECRYPTIMAGE);
-      EncryptLink.Tag := ACTION_DECRYPT_IMAGES;
     end;
     TbbEncrypt.Enabled := True;
-    EncryptLink.Visible := True;
-    EncryptLink.Top := NewTop + H;
-    NewTop := EncryptLink.BoundsRect.Bottom;
   end;
 
 begin
@@ -6325,99 +6215,46 @@ begin
     if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
       NewTop := NewTop + H * 4;
-      ImageTasksLabel.Show;
-      ImageTasksLabel.Top := NewTop;
-      NewTop := ImageTasksLabel.BoundsRect.Bottom;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
         AddEncryptMenu
       else
       begin
-        EncryptLink.Visible := False;
         TbbEncrypt.Enabled := False;
       end;
 
       TbbResize.Enabled := True;
-      WlResize.Visible := True;
-      WlResize.Top := NewTop + H;
-      NewTop := WlResize.BoundsRect.Bottom;
-
       TbbConvert.Enabled := True;
-      WlConvert.Visible := True;
-      WlConvert.Top := NewTop + H;
-      NewTop := WlConvert.BoundsRect.Bottom;
-
       TbbCrop.Enabled := True;
-      WlCrop.Visible := True;
-      WlCrop.Top := NewTop + H;
-      NewTop := WlCrop.BoundsRect.Bottom;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
-      begin
-        TbbPrint.Enabled := True;
-        PrintLink.Visible := True;
-        PrintLink.Top := NewTop + H;
-        NewTop := PrintLink.BoundsRect.Bottom;
-      end else
-      begin
+        TbbPrint.Enabled := True
+      else
         TbbPrint.Enabled := False;
-        PrintLink.Visible := False;
-      end;
 
       if ((FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE)) and (SelCount = 1) then
-      begin
-        TbbEditor.Enabled := True;
-        ImageEditorLink.Visible := True;
-        ImageEditorLink.Top := NewTop + H;
-        NewTop := ImageEditorLink.BoundsRect.Bottom;
-      end else
-      begin
+        TbbEditor.Enabled := True
+      else
         TbbEditor.Enabled := False;
-        ImageEditorLink.Visible := False;
-      end;
 
       if CanSaveGeoLocation then
       begin
         if (FSelectedInfo.GeoLocation <> nil)  then
-          WlGeoLocation.Text := L('Display on map')
+          TbbGeo.Caption := L('Display on map')
         else
-          WlGeoLocation.Text := L('Set map location');
-        WlGeoLocation.Visible := True;
+          TbbGeo.Caption := L('Set map location');
         TbbGeo.Enabled := True;
-        TbbGeo.SetCaption(WlGeoLocation.Text);
 
-        WlGeoLocation.Top := NewTop + H;
-        NewTop := WlGeoLocation.BoundsRect.Bottom;
       end else
-      begin
         TbbGeo.Enabled := False;
-        WlGeoLocation.Visible := False;
-      end;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and not FolderView then
-      begin
-        TbbShare.Enabled := True;
-        WlShare.Visible := True;
-        WlShare.Top := NewTop + H;
-        NewTop := WlShare.BoundsRect.Bottom;
-      end else
-      begin
+        TbbShare.Enabled := True
+      else
         TbbShare.Enabled := False;
-        WlShare.Visible := False;
-      end;
 
     end else
     begin
-      ImageTasksLabel.Hide;
-      WlResize.Visible := False;
-      WlConvert.Visible := False;
-      WlCrop.Visible := False;
-      EncryptLink.Visible := False;
-      PrintLink.Visible := False;
-      ImageEditorLink.Visible := False;
-      WlGeoLocation.Visible := False;
-      WlShare.Visible := False;
-
       TbbResize.Enabled := False;
       TbbEncrypt.Enabled := False;
       TbbConvert.Enabled := False;
@@ -6435,46 +6272,9 @@ begin
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
-    begin
-      TbbPlay.Enabled := True;
-      SlideShowLink.Visible := True;
-      SlideShowLink.Top := NewTop + H;
-      NewTop := SlideShowLink.BoundsRect.Bottom;
-    end else
-    begin
-      TbbPlay.Enabled := False;
-      SlideShowLink.Visible := False;
-    end;
-
-    if (((((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-              (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
-              (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE))) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
-              (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY)) and (SelCount = 1)) then
-    begin
-      ShellLink.Visible := True;
-      ShellLink.Top := NewTop + H;
-      NewTop := ShellLink.BoundsRect.Bottom;
-    end else
-      ShellLink.Visible := False;
-
-    if (SelCount = 1)
-      and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
-          EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
-          EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF])
-      and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
-          EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
-          EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,
-          EXPLORER_ITEM_DEVICE_FILE]) then
-      TbbOpenDirectory.Enabled := True
+      TbbPlay.Enabled := True
     else
-      TbbOpenDirectory.Enabled := False;
+      TbbPlay.Enabled := False;
 
     if CanBeTransparentEncryptedFile(FSelectedInfo.FileName) and (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) then
       AddEncryptMenu;
@@ -6490,41 +6290,11 @@ begin
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)) then
-    begin
-      CopyToLink.Visible := True;
-      CopyToLink.Top := NewTop + H;
-      NewTop := CopyToLink.BoundsRect.Bottom;
-    end else
-      CopyToLink.Visible := False;
-
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE)) then
-    begin
-      if SelCount <> 0 then
-      begin
-        MoveToLink.Top := NewTop + H;
-        NewTop := MoveToLink.BoundsRect.Bottom;
-        MoveToLink.Visible := True;
-      end else
-        MoveToLink.Visible := False;
-    end else
-      MoveToLink.Visible := False;
-
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) and
       (SelCount <> 0) then
-    begin
-      TbbRename.Enabled := True;
-      RenameLink.Visible := True;
-      RenameLink.Top := NewTop + H;
-      NewTop := RenameLink.BoundsRect.Bottom;
-    end else
-    begin
+      TbbRename.Enabled := True
+    else
       TbbRename.Enabled := False;
-      RenameLink.Visible := False;
-    end;
 
     if (((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -6545,18 +6315,11 @@ begin
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
           (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE)) and
         (SelCount > 1)) then
-    begin
-      TbbProperties.Enabled := True;
-      PropertiesLink.Visible := True;
-      PropertiesLink.Top := NewTop + H;
-      NewTop := PropertiesLink.BoundsRect.Bottom;
-    end else
-    begin
+      TbbProperties.Enabled := True
+    else
       TbbProperties.Enabled := False;
-      PropertiesLink.Visible := False;
-    end;
 
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
+   { if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
@@ -6570,7 +6333,7 @@ begin
       end else
         DeleteLink.Visible := False;
     end else
-      DeleteLink.Visible := False;
+      DeleteLink.Visible := False;    }
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) then
     begin
@@ -6586,33 +6349,13 @@ begin
 
     if (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
     begin
-      if CanShareSelectedObjects then
-      begin
-        TbbShare.Enabled := True;
-        WlShare.Visible := True;
-        WlShare.Top := NewTop + H;
-        NewTop := WlShare.BoundsRect.Bottom;
-      end else
-      begin
+      if CanShareSelectedObjects then       
+        TbbShare.Enabled := True
+      else
         TbbShare.Enabled := False;
-        WlShare.Visible := False;
-      end;
     end;
 
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY)) then
-    begin
-      if SelCount <= 1 then
-      begin
-        WlImportPictures.Visible := not FolderView;
-        WlImportPictures.Top := NewTop + H;
-        NewTop := WlImportPictures.BoundsRect.Bottom;
-      end else
-        WlImportPictures.Visible := False;
-    end else
-      WlImportPictures.Visible := False;
-
-    if ElvMain.Items.Count < 400 then
+     if ElvMain.Items.Count < 400 then
     begin
       if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE)) and
         (SelCount = 0) then
@@ -6659,105 +6402,6 @@ begin
     end else
       AddLink.Visible := False;
 
-    if (((FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY))
-		  and (SelCount = 0)) or
-      ((SelCount > 0) and ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-          (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE))) then
-    begin
-      RefreshLink.Visible := True;
-      RefreshLink.Top := NewTop + H;
-      NewTop := RefreshLink.BoundsRect.Bottom;
-    end else
-      RefreshLink.Visible := False;
-
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_NETWORK) or (FSelectedInfo.FileType = EXPLORER_ITEM_WORKGROUP) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_COMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_MYCOMPUTER) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON_LIST) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY)) and ExplorerManager.ShowQuickLinks and (SelCount < 2) then
-    begin
-      OtherPlacesLabel.Show;
-      MyPicturesLink.Show;
-      MyDocumentsLink.Show;
-      MyComputerLink.Show;
-      DesktopLink.Show;
-
-      OtherPlacesLabel.Top := NewTop + H * 4;
-      if AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(GetShellPath('My Pictures')) then
-        MyPicturesLink.Top := OtherPlacesLabel.Top + OtherPlacesLabel.Height + H
-      else
-      begin
-        MyPicturesLink.Visible := False;
-        MyPicturesLink.Top := RefreshLink.Top + RefreshLink.Height + H * 4;
-      end;
-      if AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(GetShellPath('Personal')) then
-        MyDocumentsLink.Top := MyPicturesLink.Top + MyPicturesLink.Height + H
-      else
-      begin
-        MyDocumentsLink.Visible := False;
-        MyDocumentsLink.Top := MyPicturesLink.Top;
-      end;
-      if AnsiLowerCase(GetCurrentPath) <> AnsiLowerCase(GetShellPath('Desktop')) then
-        DesktopLink.Top := MyDocumentsLink.Top + MyDocumentsLink.Height + H
-      else
-      begin
-        DesktopLink.Visible := False;
-        DesktopLink.Top := MyDocumentsLink.Top;
-      end;
-      if GetCurrentPathW.PType <> EXPLORER_ITEM_MYCOMPUTER then
-        MyComputerLink.Top := DesktopLink.Top + DesktopLink.Height + H
-      else
-      begin
-        MyComputerLink.Visible := False;
-        MyComputerLink.Top := DesktopLink.Top;
-      end;
-
-      for I := 0 to Length(UserLinks) - 1 do
-      begin
-        UserLinks[I].Show;
-        if I = 0 then
-        begin
-          if ValidLink(I) then
-            UserLinks[I].Top := MyComputerLink.Top + MyComputerLink.Height + H
-          else
-          begin
-            UserLinks[I].Visible := False;
-            UserLinks[I].Top := MyComputerLink.Top;
-          end;
-        end else
-        begin
-          if ValidLink(I) then
-            UserLinks[I].Top := UserLinks[I - 1].Top + UserLinks[I - 1].Height + H
-          else
-          begin
-            UserLinks[I].Visible := False;
-            UserLinks[I].Top := UserLinks[I - 1].Top;
-          end;
-        end;
-      end;
-    end else
-    begin
-      OtherPlacesLabel.Hide;
-      MyPicturesLink.Hide;
-      MyDocumentsLink.Hide;
-      MyComputerLink.Hide;
-      DesktopLink.Hide;
-      for I := 0 to Length(UserLinks) - 1 do
-        UserLinks[I].Hide;
-    end;
     IsReallignInfo := False;
 
     ScrollBox1.UpdatingPanel := False;
@@ -7773,35 +7417,13 @@ procedure TExplorerForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    SlideShowLink.Text := L('Slide show');
-    ShellLink.Text := L('Open');
-    CopyToLink.Text := L('Copy to');
-    MoveToLink.Text := L('Move to');
-    RenameLink.Text := L('Rename');
-    PropertiesLink.Text := L('Properties');
-    DeleteLink.Text := L('Delete');
     WlClear.Text := L('Clear');
 
-    RefreshLink.Text := L('Refresh');
-    ImageEditorLink.Text := L('Image editor');
-    PrintLink.Text := L('Print');
-    MyPicturesLink.Text := L('My pictures');
-    MyDocumentsLink.Text := L('My documents');
-    DesktopLink.Text := L('Desktop');
-    MyComputerLink.Text := L('My Computer');
     AddLink.Text := L('Add to collection');
-    WlImportPictures.Text := L('Import pictures');
-    MiImportImages.Caption := L('Import pictures');
-    WlShare.Text := L('Share');
-
-    ImageTasksLabel.Caption := L('Image tasks');
-    WlResize.Text := L('Resize');
-    WlConvert.Text := L('Convert');
-    WlCrop.Text := L('Crop');
+    TbImport.Hint := L('Import pictures');
 
     TasksLabel.Caption := L('Tasks');
     Open1.Caption := L('Open');
-    Open2.Caption := L('Open');
     SlideShow1.Caption := L('Show');
     NewWindow1.Caption := L('New Window');
     Shell1.Caption := L('Open');
@@ -7816,7 +7438,6 @@ begin
     Properties1.Caption := L('Properties');
     AddFile1.Caption := L('Add file');
     OpenInNewWindow1.Caption := L('Open in new window');
-    OpenInNewWindow2.Caption := L('Open in new window');
 
     Paste1.Caption := L('Paste');
     Addfolder1.Caption := L('Add folder');
@@ -7854,8 +7475,6 @@ begin
     Othertasks1.Caption := L('Other tasks');
     ExportImages1.Caption := L('Export images');
     Print1.Caption := L('Print');
-
-    OtherPlacesLabel.Caption := L('Other places');
 
     TextFile1.Caption := L('New text file');
     Copywithfolder1.Caption := L('Copy with folder');
@@ -8661,10 +8280,7 @@ var
   List: TDBPopupMenuInfo;
   Item: TEasyItem;
 begin
-  if Sender = WlResize then
-    Item := ElvMain.Selection.First
-  else
-    Item := ElvMain.Selection.FocusedItem;
+  Item := ElvMain.Selection.FocusedItem;
   List := GetCurrentPopUpMenuInfo(Item);
   try
     BatchProcessingForm.ResizeImages(Self, List);
@@ -8695,10 +8311,7 @@ var
   List: TDBPopupMenuInfo;
   Item: TEasyItem;
 begin
-  if Sender = WlConvert then
-    Item := ElvMain.Selection.First
-  else
-    Item := ElvMain.Selection.FocusedItem;
+  Item := ElvMain.Selection.FocusedItem;
   List := GetCurrentPopUpMenuInfo(Item);
   try
     BatchProcessingForm.ConvertImages(Self, List);
@@ -9173,21 +8786,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.MyPicturesLinkContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
-var
-  P: TPoint;
-begin
-  GetCursorPos(P);
-  PmLinkOptions.Tag := Integer(Sender);
-  PmLinkOptions.DoPopupEx(P.X, P.Y);
-end;
-
-procedure TExplorerForm.Open2Click(Sender: TObject);
-begin
-  TWebLink(PmLinkOptions.Tag).OnClick(TWebLink(PmLinkOptions.Tag));
-end;
-
 procedure TExplorerForm.OpeninNewWindow2Click(Sender: TObject);
 var
   Reg: TRegIniFile;
@@ -9196,14 +8794,14 @@ var
   DefLink: Boolean;
   I: Integer;
 begin
-  Link := TWebLink(PmLinkOptions.Tag);
+  Link := nil;//TWebLink(PmLinkOptions.Tag);
   DefLink := True;
-  for I := 0 to Length(UserLinks) - 1 do
+  {for I := 0 to Length(UserLinks) - 1 do
     if Link = UserLinks[I] then
     begin
       DefLink := False;
       Break;
-    end;
+    end;  }
   if not DefLink then
   begin
     S := FPlaces[Link.Tag].FolderName;
@@ -9211,14 +8809,14 @@ begin
   begin
     Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
     try
-      if Link = MyPicturesLink then
+      {if Link = MyPicturesLink then
         S := Reg.ReadString('Shell Folders', 'My Pictures', '');
       if Link = MyDocumentsLink then
         S := Reg.ReadString('Shell Folders', 'Personal', '');
       if Link = DesktopLink then
         S := Reg.ReadString('Shell Folders', 'Desktop', '');
       if Link = MyComputerLink then
-        S := '';
+        S := '';   }
     finally
       F(Reg);
     end;
@@ -9344,83 +8942,76 @@ begin
 end;
 
 procedure TExplorerForm.ReadPlaces;
+const
+  FixedPlaceIcons: array[0 .. 3] of Integer =
+    (DB_IC_MY_PICTURES, DB_IC_MY_DOCUMENTS, DB_IC_MY_COMPUTER, DB_IC_DESKTOPLINK);
+  FixedPlaceNames: array[0 .. 3] of string =
+    ('My pictures', 'My documents', 'Desktop', 'My Computer');
 var
   Reg: TBDRegistry;
   S: TStrings;
   FName, FFolderName, FIcon: string;
-  FMyComputer, FMyDocuments, FMyPictures, FOtherFolder: Boolean;
   I: Integer;
-  Ico: TIcon;
-  WebLink : TWebLink;
+
+  Place: TPlaceFolder;
+  Icon: HIcon;
+  MI: TMenuItem;
 begin
+  PmLocations.Items.Clear;
+  ImLocations.Clear;
+
+  for I := 0 to 3 do
+  begin
+    MI := TMenuItem.Create(PmLocations);
+    MI.Caption := L(FixedPlaceNames[I]);
+    MI.ImageIndex := ImLocations.Count;
+    MI.Tag := -FixedPlaceIcons[I];
+    PmLocations.Items.Add(MI);
+    ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[FixedPlaceIcons[I] + 1]);
+  end;
+
+  MI := TMenuItem.Create(PmLocations);
+  MI.Caption := '-';
+  PmLocations.Items.Add(MI);
+
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
     Reg.OpenKey(GetRegRootKey + '\Places', True);
     S := TStringList.Create;
     try
       Reg.GetKeyNames(S);
-      for I := 0 to Length(UserLinks) - 1 do
-        F(UserLinks[I]);
-      SetLength(UserLinks, 0);
-      SetLength(FPlaces, 0);
+
+      FreeList(FPlaces, False);
       for I := 0 to S.Count - 1 do
       begin
         Reg.CloseKey;
         Reg.OpenKey(GetRegRootKey + '\Places\' + S[I], True);
-        FMyComputer := False;
-        FMyDocuments := False;
-        FMyPictures := False;
-        FOtherFolder := False;
-        try
-          if Reg.ValueExists('Name') then
-            FName := Reg.ReadString('Name');
-          if Reg.ValueExists('FolderName') then
-            FFolderName := Reg.ReadString('FolderName');
-          if Reg.ValueExists('Icon') then
-            FIcon := Reg.ReadString('Icon');
-          if Reg.ValueExists('MyComputer') then
-            FMyComputer := Reg.ReadBool('MyComputer');
-          if Reg.ValueExists('MyDocuments') then
-            FMyDocuments := Reg.ReadBool('MyDocuments');
-          if Reg.ValueExists('MyPictures') then
-            FMyPictures := Reg.ReadBool('MyPictures');
-          if Reg.ValueExists('OtherFolder') then
-            FOtherFolder := Reg.ReadBool('OtherFolder');
-        except
-          on e : Exception do
-            EventLog(e.Message);
-        end;
+
+        if Reg.ValueExists('Name') then
+          FName := Reg.ReadString('Name');
+        if Reg.ValueExists('FolderName') then
+          FFolderName := Reg.ReadString('FolderName');
+        if Reg.ValueExists('Icon') then
+          FIcon := Reg.ReadString('Icon');
+
         if (FName <> '') and (FFolderName <> '') then
         begin
-          SetLength(UserLinks, Length(UserLinks) + 1);
-          WebLink := TWebLink.Create(ScrollBox1);
-          UserLinks[Length(UserLinks) - 1] := WebLink;
-          WebLink.Visible := False;
-          WebLink.Parent := ScrollBox1;
-          WebLink.Text := FName;
-          WebLink.Tag := Length(UserLinks) - 1;
-          WebLink.OnClick := UserDefinedPlaceClick;
-          WebLink.EnterBould := False;
-          WebLink.IconWidth := 16;
-          WebLink.IconHeight := 16;
-          WebLink.Left := MyPicturesLink.Left;
-          WebLink.OnContextPopup := UserDefinedPlaceContextPopup;
-          WebLink.LoadImage;
-          SetLength(FPlaces, Length(FPlaces) + 1);
-          FPlaces[Length(FPlaces) - 1].Name := FName;
-          FPlaces[Length(FPlaces) - 1].FolderName := FFolderName;
-          FPlaces[Length(FPlaces) - 1].Icon := FIcon;
-          FPlaces[Length(FPlaces) - 1].MyComputer := FMyComputer;
-          FPlaces[Length(FPlaces) - 1].MyDocuments := FMyDocuments;
-          FPlaces[Length(FPlaces) - 1].MyPictures := FMyPictures;
-          FPlaces[Length(FPlaces) - 1].OtherFolder := FOtherFolder;
-          Ico := TIcon.Create;
+          Place := TPlaceFolder.Create;
+          Place.Name := FName;
+          Place.FolderName := FFolderName;
+          Place.Icon := FIcon;
+          FPlaces.Add(Place);
+
+          MI := TMenuItem.Create(PmLocations);
+          MI.Caption := Place.Name;
+          MI.ImageIndex := ImLocations.Count;
+          MI.Tag := FPlaces.Count;
+          PmLocations.Items.Add(MI);
+          Icon := ExtractSmallIconByPath(FIcon, False);
           try
-            // TODO: optimize code
-            Ico.Handle := ExtractSmallIconByPath(FIcon, False);
-            UserLinks[Length(UserLinks) - 1].Icon := Ico;
-          finally
-            F(Ico);
+            ImageList_AddIcon(ImLocations.Handle, Icon);
+          finally;
+            DestroyIcon(Icon);
           end;
         end;
       end;
@@ -9435,15 +9026,6 @@ end;
 procedure TExplorerForm.UserDefinedPlaceClick(Sender: TObject);
 begin
   SetStringPath(FPlaces[(Sender as TWebLink).Tag].FolderName, False);
-end;
-
-procedure TExplorerForm.UserDefinedPlaceContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-var
-  P: TPoint;
-begin
-  GetCursorPos(P);
-  PmLinkOptions.Tag := Integer(Sender);
-  PmLinkOptions.DoPopupEx(P.X, P.Y);
 end;
 
 procedure TExplorerForm.VleExifDrawCell(Sender: TObject; ACol, ARow: Integer;
@@ -10243,20 +9825,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.WlImportPicturesClick(Sender: TObject);
-var
-  Item: TEasyItem;
-  Path: string;
-begin
-  Item := ListView1Selected;
-  if Item <> nil then
-  begin
-    Path := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
-    ImportForm.FromFolder(Path);
-  end else
-   ImportForm.FromFolder(GetCurrentPath);
-end;
-
 procedure TExplorerForm.WlLearnMoreLinkClick(Sender: TObject);
 begin
   if WlLearnMoreLink.HelpKeyword = '' then
@@ -10271,7 +9839,7 @@ end;
 procedure TExplorerForm.ListViewRefreshList;
 begin
   ElvMain.Selection.ClearAll;
-  RefreshLinkClick(RefreshLink);
+  RefreshLinkClick(Self);
 end;
 
 procedure TExplorerForm.WMDeviceChange(var Msg: TMessage);
@@ -11780,9 +11348,20 @@ var
   FilePath, Directory: string;
   P: TPathItem;
   FI: TExplorerFileInfo;
+  APoint: TPoint;
+  CanOpenOriginalDirectory: BOolean;
 begin
+  CanOpenOriginalDirectory := (SelCount = 1)
+    and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
+        EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
+        EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF])
+    and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
+        EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
+        EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,
+        EXPLORER_ITEM_DEVICE_FILE]);
+
   Item := ListView1Selected;
-  if Item <> nil then
+  if (Item <> nil) and CanOpenOriginalDirectory then
   begin
     FilePath := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
     Directory := ExtractFileDir(FilePath);
@@ -11802,6 +11381,11 @@ begin
     finally
       F(P);
     end;
+  end else
+  begin
+    APoint := Point(TbbOpenDirectory.Left, TbbOpenDirectory.Top + TbbOpenDirectory.Height);
+    APoint := ToolBarBottom.ClientToScreen(APoint);
+    PmLocations.DoPopupEx(APoint.X, APoint.Y);
   end;
 end;
 
@@ -12593,15 +12177,35 @@ begin
   end;
 end;
 
+type
+  TCustomActionPopupMenuExRewrite = class(TXPStylePopupMenu)
+  private
+    FPopupActionBar: TPopupActionBar;
+  end;
+
 procedure TExplorerForm.PmShareAdditionalTasksEnterMenuLoop(Sender: TObject);
 var
   R: TRect;
   P: TPoint;
   Menu: TCustomActionPopupMenuEx;
+  PopupMenu: TPopupActionBar;
+  Button: TToolButton;
 begin
-  Menu := PmShareAdditionalTasks.PopupMenu;
+  Button := nil;
+
+  Menu := TCustomActionPopupMenuEx(Sender);
   R := Menu.BoundsRect;
-  P := TbbShare.ClientRect.TopLeft;
+
+  PopupMenu := TCustomActionPopupMenuExRewrite(Menu).FPopupActionBar;
+  if PopupMenu = PmShareAdditionalTasks then
+    Button := TbbShare;
+  if PopupMenu = PmLocations then
+    Button := TbbOpenDirectory;
+
+  if Button = nil then
+    raise Exception.Create('Can''t find button for menu!');
+
+  P := Button.ClientRect.TopLeft;
   P := ToolBarBottom.ClientToScreen(P);
 
   R.Top := P.Y - R.Height;
@@ -12613,7 +12217,7 @@ procedure TExplorerForm.PmShareAdditionalTasksGetControlClass(
   Sender: TCustomActionBar; AnItem: TActionClient;
   var ControlClass: TCustomActionControlClass);
 begin
-  PmShareAdditionalTasks.PopupMenu.OnEnterMenuLoop := PmShareAdditionalTasksEnterMenuLoop;
+  TCustomActionPopupMenuEx(Sender).OnEnterMenuLoop := PmShareAdditionalTasksEnterMenuLoop;
 end;
 
 procedure TExplorerForm.SelectPersonClick(Sender: TObject);
@@ -12921,6 +12525,20 @@ begin
 
   BtnSearch.Top := WlExtendedSearchSortBy.AfterTop(7);
   WlExtendedSearchOptions.Top := BtnSearch.BoundsRect.Bottom - WlExtendedSearchOptions.Height;
+end;
+
+procedure TExplorerForm.PmCopyPopup(Sender: TObject);
+begin
+  PmCopy.Images := DBKernel.ImageList;
+  MiCopyTo.Caption := L('Copy to');
+  MiCopyTo.ImageIndex := DB_IC_COPY;
+end;
+
+procedure TExplorerForm.PmCutPopup(Sender: TObject);
+begin
+  PmCut.Images := DBKernel.ImageList;
+  MiCutTo.Caption := L('Move to');
+  MiCutTo.ImageIndex := DB_IC_CUT;
 end;
 
 procedure TExplorerForm.PmESOptionsPopup(Sender: TObject);
@@ -13355,7 +12973,6 @@ var
 begin
   PmItemPopup.Images := DBKernel.ImageList;
   PmListPopup.Images := DBKernel.ImageList;
-  PmLinkOptions.Images := DBKernel.ImageList;
   ToolBarBottom.Images := DBKernel.ImageList;
   PmInfoGroup.Images := DBKernel.ImageList;
 
@@ -13387,6 +13004,7 @@ begin
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_90 + 1]);
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_270 + 1]);
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
+  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_INFO_PANEL + 1]);
 
   ToolBarPreview.DisableToolBarForButtons;
   TbPreviewPrevious.ImageIndex := 11 + 1;
@@ -13394,6 +13012,7 @@ begin
   TbPreviewRotateCW.ImageIndex := 11 + 3;
   TbPreviewRotateCCW.ImageIndex := 11 + 4;
   TbPreviewOpen.ImageIndex := 11 + 5;
+  TbPreviewInfo.ImageIndex := 11 + 6;
   ToolBarPreview.EnableToolBarForButtons;
 
   Shell1.ImageIndex := DB_IC_SHELL;
@@ -13405,7 +13024,6 @@ begin
   Properties1.ImageIndex := DB_IC_PROPERTIES;
   AddFile1.ImageIndex := DB_IC_NEW;
   Open1.ImageIndex := DB_IC_EXPLORER;
-  Open2.ImageIndex := DB_IC_EXPLORER;
   SelectAll1.ImageIndex := DB_IC_SELECTALL;
   Cut2.ImageIndex := DB_IC_CUT;
   Paste1.ImageIndex := DB_IC_PASTE;
@@ -13423,7 +13041,6 @@ begin
   ShowUpdater1.ImageIndex := DB_IC_BOX;
 
   OpenInNewWindow1.ImageIndex := DB_IC_FOLDER;
-  OpeninNewWindow2.ImageIndex := DB_IC_FOLDER;
   NewWindow1.ImageIndex := DB_IC_FOLDER;
 
   PmTreeView.Images := DBKernel.ImageList;
@@ -13493,31 +13110,10 @@ begin
   if not IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
 
-  SlideShowLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
-  ShellLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
-  CopyToLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COPY + 1]);
-  MoveToLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CUT + 1]);
-  RenameLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RENAME + 1]);
-  PropertiesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PROPERTIES + 1]);
-  DeleteLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
   WlClear.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
   AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW + 1]);
-  RefreshLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_THUM + 1]);
-  ImageEditorLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_IMEDITOR + 1]);
-  WlGeoLocation.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1]);
-  PrintLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PRINTER + 1]);
-  MyPicturesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_PICTURES + 1]);
-  MyDocumentsLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_DOCUMENTS + 1]);
-  MyComputerLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_MY_COMPUTER + 1]);
-  DesktopLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DESKTOPLINK + 1]);
   WlCreateObject.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW_SHELL + 1]);
   WlGoToShelf.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELF + 1]);
-
-  WlResize.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_RESIZE + 1]);
-  WlConvert.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
-  WlCrop.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CROP + 1]);
-  WlImportPictures.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PICTURES_IMPORT + 1]);
-  WlShare.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_PHOTO_SHARE + 1]);
 end;
 
 destructor TExplorerForm.Destroy;
@@ -13560,14 +13156,6 @@ begin
   TmrReloadTreeView.Enabled := False;
   TreeViewReloadTree;
 end;
-
-{ TToolBarEx }
-
-procedure TToolBarEx.CreateWnd;
-begin
-  inherited;
-end;
-
 
 initialization
   PERegisterThreadEvent := RegisterPathEditThread;

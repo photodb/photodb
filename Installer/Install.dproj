@@ -75,7 +75,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <DCC_Define>MEDIA_PLAYER;$(DCC_Define)</DCC_Define>
-        <Debugger_RunParams>/commands &quot;d:\1.txt&quot;</Debugger_RunParams>
         <Manifest_File>None</Manifest_File>
         <Icon_MainIcon>Install_Ico.ico</Icon_MainIcon>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>

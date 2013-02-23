@@ -14,6 +14,7 @@ uses
   RAWImage,
   GraphicCrypt,
 
+  uTime,
   uMemory,
   uConstants,
   uThreadForm,
@@ -26,6 +27,7 @@ uses
   uGraphicUtils,
   uPNGUtils,
   uJpegUtils,
+  uExifInfo,
   uSettings,
   uAnimatedJPEG,
   uProgramStatInfo,
@@ -52,6 +54,7 @@ type
 
     FGraphic: TGraphic;
     FBitmap: TBitmap;
+    FExifInfo: IExifInfo;
     procedure SetStaticImage;
     procedure SetAnimatedImageAsynch;
     procedure SetNOImageAsynch(ErrorMessage: string);
@@ -123,6 +126,7 @@ begin
 
       FGraphic := nil;
       ImageInfo := nil;
+      FExifInfo := nil;
       try
 
         LoadFlags := [ilfGraphic, ilfICCProfile, ilfPassword, ilfEXIF, ilfUseCache];
@@ -137,6 +141,10 @@ begin
           FTotalPages := ImageInfo.ImageTotalPages;
 
           FGraphic := ImageInfo.ExtractGraphic;
+
+          TW.I.Start('Start EXIF reading');
+          FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, FExifInfo);
+          TW.I.Start('End EXIF reading');
         except
           on e: Exception do
           begin
@@ -255,7 +263,7 @@ begin
       ViewerForm.UpdateInfo(FSID, FInfo);
     ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
     ViewerForm.SetAnimatedImage(Graphic);   }
-    FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale);
+    FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale, FExifInfo);
     Pointer(FGraphic) := nil;
   end;
 end;
@@ -280,7 +288,7 @@ begin
       ViewerForm.UpdateInfo(FSID, FInfo);
     ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
     ViewerForm.SetStaticImage(Bitmap, FTransparent);}
-    FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale);
+    FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale, FExifInfo);
     FBitmap := nil;
   end else
     F(FBitmap);

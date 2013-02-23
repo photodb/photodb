@@ -427,7 +427,9 @@ uses
   uDBRepository in 'Units\uDBRepository.pas',
   uWinApi in 'Units\uWinApi.pas',
   uImportSource in 'uImportSource.pas' {FormImportSource},
-  uPopupActionBarEx in 'Units\Styles\uPopupActionBarEx.pas';
+  uPopupActionBarEx in 'Units\Styles\uPopupActionBarEx.pas',
+  uDatabaseDirectoriesUpdater in 'Units\uDatabaseDirectoriesUpdater.pas',
+  uFormEditPlaces in 'uFormEditPlaces.pas' {FormEditPlaces};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -583,7 +585,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

@@ -18,11 +18,12 @@ uses
   uInterfaces,
   uDBPopupMenuInfo,
   uFaceDetection,
+  uExifInfo,
   uThreadForm;
 
 type
-  TImageViewerButton = (ivbPrevious, ivbNext, ivbRotateCW, ivbRotateCCW, ivbRating, ivbZoomIn, ivbZoomOut);
-  TImageViewerButtonState = (ivbsVisible, ivbsEnabled);
+  TImageViewerButton = (ivbPrevious, ivbNext, ivbRotateCW, ivbRotateCCW, ivbInfo, ivbRating, ivbZoomIn, ivbZoomOut);
+  TImageViewerButtonState = (ivbsVisible, ivbsEnabled, ivbsDown);
   TImageViewerButtonStates = set of TImageViewerButtonState;
 
   TButtonState = class
@@ -57,11 +58,9 @@ type
     procedure LoadFiles(FileList: TDBPopupMenuInfo);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
-    function GetText: string;
-    procedure SetText(Text: string);
     procedure ResizeTo(Width, Height: Integer);
-    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
-    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double);
+    procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
+    procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
     procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
@@ -99,6 +98,10 @@ type
     property CurentFile: string read GetCurentFile;
     property IsAnimatedImage: Boolean read GetIsAnimatedImage;
 
+    function GetText: string;
+    procedure SetText(Text: string);
+    function GetShowInfo: Boolean;
+    procedure SetShowInfo(Value: Boolean);
     procedure SetOnBeginLoadingImage(Event: TBeginLoadingImageEvent);
     function GetOnBeginLoadingImage: TBeginLoadingImageEvent;
     procedure SetOnRequestNextImage(Event: TNotifyEvent);
@@ -114,6 +117,8 @@ type
     procedure SetOnUpdateButtonsState(Event: TUpdateButtonsStateEvent);
     function GetOnUpdateButtonsState: TUpdateButtonsStateEvent;
 
+    property Text: string read GetText write SetText;
+    property ShowInfo: Boolean read GetShowInfo write SetShowInfo;
     property OnBeginLoadingImage: TBeginLoadingImageEvent read GetOnBeginLoadingImage write SetOnBeginLoadingImage;
     property OnRequestNextImage: TNotifyEvent read GetOnRequestNextImage write SetOnRequestNextImage;
     property OnRequestPreviousImage: TNotifyEvent read GetOnRequestPreviousImage write SetOnRequestPreviousImage;
@@ -121,7 +126,6 @@ type
     property OnPersonsFoundOnImage: TPersonsFoundOnImageEvent read GetOnPersonsFoundOnImage write SetOnPersonsFoundOnImage;
     property OnStopPersonSelection: TNotifyEvent read GetOnStopPersonSelection write SetOnStopPersonSelection;
     property OnUpdateButtonsState: TUpdateButtonsStateEvent read GetOnUpdateButtonsState write SetOnUpdateButtonsState;
-    property Text: string read GetText write SetText;
   end;
 
 implementation
