@@ -50,7 +50,7 @@ type
 procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
 procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
 procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
-function GetListItemBorderColor(Data: TDataObject): TColor;
+function GetListItemBorderColor(Data: TLVDataObject): TColor;
 function RectInRect(const R1, R2: TRect): Boolean;
 
 function Icons: TIconsEx;
@@ -196,7 +196,7 @@ begin
   end;
 end;
 
-function GetListItemBorderColor(Data: TDataObject): TColor;
+function GetListItemBorderColor(Data: TLVDataObject): TColor;
 begin
   if not Data.Include then
     Result := $00FFFF

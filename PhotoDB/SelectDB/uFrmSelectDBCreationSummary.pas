@@ -62,8 +62,6 @@ begin
       [ImageOptions.DBJpegCompressionQuality]));
   MemInfo.Lines.Add(Format(L('Preview size: %dpx'),
       [ImageOptions.ThHintSize]));
-  MemInfo.Lines.Add(Format(L('Small preview size: %dpx'),
-      [ImageOptions.ThSizePanelPreview]));
 end;
 
 procedure TFrmSelectDBCreationSummary.Execute;

@@ -50,16 +50,9 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     Height = 13
     Caption = 'DB Image quaity:'
   end
-  object LbPanelImageSize: TLabel
-    Left = 5
-    Top = 238
-    Width = 82
-    Height = 13
-    Caption = 'Panel image size:'
-  end
   object LbPreviewImageSize: TLabel
-    Left = 6
-    Top = 284
+    Left = 5
+    Top = 235
     Width = 94
     Height = 13
     Caption = 'Preview image size:'
@@ -73,8 +66,6 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     Text = 'WlPreviewDBSize'
     OnClick = WlPreviewDBSizeClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -129,8 +120,6 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     Text = 'WlPreviewDBJpegQuality'
     OnClick = WlPreviewDBSizeClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -139,53 +128,15 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
     HightliteImage = False
     StretchImage = True
     CanClick = True
-  end
-  object WlPanelSize: TWebLink
-    Left = 124
-    Top = 260
-    Width = 78
-    Height = 16
-    Cursor = crHandPoint
-    Text = 'WlPanelSize'
-    OnClick = WlPanelSizeClick
-    ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
-    UseEnterColor = False
-    EnterColor = clBlack
-    EnterBould = False
-    TopIconIncrement = 0
-    UseSpecIconSize = True
-    HightliteImage = False
-    StretchImage = True
-    CanClick = True
-  end
-  object CbPanelSize: TComboBox
-    Left = 5
-    Top = 257
-    Width = 113
-    Height = 21
-    AutoComplete = False
-    ItemIndex = 3
-    TabOrder = 5
-    Text = '150'
-    OnChange = CbPanelSizeChange
-    Items.Strings = (
-      '50'
-      '75'
-      '100'
-      '150'
-      '200'
-      '300')
   end
   object CbPreviewSize: TComboBox
-    Left = 6
-    Top = 303
+    Left = 5
+    Top = 254
     Width = 113
     Height = 21
     AutoComplete = False
     ItemIndex = 3
-    TabOrder = 6
+    TabOrder = 4
     Text = '150'
     OnChange = CbPreviewSizeChange
     Items.Strings = (
@@ -197,16 +148,14 @@ inherited FrmConvertationSettings: TFrmConvertationSettings
       '300')
   end
   object WlPreviewSize: TWebLink
-    Left = 124
-    Top = 306
+    Left = 123
+    Top = 257
     Width = 90
     Height = 16
     Cursor = crHandPoint
     Text = 'WlPreviewSize'
     OnClick = WlPreviewSizeClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False

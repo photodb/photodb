@@ -1025,7 +1025,6 @@ begin
   FImageOptions := CommonDBSupport.GetImageSettingsFromTable(DBName);
   DBJpegCompressionQuality := FImageOptions.DBJpegCompressionQuality;
   ThSize := FImageOptions.ThSize + 2;
-  ThSizePanelPreview := FImageOptions.ThSizePanelPreview;
   ThImageSize := FImageOptions.ThSize;
   ThHintSize := FImageOptions.ThHintSize;
 end;

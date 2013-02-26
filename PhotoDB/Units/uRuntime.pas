@@ -35,7 +35,6 @@ var
   ThSize: Integer = 202;
   ThSizeExplorerPreview: Integer = 100;
   ThSizePropertyPreview: Integer = 100;
-  ThSizePanelPreview: Integer = 85;
   ThImageSize: Integer = 200;
   ThHintSize: Integer = 400;
 

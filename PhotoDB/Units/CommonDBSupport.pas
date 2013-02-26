@@ -53,7 +53,6 @@ type
     Version: Integer;
     DBJpegCompressionQuality: Byte;
     ThSize: Integer;
-    ThSizePanelPreview: Integer;
     ThHintSize: Integer;
     Description: string;
     Name: string;
@@ -788,7 +787,7 @@ begin
   FQuery := GetQuery(TableName, True);
   try
     SQL := 'Update DBSettings Set DBJpegCompressionQuality = ' + IntToStr
-      (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = ' + IntToStr(Settings.ThSizePanelPreview)
+      (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = 100'
       + ',' + 'ThImageSize = ' + IntToStr(Settings.ThSize) + ', ThHintSize = ' + IntToStr(Settings.ThHintSize)
       + ', DBName = ' + NormalizeDBString(Settings.name)  + ', DBDescription = ' + NormalizeDBString(Settings.Description);
     SetSQL(FQuery, SQL);
@@ -829,7 +828,6 @@ begin
   Result := TImageDBOptions.Create;
   Result.DBJpegCompressionQuality := 75;
   Result.ThSize := 200;
-  Result.ThSizePanelPreview := 100;
   Result.ThHintSize := 400;
 end;
 
@@ -853,7 +851,6 @@ begin
       begin
         Result.DBJpegCompressionQuality := FQuery.FieldByName('DBJpegCompressionQuality').AsInteger;
         Result.ThSize := FQuery.FieldByName('ThImageSize').AsInteger;
-        Result.ThSizePanelPreview := FQuery.FieldByName('ThSizePanelPreview').AsInteger;
         Result.ThHintSize := FQuery.FieldByName('ThHintSize').AsInteger;
         Result.Name := FQuery.FieldByName('DBName').AsString;
         Result.Description := FQuery.FieldByName('DBDescription').AsString;
@@ -1391,7 +1388,6 @@ begin
   Result.Version := Version;
   Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
   Result.ThSize := ThSize;
-  Result.ThSizePanelPreview := ThSizePanelPreview;
   Result.ThHintSize := ThHintSize;
   Result.Description := Description;
   Result.Name := Name;

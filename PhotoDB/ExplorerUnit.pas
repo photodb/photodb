@@ -186,7 +186,11 @@ uses
   uFormSelectPerson,
   uEXIFDisplayControl,
   uProgramStatInfo,
-  uMonthCalendar;
+  uMonthCalendar,
+
+  uLinkListEditorFolders,
+  uLinkListEditorForExecutables,
+  uLinkListEditorDatabases;
 
 const
   RefreshListViewInterval = 50;
@@ -674,8 +678,6 @@ type
     procedure PrintLinkClick(Sender: TObject);
     procedure OpeninNewWindow2Click(Sender: TObject);
     procedure TextFile2Click(Sender: TObject);
-    procedure GetPhotosClick(Sender: TObject);
-    procedure GetPhotosFromDrive1Click(Sender: TObject);
     procedure Copywithfolder1Click(Sender: TObject);
     procedure Copy4Click(Sender: TObject);
     procedure SelectTimerTimer(Sender: TObject);
@@ -993,6 +995,7 @@ type
     procedure LockItems;
     procedure UnLockItems;
     procedure ReadPlaces;
+    procedure EditPlacesListClick(Sender: TObject);
     procedure UserDefinedPlaceClick(Sender: TObject);
     procedure DoSelectItem;
     procedure LoadIcons;
@@ -3306,11 +3309,11 @@ begin
             index := MenuIndexToItemIndex(I);
             if index < ElvMain.Items.Count - 1 then
               if ElvMain.Items[I].Data <> nil then
-                Boolean(TDataObject(ElvMain.Items[I].Data).Include) := Value.Include;
+                Boolean(TLVDataObject(ElvMain.Items[I].Data).Include) := Value.Include;
 
             FFilesInfo[I].Include := Value.Include;
 
-            ElvMain.Items[I].BorderColor := GetListItemBorderColor(TDataObject(ElvMain.Items[I].Data));
+            ElvMain.Items[I].BorderColor := GetListItemBorderColor(TLVDataObject(ElvMain.Items[I].Data));
           end;
           if [EventID_Param_Include,
               EventID_Param_Rotate,
@@ -3996,11 +3999,11 @@ begin
       C := Item.ImageIndex;
       if Item.Data <> nil then
       begin
-        Boolean(TDataObject(Item.Data).Include) := Include;
+        Boolean(TLVDataObject(Item.Data).Include) := Include;
       end else
       begin
-        Item.Data := TDataObject.Create;
-        TDataObject(Item.Data).Include := Include;
+        Item.Data := TLVDataObject.Create;
+        TLVDataObject(Item.Data).Include := Include;
       end;
       if C = -1 then
       begin
@@ -4041,11 +4044,11 @@ begin
       C := Item.ImageIndex;
       if Item.Data <> nil then
       begin
-        TDataObject(Item.Data).Include := Include;
+        TLVDataObject(Item.Data).Include := Include;
       end else
       begin
-        Item.Data := TDataObject.Create;
-        TDataObject(Item.Data).Include := Include;
+        Item.Data := TLVDataObject.Create;
+        TLVDataObject(Item.Data).Include := Include;
       end;
       FBitmapImageList[C].Graphic := Icon;
       FBitmapImageList[C].SelfReleased := True;
@@ -4136,7 +4139,7 @@ end;
 function TExplorerForm.AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1): TEasyItem;
 var
   I, Index, Count: Integer;
-  Data: TDataObject;
+  Data: TLVDataObject;
   FI: TExplorerFileInfo;
 
   function GetNewItemPos(Info: TExplorerFileInfo): Integer;
@@ -4204,7 +4207,7 @@ begin
     begin
       LockDrawIcon := True;
 
-      Data := TDataObject.Create;
+      Data := TLVDataObject.Create;
       Data.Include := FI.Include;
 
       // without sorting
@@ -4254,14 +4257,14 @@ end;
 function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID): TEasyItem;
 var
   I: Integer;
-  Data: TDataObject;
+  Data: TLVDataObject;
 begin
   Result := nil;
   for I := 0 to FFilesInfo.Count - 1 do
     if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
     begin
       LockDrawIcon := True;
-      Data := TDataObject.Create;
+      Data := TLVDataObject.Create;
       Data.Include := True;
       Result := ElvMain.Items.Add(Data);
       if not Data.Include then
@@ -8870,42 +8873,6 @@ begin
     System.Close(F);
 end;
 
-procedure TExplorerForm.GetPhotosClick(Sender: TObject);
-var
-  Item: TMenuItem;
-begin
-  Item := (Sender as TMenuItem);
-  ImportForm.FromDrive(Char(Item.Tag));
-end;
-
-procedure TExplorerForm.GetPhotosFromDrive1Click(Sender: TObject);
-var
-  I: Integer;
-  Icon: TIcon;
-  OldMode: Cardinal;
-begin
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
-  try
-    for I := 1 to FExtImagesInImageList do
-      DBKernel.ImageList.Delete(IconsCount);
-    FExtImagesInImageList := 0;
-    for I := Ord('C') to Ord('Z') do
-      if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_CDROM) then
-      begin
-        Icon := TIcon.Create;
-        try
-          Icon.Handle := ExtractAssociatedIconSafe(Chr(I) + ':\');
-          DBKernel.ImageList.AddIcon(Icon);
-        finally
-          F(Icon);
-        end;
-        Inc(FExtImagesInImageList);
-      end;
-  finally
-    SetErrorMode(OldMode);
-  end;
-end;
-
 procedure TExplorerForm.CopyWithFolder1Click(Sender: TObject);
 var
   I, Index: Integer;
@@ -8941,6 +8908,31 @@ begin
   end;
 end;
 
+procedure TExplorerForm.EditPlacesListClick(Sender: TObject);
+var
+  Form: ILinkItemSelectForm;
+  Data: TList<TDataObject>;
+  Editor: ILinkEditor;
+begin
+  Editor := TLinkListEditorFolder.Create;
+  Data := TList<TDataObject>.Create;
+  try
+    Data.Add(TLinkInfo.Create('Title1', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,0'));
+    Data.Add(TLinkInfo.Create('Title2', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,1'));
+    Data.Add(TLinkInfo.Create('Title3', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,2'));
+    Data.Add(TLinkInfo.Create('Title4', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,3'));
+    Data.Add(TLinkInfo.Create('Title5', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,4'));
+
+    if LinkItemSelectForm.Execute(400, 'List of directories', Data, Editor) then
+    begin
+      //update data
+    end;
+  finally
+    FreeList(Data);
+    Editor := nil;
+  end;
+end;
+
 procedure TExplorerForm.ReadPlaces;
 const
   FixedPlaceIcons: array[0 .. 3] of Integer =
@@ -8959,6 +8951,14 @@ var
 begin
   PmLocations.Items.Clear;
   ImLocations.Clear;
+
+  MI := TMenuItem.Create(PmLocations);
+  MI.Caption := L('Edit list');
+  MI.ImageIndex := ImLocations.Count;
+  MI.Tag := 0;
+  MI.OnClick := EditPlacesListClick;
+  PmLocations.Items.Add(MI);
+  ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[DB_IC_RENAME + 1]);
 
   for I := 0 to 3 do
   begin

@@ -1513,7 +1513,6 @@
 	<translate name="Finish" value="Финиш"/>
 	<translate name="Collection &quot;%s&quot; successfully created!" value="База &quot;%s&quot; успешно создана"/>
 	<translate name="Panel preview size" value="Панель"/>
-	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
 	<translate name="Preview" value="Предпросмотр"/>
 	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
 	<translate name="Sets the compression quality of images stored in the database. Takes the value 1-100" value="Устанавливает качество сжатия изображений, хранимых в базе. Принимает значение 1-100"/>
@@ -1572,7 +1571,6 @@
 	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
 	<translate name="Compression quality of images stored in the database" value="Качество сжатия изображений, хранимых в базе"/>
 	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>	
-	<translate name="Size of the images in the panel by default" value="Размер изображений в панели по умолчанию"/>
 	<translate name="Start" value="Начать"/>	
 	<translate name="Break" value="Прервать"/>
 	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>

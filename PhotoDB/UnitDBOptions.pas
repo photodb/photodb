@@ -38,8 +38,6 @@ type
     LbCollectionName: TLabel;
     LbDescription: TLabel;
     EdDescriotion: TEdit;
-    Label3: TLabel;
-    ComboBox1: TComboBox;
     BtnOk: TButton;
     BtnCancel: TButton;
     Label4: TLabel;
@@ -162,7 +160,6 @@ begin
     Label7.Caption := L('Path to file') + ':';
     BtnOpenFileLocation.Caption := L('Open file location');
     BtnChangeFileLocation.Caption := L('Change file location');
-    Label3.Caption := L('Size of the images in the panel by default');
     Label4.Caption := L('Image preview size');
     Label5.Caption := L('Collection image size');
     Label6.Caption := L('JPEG quality');
@@ -211,7 +208,6 @@ var
     BtnChangeIcon.Enabled := False;
     EdName.Enabled := False;
     EdDescriotion.Enabled := False;
-    ComboBox1.Enabled := False;
     ComboBox2.Enabled := False;
     WlChangeImageQuality.Enabled := False;
   end;
@@ -222,14 +218,9 @@ begin
   try
     Options.Name := EdName.Text;
     Options.Description := EdDescriotion.Text;
-    Options.ThSizePanelPreview := StrToIntDef(ComboBox1.Text,
-      Options.ThSizePanelPreview);
+
     Options.ThHintSize := StrToIntDef(ComboBox2.Text,
       Options.ThHintSize);
-    if Options.ThSizePanelPreview < 50 then
-      Options.ThSizePanelPreview := 50;
-    if Options.ThSizePanelPreview > Options.ThSize then
-      Options.ThSizePanelPreview := Options.ThSize;
 
     if Options.ThHintSize < Options.ThSize then
       Options.ThHintSize := Options.ThSize;
@@ -321,7 +312,6 @@ begin
   Edit3.Text := IntToStr(ImageOptions.ThSize);
   Edit4.Text := IntToStr(ImageOptions.DBJpegCompressionQuality);
   ComboBox2.Text := IntToStr(ImageOptions.ThHintSize);
-  ComboBox1.Text := IntToStr(ImageOptions.ThSizePanelPreview);
 
   DBFile.Icon := Application.ExeName + ',0';
   if FName = '' then

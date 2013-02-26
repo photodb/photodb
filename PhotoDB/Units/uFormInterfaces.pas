@@ -9,11 +9,17 @@ uses
   System.TypInfo,
   Winapi.Windows,
   Vcl.Graphics,
+  Vcl.Controls,
   Vcl.Forms,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
   Vcl.Imaging.Jpeg,
   Data.DB,
 
   UnitDBDeclare,
+
+  Dmitry.Controls.WebLink,
+  Dmitry.PathProviders,
 
   uMemory,
   uDBForm,
@@ -188,6 +194,41 @@ type
     procedure Execute;
   end;
 
+  ISelectLocationForm = interface(IFormInterface)
+    ['{B3298299-4966-42ED-93F4-98C5790D1675}']
+    function Execute(Title, StartPath: string; out PathItem: TPathItem): Boolean;
+  end;
+
+  TDataObject = class
+  public
+    function Clone: TDataObject; virtual; abstract;
+    procedure Assign(Source: TDataObject); virtual; abstract;
+  end;
+
+  TListElementType = (leWebLink, leInfoLabel);
+  TListElements = TDictionary<TListElementType, TControl>;
+
+  ILinkItemSelectForm = interface;
+
+  TProcessActionLinkProcedure = reference to procedure(Action: string; WebLink: TWebLink);
+  TAddActionProcedure = reference to procedure(Actions: array of string; ProcessActionLink: TProcessActionLinkProcedure);
+
+  ILinkEditor = interface
+    procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
+    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+    procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
+  end;
+
+  ILinkItemSelectForm = interface
+    ['{92517237-BEFB-4033-BD56-3974E650E954}']
+    function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
+    function GetDataList: TList<TDataObject>;
+    function GetEditorData: TDataObject;
+    property DataList: TList<TDataObject> read GetDataList;
+    property EditorData: TDataObject read GetEditorData;
+  end;
+
 type
   TFormInterfaces = class(TObject)
   private
@@ -231,6 +272,8 @@ function CDExportForm: ICDExportForm;
 function CDMapperForm: ICDMapperForm;
 function SplitCollectionForm: ISplitCollectionForm;
 function CollectionTreeForm: ICollectionTreeForm;
+function SelectLocationForm: ISelectLocationForm;
+function LinkItemSelectForm: ILinkItemSelectForm;
 
 implementation
 
@@ -373,6 +416,16 @@ end;
 function CollectionTreeForm: ICollectionTreeForm;
 begin
   Result := FormInterfaces.GetSingleForm<ICollectionTreeForm>(True);
+end;
+
+function SelectLocationForm: ISelectLocationForm;
+begin
+  Result := FormInterfaces.CreateForm<ISelectLocationForm>();
+end;
+
+function LinkItemSelectForm: ILinkItemSelectForm;
+begin
+  Result := FormInterfaces.CreateForm<ILinkItemSelectForm>();
 end;
 
 { TFormInterfaces }

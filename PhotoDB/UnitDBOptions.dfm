@@ -32,30 +32,23 @@ object FormDBOptions: TFormDBOptions
     Height = 13
     Caption = 'DB Description'
   end
-  object Label3: TLabel
-    Left = 8
-    Top = 152
-    Width = 95
-    Height = 13
-    Caption = 'ThSizePanelPreview'
-  end
   object Label4: TLabel
     Left = 8
-    Top = 200
+    Top = 147
     Width = 50
     Height = 13
     Caption = 'ThHintSize'
   end
   object Label5: TLabel
     Left = 8
-    Top = 248
+    Top = 195
     Width = 85
     Height = 13
     Caption = 'DB Thumbnail size'
   end
   object Label6: TLabel
     Left = 184
-    Top = 248
+    Top = 195
     Width = 113
     Height = 13
     Caption = 'Jpeg Thumbnail quality:'
@@ -81,30 +74,13 @@ object FormDBOptions: TFormDBOptions
     Height = 21
     TabOrder = 1
   end
-  object ComboBox1: TComboBox
-    Left = 8
-    Top = 168
-    Width = 145
-    Height = 21
-    ItemIndex = 2
-    TabOrder = 2
-    Text = '75'
-    Items.Strings = (
-      '30'
-      '50'
-      '75'
-      '100'
-      '150'
-      '200'
-      '300')
-  end
   object BtnOk: TButton
     Left = 451
     Top = 302
     Width = 75
     Height = 25
     Caption = 'Ok'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
@@ -113,16 +89,16 @@ object FormDBOptions: TFormDBOptions
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 4
+    TabOrder = 3
     OnClick = BtnCancelClick
   end
   object ComboBox2: TComboBox
     Left = 8
-    Top = 216
+    Top = 163
     Width = 145
     Height = 21
     ItemIndex = 3
-    TabOrder = 5
+    TabOrder = 4
     Text = '400'
     Items.Strings = (
       '100'
@@ -133,24 +109,24 @@ object FormDBOptions: TFormDBOptions
   end
   object Edit3: TEdit
     Left = 8
-    Top = 264
+    Top = 211
+    Width = 145
+    Height = 21
+    ReadOnly = True
+    TabOrder = 5
+  end
+  object Edit4: TEdit
+    Left = 184
+    Top = 211
     Width = 145
     Height = 21
     ReadOnly = True
     TabOrder = 6
   end
-  object Edit4: TEdit
-    Left = 184
-    Top = 264
-    Width = 145
-    Height = 21
-    ReadOnly = True
-    TabOrder = 7
-  end
   object WlChangeImageQuality: TWebLink
     Left = 8
-    Top = 288
-    Width = 248
+    Top = 235
+    Width = 243
     Height = 13
     Cursor = crHandPoint
     Color = clBtnFace
@@ -175,7 +151,7 @@ object FormDBOptions: TFormDBOptions
     Width = 521
     Height = 21
     ReadOnly = True
-    TabOrder = 9
+    TabOrder = 8
   end
   object BtnOpenFileLocation: TButton
     Left = 312
@@ -183,7 +159,7 @@ object FormDBOptions: TFormDBOptions
     Width = 217
     Height = 25
     Caption = 'Open file location'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = BtnOpenFileLocationClick
   end
   object BtnChangeFileLocation: TButton
@@ -192,7 +168,7 @@ object FormDBOptions: TFormDBOptions
     Width = 219
     Height = 25
     Caption = 'Change file location'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = BtnChangeFileLocationClick
   end
   object GroupBoxIcon: TGroupBox
@@ -201,7 +177,7 @@ object FormDBOptions: TFormDBOptions
     Width = 185
     Height = 105
     Caption = 'Icon options'
-    TabOrder = 12
+    TabOrder = 11
     Visible = False
     object ImageIconPreview: TImage
       Left = 8

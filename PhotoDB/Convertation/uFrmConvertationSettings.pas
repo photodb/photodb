@@ -41,20 +41,15 @@ type
     CbDBImageSize: TComboBox;
     CbDBJpegquality: TComboBox;
     WlPreviewDBJpegQuality: TWebLink;
-    WlPanelSize: TWebLink;
-    CbPanelSize: TComboBox;
     CbPreviewSize: TComboBox;
     WlPreviewSize: TWebLink;
     LbDBImageSize: TLabel;
     LbDBImageQuality: TLabel;
-    LbPanelImageSize: TLabel;
     LbPreviewImageSize: TLabel;
     procedure CbDBImageSizeChange(Sender: TObject);
     procedure CbDBJpegqualityChange(Sender: TObject);
-    procedure CbPanelSizeChange(Sender: TObject);
     procedure CbPreviewSizeChange(Sender: TObject);
     procedure WlPreviewDBSizeClick(Sender: TObject);
-    procedure WlPanelSizeClick(Sender: TObject);
     procedure WlPreviewSizeClick(Sender: TObject);
   private
     { Private declarations }
@@ -101,11 +96,6 @@ procedure TFrmConvertationSettings.CbDBJpegqualityChange(Sender: TObject);
 begin
   ImageOptions.DBJpegCompressionQuality := Max(1, Min(100, StrToIntDef(CbDBJpegquality.Text, 75)));
   UpdateDBSize;
-end;
-
-procedure TFrmConvertationSettings.CbPanelSizeChange(Sender: TObject);
-begin
-  ImageOptions.ThSizePanelPreview :=  Max(50, Min(1000, StrToIntDef(CbPanelSize.Text, 150)));
 end;
 
 procedure TFrmConvertationSettings.CbPreviewSizeChange(Sender: TObject);
@@ -179,17 +169,14 @@ begin
     Image := GetBigPatternImage;
     FillImageSize(CbDBImageSize);
     FillImageQuality(CbDBJpegquality);
-    FillImageSize(CbPanelSize);
     FillImageSize(CbPreviewSize);
 
     LoadLinkIcon(WlPreviewDBSize, 'PICTURE');
     LoadLinkIcon(WlPreviewDBJpegQuality, 'PICTURE');
-    LoadLinkIcon(WlPanelSize, 'PICTURE');
     LoadLinkIcon(WlPreviewSize, 'PICTURE');
 
     CbDBImageSize.Text := IntToStr(ImageOptions.ThSize);
     CbDBJpegquality.Text := IntToStr(ImageOptions.DBJpegCompressionQuality);
-    CbPanelSize.Text := IntToStr(ImageOptions.ThSizePanelPreview);
     CbPreviewSize.Text := IntToStr(ImageOptions.ThHintSize);
     CbDBImageSizeChange(Self);
   end;
@@ -208,11 +195,9 @@ begin
   LbInfo.Caption := L('You can adjust the size and compression quality of images in the database and other sizes of images');
   LbDBImageSize.Caption := L('Default thumbnail size in database');
   LbDBImageQuality.Caption := L('Compression quality of images stored in the database');
-  LbPanelImageSize.Caption := L('Size of the images in the panel by default');
   LbPreviewImageSize.Caption := L('Image preview size');
   WlPreviewDBSize.Text := L('Preview');
   WlPreviewDBJpegQuality.Text := L('Preview');
-  WlPanelSize.Text := L('Preview');
   WlPreviewSize.Text := L('Preview');
 end;
 
@@ -282,19 +267,6 @@ begin
   LbSingleImageSize.Caption := Format(L('Image size: %s'), [SizeInText(ImageSize)]);
   LbDatabaseSize.Caption := Format(L('The size of new database (approximately): %s'),
     [SizeInText(RecordCount * ImageSize)]);
-end;
-
-procedure TFrmConvertationSettings.WlPanelSizeClick(Sender: TObject);
-var
-  Bitmap: TBitmap;
-begin
-  Bitmap := TBitmap.Create;
-  try
-    UpdateBitmapSize(ImageOptions.ThSizePanelPreview, Bitmap);
-    ShowPreview(Bitmap, Bitmap.Width * Bitmap.Height * 3);
-  finally
-    F(Bitmap);
-  end;
 end;
 
 procedure TFrmConvertationSettings.WlPreviewDBSizeClick(Sender: TObject);

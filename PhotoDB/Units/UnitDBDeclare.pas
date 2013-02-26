@@ -139,7 +139,7 @@ type
     destructor Destroy; override;
   end;
 
-  TDataObject = class(TObject)
+  TLVDataObject = class(TObject)
   private
   public
     Include: Boolean;
@@ -532,9 +532,9 @@ end;
 
 { TExplorerFileInfo }
 
-function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
+function GetSearchRecordFromItemData(ListItem: TEasyItem) : TDBPopupMenuInfoRecord;
 begin
-  Result := TDBPopupMenuInfoRecord(TDataObject(ListItem.Data).Data);
+  Result := TDBPopupMenuInfoRecord(TLVDataObject(ListItem.Data).Data);
 end;
 
 { TSearchDataExtension }
@@ -563,14 +563,14 @@ begin
   inherited;
 end;
 
-{ TDataObject }
+{ TLVDataObject }
 
-constructor TDataObject.Create;
+constructor TLVDataObject.Create;
 begin
   Data := nil;
 end;
 
-destructor TDataObject.Destroy;
+destructor TLVDataObject.Destroy;
 begin
   F(Data);
   inherited;

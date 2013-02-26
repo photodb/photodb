@@ -752,9 +752,14 @@
         </DCCReference>
         <DCCReference Include="Units\Styles\uPopupActionBarEx.pas"/>
         <DCCReference Include="Units\uDatabaseDirectoriesUpdater.pas"/>
-        <DCCReference Include="uFormEditPlaces.pas">
-            <Form>FormEditPlaces</Form>
-            <FormType>dfm</FormType>
+        <DCCReference Include="uFormLinkItemSelector.pas">
+            <Form>FormLinkItemSelector</Form>
+        </DCCReference>
+        <DCCReference Include="Units\ListEditors\uLinkListEditorDatabases.pas"/>
+        <DCCReference Include="Units\ListEditors\uLinkListEditorFolders.pas"/>
+        <DCCReference Include="Units\ListEditors\uLinkListEditorForExecutables.pas"/>
+        <DCCReference Include="uFormSelectLocation.pas">
+            <Form>FormSelectLocation</Form>
         </DCCReference>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">

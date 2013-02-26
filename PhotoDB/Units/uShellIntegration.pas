@@ -3,20 +3,22 @@ unit uShellIntegration;
 interface
 
 uses
+  Winapi.Windows,
+  Winapi.ShellApi,
+  Winapi.ShlObj,
+  Winapi.ActiveX,
+  System.Win.ComObj,
+  System.SysUtils,
+  System.Classes,
+  System.Variants,
+  System.Math,
+  Vcl.Forms,
+  Vcl.Clipbrd,
+
   uMemory,
-  Windows,
-  SysUtils,
-  Classes,
-  Forms,
   uVistaFuncs,
-  Clipbrd,
   uAppUtils,
-  ShlObj,
-  ComObj,
-  ActiveX,
-  Variants,
-  uShellNamespaceUtils,
-  ShellApi;
+  uShellNamespaceUtils;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer; overload;
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;
@@ -233,7 +235,7 @@ begin
   Result := False;
   SHChangeIcon := nil;
   SHChangeIconW := nil;
-  ShellHandle := Windows.LoadLibrary(PChar(Shell32));
+  ShellHandle := LoadLibrary(PChar(Shell32));
   try
     if ShellHandle <> 0 then
     begin
@@ -322,9 +324,20 @@ end;
 function ExtractAssociatedIconSafe(FileName: string): HICON;
 var
   I: Word;
+  PathSize: Integer;
+  IconPath: PChar;
 begin
   I := 1;
-  Result := ExtractAssociatedIcon(Application.Handle, PChar(FileName), I);
+  //allocate MAX_PATH chars to store path to icon (MSDN)
+  PathSize := Max(MAX_PATH * 2, FileName.Length);
+  GetMem(IconPath, PathSize * 2);
+  try
+    FillChar(IconPath^, PathSize * 2, #0);
+    CopyMemory(IconPath, @FileName[1], FileName.Length * 2);
+    Result := ExtractAssociatedIcon(Application.Handle, IconPath, I);
+  finally
+    FreeMem(IconPath);
+  end;
 end;
 
 function ExtractAssociatedIconSafe(FileName: string; IconIndex: Word): HICON;
