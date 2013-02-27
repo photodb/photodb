@@ -75,7 +75,9 @@ uses
   uThreadTask,
   uTransparentEncryption,
   uProgramStatInfo,
-  uShellIntegration;
+  uShellIntegration,
+
+  uLinkListEditorForExecutables;
 
 type
   TOptionsForm = class(TPasswordSettingsDBForm, IOptionsForm)
@@ -85,19 +87,7 @@ type
     Usethisprogramasdefault1: TMenuItem;
     Usemenuitem1: TMenuItem;
     Dontusethisextension1: TMenuItem;
-    PmUserMenu: TPopupActionBar;
-    Addnewcommand1: TMenuItem;
-    Remove1: TMenuItem;
-    ImageList1: TImageList;
-    PmPlaces: TPopupActionBar;
-    Additem1: TMenuItem;
-    DeleteItem1: TMenuItem;
-    N1: TMenuItem;
-    Up1: TMenuItem;
-    Down1: TMenuItem;
     PlacesImageList: TImageList;
-    Rename1: TMenuItem;
-    N2: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
     N3: TMenuItem;
     Default1: TMenuItem;
@@ -117,34 +107,6 @@ type
     Label26: TLabel;
     CbViewerNextOnClick: TCheckBox;
     CbViewerUseCoolStretch: TCheckBox;
-    TsUserMenu: TTabSheet;
-    GbUserMenuUseFor: TGroupBox;
-    CbUseUserMenuForIDMenu: TCheckBox;
-    CbUseUserMenuForExplorer: TCheckBox;
-    CbUseUserMenuForViewer: TCheckBox;
-    BtnSaveUserMenuItem: TButton;
-    BtnAddNewUserMenuItem: TButton;
-    BtnUserMenuItemDown: TButton;
-    BtnUserMenuItemUp: TButton;
-    LvUserMenuItems: TListView;
-    BtnSelectUserMenuItemIcon: TButton;
-    EdSubmenuIcon: TEdit;
-    Label23: TLabel;
-    EdSubmenuCaption: TEdit;
-    Label21: TLabel;
-    Label24: TLabel;
-    Image2: TImage;
-    CbUserMenuItemIsSubmenu: TCheckBox;
-    EdUserMenuItemIcon: TEdit;
-    BtnUserMenuChooseIcon: TButton;
-    Label19: TLabel;
-    EdUserMenuItemParams: TEdit;
-    Label25: TLabel;
-    EdUserMenuItemExecutable: TEdit;
-    BtnUserMenuChooseExecutable: TButton;
-    Label18: TLabel;
-    EdUserMenuItemCaption: TEdit;
-    Label20: TLabel;
     TsSecurity: TTabSheet;
     GbBackup: TGroupBox;
     Label30: TLabel;
@@ -184,7 +146,6 @@ type
     PmCryptMethod: TPopupActionBar;
     SedMinHeight: TSpinEdit;
     SedMinWidth: TSpinEdit;
-    Bevel3: TBevel;
     GbEXIF: TGroupBox;
     CbReadInfoFromExif: TCheckBox;
     CbSaveInfoToExif: TCheckBox;
@@ -264,31 +225,9 @@ type
     procedure LoadDefaultExtStates;
     procedure BtnClearSessionPasswordsClick(Sender: TObject);
     procedure BtnClearPasswordsInSettingsClick(Sender: TObject);
-    procedure BtnUserMenuChooseIconClick(Sender: TObject);
-    procedure BtnUserMenuChooseExecutableClick(Sender: TObject);
-    procedure LvUserMenuItemsContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-    procedure Addnewcommand1Click(Sender: TObject);
-    procedure Remove1Click(Sender: TObject);
-    procedure LvUserMenuItemsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-    procedure BtnSaveUserMenuItemClick(Sender: TObject);
-    procedure EdUserMenuItemCaptionKeyPress(Sender: TObject; var Key: Char);
-    procedure BtnSelectUserMenuItemIconClick(Sender: TObject);
-    procedure BtnUserMenuItemUpClick(Sender: TObject);
-    procedure BtnUserMenuItemDownClick(Sender: TObject);
     procedure BtnClearIconCacheClick(Sender: TObject);
     procedure BtnClearThumbnailCacheClick(Sender: TObject);
     procedure TrackBar4Change(Sender: TObject);
-    procedure PlacesListViewContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-    procedure BtnChooseNewPlaceClick(Sender: TObject);
-    procedure ReadPlaces;
-    procedure WritePlaces;
-    procedure PlacesListViewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-    procedure BtnChoosePlaceIconClick(Sender: TObject);
-    procedure DeleteItem1Click(Sender: TObject);
-    procedure Up1Click(Sender: TObject);
-    procedure Down1Click(Sender: TObject);
-    procedure Rename1Click(Sender: TObject);
-    procedure PlacesListViewEdited(Sender: TObject; Item: TListItem; var S: String);
     procedure Default1Click(Sender: TObject);
     procedure CbDontAddSmallFilesClick(Sender: TObject);
     procedure PcMainChange(Sender: TObject);
@@ -318,9 +257,7 @@ type
     procedure CbUseProxyServerClick(Sender: TObject);
   private
     FThemeList: TStringList;
-    FUserMenu: TUserMenuItemArray;
-    FLoadedPages: array [0..7] of Boolean;
-    //FPlaces: TPlaceFolderArray;
+    FLoadedPages: array [0..6] of Boolean;
     ReloadData: Boolean;
     FReadingPlayerChanges: Boolean;
     FPlayerExtensions: TDictionary<string, string>;
@@ -373,12 +310,9 @@ end;
 
 procedure TOptionsForm.TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
 var
-  I, Size: Integer;
-  Reg: TBDRegistry;
-  S: TStrings;
-  DisplayICCProfile,
-  FCaption, EXEFile, Params, Icon: string;
-  UseSubMenu: Boolean;
+  I,
+  Size: Integer;
+  DisplayICCProfile: string;
 begin
   if FLoadedPages[NewTab] then
     Exit;
@@ -416,7 +350,6 @@ begin
     CbExplorerShowThumbsForVideo.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
     CbExplorerShowEXIF.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
 
-    ReadPlaces;
   end;
   if NewTab = 3 then
   begin
@@ -446,7 +379,7 @@ begin
 
     CbDisplayICCProfile.Value := DisplayICCProfile;
   end;
-  if NewTab = 5 then
+  if NewTab = 4 then
   begin
     CbAutoSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
     CbAutoSavePasswordInSettings.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
@@ -458,7 +391,7 @@ begin
     CbUseProxyServerClick(Self);
   end;
 
-  if NewTab = 6 then
+  if NewTab = 5 then
   begin
 
     CbListViewShowPreview.Checked := Settings.Readbool('Options', 'AllowPreview', True);
@@ -482,76 +415,7 @@ begin
     CbSmoothScrolling.Checked :=  Settings.ReadBool('Options', 'SmoothScrolling', True);
   end;
 
-  if NewTab = 4 then
-  begin
-    ImageList1.Clear;
-    ImageList1.Width := 16;
-    ImageList1.Height := 16;
-
-    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    try
-      Reg.OpenKey(GetRegRootKey + '\Menu', True);
-      S := TStringList.Create;
-      try
-        Reg.GetKeyNames(S);
-        SetLength(FUserMenu, 0);
-        LvUserMenuItems.Clear;
-        for I := 0 to S.Count - 1 do
-        begin
-          Reg.CloseKey;
-          Reg.OpenKey(GetRegRootKey + '\Menu\' + S[I], False);
-          UseSubMenu := True;
-
-          if Reg.ValueExists('Caption') then
-            FCaption := Reg.ReadString('Caption');
-          if Reg.ValueExists('EXEFile') then
-            EXEFile := Reg.ReadString('EXEFile');
-          if Reg.ValueExists('Params') then
-            Params := Reg.ReadString('Params');
-          if Reg.ValueExists('Icon') then
-            Icon := Reg.ReadString('Icon');
-          if Reg.ValueExists('UseSubMenu') then
-            UseSubMenu := Reg.ReadBool('UseSubMenu');
-
-          if (FCaption <> '') and (EXEFile <> '') then
-          begin
-            SetLength(FUserMenu, Length(FUserMenu) + 1);
-            FUserMenu[Length(FUserMenu) - 1].Caption := FCaption;
-            FUserMenu[Length(FUserMenu) - 1].EXEFile := EXEFile;
-            FUserMenu[Length(FUserMenu) - 1].Params := Params;
-            FUserMenu[Length(FUserMenu) - 1].Icon := Icon;
-            FUserMenu[Length(FUserMenu) - 1].UseSubMenu := UseSubMenu;
-
-            AddIconToListFromPath(ImageList1, Icon);
-
-            with LvUserMenuItems.Items.Add do
-            begin
-              ImageIndex := ImageList1.Count - 1;
-              Caption := FCaption;
-            end;
-          end;
-        end;
-      finally
-        F(S);
-      end;
-    finally
-      F(Reg);
-    end;
-    CbUseUserMenuForIDMenu.Checked := Settings.ReadBool('Options', 'UseUserMenuForIDmenu', True);
-    CbUseUserMenuForViewer.Checked := Settings.ReadBool('Options', 'UseUserMenuForViewer', True);
-    CbUseUserMenuForExplorer.Checked := Settings.ReadBool('Options', 'UseUserMenuForExplorer', True);
-    EdSubmenuCaption.Text := Settings.ReadString('', 'UserMenuName');
-    if EdSubmenuCaption.Text = '' then
-      EdSubmenuCaption.Text := L('Additional');
-    EdSubmenuIcon.Text := Settings.ReadString('', 'UserMenuIcon');
-    if EdSubmenuIcon.Text = '' then
-      EdSubmenuIcon.Text := '%SystemRoot%\system32\shell32.dll,126';
-
-    SetIconToPictureFromPath(Image2.Picture, EdSubmenuIcon.Text);
-    LvUserMenuItemsSelectItem(Self, nil, False);
-  end;
-
-  if NewTab = 7 then
+  if NewTab = 6 then
   begin
     RbVlcPlayer.Enabled := IsVlcPlayerInstalled;
     RbKmPlayer.Enabled := IsKmpPlayerInstalled;
@@ -608,19 +472,10 @@ begin
   ReloadData := False;
   SaveWindowPos1.Key := GetRegRootKey + 'Options';
   SaveWindowPos1.SetPosition;
-  for I := 0 to 7 do
+  for I := 0 to 6 do
     FLoadedPages[I] := False;
   LoadLanguage;
   FThemeList := TStringList.Create;
-  PmPlaces.Images := DBKernel.ImageList;
-  PmUserMenu.Images := DBKernel.ImageList;
-  Up1.ImageIndex := DB_IC_UP;
-  Down1.ImageIndex := DB_IC_DOWN;
-  DeleteItem1.ImageIndex := DB_IC_DELETE_INFO;
-  Additem1.ImageIndex := DB_IC_EXPLORER;
-  Rename1.ImageIndex := DB_IC_RENAME;
-  Addnewcommand1.ImageIndex := DB_IC_EXPLORER;
-  Remove1.ImageIndex := DB_IC_DELETE_INFO;
   CbCheckLinksOnUpdate.Enabled := not FolderView;
 
   PcMainChange(Self);
@@ -648,9 +503,6 @@ end;
 
 procedure TOptionsForm.OkButtonClick(Sender: TObject);
 var
-  I: Integer;
-  Reg: TBDRegistry;
-  S: TStrings;
   EventInfo: TEventValues;
 begin
   Settings.ClearCache;
@@ -681,44 +533,24 @@ begin
     Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForVideo', CbExplorerShowThumbsForVideo.Checked);
 
     Settings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
-    WritePlaces;
+  end;
+  // 2 :
+  if FLoadedPages[3] then
+  begin
+    Settings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
+    Settings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
+    Settings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
+    Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
+    Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
+
+    Settings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
+    Settings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
+    Settings.WriteString('Options', 'StereoMode', IIF(CbRedCyanStereo.Checked, 'RedCyan', ''));
+
+    Settings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
   end;
   // 3 :
   if FLoadedPages[4] then
-  begin
-    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    try
-      Reg.OpenKey(GetRegRootKey + '\Menu', True);
-      S := TStringList.Create;
-      try
-        Reg.GetKeyNames(S);
-        Reg.CloseKey;
-        for I := 0 to S.Count - 1 do
-          Reg.DeleteKey(GetRegRootKey + '\Menu\.' + IntToStr(I));
-      finally
-        F(S);
-      end;
-      for I := 0 to Length(FUserMenu) - 1 do
-      begin
-        Reg.OpenKey(GetRegRootKey + '\Menu\.' + IntToStr(I), True);
-        Reg.WriteString('Caption', FUserMenu[I].Caption);
-        Reg.WriteString('EXEFile', FUserMenu[I].EXEFile);
-        Reg.WriteString('Params', FUserMenu[I].Params);
-        Reg.WriteString('Icon', FUserMenu[I].Icon);
-        Reg.WriteBool('UseSubMenu', FUserMenu[I].UseSubMenu);
-        Reg.CloseKey;
-      end;
-    finally
-      F(Reg);
-    end;
-    Settings.WriteString('', 'UserMenuName', EdSubmenuCaption.Text);
-    Settings.WriteString('', 'UserMenuIcon', EdSubmenuIcon.Text);
-    Settings.WriteBool('Options', 'UseUserMenuForIDmenu', CbUseUserMenuForIDMenu.Checked);
-    Settings.WriteBool('Options', 'UseUserMenuForViewer', CbUseUserMenuForViewer.Checked);
-    Settings.WriteBool('Options', 'UseUserMenuForExplorer', CbUseUserMenuForExplorer.Checked);
-  end;
-  // 4 :
-  if FLoadedPages[5] then
   begin
     Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
     Settings.WriteBool('Options', 'AutoSaveINIPasswords', CbAutoSavePasswordInSettings.Checked);
@@ -728,8 +560,8 @@ begin
     Settings.WriteString('Options', 'ProxyPassword', WebProxyPassword.Text);
     Settings.WriteBool('Options', 'UseProxyServer', CbUseProxyServer.Checked);
   end;
-  // 5 :
-  if FLoadedPages[6] then
+  // 4 :
+  if FLoadedPages[5] then
   begin
     Settings.WriteBool('Options', 'AllowPreview', CbListViewShowPreview.Checked);
     Settings.WriteBool('Options', 'UseSmallToolBarButtons', CbSmallToolBars.Checked);
@@ -750,23 +582,8 @@ begin
     Settings.WriteBool('Options', 'ShowStatusBar', CbShowStatusBar.Checked);
     Settings.WriteBool('Options', 'SmoothScrolling', CbSmoothScrolling.Checked);
   end;
-  // 2 :
-  if FLoadedPages[3] then
-  begin
-    Settings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
-    Settings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
-    Settings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
-    Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
-    Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
 
-    Settings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
-    Settings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
-    Settings.WriteString('Options', 'StereoMode', IIF(CbRedCyanStereo.Checked, 'RedCyan', ''));
-
-    Settings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
-  end;
-
-  if FLoadedPages[7] then
+  if FLoadedPages[6] then
   begin
     SaveMediaAssociations;
     EncryptionOptions.Refresh;
@@ -873,7 +690,6 @@ begin
     TsAssociations.Caption := L('Associations');
     TsExplorer.Caption := L('Explorer'); ;
     TsView.Caption := L('Viewer'); ;
-    TsUserMenu.Caption := L('User menu');
     TsSecurity.Caption := L('Security');
     TsGlobal.Caption := L('Global');
     TsPrograms.Caption := L('Programs');
@@ -908,25 +724,6 @@ begin
     BtnClearPasswordsInSettings.Caption := L('Clear the current password in settings');
     LbDefaultPasswordMethod.Caption := L('Default encryption method') + ':';
 
-    LvUserMenuItems.Columns[0].Caption := L('Menu item');
-    Label20.Caption := L('Caption');
-    Label18.Caption := L('Executable file');
-    Label25.Caption := L('Parameters');
-    Label19.Caption := L('Icon');
-    CbUserMenuItemIsSubmenu.Caption := L('Add to submenu');
-    BtnAddNewUserMenuItem.Caption := L('Add');
-    BtnSaveUserMenuItem.Caption := L('Save');
-    Label24.Caption := L('Preview') + ':';
-    Label21.Caption := L('Submenu caption');
-    Label23.Caption := L('Submenu icon');
-    Addnewcommand1.Caption := L('Add new item');
-    Remove1.Caption := L('Remove');
-    BtnUserMenuItemUp.Caption := L('Up');
-    BtnUserMenuItemDown.Caption := L('Down');
-    GbUserMenuUseFor.Caption := L('Display menu for') + ':';
-    CbUseUserMenuForIDMenu.Caption := L('ID Menu');
-    CbUseUserMenuForViewer.Caption := L('Viewer window');
-    CbUseUserMenuForExplorer.Caption := L('Explorer window');
     BtnClearThumbnailCache.Caption := L('Clear previews cache');
     BtnClearIconCache.Caption := L('Clear icons cache');
     CbExplorerShowEXIF.Caption := L('Show EXIF marker');
@@ -939,11 +736,6 @@ begin
     BlBackupInterval.Caption := L('Create backup every') + ':';
     Label30.Caption := L('days');
 
-    Additem1.Caption := L('New place');
-    DeleteItem1.Caption := L('Delete');
-    Up1.Caption := L('Up');
-    Down1.Caption := L('Down');
-    Rename1.Caption := L('Rename');
     CblEditorVirtuaCursor.Caption := L('Virtual cursor to the Editor');
     Default1.Caption := L('Default');
     CbCheckLinksOnUpdate.Caption := L('Check changes of files and update links (may slow down program)');
@@ -1273,153 +1065,6 @@ begin
   DBKernel.ClearINIPasswords;
 end;
 
-procedure TOptionsForm.BtnUserMenuChooseIconClick(Sender: TObject);
-var
-  FileName: string;
-  IconIndex: Integer;
-
-  S, Icon: string;
-  I: Integer;
-begin
-  S := EdUserMenuItemIcon.Text;
-  I := Pos(',', S);
-  FileName := Copy(S, 1, I - 1);
-  Icon := Copy(S, I + 1, Length(S) - I);
-  IconIndex := StrToIntDef(Icon, 0);
-  ChangeIconDialog(Handle, FileName, IconIndex);
-  if FileName <> '' then
-    EdUserMenuItemIcon.Text := FileName + ',' + IntToStr(IconIndex);
-end;
-
-procedure TOptionsForm.BtnUserMenuChooseExecutableClick(Sender: TObject);
-var
-  OpenDialog: DBOpenDialog;
-begin
-
-  OpenDialog := DBOpenDialog.Create;
-  try
-    OpenDialog.Filter := L('Programs (*.exe)|*.exe|All Files (*.*)|*.*');
-    OpenDialog.FilterIndex := 1;
-    if OpenDialog.Execute then
-      EdUserMenuItemExecutable.Text := OpenDialog.FileName;
-
-  finally
-    F(OpenDialog);
-  end;
-end;
-
-procedure TOptionsForm.LvUserMenuItemsContextPopup(Sender: TObject; MousePos: TPoint;
-  var Handled: Boolean);
-var
-  Item: TListItem;
-begin
-  Item := LvUserMenuItems.GetItemAt(MousePos.X, MousePos.Y);
-  if Item = nil then
-  begin
-    Addnewcommand1.Visible := True;
-    Remove1.Visible := False;
-    PmUserMenu.Tag := -1;
-  end else
-  begin
-    Addnewcommand1.Visible := False;
-    Remove1.Visible := True;
-    PmUserMenu.Tag := Item.index;
-  end;
-  PmUserMenu.Popup(LvUserMenuItems.ClientToScreen(MousePos).X, LvUserMenuItems.ClientToScreen(MousePos).Y);
-end;
-
-procedure TOptionsForm.Addnewcommand1Click(Sender: TObject);
-var
-  OpenDialog : DBOpenDialog;
-const
-  DefaultIcon = '%SystemRoot%\system32\shell32.dll,0';
-begin
-
-  OpenDialog := DBOpenDialog.Create;
-  try
-    OpenDialog.Filter := L('Programs (*.exe)|*.exe|All Files (*.*)|*.*');
-    OpenDialog.FilterIndex := 1;
-    if OpenDialog.Execute then
-    begin
-      SetLength(FUserMenu, Length(FUserMenu) + 1);
-      FUserMenu[Length(FUserMenu) - 1].Caption := GetFileNameWithoutExt(OpenDialog.FileName);
-      FUserMenu[Length(FUserMenu) - 1].EXEFile := OpenDialog.FileName;
-      FUserMenu[Length(FUserMenu) - 1].Params := '%1';
-      if AnsiLowerCase(ExtractFileExt(OpenDialog.FileName)) = '.exe' then
-        FUserMenu[Length(FUserMenu) - 1].Icon := OpenDialog.FileName + ',0'
-      else
-        FUserMenu[Length(FUserMenu) - 1].Icon := DefaultIcon;
-      FUserMenu[Length(FUserMenu) - 1].UseSubMenu := True;
-
-      AddIconToListFromPath(ImageList1, FUserMenu[Length(FUserMenu) - 1].Icon);
-
-      with LvUserMenuItems.Items.Add do
-      begin
-        ImageIndex := ImageList1.Count - 1;
-        Caption := GetFileNameWithoutExt(OpenDialog.FileName);
-      end;
-    end;
-  finally
-    F(OpenDialog);
-  end;
-end;
-
-procedure TOptionsForm.Remove1Click(Sender: TObject);
-var
-  I: Integer;
-begin
-  if PmUserMenu.Tag <> -1 then
-  begin
-    for I := PmUserMenu.Tag to Length(FUserMenu) - 2 do
-      FUserMenu[I] := FUserMenu[I + 1];
-    SetLength(FUserMenu, Length(FUserMenu) - 1);
-    LvUserMenuItems.Items.Delete(PmUserMenu.Tag);
-    ImageList1.Delete(PmUserMenu.Tag);
-    for I := PmUserMenu.Tag to Length(FUserMenu) - 1 do
-      LvUserMenuItems.Items[I].ImageIndex := LvUserMenuItems.Items[I].ImageIndex - 1;
-  end;
-end;
-
-procedure TOptionsForm.LvUserMenuItemsSelectItem(Sender: TObject; Item: TListItem;
-  Selected: Boolean);
-begin
-  if (Item = nil) or (Selected = False) then
-  begin
-    BtnUserMenuItemUp.Enabled := False;
-    BtnUserMenuItemDown.Enabled := False;
-    EdUserMenuItemCaption.Enabled := False;
-    EdUserMenuItemIcon.Enabled := False;
-    EdUserMenuItemExecutable.Enabled := False;
-    EdUserMenuItemParams.Enabled := False;
-    BtnUserMenuChooseExecutable.Enabled := False;
-    BtnUserMenuChooseIcon.Enabled := False;
-    BtnSaveUserMenuItem.Enabled := False;
-    CbUserMenuItemIsSubmenu.Checked := False;
-    CbUserMenuItemIsSubmenu.Checked := False;
-    EdUserMenuItemCaption.Text := '';
-    EdUserMenuItemIcon.Text := '';
-    EdUserMenuItemExecutable.Text := '';
-    EdUserMenuItemParams.Text := '';
-  end else
-  begin
-    BtnUserMenuItemUp.Enabled := Item.Index <> 0;
-    BtnUserMenuItemDown.Enabled := Item.Index <> LvUserMenuItems.Items.Count - 1;
-    EdUserMenuItemCaption.Text := FUserMenu[Item.Index].Caption;
-    EdUserMenuItemIcon.Text := FUserMenu[Item.Index].Icon;
-    EdUserMenuItemExecutable.Text := FUserMenu[Item.Index].EXEFile;
-    EdUserMenuItemParams.Text := FUserMenu[Item.Index].Params;
-    CbUserMenuItemIsSubmenu.Checked := FUserMenu[Item.Index].UseSubMenu;
-    CbUserMenuItemIsSubmenu.Enabled := True;
-    EdUserMenuItemCaption.Enabled := True;
-    EdUserMenuItemIcon.Enabled := True;
-    EdUserMenuItemExecutable.Enabled := True;
-    EdUserMenuItemParams.Enabled := True;
-    BtnUserMenuChooseExecutable.Enabled := True;
-    BtnUserMenuChooseIcon.Enabled := True;
-    BtnSaveUserMenuItem.Enabled := True;
-  end;
-end;
-
 procedure TOptionsForm.MiSelectextensionClick(Sender: TObject);
 var
   Extension,
@@ -1467,34 +1112,6 @@ begin
   end;
 end;
 
-procedure TOptionsForm.BtnSaveUserMenuItemClick(Sender: TObject);
-var
-  Ic: HIcon;
-  Ico: TIcon;
-begin
-  if LvUserMenuItems.Selected = nil then
-    Exit;
-
-  FUserMenu[LvUserMenuItems.Selected.Index].Caption := EdUserMenuItemCaption.Text;
-  FUserMenu[LvUserMenuItems.Selected.Index].Icon := EdUserMenuItemIcon.Text;
-  FUserMenu[LvUserMenuItems.Selected.Index].EXEFile := EdUserMenuItemExecutable.Text;
-  FUserMenu[LvUserMenuItems.Selected.Index].Params := EdUserMenuItemParams.Text;
-  FUserMenu[LvUserMenuItems.Selected.Index].UseSubMenu := CbUserMenuItemIsSubmenu.Checked;
-  LvUserMenuItems.Selected.Caption := EdUserMenuItemCaption.Text;
-
-  Ico := TIcon.Create;
-  try
-    Ic := ExtractSmallIconByPath(EdUserMenuItemIcon.Text);
-    if Ic = 0 then
-      Ic := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
-
-    Ico.Handle := Ic;
-    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.Index, Ico);
-  finally
-    F(Ico);
-  end;
-end;
-
 procedure TOptionsForm.EdPlayerExecutableChange(Sender: TObject);
 var
   Index: Integer;
@@ -1508,81 +1125,6 @@ begin
       Extension := CblExtensions.Items[Index];
       WlSavePlayerChanges.Visible := EdPlayerExecutable.Text <> FPlayerExtensions[Extension];
     end;
-  end;
-end;
-
-procedure TOptionsForm.EdUserMenuItemCaptionKeyPress(Sender: TObject; var Key: Char);
-begin
-  if Ord(Key) = VK_RETURN then
-    BtnSaveUserMenuItemClick(Sender);
-end;
-
-procedure TOptionsForm.BtnSelectUserMenuItemIconClick(Sender: TObject);
-var
-  FileName: string;
-  IconIndex: Integer;
-  S, Icon: string;
-  I: Integer;
-begin
-  S := EdSubmenuIcon.Text;
-  I := Pos(',', S);
-  FileName := Copy(S, 1, I - 1);
-  Icon := Copy(S, I + 1, Length(S) - I);
-  IconIndex := StrToIntDef(Icon, 0);
-  ChangeIconDialog(Handle, FileName, IconIndex);
-  if FileName <> '' then
-    EdSubmenuIcon.Text := FileName + ',' + IntToStr(IconIndex);
-
-  SetIconToPictureFromPath(Image2.Picture, Icon);
-end;
-
-procedure TOptionsForm.BtnUserMenuItemUpClick(Sender: TObject);
-var
-  Info: TUserMenuItem;
-  Icon1, Icon2: TIcon;
-begin
-  Info := FUserMenu[LvUserMenuItems.Selected.index];
-  FUserMenu[LvUserMenuItems.Selected.index] := FUserMenu[LvUserMenuItems.Selected.index - 1];
-  FUserMenu[LvUserMenuItems.Selected.index - 1] := Info;
-  Icon1 := TIcon.Create;
-  Icon2 := TIcon.Create;
-  try
-    ImageList1.GetIcon(LvUserMenuItems.Selected.index, Icon1);
-    ImageList1.GetIcon(LvUserMenuItems.Selected.index - 1, Icon2);
-    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.index, Icon2);
-    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.index - 1, Icon1);
-    LvUserMenuItems.Items[LvUserMenuItems.Selected.index].Caption := FUserMenu[LvUserMenuItems.Selected.index].Caption;
-    LvUserMenuItems.Items[LvUserMenuItems.Selected.index - 1].Caption := FUserMenu[LvUserMenuItems.Selected.index - 1].Caption;
-    LvUserMenuItems.Selected := LvUserMenuItems.Items[LvUserMenuItems.Selected.index - 1];
-    LvUserMenuItems.SetFocus;
-  finally
-    F(Icon1);
-    F(Icon2);
-  end;
-end;
-
-procedure TOptionsForm.BtnUserMenuItemDownClick(Sender: TObject);
-var
-  Info: TUserMenuItem;
-  Icon1, Icon2: TIcon;
-begin
-  Info := FUserMenu[LvUserMenuItems.Selected.index];
-  FUserMenu[LvUserMenuItems.Selected.index] := FUserMenu[LvUserMenuItems.Selected.index + 1];
-  FUserMenu[LvUserMenuItems.Selected.index + 1] := Info;
-  Icon1 := TIcon.Create;
-  Icon2 := TIcon.Create;
-  try
-    ImageList1.GetIcon(LvUserMenuItems.Selected.index, Icon1);
-    ImageList1.GetIcon(LvUserMenuItems.Selected.index + 1, Icon2);
-    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.index, Icon2);
-    ImageList1.ReplaceIcon(LvUserMenuItems.Selected.index + 1, Icon1);
-    LvUserMenuItems.Items[LvUserMenuItems.Selected.index].Caption := FUserMenu[LvUserMenuItems.Selected.index].Caption;
-    LvUserMenuItems.Items[LvUserMenuItems.Selected.index + 1].Caption := FUserMenu[LvUserMenuItems.Selected.index + 1].Caption;
-    LvUserMenuItems.Selected := LvUserMenuItems.Items[LvUserMenuItems.Selected.index + 1];
-    LvUserMenuItems.SetFocus;
-  finally
-    F(Icon1);
-    F(Icon2);
   end;
 end;
 
@@ -1625,29 +1167,6 @@ begin
   TabbedNotebook1Change(Sender, PcMain.ActivePageIndex, AllowChange);
 end;
 
-procedure TOptionsForm.PlacesListViewContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
-var
-  Item: TListItem;
-begin
-{  Item := PlacesListView.GetItemAt(MousePos.X, MousePos.Y);
-  if Item = nil then
-  begin
-    Up1.Visible := False;
-    Down1.Visible := False;
-    DeleteItem1.Visible := False;
-    Rename1.Visible := False;
-  end else
-  begin
-    Up1.Visible := Item.index <> 0;
-    Down1.Visible := Item.index <> PlacesListView.Items.Count - 1;
-    PmPlaces.Tag := Item.index;
-    Rename1.Visible := True;
-    DeleteItem1.Visible := True;
-  end;
-  PmPlaces.Popup(PlacesListView.ClientToScreen(MousePos).X, PlacesListView.ClientToScreen(MousePos).Y);   }
-end;
-
 procedure TOptionsForm.BtnApplyThemeClick(Sender: TObject);
 var
   I: Integer;
@@ -1678,43 +1197,6 @@ begin
     end;
 end;
 
-procedure TOptionsForm.BtnChooseNewPlaceClick(Sender: TObject);
-var
-  NewPlace: String;
-const
-  DefaultIcon = '%SystemRoot%\system32\shell32.dll,3';
-begin
-{  if PlacesListView.Selected = nil then
-  begin
-    NewPlace := UnitDBFileDialogs.DBSelectDir(Handle,
-      L('Please, select a folder'), UseSimpleSelectFolderDialog);
-    if DirectoryExists(NewPlace) then
-    begin
-      SetLength(FPlaces, Length(FPlaces) + 1);
-      FPlaces[Length(FPlaces) - 1].Name := GetFileNameWithoutExt(NewPlace);
-      FPlaces[Length(FPlaces) - 1].FolderName := NewPlace;
-      FPlaces[Length(FPlaces) - 1].Icon := DefaultIcon;
-      AddIconToListFromPath(PlacesImageList, DefaultIcon);
-      with PlacesListView.Items.AddItem(nil) do
-      begin
-        ImageIndex := PlacesImageList.Count - 1;
-        Caption := GetFileNameWithoutExt(NewPlace);
-      end;
-    end;
-  end else
-  begin
-    NewPlace := UnitDBFileDialogs.DBSelectDir(Handle,
-      L('Please, select a folder'),
-      FPlaces[PlacesListView.Selected.Index].FolderName,
-      UseSimpleSelectFolderDialog);
-    if DirectoryExists(NewPlace) then
-      FPlaces[PlacesListView.Selected.Index].FolderName := NewPlace;
-    FPlaces[PlacesListView.Selected.Index].Name := GetFileNameWithoutExt
-      (NewPlace);
-    PlacesListView.Selected.Caption := GetFileNameWithoutExt(NewPlace);
-  end;  }
-end;
-
 procedure TOptionsForm.RbPlayerInternalClick(Sender: TObject);
 begin
   EdPlayerExecutable.Enabled := RbOtherProgram.Checked;
@@ -1737,65 +1219,6 @@ begin
 
   if RbWindowsMediaPlayer.Checked then
     EdPlayerExecutable.Text := GetWindowsMediaPlayerPath;
-end;
-
-procedure TOptionsForm.ReadPlaces;
-var
-  Reg: TBDRegistry;
-  S: TStrings;
-  FName, FFolderName, FIcon: string;
-  I: Integer;
-begin
-{  PlacesImageList.Clear;
-  PlacesImageList.Width := 16;
-  PlacesImageList.Height := 16;
-
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey + '\Places', True);
-    S := TStringList.Create;
-    try
-      Reg.GetKeyNames(S);
-      SetLength(FPlaces, 0);
-      PlacesListView.Clear;
-      for I := 0 to S.Count - 1 do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(GetRegRootKey + '\Places\' + S[I], True);
-        FMyComputer := False;
-        FMyDocuments := False;
-        FMyPictures := False;
-        FOtherFolder := False;
-
-        if Reg.ValueExists('Name') then
-          FName := Reg.ReadString('Name');
-        if Reg.ValueExists('FolderName') then
-          FFolderName := Reg.ReadString('FolderName');
-        if Reg.ValueExists('Icon') then
-          FIcon := Reg.ReadString('Icon');
-
-        if (FName <> '') and (FFolderName <> '') then
-        begin
-          SetLength(FPlaces, Length(FPlaces) + 1);
-          FPlaces[Length(FPlaces) - 1].name := FName;
-          FPlaces[Length(FPlaces) - 1].FolderName := FFolderName;
-          FPlaces[Length(FPlaces) - 1].Icon := FIcon;
-
-          AddIconToListFromPath(PlacesImageList, fIcon);
-
-          with PlacesListView.Items.Add do
-          begin
-            ImageIndex := PlacesImageList.Count - 1;
-            Caption := FName;
-          end;
-        end;
-      end;
-    finally
-      F(S);
-    end;
-  finally
-    F(Reg);
-  end;   }
 end;
 
 procedure TOptionsForm.WlAddPlayerExtensionClick(Sender: TObject);
@@ -1869,52 +1292,6 @@ begin
   end;
 end;
 
-procedure TOptionsForm.WritePlaces;
-var
-  I: Integer;
-  Reg: TBDRegistry;
-  S: TStrings;
-begin
- { Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey + '\Places', true);
-    S := TStringList.Create;
-    try
-      Reg.GetKeyNames(S);
-      Reg.CloseKey;
-      for i := 1 to S.Count do
-        Reg.DeleteKey(GetRegRootKey + '\Places\.' + IntToStr(i));
-    finally
-      F(S);
-    end;
-
-    for I := 0 to Length(FPlaces) - 1 do
-    begin
-      Reg.OpenKey(GetRegRootKey + '\Places\.' + IntToStr(I), true);
-      Reg.WriteString('Name', FPlaces[I].Name);
-      Reg.WriteString('FolderName', FPlaces[I].FolderName);
-      Reg.WriteString('Icon', FPlaces[I].Icon);
-      Reg.CloseKey;
-    end;
-  finally
-    F(Reg);
-  end;  }
-end;
-
-procedure TOptionsForm.PlacesListViewSelectItem(Sender: TObject;
-  Item: TListItem; Selected: Boolean);
-var
-  I: Integer;
-begin
- { if not Selected then
-  begin
-    BtnChoosePlaceIcon.Enabled := False;
-  end else
-  begin
-    BtnChoosePlaceIcon.Enabled := True;
-  end; }
-end;
-
 procedure TOptionsForm.CblExtensionsClick(Sender: TObject);
 var
   SelectedIndex: Integer;
@@ -1985,131 +1362,6 @@ procedure TOptionsForm.CbUseProxyServerClick(Sender: TObject);
 begin
   WebProxyUserName.Enabled := CbUseProxyServer.Checked;
   WebProxyPassword.Enabled := CbUseProxyServer.Checked;
-end;
-
-procedure TOptionsForm.BtnChoosePlaceIconClick(Sender: TObject);
-var
-  FileName: string;
-  IconIndex: Integer;
-  Ic: HIcon;
-  S, Icon: string;
-  I, Index: Integer;
-  Ico: TIcon;
-begin
-{  if PlacesListView.Selected = nil then
-    Exit;
-  Index := PlacesListView.Selected.index;
-  S := FPlaces[index].Icon;
-  I := Pos(',', S);
-  FileName := Copy(S, 1, I - 1);
-  Icon := Copy(S, I + 1, Length(S) - I);
-  IconIndex := StrToIntDef(Icon, 0);
-  ChangeIconDialog(Handle, FileName, IconIndex);
-  if FileName <> '' then
-    FPlaces[index].Icon := FileName + ',' + IntToStr(IconIndex);
-  Ico := TIcon.Create;
-  try
-    Ic := ExtractSmallIconByPath(FPlaces[index].Icon);
-    if Ic = 0 then
-      Ic := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
-    Ico.Handle := Ic;
-
-    PlacesImageList.ReplaceIcon(index, Ico);
-  finally
-    F(Ico);
-  end;     }
-end;
-
-procedure TOptionsForm.DeleteItem1Click(Sender: TObject);
-var
-  I: Integer;
-begin
- { if PmPlaces.Tag <> -1 then
-  begin
-    for I := PmPlaces.Tag to Length(FPlaces) - 2 do
-      FPlaces[i] := FPlaces[I + 1];
-    SetLength(FPlaces, Length(FPlaces) - 1);
-    PlacesListView.Items.Delete(PmPlaces.Tag);
-    PlacesImageList.Delete(PmPlaces.Tag);
-    for I := PmPlaces.Tag to Length(FPlaces) - 1 do
-      PlacesListView.Items[I].ImageIndex := PlacesListView.Items[I].ImageIndex - 1;
-  end;}
-end;
-
-procedure TOptionsForm.Up1Click(Sender: TObject);
-var
-  Info: TPlaceFolder;
-  Icon1, Icon2: Ticon;
-begin
-{  if PlacesListView.Selected = nil then
-    Exit;
-  Info := FPlaces[PlacesListView.Selected.index];
-  FPlaces[PlacesListView.Selected.index] := FPlaces
-    [PlacesListView.Selected.index - 1];
-  FPlaces[PlacesListView.Selected.index - 1] := Info;
-  Icon1 := Ticon.Create;
-  Icon2 := Ticon.Create;
-  try
-    PlacesImageList.GetIcon(PlacesListView.Selected.index, Icon1);
-    PlacesImageList.GetIcon(PlacesListView.Selected.index - 1, Icon2);
-    PlacesImageList.ReplaceIcon(PlacesListView.Selected.index, Icon2);
-    PlacesImageList.ReplaceIcon(PlacesListView.Selected.index - 1, Icon1);
-    PlacesListView.Items[PlacesListView.Selected.index].Caption := FPlaces
-      [PlacesListView.Selected.index].Name;
-    PlacesListView.Items[PlacesListView.Selected.index - 1].Caption := FPlaces
-      [PlacesListView.Selected.index - 1].Name;
-    PlacesListView.Selected := PlacesListView.Items
-      [PlacesListView.Selected.index - 1];
-    PlacesListView.SetFocus;
-  finally
-    F(Icon1);
-    F(Icon2);
-  end; }
-end;
-
-procedure TOptionsForm.Down1Click(Sender: TObject);
-var
-  info: TPlaceFolder;
-  Icon1, Icon2: Ticon;
-begin
-{  if PlacesListView.Selected = nil then
-    Exit;
-
-  Info := FPlaces[PlacesListView.Selected.index];
-  FPlaces[PlacesListView.Selected.index] := FPlaces
-    [PlacesListView.Selected.index + 1];
-  FPlaces[PlacesListView.Selected.index + 1] := info;
-  Icon1 := TIcon.Create;
-  Icon2 := TIcon.Create;
-  try
-    PlacesImageList.GetIcon(PlacesListView.Selected.index, Icon1);
-    PlacesImageList.GetIcon(PlacesListView.Selected.index + 1, Icon2);
-    PlacesImageList.ReplaceIcon(PlacesListView.Selected.index, Icon2);
-    PlacesImageList.ReplaceIcon(PlacesListView.Selected.index + 1, Icon1);
-    PlacesListView.Items[PlacesListView.Selected.index].Caption := FPlaces
-      [PlacesListView.Selected.index].Name;
-    PlacesListView.Items[PlacesListView.Selected.index + 1].Caption := FPlaces
-      [PlacesListView.Selected.index + 1].Name;
-    PlacesListView.Selected := PlacesListView.Items
-      [PlacesListView.Selected.index + 1];
-    PlacesListView.SetFocus;
-  finally
-    F(Icon1);
-    F(Icon2);
-  end; }
-end;
-
-procedure TOptionsForm.Rename1Click(Sender: TObject);
-begin
-{  if PlacesListView.Selected = nil then
-    exit;
-  PlacesListView.Selected.EditCaption;   }
-end;
-
-procedure TOptionsForm.PlacesListViewEdited(Sender: TObject; Item: TListItem;
-  var S: String);
-begin
-  //FPlaces[Item.Index].Name := S;
 end;
 
 procedure TOptionsForm.DeselectAll1Click(Sender: TObject);

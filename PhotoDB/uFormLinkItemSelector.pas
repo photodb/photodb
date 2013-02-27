@@ -20,6 +20,7 @@ uses
   Vcl.AppEvnts,
 
   uMemory,
+  uDBForm,
   uFormInterfaces,
 
   Dmitry.Controls.Base,
@@ -40,7 +41,7 @@ type
     Options: TAniOptions;
   end;
 
-  TFormLinkItemSelector = class(TForm, ILinkItemSelectForm)
+  TFormLinkItemSelector = class(TDBForm, ILinkItemSelectForm)
     BvSeparator: TBevel;
     BtnClose: TButton;
     ImPlaces: TImageList;
@@ -99,6 +100,8 @@ type
     procedure SwitchToListMode;
     function GetFormHeight: Integer;
     property FormHeight: Integer read GetFormHeight;
+  protected
+    function GetFormID: string; override;
   public
     { Public declarations }
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
@@ -207,14 +210,14 @@ end;
 
 procedure TFormLinkItemSelector.BtnCloseClick(Sender: TObject);
 begin
-  ModalResult := mrCancel;
   Close;
+  ModalResult := mrCancel;
 end;
 
 procedure TFormLinkItemSelector.BtnSaveClick(Sender: TObject);
 begin
-  ModalResult := mrOk;
   Close;
+  ModalResult := mrOk;
 end;
 
 procedure TFormLinkItemSelector.CheckLinksOrder;
@@ -321,6 +324,9 @@ begin
 
   FActions := TList<string>.Create;
   FActionLinks := TList<TWebLink>.Create;
+
+  BtnClose.Caption := L('Cancel', '');
+  BtnSave.Caption := L('Save', '');
 end;
 
 procedure TFormLinkItemSelector.FormDestroy(Sender: TObject);
@@ -354,6 +360,11 @@ end;
 function TFormLinkItemSelector.GetFormHeight: Integer;
 begin
   Result := PaddingTop * 2 + FLinks.Count * (LinkHeight + LinksDy) + 50
+end;
+
+function TFormLinkItemSelector.GetFormID: string;
+begin
+  Result := 'LinkListEditor';
 end;
 
 procedure TFormLinkItemSelector.CreateListElements(Elements: TListElements);
@@ -446,7 +457,7 @@ begin
         WL := TWebLink.Create(Self);
         WL.Parent := Self;
         WL.Left := LinkLeft;
-        WL.Top := 132;
+        WL.Top := BvSeparator.Top + PaddingTop;
         WL.Anchors := [akLeft, akBottom];
         WL.Text := 'Add new';
         WL.OnClick := WlAddElementsClick;

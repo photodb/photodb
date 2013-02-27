@@ -667,16 +667,11 @@ type
     procedure HelpTimerTimer(Sender: TObject);
     procedure Help1NextClick(Sender: TObject);
     procedure Help1CloseClick(Sender : TObject; var CanClose : Boolean);
-    procedure MyPicturesLinkClick(Sender: TObject);
-    procedure MyDocumentsLinkClick(Sender: TObject);
-    procedure MyComputerLinkClick(Sender: TObject);
-    procedure DesktopLinkClick(Sender: TObject);
     procedure ImageEditor1Click(Sender: TObject);
     procedure ImageEditor2Click(Sender: TObject);
     procedure ImageEditorLinkClick(Sender: TObject);
     procedure ExportImages1Click(Sender: TObject);
     procedure PrintLinkClick(Sender: TObject);
-    procedure OpeninNewWindow2Click(Sender: TObject);
     procedure TextFile2Click(Sender: TObject);
     procedure Copywithfolder1Click(Sender: TObject);
     procedure Copy4Click(Sender: TObject);
@@ -915,7 +910,7 @@ type
     RenameResult: Boolean;
     FChangeHistoryOnChPath: Boolean;
     WindowsMenuTickCount: Cardinal;
-    FPlaces: TList<TPlaceFolder>;
+    FPlaces: TList<TLinkInfo>;
     DragFilesPopup: TStrings;
     Lock: Boolean;
     SlashHandled: Boolean;
@@ -994,7 +989,9 @@ type
     function ItemAtPos(X, Y: Integer): TEasyItem;
     procedure LockItems;
     procedure UnLockItems;
+
     procedure ReadPlaces;
+    procedure AddDefaultPlaces(Places: TList<TLinkInfo>);
     procedure EditPlacesListClick(Sender: TObject);
     procedure UserDefinedPlaceClick(Sender: TObject);
     procedure DoSelectItem;
@@ -1442,9 +1439,6 @@ begin
 end;
 
 procedure TExplorerForm.FormCreate(Sender: TObject);
-var
-  I: Integer;
-  C: TComponent;
 begin
   FSearchMode := -1;
   FGeoHTMLWindow := nil;
@@ -1524,7 +1518,7 @@ begin
 
   RefreshIDList := TStringList.Create;
 
-  FPlaces := TList<TPlaceFolder>.Create;
+  FPlaces := TList<TLinkInfo>.Create;
   DragFilesPopup := TStringList.Create;
 
   //month popup looks very strange in XP
@@ -8672,47 +8666,6 @@ begin
     HelpTimer.Enabled := True;
 end;
 
-procedure TExplorerForm.MyPicturesLinkClick(Sender: TObject);
-var
-  Reg: TRegIniFile;
-begin
-  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-  try
-    SetStringPath(Reg.ReadString('Shell Folders', 'My Pictures', ''), False);
-  finally
-    F(Reg);
-  end;
-end;
-
-procedure TExplorerForm.MyDocumentsLinkClick(Sender: TObject);
-var
-  Reg: TRegIniFile;
-begin
-  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-  try
-    SetStringPath(Reg.ReadString('Shell Folders', 'Personal', ''), False);
-  finally
-    F(Reg);
-  end;
-end;
-
-procedure TExplorerForm.MyComputerLinkClick(Sender: TObject);
-begin
-  SetStringPath('', False);
-end;
-
-procedure TExplorerForm.DesktopLinkClick(Sender: TObject);
-var
-  Reg: TRegIniFile;
-begin
-  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-  try
-    SetStringPath(Reg.ReadString('Shell Folders', 'Desktop', ''), False);
-  finally
-    F(Reg);
-  end;
-end;
-
 procedure TExplorerForm.ImageEditor1Click(Sender: TObject);
 begin
   with EditorsManager.NewEditor do
@@ -8789,48 +8742,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.OpeninNewWindow2Click(Sender: TObject);
-var
-  Reg: TRegIniFile;
-  Link: TWebLink;
-  S: string;
-  DefLink: Boolean;
-  I: Integer;
-begin
-  Link := nil;//TWebLink(PmLinkOptions.Tag);
-  DefLink := True;
-  {for I := 0 to Length(UserLinks) - 1 do
-    if Link = UserLinks[I] then
-    begin
-      DefLink := False;
-      Break;
-    end;  }
-  if not DefLink then
-  begin
-    S := FPlaces[Link.Tag].FolderName;
-  end else
-  begin
-    Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-    try
-      {if Link = MyPicturesLink then
-        S := Reg.ReadString('Shell Folders', 'My Pictures', '');
-      if Link = MyDocumentsLink then
-        S := Reg.ReadString('Shell Folders', 'Personal', '');
-      if Link = DesktopLink then
-        S := Reg.ReadString('Shell Folders', 'Desktop', '');
-      if Link = MyComputerLink then
-        S := '';   }
-    finally
-      F(Reg);
-    end;
-  end;
-  with ExplorerManager.NewExplorer(False) do
-  begin
-    SetPath(S);
-    Show;
-    SetFocus;
-  end;
-end;
 
 procedure TExplorerForm.TextFile2Click(Sender: TObject);
 var
@@ -8908,71 +8819,21 @@ begin
   end;
 end;
 
-procedure TExplorerForm.EditPlacesListClick(Sender: TObject);
+procedure ReadPlacesList(Places: TList<TLinkInfo>);
 var
-  Form: ILinkItemSelectForm;
-  Data: TList<TDataObject>;
-  Editor: ILinkEditor;
-begin
-  Editor := TLinkListEditorFolder.Create;
-  Data := TList<TDataObject>.Create;
-  try
-    Data.Add(TLinkInfo.Create('Title1', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,0'));
-    Data.Add(TLinkInfo.Create('Title2', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,1'));
-    Data.Add(TLinkInfo.Create('Title3', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,2'));
-    Data.Add(TLinkInfo.Create('Title4', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,3'));
-    Data.Add(TLinkInfo.Create('Title5', 'd:\dmitry\Photos', 'C:\Program Files\Photo DataBase\PhotoDB.exe,4'));
+  Reg: TBDRegistry;
+  S: TStrings;
+  Place: TLinkInfo;
+  FName, FFolderName, FIcon: string;
+  I: Integer;
 
-    if LinkItemSelectForm.Execute(400, 'List of directories', Data, Editor) then
-    begin
-      //update data
-    end;
-  finally
-    FreeList(Data);
-    Editor := nil;
-  end;
-end;
-
-procedure TExplorerForm.ReadPlaces;
 const
   FixedPlaceIcons: array[0 .. 3] of Integer =
     (DB_IC_MY_PICTURES, DB_IC_MY_DOCUMENTS, DB_IC_MY_COMPUTER, DB_IC_DESKTOPLINK);
   FixedPlaceNames: array[0 .. 3] of string =
     ('My pictures', 'My documents', 'Desktop', 'My Computer');
-var
-  Reg: TBDRegistry;
-  S: TStrings;
-  FName, FFolderName, FIcon: string;
-  I: Integer;
-
-  Place: TPlaceFolder;
-  Icon: HIcon;
-  MI: TMenuItem;
 begin
-  PmLocations.Items.Clear;
-  ImLocations.Clear;
-
-  MI := TMenuItem.Create(PmLocations);
-  MI.Caption := L('Edit list');
-  MI.ImageIndex := ImLocations.Count;
-  MI.Tag := 0;
-  MI.OnClick := EditPlacesListClick;
-  PmLocations.Items.Add(MI);
-  ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[DB_IC_RENAME + 1]);
-
-  for I := 0 to 3 do
-  begin
-    MI := TMenuItem.Create(PmLocations);
-    MI.Caption := L(FixedPlaceNames[I]);
-    MI.ImageIndex := ImLocations.Count;
-    MI.Tag := -FixedPlaceIcons[I];
-    PmLocations.Items.Add(MI);
-    ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[FixedPlaceIcons[I] + 1]);
-  end;
-
-  MI := TMenuItem.Create(PmLocations);
-  MI.Caption := '-';
-  PmLocations.Items.Add(MI);
+  FreeList(Places, False);
 
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
@@ -8981,7 +8842,6 @@ begin
     try
       Reg.GetKeyNames(S);
 
-      FreeList(FPlaces, False);
       for I := 0 to S.Count - 1 do
       begin
         Reg.CloseKey;
@@ -8994,25 +8854,10 @@ begin
         if Reg.ValueExists('Icon') then
           FIcon := Reg.ReadString('Icon');
 
-        if (FName <> '') and (FFolderName <> '') then
+        if FName <> '' then
         begin
-          Place := TPlaceFolder.Create;
-          Place.Name := FName;
-          Place.FolderName := FFolderName;
-          Place.Icon := FIcon;
-          FPlaces.Add(Place);
-
-          MI := TMenuItem.Create(PmLocations);
-          MI.Caption := Place.Name;
-          MI.ImageIndex := ImLocations.Count;
-          MI.Tag := FPlaces.Count;
-          PmLocations.Items.Add(MI);
-          Icon := ExtractSmallIconByPath(FIcon, False);
-          try
-            ImageList_AddIcon(ImLocations.Handle, Icon);
-          finally;
-            DestroyIcon(Icon);
-          end;
+          Place := TLinkInfo.Create(FName, FFolderName, FIcon);
+          Places.Add(Place);
         end;
       end;
     finally
@@ -9023,9 +8868,153 @@ begin
   end;
 end;
 
-procedure TExplorerForm.UserDefinedPlaceClick(Sender: TObject);
+procedure TExplorerForm.AddDefaultPlaces(Places: TList<TLinkInfo>);
+var
+  Reg: TRegIniFile;
+  Path: string;
 begin
-  SetStringPath(FPlaces[(Sender as TWebLink).Tag].FolderName, False);
+  Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
+  try
+    Path := Reg.ReadString('Shell Folders', 'My Pictures', '');
+    Places.Add(TLinkInfo.Create(L('My pictures'), Path, ''));
+
+    Path := Reg.ReadString('Shell Folders', 'Personal', '');
+    Places.Add(TLinkInfo.Create(L('My documents'), Path, ''));
+
+    Path := Reg.ReadString('Shell Folders', 'Desktop', '');
+    Places.Add(TLinkInfo.Create(L('Desktop'), Path, ''));
+
+    Places.Add(TLinkInfo.Create(L('My Computer'), '', ''));
+  finally
+    F(Reg);
+  end;
+end;
+
+procedure WritePlacesList(Places: TList<TLinkInfo>);
+var
+  I: Integer;
+  Reg: TBDRegistry;
+  S: TStrings;
+begin
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(GetRegRootKey + '\Places', true);
+    S := TStringList.Create;
+    try
+      Reg.GetKeyNames(S);
+      Reg.CloseKey;
+      for I := 0 to S.Count - 1 do
+        Reg.DeleteKey(GetRegRootKey + '\Places\.' + IntToStr(i));
+    finally
+      F(S);
+    end;
+
+    for I := 0 to Places.Count - 1 do
+    begin
+      Reg.OpenKey(GetRegRootKey + '\Places\.' + IntToStr(I), True);
+      Reg.WriteString('Name', Places[I].Title);
+      Reg.WriteString('FolderName', Places[I].Path);
+      Reg.WriteString('Icon', Places[I].Icon);
+      Reg.CloseKey;
+    end;
+  finally
+    F(Reg);
+  end;  
+end;
+
+procedure TExplorerForm.UserDefinedPlaceClick(Sender: TObject);
+var
+  Path: string;
+  PI: TPathItem;
+  EI: TExplorerFileInfo;
+begin
+  Path := FPlaces[(Sender as TMenuItem).Tag].Path;
+
+  PI := PathProviderManager.CreatePathItem(Path);
+  try
+    if PI = nil then
+      Exit;
+
+    EI := TExplorerFileInfo.CreateFromPathItem(PI);
+    try
+      SetNewPathW(ExplorerPath(EI.Path, EI.FileType), False);
+    finally
+      F(EI);
+    end;
+  finally
+    F(PI);
+  end;
+end;
+
+procedure TExplorerForm.EditPlacesListClick(Sender: TObject);
+var
+  Data: TList<TDataObject>;
+  Editor: ILinkEditor;
+begin
+  Editor := TLinkListEditorFolder.Create(Self);
+  Data := TList<TDataObject>.Create;
+  try
+    ReadPlacesList(TList<TLinkInfo>(Data));
+    
+    if LinkItemSelectForm.Execute(450, L('List of directories'), Data, Editor) then
+      WritePlacesList(TList<TLinkInfo>(Data));
+
+  finally
+    FreeList(Data);
+    Editor := nil;
+  end;
+end;
+
+procedure TExplorerForm.ReadPlaces;
+var
+  Place: TLinkInfo;
+  MI: TMenuItem;
+  PI: TPathItem;
+begin
+  PmLocations.Items.Clear;
+  ImLocations.Clear;
+
+  MI := TMenuItem.Create(PmLocations);
+  MI.Caption := L('Edit list');
+  MI.ImageIndex := ImLocations.Count;
+  MI.Tag := 0;
+  MI.OnClick := EditPlacesListClick;
+  PmLocations.Items.Add(MI);
+  ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[DB_IC_RENAME + 1]);
+
+  MI := TMenuItem.Create(PmLocations);
+  MI.Caption := '-';
+  PmLocations.Items.Add(MI);
+
+  ReadPlacesList(FPlaces);
+  if FPlaces.Count = 0 then
+  begin
+    AddDefaultPlaces(FPlaces);
+    WritePlacesList(FPlaces);
+  end;
+
+  for Place in FPlaces do
+  begin
+    PI := PathProviderManager.CreatePathItem(Place.Path);
+    try
+      if PI <> nil then
+      begin 
+      MI := TMenuItem.Create(PmLocations);
+      MI.Caption := Place.Title;     
+      if PI.LoadImage(PATH_LOAD_NORMAL or PATH_LOAD_FAST or PATH_LOAD_FOR_IMAGE_LIST, ImLocations.Width) then
+      begin
+        PI.Image.AddToImageList(ImLocations);
+        MI.ImageIndex := ImLocations.Count - 1;
+      end;
+      MI.OnClick := UserDefinedPlaceClick;
+      MI.Tag := FPlaces.IndexOf(Place);
+      PmLocations.Items.Add(MI);
+      
+      end;
+    finally
+      F(PI);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.VleExifDrawCell(Sender: TObject; ACol, ARow: Integer;

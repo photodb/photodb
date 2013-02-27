@@ -3,6 +3,7 @@
   <scope name="">
 	<translate name="Close" value="Закрыть" />
 	<translate name="Done" value="Готово" />
+	<translate name="Save" value="Сохранить" />
 	<translate name="JPEG Options" value="Настройки JPEG" />
 	<translate name="Save settings by default" value="Сохранить по умолчанию" />
 	<translate name="Processing... (&amp;%%)" value="Обработка... (&amp;%%)" />
@@ -235,12 +236,17 @@
 	<translate name="Image editor" value="Редактор" />
 	<translate name="Crop" value="Кадрировать" />
 	<translate name="Image tasks" value="Изображение" />
-	<translate name="Import pictures" value="Импорт фото" />	
+	<translate name="Import pictures" value="Импорт фото" />
 	<translate name="Print" value="Печать" />
 	<translate name="My pictures" value="Мои фотографии" />
 	<translate name="My documents" value="Мои документы" />
 	<translate name="Desktop" value="Рабочий стол" />
 	<translate name="My Computer" value="Мой компьютер" />
+	<translate name="List of directories" value="Список директорий" />
+	<translate name="Change location" value="Изменить папку" />
+	<translate name="Select a directory" value="Выбрать директорию" />
+	<translate name="Add directory" value="Добавить" />
+	<translate name="Edit list" value="Редактировать" />
 	<translate name="New group" value="Создать группу" />
 	<translate name="Add to collection" value="Добавить в базу" />
 	<translate name="Preview" value="Предпросмотр" />
@@ -1663,7 +1669,6 @@
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в БД файлы, размером меньше"/>
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
 	<translate name="Add" value="Добавить"/>
-	<translate name="User menu" value="Меню"/>
 	<translate name="Security" value="Безопасность"/>
 	<translate name="Global" value="Общие"/>
 	<translate name="Programs" value="Программы"/>
@@ -1688,31 +1693,14 @@
 	<translate name="Speed of displaying images for fullscreen: %d ms." value="Скорость слайдов для полноэкранного режима: %d мс."/>
 	<translate name="Slide show delay: %d ms." value="Дополнительная задержка для Слайд-Шоу: %d мс."/>
 	<translate name="Number of steps for slide show: %d" value="Количество шагов для Слайд-Шоу: %d"/>
-	<translate name="Programs (*.exe)|*.exe|All Files (*.*)|*.*'" value="Программы (*.exe)|*.exe|Все файлы (*.*)|*.*'"/>
 	<translate name="All Files (*.*)|*.*'" value="Все файлы (*.*)|*.*'"/>
 	<translate name="Automatically save passwords for the current session" value="Автоматически сохранять пароли для текущей сессии"/>
 	<translate name="Automatically save passwords in the settings (NOT RECOMMENDED)" value="Автоматически сохранять пароли в настройках (НЕ РЕКОМЕНДУЕТСЯ)"/>
 	<translate name="Clear current passwords in session" value="Очистить текущие пароли в сессии"/>
 	<translate name="Clear the current password in settings" value="Очистить текущие пароли в настройках"/>
-	<translate name="Menu item" value="Пункт меню"/>
-	<translate name="Executable file" value="Исполняемый файл"/>
-	<translate name="Parameters" value="Параметры запуска"/>
-	<translate name="Icon" value="Иконка"/>
-	<translate name="Add to submenu" value="Добавить в субменю"/>
-	<translate name="Additional" value="Дополнительно"/>
 	<translate name="Refresh data in windows?" value="Перезагрузить данные в окнах?"/>
 	<translate name="Please select folder" value="Выберите папку"/>
 	<translate name="Preview" value="Предпросмотр"/>
-	<translate name="Submenu caption" value="Заголовок субменю"/>
-	<translate name="Submenu icon" value="Иконка субменю"/>
-	<translate name="Add new item" value="Добавить новый пункт"/>
-	<translate name="Remove" value="Удалить"/>
-	<translate name="Up" value="Вверх"/>
-	<translate name="Down" value="Вниз"/>
-	<translate name="Display menu for" value="Отображать меню для"/>
-	<translate name="ID Menu" value="ID Меню"/>
-	<translate name="Viewer window" value="Просмотра"/>
-	<translate name="Explorer window" value="Проводника"/>
 	<translate name="Clear previews cache" value="Очистить кэш предпросмотров"/>
 	<translate name="Clear icons cache" value="Очистить кэш иконок"/>
 	<translate name="Show EXIF marker" value="Показывать EXIF заголовок"/>

@@ -38,7 +38,7 @@ type
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
 
-type
+{type
   TUserMenuItem = record
     Caption: string;
     EXEFile: string;
@@ -47,16 +47,7 @@ type
     UseSubMenu: Boolean;
   end;
 
-  TUserMenuItemArray = array of TUserMenuItem;
-
-// Added in v2.0
-type
-  TPlaceFolder = class
-  public
-    Name: string;
-    FolderName: string;
-    Icon: string;
-  end;
+  TUserMenuItemArray = array of TUserMenuItem;}
 
 type
   // Added in 2.2 version

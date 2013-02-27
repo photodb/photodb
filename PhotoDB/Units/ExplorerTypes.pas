@@ -35,6 +35,7 @@ uses
   uExplorerPortableDeviceProvider,
   uExplorerShelfProvider,
   uExplorerDateStackProviders,
+  uExplorerSearchProviders,
   uFormListView;
 
 type
@@ -562,7 +563,9 @@ begin
   else if PI is TDateStackMonthItem then
     FileType := EXPLORER_ITEM_CALENDAR_MONTH
   else if PI is TDateStackDayItem then
-    FileType := EXPLORER_ITEM_CALENDAR_DAY;
+    FileType := EXPLORER_ITEM_CALENDAR_DAY
+  else if PI is TSearchItem then
+    FileType := EXPLORER_ITEM_SEARCH;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;

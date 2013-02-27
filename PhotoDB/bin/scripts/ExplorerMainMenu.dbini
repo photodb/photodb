@@ -1,12 +1,4 @@
-﻿<Edit>[-1]
-{
- <->[]{}
- DeleteNoFirst;
-
- CreateItemDefChecked("Select all",DB_IC_SELECTALL,"SelectAll;",false,true,false,0);
-}
-
-<View>[-1]
+﻿<View>[-1]
 {
  <->[]{}
  DeleteNoFirst;

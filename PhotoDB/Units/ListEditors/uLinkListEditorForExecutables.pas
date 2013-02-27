@@ -29,7 +29,8 @@ type
     Path: string;
     Icon: string;
     Parameters: string;
-    constructor Create(Title, Path, Icon, Parameters: string);
+    UseSubMenu: Boolean;
+    constructor Create(Title, Path, Icon, Parameters: string; UseSubMenu: Boolean);
     function Clone: TDataObject; override;
     procedure Assign(Source: TDataObject); override;
   end;
@@ -69,20 +70,22 @@ begin
     Path := EI.Path;
     Icon := EI.Icon;
     Parameters := EI.Parameters;
+    UseSubMenu := EI.UseSubMenu;
   end;
 end;
 
 function TExecutableInfo.Clone: TDataObject;
 begin
-  Result := TExecutableInfo.Create(Title, Path, Icon, Parameters);
+  Result := TExecutableInfo.Create(Title, Path, Icon, Parameters, UseSubMenu);
 end;
 
-constructor TExecutableInfo.Create(Title, Path, Icon, Parameters: string);
+constructor TExecutableInfo.Create(Title, Path, Icon, Parameters: string; UseSubMenu: Boolean);
 begin
   Self.Title := Title;
   Self.Path := Path;
   Self.Icon := Icon;
   Self.Parameters := Parameters;
+  Self.UseSubMenu := UseSubMenu;
 end;
 
 { TLinkListEditorForExecutables }
@@ -204,7 +207,7 @@ begin
       OpenDialog.Filter := ('Programs (*.exe)|*.exe|All Files (*.*)|*.*');
       OpenDialog.FilterIndex := 1;
       if OpenDialog.Execute then
-        Data := TExecutableInfo.Create(ExtractFileName(OpenDialog.FileName), OpenDialog.FileName, OpenDialog.FileName + ',0', '%1');
+        Data := TExecutableInfo.Create(ExtractFileName(OpenDialog.FileName), OpenDialog.FileName, OpenDialog.FileName + ',0', '%1', True);
 
     finally
       F(OpenDialog);

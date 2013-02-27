@@ -17,6 +17,7 @@ uses
   Dmitry.PathProviders,
 
   uMemory,
+  uDBForm,
   uVCLHelpers,
   uFormInterfaces,
   uShellIntegration,
@@ -35,10 +36,12 @@ type
 
   TLinkListEditorFolder = class(TInterfacedObject, ILinkEditor)
   private
+    FOwner: TDBForm;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
   public
+    constructor Create(Owner: TDBForm);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
@@ -81,6 +84,11 @@ begin
 end;
 
 { TLinkListEditorFolder }
+
+constructor TLinkListEditorFolder.Create(Owner: TDBForm);
+begin
+  FOwner := Owner;
+end;
 
 procedure TLinkListEditorFolder.CreateEditorForItem(Sender: ILinkItemSelectForm;
   Data: TDataObject; Editor: TPanel);
@@ -126,11 +134,11 @@ begin
     WlChangeLocation.Parent := Editor;
     WlChangeLocation.Tag := CHANGE_PLACE_CHANGE_PATH;
     WlChangeLocation.Height := 26;
-    WlChangeLocation.Text := 'Change location';
+    WlChangeLocation.Text := Fowner.L('Change location');
     WlChangeLocation.RefreshBuffer(True);
     WlChangeLocation.Top := 8 + WedCaption.Height div 2 - WlChangeLocation.Height div 2;
     WlChangeLocation.Left := 240;
-    //WlChangeLocation.Icon := TIcon(Image1.Picture.Graphic);
+    WlChangeLocation.LoadFromResource('NAVIGATE');
     WlChangeLocation.OnClick := OnChangePlaceClick;
   end;
 
@@ -162,7 +170,7 @@ begin
 
     PI := nil;
     try
-      if SelectLocationForm.Execute('Select a directory', '', PI) then
+      if SelectLocationForm.Execute(FOwner.L('Select a directory'), '', PI) then
         Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
     finally
       F(PI);
@@ -188,7 +196,7 @@ begin
   AddActionProc(['Create'],
     procedure(Action: string; WebLink: TWebLink)
     begin
-      WebLink.Text := 'Create new';
+      WebLink.Text := FOwner.L('Add directory');
     end
   );
 end;
@@ -196,15 +204,26 @@ end;
 procedure TLinkListEditorFolder.LoadIconForLink(Link: TWebLink; Path, Icon: string);
 var
   Ico: HIcon;
+  PI: TPathItem;
 begin
   if Icon <> '' then
-    Ico := ExtractSmallIconByPath(Icon)
-  else
-    Ico := ExtractAssociatedIconSafe(Path);
-  try
-    Link.LoadFromHIcon(Ico);
-  finally
-    DestroyIcon(Ico);
+  begin
+    Ico := ExtractSmallIconByPath(Icon);
+    try
+      Link.LoadFromHIcon(Ico);
+    finally
+      DestroyIcon(Ico);
+    end;
+  end else
+  begin
+    PI := PathProviderManager.CreatePathItem(Path);
+    try
+      if (PI <> nil) and PI.LoadImage(PATH_LOAD_NORMAL or PATH_LOAD_FAST or PATH_LOAD_FOR_IMAGE_LIST, 16) and (PI.Image <> nil) then
+        Link.LoadFromPathImage(PI.Image);
+
+    finally
+      F(PI);
+    end;
   end;
 end;
 

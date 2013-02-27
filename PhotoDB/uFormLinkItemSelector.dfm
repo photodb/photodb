@@ -32,7 +32,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Anchors = [akLeft, akRight, akBottom]
   end
   object BtnClose: TButton
-    Left = 343
+    Left = 242
     Top = 158
     Width = 79
     Height = 26
@@ -85,7 +85,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
   end
   object WlRemove: TWebLink
     Tag = 2
-    Left = 170
+    Left = 163
     Top = 166
     Width = 73
     Height = 18
@@ -105,9 +105,9 @@ object FormLinkItemSelector: TFormLinkItemSelector
     CanClick = True
   end
   object BtnSave: TButton
-    Left = 258
+    Left = 327
     Top = 158
-    Width = 79
+    Width = 95
     Height = 26
     Anchors = [akRight, akBottom]
     Caption = 'BtnSave'
@@ -141,7 +141,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Left = 56
     Top = 8
     Bitmap = {
-      494C010105000800480010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010105004C004C0010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000800000008000000000000000

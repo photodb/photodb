@@ -3,19 +3,21 @@ unit DBCMenu;
 interface
 
 uses
-  Types,
-  ShlObj,
-  Math,
-  Forms,
-  ShellApi,
+  Generics.Collections,
+  Winapi.ShlObj,
+  System.Math,
+  System.Types,
+  Winapi.ShellApi,
   Winapi.CommCtrl,
-  Windows,
-  SysUtils,
-  Classes,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Forms,
   Vcl.ActnPopup,
-  DB,
-  Graphics,
-  Menus,
+  Vcl.Graphics,
+  Vcl.Menus,
+  Data.DB,
+
   Dolphin_DB,
   UnitGroupsWork,
   UnitDBKernel,
@@ -62,6 +64,7 @@ uses
   uShellNamespaceUtils,
   uVCLHelpers,
   uPhotoShelf,
+  uLinkListEditorForExecutables,
   uFormInterfaces;
 
 type
@@ -73,7 +76,7 @@ type
     _user_menu: array of TMenuItem;
     FInfo: TDBPopupMenuInfo;
     FPopUpPoint: TPoint;
-    FUserMenu: TUserMenuItemArray;
+    FUserMenu: TList<TExecutableInfo>;
     FBusy: Boolean;
     aScript: TScript;
     FOwner: TDBForm;
@@ -286,7 +289,7 @@ begin
   TW.I.Start('LoadMenuFromScript - end');
 end;
 
-procedure TDBPopupMenu.AddUserMenu(Item: TMenuItem; Insert : Boolean; Index : integer);
+procedure TDBPopupMenu.AddUserMenu(Item: TMenuItem; Insert : Boolean; Index: Integer);
 var
   Reg: TBDRegistry;
   S: TStrings;
@@ -294,6 +297,7 @@ var
   FCaption, EXEFile, Params, Icon: string;
   UseSubMenu: Boolean;
   Ico: TIcon;
+  EI: TExecutableInfo;
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
@@ -301,7 +305,7 @@ begin
     S := TStringList.Create;
     try
       Reg.GetKeyNames(S);
-      SetLength(FUserMenu, 0);
+      FreeList(FUserMenu, False);
       SetLength(_user_group_menu_sub_items, 0);
       SetLength(_user_menu, 0);
       C := 0;
@@ -331,12 +335,9 @@ begin
           UseSubMenu := False;
         if (FCaption <> '') and (EXEFile <> '') then
         begin
-          SetLength(FUserMenu, Length(FUserMenu) + 1);
-          FUserMenu[Length(FUserMenu) - 1].Caption := FCaption;
-          FUserMenu[Length(FUserMenu) - 1].EXEFile := EXEFile;
-          FUserMenu[Length(FUserMenu) - 1].Params := Params;
-          FUserMenu[Length(FUserMenu) - 1].Icon := Icon;
-          FUserMenu[Length(FUserMenu) - 1].UseSubMenu := UseSubMenu;
+          EI := TExecutableInfo.Create(FCaption, ExeFile, Icon, Params, UseSubMenu);
+          FUserMenu.Add(EI);
+
           if UseSubMenu then
             Inc(C);
         end;
@@ -364,13 +365,13 @@ begin
         end;
 
       end;
-      for I := 0 to Length(FUserMenu) - 1 do
+      for I := 0 to FUserMenu.Count - 1 do
       begin
         if FUserMenu[I].UseSubMenu then
         begin
           SetLength(_user_group_menu_sub_items, Length(_user_group_menu_sub_items) + 1);
           _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1] := TMenuItem.Create(_user_group_menu);
-          _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].Caption := FUserMenu[I].Caption;
+          _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].Caption := FUserMenu[I].Title;
           _user_group_menu.Add(_user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1]);
           _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].Tag := I;
           _user_group_menu_sub_items[Length(_user_group_menu_sub_items) - 1].OnClick := UserMenuItemPopUpMenu_;
@@ -392,7 +393,7 @@ begin
         begin
           SetLength(_user_menu, Length(_user_menu) + 1);
           _user_menu[Length(_user_menu) - 1] := TMenuItem.Create(Item);
-          _user_menu[Length(_user_menu) - 1].Caption := FUserMenu[I].Caption;
+          _user_menu[Length(_user_menu) - 1].Caption := FUserMenu[I].Title;
           _user_menu[Length(_user_menu) - 1].Tag := I;
           _user_menu[Length(_user_menu) - 1].OnClick := UserMenuItemPopUpMenu_;
           Ico := TIcon.Create;
@@ -476,6 +477,7 @@ begin
 
   FBusy := False;
   Finfo := TDBPopupMenuInfo.Create;
+  FUserMenu := TList<TExecutableInfo>.Create;
   AScript := TScript.Create(FOwner, '');
   AScript.Description := 'ID Menu';
   AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
@@ -820,6 +822,7 @@ end;
 
 destructor TDBPopupMenu.destroy;
 begin
+  FreeList(FUserMenu);
   F(_popupMenu);
   if GOM.IsObj(aScript) then
     F(aScript);
@@ -938,9 +941,9 @@ begin
         B.PixelFormat := Pf24bit;
         SmallB := TBitmap.Create;
         try
-          SmallB.PixelFormat := Pf24bit;
-          B.Canvas.Brush.Color := Graphics.ClMenu;
-          B.Canvas.Pen.Color := Graphics.ClMenu;
+          SmallB.PixelFormat := pf24bit;
+          B.Canvas.Brush.Color := clMenu;
+          B.Canvas.Pen.Color := clMenu;
           Size := Max(FGroup.GroupImage.Width, FGroup.GroupImage.Height);
           B.Width := Size;
           B.Height := Size;
@@ -1561,8 +1564,8 @@ begin
     if FInfo[I].Selected then
       Params := ' "' + Finfo[I].FileName + '" ';
 
-  ExeFile := FUserMenu[(Sender as TMenuItem).Tag].EXEFile;
-  ExeParams := StringReplace(FUserMenu[(Sender as TMenuItem).Tag].Params, '%1', Params, [RfReplaceAll, RfIgnoreCase]);
+  ExeFile := FUserMenu[(Sender as TMenuItem).Tag].Path;
+  ExeParams := StringReplace(FUserMenu[(Sender as TMenuItem).Tag].Parameters, '%1', Params, [RfReplaceAll, RfIgnoreCase]);
   if ShellExecute(0, nil, PWideChar(ExeFile), PWideChar(ExeParams), nil, SW_SHOWNORMAL) < 32 then
     EventLog(':TDBPopupMenu::UserMenuItemPopUpMenu()/ShellExecute return < 32, path = ' + ExeFile + ' params = ' +
         ExeParams);

@@ -43,6 +43,7 @@ type
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
   protected
     procedure InterfaceDestroyed; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     function Execute(Title, StartPath: string; out PathItem: TPathItem): Boolean;
@@ -108,11 +109,19 @@ begin
   FShellTreeView.Align := AlClient;
   FShellTreeView.LoadHomeDirectory(Self);
   FShellTreeView.OnSelectPathItem := PathTreeViewChange;
+
+  BtnCancel.Caption := L('Cancel');
+  BtnOk.Caption := L('Ok');
 end;
 
 procedure TFormSelectLocation.FormDestroy(Sender: TObject);
 begin
   F(FShellTreeView);
+end;
+
+function TFormSelectLocation.GetFormID: string;
+begin
+  Result := 'SelectLocation';
 end;
 
 procedure TFormSelectLocation.InterfaceDestroyed;
