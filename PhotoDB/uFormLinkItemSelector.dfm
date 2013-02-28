@@ -24,22 +24,61 @@ object FormLinkItemSelector: TFormLinkItemSelector
     192)
   PixelsPerInch = 96
   TextHeight = 18
-  object BvSeparator: TBevel
-    Left = 8
-    Top = 132
-    Width = 414
-    Height = 2
-    Anchors = [akLeft, akRight, akBottom]
+  object PnMain: TPanel
+    Left = 0
+    Top = 0
+    Width = 430
+    Height = 157
+    Align = alTop
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    BevelOuter = bvNone
+    DoubleBuffered = True
+    FullRepaint = False
+    ParentBackground = False
+    ParentDoubleBuffered = False
+    TabOrder = 0
+    DesignSize = (
+      430
+      157)
+    object BvSeparator: TBevel
+      Left = 8
+      Top = 130
+      Width = 414
+      Height = 2
+      Anchors = [akLeft, akRight, akBottom]
+    end
+    object PnEditorPanel: TPanel
+      Left = 8
+      Top = 76
+      Width = 169
+      Height = 50
+      BevelOuter = bvNone
+      DoubleBuffered = False
+      FullRepaint = False
+      ParentBackground = False
+      ParentDoubleBuffered = False
+      TabOrder = 0
+    end
   end
   object BtnClose: TButton
     Left = 242
-    Top = 158
+    Top = 159
     Width = 79
     Height = 26
     Anchors = [akRight, akBottom]
     Caption = 'BtnClose'
-    TabOrder = 0
+    TabOrder = 1
     OnClick = BtnCloseClick
+  end
+  object BtnSave: TButton
+    Left = 327
+    Top = 159
+    Width = 95
+    Height = 26
+    Anchors = [akRight, akBottom]
+    Caption = 'BtnSave'
+    TabOrder = 2
+    OnClick = BtnSaveClick
   end
   object WlApplyChanges: TWebLink
     Tag = 2
@@ -104,44 +143,12 @@ object FormLinkItemSelector: TFormLinkItemSelector
     StretchImage = True
     CanClick = True
   end
-  object BtnSave: TButton
-    Left = 327
-    Top = 158
-    Width = 95
-    Height = 26
-    Anchors = [akRight, akBottom]
-    Caption = 'BtnSave'
-    TabOrder = 4
-    OnClick = BtnSaveClick
-  end
-  object PnMain: TPanel
-    Left = 0
-    Top = 0
-    Width = 430
-    Height = 126
-    Align = alTop
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    BevelOuter = bvNone
-    FullRepaint = False
-    ParentBackground = False
-    TabOrder = 5
-    object PnEditorPanel: TPanel
-      Left = 8
-      Top = 76
-      Width = 169
-      Height = 50
-      BevelOuter = bvNone
-      FullRepaint = False
-      ParentBackground = False
-      TabOrder = 0
-    end
-  end
   object ImPlaces: TImageList
     ColorDepth = cd32Bit
     Left = 56
     Top = 8
     Bitmap = {
-      494C010105004C004C0010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010105004C00580010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000800000008000000000000000

@@ -22,6 +22,8 @@ uses
   uMemory,
   uDBForm,
   uFormInterfaces,
+  uGraphicUtils,
+  uVCLHelpers,
 
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
@@ -42,17 +44,17 @@ type
   end;
 
   TFormLinkItemSelector = class(TDBForm, ILinkItemSelectForm)
-    BvSeparator: TBevel;
-    BtnClose: TButton;
     ImPlaces: TImageList;
     AeMain: TApplicationEvents;
     TmrAnimation: TTimer;
+    PnEditorPanel: TPanel;
+    PnMain: TPanel;
+    BtnClose: TButton;
+    BtnSave: TButton;
     WlApplyChanges: TWebLink;
     WlCancelChanges: TWebLink;
     WlRemove: TWebLink;
-    BtnSave: TButton;
-    PnEditorPanel: TPanel;
-    PnMain: TPanel;
+    BvSeparator: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormDestroy(Sender: TObject);
@@ -327,6 +329,15 @@ begin
 
   BtnClose.Caption := L('Cancel', '');
   BtnSave.Caption := L('Save', '');
+
+  WlApplyChanges.Text := L('Apply');
+  WlCancelChanges.Text := L('Cancel');
+  WlRemove.Text := L('Remove');
+  WlApplyChanges.RefreshBuffer(True);
+  WlCancelChanges.RefreshBuffer(True);
+  WlRemove.RefreshBuffer(True);
+  WlCancelChanges.Left := WlApplyChanges.AfterRight(PaddingTop);
+  WlRemove.Left := WlCancelChanges.AfterRight(PaddingTop * 2);
 end;
 
 procedure TFormLinkItemSelector.FormDestroy(Sender: TObject);
@@ -359,7 +370,7 @@ end;
 
 function TFormLinkItemSelector.GetFormHeight: Integer;
 begin
-  Result := PaddingTop * 2 + FLinks.Count * (LinkHeight + LinksDy) + 50
+  Result := PaddingTop * 2 + FLinks.Count * (LinkHeight + LinksDy) + 56;
 end;
 
 function TFormLinkItemSelector.GetFormID: string;
@@ -373,7 +384,7 @@ var
   IL: Tlabel;
 begin
   WL := TWebLink.Create(Self);
-  WL.Parent := Self;
+  WL.Parent := PnMain;
   WL.Tag := FLinks.Count;
   WL.Height := LinkHeight;
   WL.Width := ClientWidth;
@@ -455,7 +466,7 @@ begin
       for Action in Actions do
       begin
         WL := TWebLink.Create(Self);
-        WL.Parent := Self;
+        WL.Parent := PnMain;
         WL.Left := LinkLeft;
         WL.Top := BvSeparator.Top + PaddingTop;
         WL.Anchors := [akLeft, akBottom];
@@ -537,6 +548,7 @@ begin
     end;
   end;
 
+  TmrAnimation.Enabled := True;
 end;
 
 procedure TFormLinkItemSelector.MoveControlToIndex(Control: TControl; Index: Integer);
@@ -562,39 +574,54 @@ var
   Animation: TAnimationInfo;
   Progress: Double;
   Control: TControl;
+  CStart, CEnd: Cardinal;
 begin
-  for I := FAnimations.Count - 1 downto 0 do
-  begin
-    Animation := FAnimations[I];
-    Progress := 1 - (Animation.TillTime - Now) / AnimationDuration;
-
-    Progress := Min(1, Max(0, Progress));
-
-    NewPos := Animation.StartPosition + Round(makeEaseOut(Progress) * (Animation.EndPosition - Animation.StartPosition));
-
-    Control := Animation.Control;
-    if Control is TForm then
+  CStart := GetTickCount;
+  TmrAnimation.Enabled := False;
+  Self.DisableAlign;
+  BeginScreenUpdate(Handle);
+  try
+    for I := FAnimations.Count - 1 downto 0 do
     begin
-      if Animation.Direction = adVert then
-        Control.ClientHeight := NewPos;
-      if Animation.Direction = adHor then
-        Control.ClientWidth := NewPos;
-    end else
-    begin
-      if Animation.Direction = adVert then
-        Control.Top := NewPos;
-      if Animation.Direction = adHor then
-        Control.Left := NewPos;
+      Animation := FAnimations[I];
+      Progress := 1 - (Animation.TillTime - Now) / AnimationDuration;
+
+      Progress := Min(1, Max(0, Progress));
+
+      NewPos := Animation.StartPosition + Round(makeEaseOut(Progress) * (Animation.EndPosition - Animation.StartPosition));
+
+      Control := Animation.Control;
+      if Control is TForm then
+      begin
+        if Animation.Direction = adVert then
+          Control.ClientHeight := NewPos;
+        if Animation.Direction = adHor then
+          Control.ClientWidth := NewPos;
+      end else
+      begin
+        if Animation.Direction = adVert then
+          Control.Top := NewPos;
+        if Animation.Direction = adHor then
+          Control.Left := NewPos;
+      end;
+
+      if Progress = 1 then
+      begin
+        if aoRemove in Animation.Options then
+          Control.Free;
+        FAnimations.Delete(I);
+        Continue;
+      end;
     end;
-
-    if Progress = 1 then
-    begin
-      if aoRemove in Animation.Options then
-        Control.Free;
-      FAnimations.Delete(I);
-      Continue;
-    end;
+  finally
+    EnableAlign;
+    EndScreenUpdate(Handle, True);
   end;
+  if FAnimations.Count = 0 then
+    Exit;
+  CEnd := GetTickCount;
+  TmrAnimation.Interval := Max(1, 10 - Max(10, (CEnd - CStart)));
+  TmrAnimation.Enabled := True;
 end;
 
 procedure TFormLinkItemSelector.WlAddElementsClick(Sender: TObject);
@@ -647,6 +674,9 @@ begin
   F(FEditData);
   FEditData := FData[FEditIndex].Clone;
 
+  BtnClose.BringToFront;
+  BtnSave.BringToFront;
+
   PnEditorPanel.Tag := NativeInt(FEditData);
   PnEditorPanel.HandleNeeded;
   PnEditorPanel.AutoSize := True;
@@ -669,8 +699,10 @@ begin
 
   MoveControlTo(BvSeparator, ToWidth, adHor);
 
+  //for WL in FActionLinks do
+  //  MoveControlTo(WL, ToWidth, adHor);
   for WL in FActionLinks do
-    MoveControlTo(WL, ToWidth, adHor);
+    MoveControlTo(WL, ToHeight, adVert);
 
   MoveControlTo(WlApplyChanges, ToHeight - BtnSave.Height - WlApplyChanges.Height - PaddingTop * 2, adVert);
   MoveControlTo(WlCancelChanges, ToHeight - BtnSave.Height - WlCancelChanges.Height - PaddingTop * 2, adVert);
@@ -708,6 +740,8 @@ begin
     MoveControlTo(WL, Left, adHor);
     Left := Left + WL.Width + PaddingTop;
   end;
+  for WL in FActionLinks do
+    MoveControlTo(WL, (ToHeight - ClientHeight) + BvSeparator.Top + PaddingTop, adVert);
 
   MoveControlTo(WlApplyChanges, ToHeight, adVert);
   MoveControlTo(WlCancelChanges, ToHeight, adVert);

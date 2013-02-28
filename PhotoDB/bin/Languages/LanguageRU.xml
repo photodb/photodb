@@ -2367,4 +2367,8 @@
 	<translate name="Please wait until program searches for sources with images" value="Программа ищет доступные устройства. Пожалуйста, ждите." />
   	<translate name="Select a folder" value="Выбрать папку" />
   </scope>
+  <scope name="LinkListEditor">
+  	<translate name="Apply" value="Применить" />
+  	<translate name="Remove" value="Удалить" />
+  </scope>
 </language>
