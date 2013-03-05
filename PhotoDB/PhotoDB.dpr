@@ -68,7 +68,6 @@ uses
   UnitEditorFullScreenForm in 'UnitEditorFullScreenForm.pas' {EditorFullScreenForm},
   UnitChangeDBPath in 'UnitChangeDBPath.pas' {FormChangeDBPath},
   UnitSelectDB in 'UnitSelectDB.pas' {FormSelectDB},
-  UnitDBOptions in 'UnitDBOptions.pas' {FormDBOptions},
   UnitFormCDExport in 'UnitFormCDExport.pas' {FormCDExport},
   UnitFormCDMapper in 'UnitFormCDMapper.pas' {FormCDMapper},
   UnitFormCDMapInfo in 'UnitFormCDMapInfo.pas' {FormCDMapInfo},

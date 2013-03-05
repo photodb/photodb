@@ -15,6 +15,7 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitDBFileDialogs,
+  UnitDBDeclare,
 
   uMemory,
   uVclHelpers,
@@ -45,6 +46,8 @@ type
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
+    function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
+    function OnApply(Sender: ILinkItemSelectForm): Boolean;
   end;
 
 implementation
@@ -238,8 +241,7 @@ begin
   );
 end;
 
-procedure TLinkListEditorForExecutables.LoadIconForLink(Link: TWebLink; Path,
-  Icon: string);
+procedure TLinkListEditorForExecutables.LoadIconForLink(Link: TWebLink; Path, Icon: string);
 var
   Ico: HIcon;
 begin
@@ -252,6 +254,11 @@ begin
   finally
     DestroyIcon(Ico);
   end;
+end;
+
+function TLinkListEditorForExecutables.OnApply(Sender: ILinkItemSelectForm): Boolean;
+begin
+  Result := True;
 end;
 
 procedure TLinkListEditorForExecutables.OnChangePlaceClick(Sender: TObject);
@@ -278,6 +285,12 @@ begin
   finally
     F(OpenDialog);
   end;
+end;
+
+function TLinkListEditorForExecutables.OnDelete(Sender: ILinkItemSelectForm;
+  Data: TDataObject; Editor: TPanel): Boolean;
+begin
+  Result := True;
 end;
 
 procedure TLinkListEditorForExecutables.OnPlaceIconClick(Sender: TObject);

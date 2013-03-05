@@ -3,22 +3,23 @@ unit ConvertDBThreadUnit;
 interface
 
 uses
-  Windows,
-  Classes,
-  SysUtils,
-  ActiveX,
-  CommonDBSupport,
-  DB,
-  Forms,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.Classes,
+  System.SysUtils,
+  Data.DB,
+  Vcl.Forms,
 
   Dmitry.Utils.Files,
 
+  UnitGroupsWork,
+  UnitDBDeclare,
+  CommonDBSupport,
+
+  uConstants,
   uRuntime,
   uGroupTypes,
-  UnitGroupsWork,
-  uConstants,
   uShellIntegration,
-  UnitDBDeclare,
   uMemory,
   uTranslate,
   uThreadEx,
@@ -218,7 +219,7 @@ begin
       SynchronizeEx(ShowErrorMessage);
     end;
 
-    FFileName := SysUtils.StringReplace(FFileName, '$', '', [RfReplaceAll]);
+    FFileName := StringReplace(FFileName, '$', '', [RfReplaceAll]);
     NewFileName := IncludeTrailingBackSlash(ExtractFileDir(FFileName)) + GetFileNameWithoutExt(FFileName);
     NewFileName := NewFileName + '.photodb';
     RenameFile(ToFileName, NewFileName);

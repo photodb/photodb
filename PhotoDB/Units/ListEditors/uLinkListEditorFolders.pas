@@ -16,6 +16,8 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.PathProviders,
 
+  UnitDBDeclare,
+
   uMemory,
   uDBForm,
   uVCLHelpers,
@@ -37,15 +39,18 @@ type
   TLinkListEditorFolder = class(TInterfacedObject, ILinkEditor)
   private
     FOwner: TDBForm;
+    FCurrentPath: string;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
   public
-    constructor Create(Owner: TDBForm);
+    constructor Create(Owner: TDBForm; CurrentPath: string);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
+    function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
+    function OnApply(Sender: ILinkItemSelectForm): Boolean;
   end;
 
 implementation
@@ -85,9 +90,10 @@ end;
 
 { TLinkListEditorFolder }
 
-constructor TLinkListEditorFolder.Create(Owner: TDBForm);
+constructor TLinkListEditorFolder.Create(Owner: TDBForm; CurrentPath: string);
 begin
   FOwner := Owner;
+  FCurrentPath := CurrentPath;
 end;
 
 procedure TLinkListEditorFolder.CreateEditorForItem(Sender: ILinkItemSelectForm;
@@ -134,7 +140,7 @@ begin
     WlChangeLocation.Parent := Editor;
     WlChangeLocation.Tag := CHANGE_PLACE_CHANGE_PATH;
     WlChangeLocation.Height := 26;
-    WlChangeLocation.Text := Fowner.L('Change location');
+    WlChangeLocation.Text := FOwner.L('Change location');
     WlChangeLocation.RefreshBuffer(True);
     WlChangeLocation.Top := 8 + WedCaption.Height div 2 - WlChangeLocation.Height div 2;
     WlChangeLocation.Left := 240;
@@ -170,8 +176,16 @@ begin
 
     PI := nil;
     try
-      if SelectLocationForm.Execute(FOwner.L('Select a directory'), '', PI) then
-        Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
+      if Verb = 'Add' then
+      begin
+        if SelectLocationForm.Execute(FOwner.L('Select a directory'), '', PI) then
+          Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
+      end else
+      begin
+        PI := PathProviderManager.CreatePathItem(FCurrentPath);
+        if PI <> nil then
+          Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
+      end;
     finally
       F(PI);
     end;
@@ -192,11 +206,31 @@ end;
 
 procedure TLinkListEditorFolder.FillActions(Sender: ILinkItemSelectForm;
   AddActionProc: TAddActionProcedure);
+var
+  PI: TPathItem;
 begin
-  AddActionProc(['Create'],
+  AddActionProc(['Add', 'CurrentDirectory'],
     procedure(Action: string; WebLink: TWebLink)
     begin
-      WebLink.Text := FOwner.L('Add directory');
+      if Action = 'Add' then
+      begin
+        WebLink.Text := FOwner.L('Add directory');
+        WebLink.LoadFromResource('SERIES_EXPAND');
+      end;
+
+      if Action = 'CurrentDirectory' then
+      begin
+        WebLink.Text := FOwner.L('Current directory');
+        PI := PathProviderManager.CreatePathItem(FCurrentPath);
+        try
+          if (PI <> nil) and PI.LoadImage(PATH_LOAD_FOR_IMAGE_LIST, 16) then
+            WebLink.LoadFromPathImage(PI.Image)
+          else
+            WebLink.LoadFromResource('DIRECTORY');
+        finally
+          F(PI);
+        end;
+      end;
     end
   );
 end;
@@ -241,6 +275,11 @@ begin
   LI.Title := WedCaption.Text;
 end;
 
+function TLinkListEditorFolder.OnApply(Sender: ILinkItemSelectForm): Boolean;
+begin
+  Result := True;
+end;
+
 procedure TLinkListEditorFolder.OnChangePlaceClick(Sender: TObject);
 var
   LI: TLinkInfo;
@@ -262,6 +301,12 @@ begin
   finally
     F(PI);
   end;
+end;
+
+function TLinkListEditorFolder.OnDelete(Sender: ILinkItemSelectForm;
+  Data: TDataObject; Editor: TPanel): Boolean;
+begin
+  Result := True;
 end;
 
 procedure TLinkListEditorFolder.OnPlaceIconClick(Sender: TObject);

@@ -3,19 +3,21 @@ unit UnitSelectDB;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Controls,
-  Forms,
-  Graphics,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Graphics,
+  Vcl.ExtCtrls,
+  Vcl.StdCtrls,
+
+  UnitDBDeclare,
+  CommonDBSupport,
+
+  uConstants,
   uMemory,
   uMemoryEx,
-  ExtCtrls,
-  StdCtrls,
-  UnitDBDeclare,
-  uConstants,
-  CommonDBSupport,
   uDBForm,
   uWizards,
   uInterfaces,
@@ -39,7 +41,7 @@ type
   private
     { Private declarations }
     FImageOptions: TImageDBOptions;
-    FDBFile: TPhotoDBFile;
+    FDBFile: TDatabaseInfo;
     FOptions: Integer;
     FWizard: TWizardManager;
     procedure LoadLanguage;
@@ -52,13 +54,13 @@ type
     { Public declarations }
     function InvalidDBFileMessage : string;
     procedure Execute;
-    function GetResultDB: TPhotoDBFile;
+    function GetResultDB: TDatabaseInfo;
     property Options: Integer read FOptions write FOptions;
     function LReadOnly : string;
-    property DBFile: TPhotoDBFile read FDBFile;
+    property DBFile: TDatabaseInfo read FDBFile;
   end;
 
-function DoChooseDBFile(Options : Integer = SELECT_DB_OPTION_GET_DB) : TPhotoDBFile;
+function DoChooseDBFile(Options: Integer = SELECT_DB_OPTION_GET_DB): TDatabaseInfo;
 
 implementation
 
@@ -67,7 +69,7 @@ uses
 
 {$R *.dfm}
 
-function DoChooseDBFile(Options: Integer = SELECT_DB_OPTION_GET_DB): TPhotoDBFile;
+function DoChooseDBFile(Options: Integer = SELECT_DB_OPTION_GET_DB): TDatabaseInfo;
 var
   FormSelectDB: TFormSelectDB;
 begin
@@ -148,7 +150,7 @@ end;
 
 procedure TFormSelectDB.FormCreate(Sender: TObject);
 begin
-  FDBFile := TPhotoDBFile.Create;
+  FDBFile := TDatabaseInfo.Create;
   FImageOptions := CommonDBSupport.GetDefaultImageDBOptions;
   FImageOptions.Version := 0; // VERSION IS SETTED AFTER PROCESSING IMAGES
   LoadLanguage;
@@ -176,13 +178,12 @@ begin
   end;
 end;
 
-function TFormSelectDB.GetResultDB: TPhotoDBFile;
+function TFormSelectDB.GetResultDB: TDatabaseInfo;
 begin
-  Result := TPhotoDBFile.Create;
-  Result.Name := FDBFile.Name;
+  Result := TDatabaseInfo.Create;
+  Result.Title := FDBFile.Title;
   Result.Icon := FDBFile.Icon;
-  Result.FileName := FDBFile.FileName;
-  Result.FileType := FDBFile.FileType;
+  Result.Path := FDBFile.Path;
 end;
 
 end.

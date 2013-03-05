@@ -16,13 +16,14 @@ uses
   Dmitry.Utils.Files,
   Dmitry.Controls.WatermarkedEdit,
 
+  UnitDBDeclare,
+  UnitDBCommonGraphics,
+  UnitDBFileDialogs,
+
   uFrameWizardBase,
   uMemory,
-  UnitDBDeclare,
   uShellIntegration,
-  UnitDBCommonGraphics,
   uConstants,
-  UnitDBFileDialogs,
   uIconUtils;
 
 type
@@ -46,7 +47,7 @@ type
     procedure EdPathChange(Sender: TObject);
   private
     { Private declarations }
-    function GetDBFile: TPhotoDBFile;
+    function GetDBFile: TDatabaseInfo;
     procedure SetIcon(Path: string);
   protected
     { Protected declarations }
@@ -56,7 +57,7 @@ type
     function ValidateStep(Silent: Boolean): Boolean; override;
     function InitNextStep: Boolean; override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
-    property DBFile: TPhotoDBFile read GetDBFile;
+    property DBFile: TDatabaseInfo read GetDBFile;
   end;
 
 implementation
@@ -135,7 +136,7 @@ begin
   end;
 end;
 
-function TFrmSelectDBNewPathAndIcon.GetDBFile: TPhotoDBFile;
+function TFrmSelectDBNewPathAndIcon.GetDBFile: TDatabaseInfo;
 begin
   Result := TFormSelectDB(Manager.Owner).DBFile;
 end;
@@ -178,8 +179,8 @@ function TFrmSelectDBNewPathAndIcon.ValidateStep(Silent: Boolean): Boolean;
 begin
   if EdPath.Text <> '' then
   begin
-    DBFile.FileName := EdPath.Text;
-    DBFile.Name := EdName.Text;
+    DBFile.Path := EdPath.Text;
+    DBFile.Title := EdName.Text;
   end else
   begin
     if not Silent then

@@ -88,20 +88,6 @@ type
     PnTop: TPanel;
     PopupMenu1: TPopupActionBar;
     Label7: TLabel;
-    CbSetField: TComboBox;
-    Label9: TLabel;
-    Edit2: TEdit;
-    Label10: TLabel;
-    CbWhereField1: TComboBox;
-    Edit3: TEdit;
-    BtnExecSQL: TButton;
-    CbWhereCombinator: TComboBox;
-    Edit4: TEdit;
-    CbWhereField2: TComboBox;
-    CbOperatorWhere1: TComboBox;
-    CbOperatorWhere2: TComboBox;
-    RbSQLSet: TRadioButton;
-    RbSQLDelete: TRadioButton;
     RecordNumberEdit: TEdit;
     SaveWindowPos1: TSaveWindowPos;
     PopupMenu2: TPopupActionBar;
@@ -153,15 +139,6 @@ type
     ScanforBadLinksLink: TWebLink;
     BackUpDBLink: TWebLink;
     CleaningLink: TWebLink;
-    LbDatabases: TListBox;
-    BtnAddDB: TButton;
-    DBImageList: TImageList;
-    PmRestore: TPopupActionBar;
-    DeleteDB1: TMenuItem;
-    RenameDB1: TMenuItem;
-    N1: TMenuItem;
-    SelectDB1: TMenuItem;
-    EditDB1: TMenuItem;
     DuplicatesLink: TWebLink;
     ConvertLink: TWebLink;
     ChangePathLink: TWebLink;
@@ -170,13 +147,7 @@ type
     dblData: TDBLoading;
     LsLoadingDB: TLoadingSign;
     procedure FormCreate(Sender: TObject);
-    procedure ComboBox1Change(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure RbSQLSetClick(Sender: TObject);
-    procedure CbWhereCombinatorChange(Sender: TObject);
-    procedure CbWhereField1Change(Sender: TObject);
-    procedure BtnExecSQLClick(Sender: TObject);
-    procedure CbOperatorWhere1Change(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure GroupsManager1Click(Sender: TObject);
     procedure LbBackupsDrawItem(Control: TWinControl; Index: Integer;
@@ -203,14 +174,6 @@ type
     procedure BackUpDBLinkClick(Sender: TObject);
     procedure CleaningLinkClick(Sender: TObject);
     procedure ElvMainContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-    procedure LbDatabasesDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
-    procedure BtnAddDBClick(Sender: TObject);
-    procedure LbDatabasesContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-    procedure RenameDB1Click(Sender: TObject);
-    procedure SelectDB1Click(Sender: TObject);
-    procedure DeleteDB1Click(Sender: TObject);
-    procedure LbDatabasesDblClick(Sender: TObject);
-    procedure EditDB1Click(Sender: TObject);
     procedure RecordNumberEditChange(Sender: TObject);
     procedure DuplicatesLinkClick(Sender: TObject);
     procedure ConvertLinkClick(Sender: TObject);
@@ -240,7 +203,6 @@ type
     procedure GetData(Index: integer);
     procedure DeleteItemWithID(ID: Integer);
     procedure RefreshDBList;
-    procedure CheckSQL;
     procedure ChangedDBDataByID(Sender: TObject; ID: integer; params: TEventFields; Value: TEventValues);
     function GetListViewItemAt(Y: Integer): TListItem;
     procedure ShowGroupQuickInfo(Sender: TObject);
@@ -258,16 +220,6 @@ type
     procedure DBLoadDataPacket(DataList: TList);
   end;
 
-const FieldCount = 19;
-ChFields : array[1..FieldCount] of string = ('ID','Rating','Rotated','Access',
-'Width','Height','Attr','Name','FFileName','Comment','KeyWords','Owner','Collection','DateToAdd','IsDate','Include','Links','aTime','IsTime');
-      FieldTypeInt  = 0;
-      FieldTypeStr  = 1;
-      FieldTypeDate = 2;
-      FieldTypeBool = 3;
-      ChFieldsTypes: array[1..FieldCount] of integer = (FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeInt,
-FieldTypeInt,FieldTypeInt,FieldTypeInt,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeStr,FieldTypeDate,FieldTypeBool,FieldTypeBool,FieldTypeStr,FieldTypeDate,FieldTypeBool);
-
 implementation
 
 uses
@@ -281,7 +233,6 @@ uses
   UnitChangeDBPath,
   UnitSelectDB,
   uThreadLoadingManagerDB,
-  UnitDBOptions,
   uListViewUtils;
 
 {$R *.dfm}
@@ -308,8 +259,6 @@ begin
 end;
 
 procedure TManagerDB.FormCreate(Sender: TObject);
-var
-  I: Integer;
 begin
   FLoadingDataThread := nil;
   FData := TList.Create;
@@ -355,12 +304,6 @@ begin
   Refresh1.ImageIndex := DB_IC_RELOAD;
   Rename1.ImageIndex  := DB_IC_RENAME;
 
-  PmRestore.Images := DBKernel.ImageList;
-  SelectDB1.ImageIndex := DB_IC_SHELL;
-  RenameDB1.ImageIndex := DB_IC_RENAME;
-  DeleteDB1.ImageIndex := DB_IC_DELETE_INFO;
-  EditDB1.ImageIndex   := DB_IC_NOTES;
-
   FBackUpFiles := TStringList.Create;
   LbBackups.DoubleBuffered := True;
   DropFileTarget1.Register(Self);
@@ -369,18 +312,6 @@ begin
 
   Showfileinexplorer1.ImageIndex := DB_IC_FOLDER;
 
-  CbSetField.Items.Clear;
-  CbWhereField1.Items.Clear;
-  CbWhereField2.Items.Clear;
-  CbWhereField1.Items.Add(ChFields[1]);
-  CbWhereField2.Items.Add(ChFields[1]);
-  for I := 2 to FieldCount do
-  begin
-    CbSetField.Items.Add(ChFields[I]);
-    CbWhereField1.Items.Add(ChFields[I]);
-    CbWhereField2.Items.Add(ChFields[I]);
-  end;
-  CheckSQL;
   SaveWindowPos1.Key := RegRoot + 'Manager';
   SaveWindowPos1.SetPosition;
   LoadLanguage;
@@ -388,11 +319,6 @@ begin
   RefreshDBList;
 
   InitializeQueryList;
-end;
-
-procedure TManagerDB.ComboBox1Change(Sender: TObject);
-begin
-  CheckSQL;
 end;
 
 procedure TManagerDB.ChangedDBDataByID(Sender: TObject; ID: integer;
@@ -478,147 +404,6 @@ begin
   FreeList(FData);
 end;
 
-procedure TManagerDB.RbSQLSetClick(Sender: TObject);
-begin
-  CbSetField.Enabled := RbSQLSet.Checked;
-  Edit2.Enabled := RbSQLSet.Checked;
-  CheckSQL;
-end;
-
-procedure TManagerDB.CbWhereCombinatorChange(Sender: TObject);
-begin
-  if CbWhereCombinator.Text = ' ' then
-  begin
-    CbWhereField2.Enabled := False;
-    CbOperatorWhere2.Enabled := False;
-    Edit4.Enabled := False;
-  end else
-  begin
-    CbWhereField2.Enabled := True;
-    CbOperatorWhere2.Enabled := True;
-    Edit4.Enabled := True;
-  end;
-  CheckSQL;
-end;
-
-function GetFieldTupe(FieldName : String) : Integer;
-var
-  I: Integer;
-begin
-  Result := 0;
-  for I := 1 to FieldCount do
-  if AnsiUpperCase(ChFields[I]) = AnsiUpperCase(FieldName) then
-  begin
-    Result := ChFieldsTypes[I];
-    Break;
-  end;
-end;
-
-procedure TManagerDB.CbWhereField1Change(Sender: TObject);
-var
-  NewField : String;
-  CbOperatorWhere : TComboBox;
-begin
-  NewField := TComboBox(Sender).Text;
-  if Sender = CbWhereField1 then
-    CbOperatorWhere := CbOperatorWhere1
-  else
-    CbOperatorWhere := CbOperatorWhere2;
-
-  case GetFieldTupe(NewField) of
-    FieldTypeInt,
-    FieldTypeDate:
-    begin
-      CbOperatorWhere.Items.Clear;
-      CbOperatorWhere.Items.Add('=');
-      CbOperatorWhere.Items.Add('>');
-      CbOperatorWhere.Items.Add('<');
-      CbOperatorWhere.Items.Add('<>');
-    end;
-    FieldTypeStr:
-    begin
-      CbOperatorWhere.Items.Clear;
-      CbOperatorWhere.Items.Add('=');
-      CbOperatorWhere.Items.Add('<>');
-      CbOperatorWhere.Items.Add('like');
-    end;
-    FieldTypeBool:
-    begin
-      CbOperatorWhere.Items.Clear;
-      CbOperatorWhere.Items.Add('=');
-      CbOperatorWhere.Items.Add('<>');
-    end;
-  end;
-  CheckSQL;
-end;
-
-function ValueToDBValue(FieldName, Value : String) : String;
-var
-  FieldType: Integer;
-begin
-  FieldType := GetFieldTupe(FieldName);
-  if FieldType = FieldTypeInt then Result := IntToStr(StrToIntDef(Value,0))
-  else if FieldType = FieldTypeStr then Result := normalizeDBString(Value)
-  else if FieldType = FieldTypeBool then
-  begin
-    if Value='0' then
-      Result:='TRUE'
-    else
-      Result:='FALSE';
-  end else if FieldType = FieldTypeDate then
-    Result := FloatToStr(StrToDateTimeDef(Value, 0));
-end;
-
-procedure TManagerDB.BtnExecSQLClick(Sender: TObject);
-var
-  SQL: string;
-  Query: TDataSet;
-begin
-  Query := GetQuery;
-  try
-    if RbSQLSet.Checked then
-      SQL := 'Update $DB$ Set ' + CbSetField.Text + ' = ' + ValueToDBValue(CbSetField.Text, Edit2.Text)
-    else
-      SQL := 'Delete from $DB$';
-
-    SQL := SQL + ' Where ';
-    SQL := SQL + '(' + CbWhereField1.Text + ' ' + CbOperatorWhere1.Text + ' ' + ValueToDBValue(CbWhereField1.Text,
-      Edit3.Text) + ')';
-    if (Trim(CbWhereCombinator.Text) <> '') then
-    begin
-      SQL := SQL + ' ' + CbWhereCombinator.Text + ' (' + CbWhereField2.Text + ' ' + CbOperatorWhere2.Text + ' ' +
-        ValueToDBValue(CbWhereField2.Text, Edit4.Text) + ')';
-    end;
-    SetSQL(Query, SQL);
-    try
-      ExecSQL(Query);
-    except
-      on E: Exception do
-        MessageBoxDB(Handle, Format(L('An error occurred during the query: %s (%s)'), [E.message, SQL]), L('Error'),
-          TD_BUTTON_OK, TD_ICON_ERROR);
-    end;
-  finally
-    FreeDS(Query);
-  end;
-end;
-
-procedure TManagerDB.CheckSQL;
-begin
-  if (((CbSetField.Text <> '') and RbSQLSet.Checked) or RbSQLDelete.Checked) and (CbWhereField1.Text<>'') and (CbOperatorWhere1.Text<>'') then
-  begin
-    if (Trim(CbWhereCombinator.Text) = '') then
-      BtnExecSQL.Enabled := True
-    else
-      BtnExecSQL.Enabled := (CbWhereField2.Text <> '') and (CbOperatorWhere2.Text <> '');
-
-  end else
-    BtnExecSQL.Enabled := False;
-end;
-
-procedure TManagerDB.CbOperatorWhere1Change(Sender: TObject);
-begin
-  CheckSQL;
-end;
 
 procedure TManagerDB.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -635,16 +420,12 @@ begin
   BeginTranslate;
   try
     Caption:= L('Collection Manager');
-    RbSQLSet.Caption:= L('Set');
-    RbSQLDelete.Caption:=  L('Delete');
-    Label10.Caption:= L('where');
     PackTabelLink.Text:= L('Pack table');
     ExportTableLink.Text:= L('Export collection');
     ImportTableLink.Text:= L('Import collection');
     BackUpDBLink.Text:= L('Backup collection');
     CleaningLink.Text:= L('Cleaning');
     DuplicatesLink.Text:= L('Optimize duplicates');
-    BtnExecSQL.Caption:= L('Exec sql');
     DateExists1.Caption:= L('No date');
     DateExists2.Caption:= L('Set date');
     EditGroups1.Caption:= L('Edit groups');
@@ -659,11 +440,6 @@ begin
     Rename1.Caption:= L('Rename');
     RecreateIDExLink.Text:= L('Recreate cache');
     ScanforBadLinksLink.Text:= L('Scan for bad links');
-    BtnAddDB.Caption:= L('Add collection file');
-    EditDB1.Caption:= L('Edit');
-    SelectDB1.Caption:= L('Select collection');
-    DeleteDB1.Caption:= L('Delete');
-    RenameDB1.Caption:= L('Rename');
     ConvertLink.Text:= L('Convert collection');
     ChangePathLink.Text:= L('Change path in collection');
 
@@ -826,7 +602,6 @@ var
   I, W, H: Integer;
   B: TBitmap;
 begin
-  LbDatabases.Enabled := False;
   FreeGroups(aGroups);
   AGroups := GetRegisterGroupList(True);
   for I := 0 to Length(GroupBitmaps) - 1 do
@@ -894,7 +669,6 @@ begin
    FLoadingDataThread := nil;
    LsLoadingDB.Active := False;
    LsLoadingDB.Hide;
-   LbDatabases.Enabled := True;
 end;
 
 procedure TManagerDB.ElvMainAdvancedCustomDrawSubItem(
@@ -1722,7 +1496,7 @@ end;
 
 procedure TManagerDB.CleaningLinkClick(Sender: TObject);
 begin
-  if DBCleaningForm=nil then
+  if DBCleaningForm = nil then
     Application.CreateForm(TDBCleaningForm, DBCleaningForm);
   DBCleaningForm.Show;
 end;
@@ -1754,9 +1528,9 @@ end;
 
 procedure TManagerDB.DeleteItemWithID(ID: integer);
 var
-  I : integer;
-  SI : integer;
-  ItemData : TDBPopupMenuInfoRecord;
+  I: Integer;
+  SI: Integer;
+  ItemData: TDBPopupMenuInfoRecord;
 begin
   for I := ElvMain.Items.Count - 1 downto 0 do
   begin
@@ -1793,172 +1567,16 @@ begin
   ElvMain.Repaint;
 end;
 
-procedure TManagerDB.LbDatabasesDrawItem(Control: TWinControl; Index: Integer;
-  Rect: TRect; State: TOwnerDrawState);
-var
-  LB: TListBox;
-  ADBName: string;
-begin
-  LB := (Control as TListBox);
-  LB.Canvas.FillRect(Rect);
-  ADBname := ExtractFileName(DBKernel.DBs[index].FileName);
-  if AnsiLowerCase(Dbname) = AnsiLowerCase(DBKernel.DBs[index].FileName) then
-    LB.Canvas.Font.Style := [FsBold]
-  else
-    LB.Canvas.Font.Style := [];
-  LB.Canvas.TextOut(Rect.Left + 21, Rect.Top + 3, LB.Items[index] + '  [' + ADBname + ']');
-  DBImageList.Draw(LB.Canvas, Rect.Left + 2, Rect.Top + 2, index, True);
-end;
-
-procedure TManagerDB.BtnAddDBClick(Sender: TObject);
-var
-  DBFile: TPhotoDBFile;
-begin
-  DBFile := DoChooseDBFile;
-  try
-    if DBKernel.TestDB(DBFile.FileName) then
-      DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
-  finally
-    F(DBFile);
-  end;
-  RefreshDBList;
-end;
-
 procedure TManagerDB.RefreshDBList;
-var
-  I: Integer;
-  Ico: TIcon;
+
 begin
-  DBImageList.Clear;
-  LbDatabases.Clear;
 
-  for I := 0 to DBKernel.DBs.Count - 1 do
-  begin
-    LbDatabases.Items.Add(DBKernel.DBs[I].name);
-    Ico := TIcon.Create;
-    try
-      Ico.Handle := ExtractSmallIconByPath(DBKernel.DBs[I].Icon);
-      if Ico.Empty then
-        Ico.Handle := ExtractSmallIconByPath(Application.ExeName + ',0');
-      DBImageList.AddIcon(Ico);
-    finally
-      F(Ico);
-    end;
-  end;
-end;
-
-procedure TManagerDB.LbDatabasesContextPopup(Sender: TObject;
-  MousePos: TPoint; var Handled: Boolean);
-var
-  index, I: Integer;
-begin
-  index := LbDatabases.ItemAtPos(MousePos, True);
-  if index = -1 then
-  begin
-    for I := 0 to LbDatabases.Items.Count - 1 do
-      LbDatabases.Selected[I] := False;
-    Exit;
-  end;
-  DeleteDB1.Visible := LbDatabases.Items.Count > 1;
-  if index <> -1 then
-    LbDatabases.Selected[index] := True
-  else
-    PmRestore.Tag := 0;
-
-  PmRestore.Tag := index;
-  PmRestore.Popup(LbDatabases.ClientToScreen(MousePos).X, LbDatabases.ClientToScreen(MousePos).Y);
-end;
-
-procedure TManagerDB.RenameDB1Click(Sender: TObject);
-var
-  NewDBName: string;
-  I: Integer;
-begin
-  NewDBName := LbDatabases.Items[PmRestore.Tag];
-  if StringPromtForm.Query(L('New name'), L('Please, enter a new name for collection'), NewDBName) then
-  begin
-    if Length(NewDBName) = 0 then
-      Exit;
-    for I := 1 to Length(NewDBName) do
-      if CharInSet(NewDBName[I], ['\', '/', '|']) then
-        NewDBName[I] := ' ';
-    DBKernel.RenameDB(LbDatabases.Items[PmRestore.Tag], NewDBName);
-    LbDatabases.Items[PmRestore.Tag] := NewDBName;
-    RefreshDBList;
-  end;
-end;
-
-procedure TManagerDB.SelectDB1Click(Sender: TObject);
-var
-  DBVersion: Integer;
-  DialogResult: Integer;
-  FileName: string;
-begin
-  FileName := DBKernel.DBs[PmRestore.Tag].FileName;
-  if DBKernel.TestDB(FileName) then
-  begin
-    if not SelectDB(Self, FileName) then
-      MessageBoxDB(Handle, Format(L('Invalid or missing file $nl$"%s"! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version'), [FileName]), L('Error'), TD_BUTTON_OK,
-        TD_ICON_ERROR);
-  end else
-  begin
-    if not FileExists(FileName) then
-    begin
-      MessageBoxDB(Handle, L('File not found!'), L('Error'), '', TD_BUTTON_OK, TD_ICON_ERROR);
-    end else
-    begin
-      DBVersion := DBKernel.TestDBEx(FileName);
-      if DBVersion > 0 then
-        if not DBKernel.ValidDBVersion(FileName, DBVersion) then
-        begin
-          DialogResult := MessageBoxDB(Handle, L('This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'),
-            '', TD_BUTTON_YESNO, TD_ICON_WARNING);
-          if ID_YES = DialogResult then
-            ConvertDB(FileName);
-        end;
-    end;
-  end;
-  RefreshDBList;
-  LbDatabases.Refresh;
-end;
-
-procedure TManagerDB.DeleteDB1Click(Sender: TObject);
-begin
-  if MessageBoxDB(Handle, Format(L('Do you really want to delete this database (%s)?'), [LbDatabases.Items[PmRestore.Tag]]),
-    L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) = ID_OK then
-  begin
-    DBKernel.DeleteDB(LbDatabases.Items[PmRestore.Tag]);
-    RefreshDBList;
-  end;
-end;
-
-procedure TManagerDB.LbDatabasesDblClick(Sender: TObject);
-var
-  Index: Integer;
-  MousePos: TPoint;
-begin
-  GetCursorPos(MousePos);
-  MousePos := LbDatabases.ScreenToClient(MousePos);
-  Index := LbDatabases.ItemAtPos(MousePos, True);
-  if Index >= 0 then
-    ChangeDBOptions(DBkernel.DBs[index]);
-
-  RefreshDBList;
-end;
-
-procedure TManagerDB.EditDB1Click(Sender: TObject);
-var
-  Index: Integer;
-begin
-  index := PmRestore.Tag;
-  ChangeDBOptions(DBKernel.DBs[index]);
-  RefreshDBList;
 end;
 
 procedure TManagerDB.RecordNumberEditChange(Sender: TObject);
 var
-  I, N : integer;
-  ItemData : TDBPopupMenuInfoRecord;
+  I, N: Integer;
+  ItemData: TDBPopupMenuInfoRecord;
 begin
   N := StrToIntDef(RecordNumberEdit.Text, 1);
   for I := 0 to ElvMain.Items.Count - 1 do

@@ -83,12 +83,18 @@ begin
         try
           while FNextLevel.Count > 0 do
           begin
+            if Terminated then
+              Break;
+
             FreeList(LevelItems, False);
             LevelItems.AddRange(FNextLevel);
             FNextLevel.Clear;
 
             for I := 0 to LevelItems.Count - 1 do
             begin
+              if Terminated then
+                Break;
+
               Childs := TPathItemCollection.Create;
               try
                 LevelItems[I].Provider.FillChildList(Self, LevelItems[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0, 10, LoadCallBack);

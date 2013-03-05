@@ -3,6 +3,8 @@ unit UnitDBKernel;
 interface
 
 uses
+  Generics.Defaults,
+  Generics.Collections,
   Winapi.Windows,
   Winapi.ShellApi,
   Winapi.CommCtrl,
@@ -55,9 +57,9 @@ type
   TDBEventsIDArray = array of DBEventsIDArray;
 
 const
-  IconsCount = 129;
+  IconsCount = 130;
 const
-  IconsVersion = '1_1';
+  IconsVersion = '1_2';
 
 type
   TDbKernelArrayIcons = array [1 .. IconsCount] of THandle;
@@ -75,17 +77,18 @@ type
     FApplicationKey: string;
     ThreadOpenResultBool: Boolean;
     ThreadOpenResultWork: Boolean;
-    FDBs: TPhotoDBFiles;
+    FDBs: TList<TDatabaseInfo>;
     FImageOptions: TImageDBOptions;
     FSych: TCriticalSection;
-    procedure LoadDBs;
     function GetSortGroupsByName: Boolean;
     procedure HandleError(E: Exception);
   public
     { Public declarations }
     constructor Create;
     destructor Destroy; override;
-    property DBs: TPhotoDBFiles read FDBs;
+    procedure LoadDBs;
+    procedure SaveDBs;
+    property DBs: TList<TDatabaseInfo> read FDBs;
     property ImageList: TCustomImageList read FImageList;
     property DisabledImageList: TCustomImageList read FDisabledImageList;
     procedure UnRegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
@@ -165,14 +168,14 @@ end;
 constructor TDBKernel.Create;
 begin
   inherited;
-  FDBs := nil;
   FImageOptions := nil;
   FImageList := nil;
   FDisabledImageList := nil;
   FSych := TCriticalSection.Create;
   FForms := TList.Create;
+  FPasswodsInSession := TStringList.Create;
+  FDBs := TList<TDatabaseInfo>.Create;
   LoadDBs;
-  FPasswodsInSession := TStringList.create;
   FINIPasswods := nil;
   FApplicationKey := '';
 end;
@@ -219,7 +222,7 @@ begin
   F(FPasswodsInSession);
   F(FSych);
   F(FForms);
-  F(FDBs);
+  FreeList(FDBs);
   F(FImageOptions);
   inherited;
 end;
@@ -564,10 +567,8 @@ var
   I: Integer;
 begin
   for I := 0 to FDBs.Count - 1 do
-    if AnsiLowerCase(FDBs[I].FileName) = AnsiLowerCase(DBName) then
-    begin
-      Result := FDBs[I].Name;
-    end;
+    if AnsiLowerCase(FDBs[I].Path) = AnsiLowerCase(DBName) then
+      Result := FDBs[I].Title;
 
   if Result = '' then
     Result := GetFileNameWithoutExt(DBName);
@@ -770,13 +771,12 @@ end;
 
 procedure TDBKernel.LoadDBs;
 var
-  Reg : TBDRegistry;
-  List : TStrings;
-  I, DBType : Integer;
-  Icon, FileName : string;
+  Reg: TBDRegistry;
+  List: TStrings;
+  I: Integer;
+  Icon, FileName: string;
 begin
-  F(FDBs);
-  FDBs := TPhotoDBFiles.Create;
+  FreeList(FDBs, False);
 
   List := TStringList.Create;
   try
@@ -788,14 +788,53 @@ begin
       begin
         Reg.CloseKey;
         Reg.OpenKey(RegRoot + 'dbs\' + List[I], True);
-        if Reg.ValueExists('Icon') and Reg.ValueExists('FileName') and Reg.ValueExists('Type') then
+        if Reg.ValueExists('Icon') and Reg.ValueExists('FileName') then
         begin
           Icon := Reg.ReadString('Icon');
           FileName := Reg.ReadString('FileName');
-          DBType := Reg.ReadInteger('Type');
-          FDBs.Add(List[I], Icon, FileName, DBType);
+          FDBs.Add(TDatabaseInfo.Create(List[I], FileName, Icon, '', Reg.ReadInteger('Order')));
         end;
       end;
+    finally
+      F(Reg);
+    end;
+  finally
+    F(List);
+  end;
+
+  FDBs.Sort(TComparer<TDatabaseInfo>.Construct(
+     function (const L, R: TDatabaseInfo): Integer
+     begin
+       Result := L.Order - R.Order;
+     end
+  ));
+end;
+
+procedure TDBKernel.SaveDBs;
+var
+  Reg: TBDRegistry;
+  List: TStrings;
+  I: Integer;
+  DB: TDatabaseInfo;
+begin
+  List := TStringList.Create;
+  try
+    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+    try
+      Reg.OpenKey(RegRoot + 'dbs', True);
+      Reg.GetKeyNames(List);
+      for I := 0 to List.Count - 1 do
+        Reg.DeleteKey(List[I]);
+
+      for DB in FDBs do
+      begin
+        Reg.CloseKey;
+        Reg.OpenKey(RegRoot + 'dbs\' + DB.Title, True);
+        Reg.WriteString('FileName', DB.Path);
+        Reg.WriteString('Icon', DB.Icon);
+        Reg.WriteInteger('Order', FDBs.IndexOf(DB));
+      end;
+
     finally
       F(Reg);
     end;
@@ -945,22 +984,20 @@ end;
 function TDBKernel.RenameDB(OldDBName, NewDBName: string): Boolean;
 var
   Reg: TBDRegistry;
-  DB: TPhotoDBFile;
+  DB: TDatabaseInfo;
 begin
   Result := False;
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
     Reg.OpenKey(RegRoot + 'dbs\' + OldDBName, True);
-    DB := TPhotoDBFile.Create;
-    DB.name := OldDBName;
+    DB := TDatabaseInfo.Create;
+    DB.Title := OldDBName;
     DB.Icon := Reg.ReadString('icon');
-    DB.FileName := Reg.ReadString('FileName');
-    DB.FileType := Reg.ReadInteger('type');
+    DB.Path := Reg.ReadString('FileName');
     Reg.CloseKey;
     Reg.OpenKey(RegRoot + 'dbs\' + NewDBName, True);
-    Reg.WriteString('FileName', DB.FileName);
+    Reg.WriteString('FileName', DB.Path);
     Reg.WriteString('icon', DB.Icon);
-    Reg.WriteInteger('type', CommonDBSupport.GetDBType(DB.FileName));
     Reg.CloseKey;
   except
     on E: Exception do
@@ -1042,9 +1079,9 @@ begin
   begin
     for I := 0 to DBs.Count - 1 do
     begin
-      if DBs[I].name = ParamDBFile then
+      if DBs[I].Title = ParamDBFile then
       begin
-        DBName := DBs[I].FileName;
+        DBName := DBs[I].Path;
         if GetParamStrDBBool('/SelectDBPermanent') then
           DBKernel.SetDataBase(DBName);
         Exit;
@@ -1244,6 +1281,7 @@ begin
     Icons[127] := LoadIcon(HInstance,'SHELF');
     Icons[128] := LoadIcon(HInstance,'PHOTO_SHARE');
     Icons[129] := LoadIcon(HInstance,'EDIT_PROFILE');
+    Icons[130] := LoadIcon(HInstance,'AAA');
 
     //disabled items are bad
     for I := 1 to IconsCount do

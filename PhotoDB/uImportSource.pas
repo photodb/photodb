@@ -38,7 +38,7 @@ uses
   uVCLHelpers;
 
 type
-  TImportType = (itRemovableDevice, itUSB, itCD, itDirectory);
+  TImportType = (itRemovableDevice, itUSB, itHDD, itCD, itDirectory);
 
   TButtonInfo = class
     Name: string;
@@ -56,6 +56,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure TmrDeviceChangesTimer(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FLoadingCount: Integer;
@@ -70,6 +71,7 @@ type
     procedure WMDeviceChange(var Msg: TMessage); message WM_DEVICECHANGE;
     procedure PortableEventsCallBack(EventType: TPortableEventType; DeviceID: string; ItemKey: string; ItemPath: string);
   protected
+    procedure InterfaceDestroyed; override;
     function GetFormID: string; override;
   public
     { Public declarations }
@@ -79,6 +81,101 @@ type
 implementation
 
 {$R *.dfm}
+
+{$MINENUMSIZE 4}
+const
+  IOCTL_STORAGE_QUERY_PROPERTY =  $002D1400;
+
+type
+  STORAGE_QUERY_TYPE = (PropertyStandardQuery = 0, PropertyExistsQuery, PropertyMaskQuery, PropertyQueryMaxDefined);
+  TStorageQueryType = STORAGE_QUERY_TYPE;
+
+  STORAGE_PROPERTY_ID = (StorageDeviceProperty = 0, StorageAdapterProperty);
+  TStoragePropertyID = STORAGE_PROPERTY_ID;
+
+  STORAGE_PROPERTY_QUERY = packed record
+    PropertyId: STORAGE_PROPERTY_ID;
+    QueryType: STORAGE_QUERY_TYPE;
+    AdditionalParameters: array [0..9] of AnsiChar;
+  end;
+  TStoragePropertyQuery = STORAGE_PROPERTY_QUERY;
+
+  STORAGE_BUS_TYPE = (BusTypeUnknown = 0, BusTypeScsi, BusTypeAtapi, BusTypeAta, BusType1394, BusTypeSsa, BusTypeFibre,
+    BusTypeUsb, BusTypeRAID, BusTypeiScsi, BusTypeSas, BusTypeSata, BusTypeMaxReserved = $7F);
+  TStorageBusType = STORAGE_BUS_TYPE;
+
+  STORAGE_DEVICE_DESCRIPTOR = packed record
+    Version: DWORD;
+    Size: DWORD;
+    DeviceType: Byte;
+    DeviceTypeModifier: Byte;
+    RemovableMedia: Boolean;
+    CommandQueueing: Boolean;
+    VendorIdOffset: DWORD;
+    ProductIdOffset: DWORD;
+    ProductRevisionOffset: DWORD;
+    SerialNumberOffset: DWORD;
+    BusType: STORAGE_BUS_TYPE;
+    RawPropertiesLength: DWORD;
+    RawDeviceProperties: array [0..0] of AnsiChar;
+  end;
+  TStorageDeviceDescriptor = STORAGE_DEVICE_DESCRIPTOR;
+
+function GetBusType(Drive: AnsiChar): TStorageBusType;
+var
+  H: THandle;
+  Query: TStoragePropertyQuery;
+  dwBytesReturned: DWORD;
+  Buffer: array [0..1023] of Byte;
+  sdd: TStorageDeviceDescriptor absolute Buffer;
+  OldMode: UINT;
+begin
+  Result := BusTypeUnknown;
+
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    H := CreateFile(PChar(Format('\\.\%s:', [AnsiLowerCase(string(Drive))])), 0, FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, 0, 0);
+    if H <> INVALID_HANDLE_VALUE then
+    begin
+      try
+        dwBytesReturned := 0;
+        FillChar(Query, SizeOf(Query), 0);
+        FillChar(Buffer, SizeOf(Buffer), 0);
+        sdd.Size := SizeOf(Buffer);
+        Query.PropertyId := StorageDeviceProperty;
+        Query.QueryType := PropertyStandardQuery;
+        if DeviceIoControl(H, IOCTL_STORAGE_QUERY_PROPERTY, @Query, SizeOf(Query), @Buffer, SizeOf(Buffer), dwBytesReturned, nil) then
+          Result := sdd.BusType;
+      finally
+        CloseHandle(H);
+      end;
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
+
+{procedure GetUsbDrives(List: TStrings);
+var
+  DriveBits: set of 0..25;
+  I: Integer;
+  Drive: AnsiChar;
+begin
+  List.BeginUpdate;
+  try
+    Cardinal(DriveBits) := GetLogicalDrives;
+
+    for I := 0 to 25 do
+      if I in DriveBits then
+      begin
+        Drive := AnsiChar(Ord('a') + I);
+        if GetBusType(Drive) = BusTypeUsb then
+          List.Add(string(Drive));
+      end;
+  finally
+    List.EndUpdate;
+  end;
+end;  }
 
 function CheckDriveItems(Path: string): Boolean;
 var
@@ -203,6 +300,8 @@ var
         Image := 'IMPORT_CAMERA';
       itUSB:
         Image := 'IMPORT_USB';
+      itHDD:
+        Image := 'IMPORT_HDD';
       else
         Image := 'IMPORT_DIRECTORY';
     end;
@@ -294,6 +393,12 @@ begin
       );
 end;
 
+procedure TFormImportSource.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caHide;
+end;
+
 procedure TFormImportSource.FormCreate(Sender: TObject);
 begin
   FLoadingCount := 0;
@@ -307,6 +412,8 @@ procedure TFormImportSource.FormDestroy(Sender: TObject);
 var
   I: Integer;
 begin
+  GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
+
   for I := 0 to FButtons.Count - 1 do
     TObject(FButtons[I].Tag).Free;
 
@@ -323,6 +430,12 @@ end;
 function TFormImportSource.GetFormID: string;
 begin
   Result := 'ImportSource';
+end;
+
+procedure TFormImportSource.InterfaceDestroyed;
+begin
+  inherited;
+  Release;
 end;
 
 procedure TFormImportSource.LoadingThreadFinished;
@@ -438,6 +551,40 @@ begin
               procedure
               begin
                 TFormImportSource(Thread.ThreadForm).AddLocation(VolumeName, itCD, Chr(I) + ':\', nil);
+              end
+            ) then Break;
+          end;
+      finally
+        SetErrorMode(OldMode);
+        Thread.SynchronizeTask(
+          procedure
+          begin
+            TFormImportSource(Thread.ThreadForm).LoadingThreadFinished;
+          end
+        );
+      end;
+    end
+  );
+
+  //load HDDs by USB
+  Inc(FLoadingCount);
+  TThreadTask.Create(Self, Pointer(nil),
+    procedure(Thread: TThreadTask; Data: Pointer)
+    var
+      I: Integer;
+      OldMode: Cardinal;
+      VolumeName: string;
+    begin
+      OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+      try
+        for I := Ord('A') to Ord('Z') do
+          if (GetDriveType(PChar(Chr(I) + ':\')) = DRIVE_FIXED) and (GetBusType(AnsiChar(I)) = BusTypeUsb) and CheckDriveItems(Chr(I) + ':\') then
+          begin
+            VolumeName := GetDriveVolumeLabel(AnsiChar(I));
+            if not Thread.SynchronizeTask(
+              procedure
+              begin
+                TFormImportSource(Thread.ThreadForm).AddLocation(VolumeName, itHDD, Chr(I) + ':\', nil);
               end
             ) then Break;
           end;

@@ -3,10 +3,10 @@ unit UnitConvertDBForm;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
@@ -16,30 +16,30 @@ uses
   Vcl.Menus,
   Vcl.ExtDlgs,
   Vcl.Graphics,
+  Vcl.AppEvnts,
+  Vcl.Imaging.jpeg,
+  Vcl.Imaging.pngimage,
 
   Dmitry.Controls.DmProgress,
 
   Dolphin_DB,
-  uConstants,
-  jpeg,
-  Spin,
   CommonDBSupport,
-  uMemoryEx,
   UnitDBDeclare,
-  AppEvnts,
-  uWizards,
   UnitDBCommonGraphics,
   UnitDBFileDialogs,
   UnitDBCommon,
+
+  uMemoryEx,
+  uWizards,
   uSplashThread,
   uThreadForm,
   uMemory,
+  uConstants,
   uShellIntegration,
   uDBBaseTypes,
   uDBTypes,
   uInterfaces,
-  uVCLHelpers,
-  pngimage;
+  uVCLHelpers;
 
 type
   TFormConvertingDB = class(TThreadForm, IDBImageSettings)

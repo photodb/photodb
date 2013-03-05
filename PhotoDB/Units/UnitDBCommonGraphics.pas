@@ -44,7 +44,6 @@ type
 
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; index: Integer; ARect: TRect; State: TOwnerDrawState;
   ItemsData: TList; Icons: array of TIcon; FProgressEnabled: Boolean; TempProgress: TDmProgress; Infos: TStrings);
-procedure SetIconToPictureFromPath(Picture: TPicture; IconPath: string);
 procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
 procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
   Transparent: Byte; FontName: string; SyncCallBack: TDrawTextAsyncProcedure;
@@ -367,20 +366,7 @@ begin
   DrawText(ListBox.Canvas.Handle, PWideChar(Text), Length(Text), ARect, DT_NOPREFIX + DT_LEFT + DT_WORDBREAK);
 end;
 
-procedure SetIconToPictureFromPath(Picture : TPicture; IconPath: string);
-var
-  Icon : TIcon;
-begin
-  Icon := TIcon.Create;
-  try
-    Icon.Handle := ExtractSmallIconByPath(IconPath);
-    Picture.Graphic := Icon;
-  finally
-    F(Icon);
-  end;
-end;
-
-procedure AddIconToListFromPath(ImageList : TImageList; IconPath: string);
+procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
 var
   Icon : TIcon;
 begin

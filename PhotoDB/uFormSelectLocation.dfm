@@ -54,7 +54,7 @@ object FormSelectLocation: TFormSelectLocation
     CanBreakLoading = False
     OnlyFileSystem = False
     HideExtendedButton = True
-    ShowBorder = False
+    ShowBorder = True
   end
   object PnExplorer: TPanel
     Left = 0

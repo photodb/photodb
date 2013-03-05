@@ -103,27 +103,6 @@ const
   LINE_INFO_INFO      = -1;
 
 type
-  TPhotoDBFile = class
-  public
-    Name: string;
-    Icon: string;
-    FileName: string;
-    FileType: Integer;
-  end;
-
-  TPhotoDBFiles = class
-  private
-    FList: TList;
-    function GetCount: Integer;
-    function GetValueByIndex(Index: Integer): TPhotoDBFile;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function Add(Name, Icon, FileName : string; FileType : Integer) : TPhotoDBFile;
-    property Items[Index: Integer]: TPhotoDBFile read GetValueByIndex; default;
-    property Count : Integer read GetCount;
-  end;
-
   TClonableObject = class(TObject)
   public
     function Clone: TClonableObject; virtual; abstract;
@@ -255,47 +234,28 @@ type
     CryptFileName: Boolean;
   end;
 
+  TDataObject = class
+  public
+    function Clone: TDataObject; virtual; abstract;
+    procedure Assign(Source: TDataObject); virtual; abstract;
+  end;
+
+  TDatabaseInfo = class(TDataObject)
+  public
+    Title: string;
+    Path: string;
+    Icon: string;
+    Description: string;
+    Order: Integer;
+    constructor Create; overload;
+    constructor Create(Title, Path, Icon, Description: string; Order: Integer = 0); overload;
+    function Clone: TDataObject; override;
+    procedure Assign(Source: TDataObject); override;
+  end;
+
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
 
 implementation
-
-{ TPhotoDBFiles }
-
-function TPhotoDBFiles.Add(Name, Icon, FileName: string;
-  FileType: Integer): TPhotoDBFile;
-begin
-  Result := TPhotoDBFile.Create;
-  Result.Name := Name;
-  Result.Icon := Icon;
-  Result.FileName := FileName;
-  Result.FileType := FileType;
-  FList.Add(Result);
-end;
-
-constructor TPhotoDBFiles.Create;
-begin
-  FList := TList.Create;
-end;
-
-destructor TPhotoDBFiles.Destroy;
-var
-  I : Integer;
-begin
-  for I := 0 to FList.Count - 1 do
-    TPhotoDBFile(FList[I]).Free;
-  FList.Free;
-  inherited;
-end;
-
-function TPhotoDBFiles.GetCount: Integer;
-begin
-  Result := FList.Count;
-end;
-
-function TPhotoDBFiles.GetValueByIndex(Index: Integer): TPhotoDBFile;
-begin
-  Result := FList[Index];
-end;
 
 { TDBPopupMenuInfoRecord }
 
@@ -588,6 +548,43 @@ function TGeoLocation.Copy: TGeoLocation;
 begin
   Result := TGeoLocation.Create;
   Result.Assign(Self);
+end;
+
+{ TDatabaseInfo }
+
+procedure TDatabaseInfo.Assign(Source: TDataObject);
+var
+  DI: TDatabaseInfo;
+begin
+  DI := Source as TDatabaseInfo;
+  if DI <> nil then
+  begin
+    Title := DI.Title;
+    Path := DI.Path;
+    Icon := DI.Icon;
+    Description := DI.Description;
+    Order := DI.Order;
+  end;
+end;
+
+
+function TDatabaseInfo.Clone: TDataObject;
+begin
+  Result := TDatabaseInfo.Create(Title, Path, Icon, Description, Order);
+end;
+
+constructor TDatabaseInfo.Create;
+begin
+
+end;
+
+constructor TDatabaseInfo.Create(Title, Path, Icon, Description: string; Order: Integer = 0);
+begin
+  Self.Title := Title;
+  Self.Path := Path;
+  Self.Icon := Icon;
+  Self.Description := Description;
+  Self.Order := Order;
 end;
 
 end.

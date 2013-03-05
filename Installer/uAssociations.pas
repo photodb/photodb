@@ -949,7 +949,6 @@ initialization
   FGlobalSync := TCriticalSection.Create;
 
 finalization
-
   F(FInstance);
   F(FGlobalSync);
 

@@ -778,13 +778,13 @@ begin
   end;
 end;
 
-function UpdateImageSettings(TableName : String; Settings : TImageDBOptions) : boolean;
+function UpdateImageSettings(TableName: string; Settings: TImageDBOptions) : boolean;
 var
   SQL: string;
   FQuery: TDataSet;
 begin
   Result := True;
-  FQuery := GetQuery(TableName, True);
+  FQuery := GetQuery(TableName, False);
   try
     SQL := 'Update DBSettings Set DBJpegCompressionQuality = ' + IntToStr
       (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = 100'

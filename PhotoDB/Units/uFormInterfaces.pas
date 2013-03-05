@@ -199,12 +199,6 @@ type
     function Execute(Title, StartPath: string; out PathItem: TPathItem): Boolean;
   end;
 
-  TDataObject = class
-  public
-    function Clone: TDataObject; virtual; abstract;
-    procedure Assign(Source: TDataObject); virtual; abstract;
-  end;
-
   TListElementType = (leWebLink, leInfoLabel);
   TListElements = TDictionary<TListElementType, TControl>;
 
@@ -218,6 +212,8 @@ type
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
+    function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
+    function OnApply(Sender: ILinkItemSelectForm): Boolean;
   end;
 
   ILinkItemSelectForm = interface

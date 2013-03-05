@@ -25,6 +25,8 @@ uses
   uGraphicUtils,
   uVCLHelpers,
 
+  UnitDBDeclare,
+
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
   Dmitry.Controls.WatermarkedEdit;
@@ -218,8 +220,11 @@ end;
 
 procedure TFormLinkItemSelector.BtnSaveClick(Sender: TObject);
 begin
-  Close;
-  ModalResult := mrOk;
+  if FEditor.OnApply(Self) then
+  begin
+    Close;
+    ModalResult := mrOk;
+  end;
 end;
 
 procedure TFormLinkItemSelector.CheckLinksOrder;
@@ -289,6 +294,13 @@ begin
 
   FData := Data;
 
+  WlApplyChanges.RefreshBuffer(True);
+  WlCancelChanges.RefreshBuffer(True);
+  WlRemove.RefreshBuffer(True);
+
+  WlCancelChanges.Left := WlApplyChanges.AfterRight(PaddingTop);
+  WlRemove.Left := WlCancelChanges.AfterRight(PaddingTop);
+
   LoadActionsList;
   LoadLinkList;
   SwitchToListMode;
@@ -333,11 +345,10 @@ begin
   WlApplyChanges.Text := L('Apply');
   WlCancelChanges.Text := L('Cancel');
   WlRemove.Text := L('Remove');
-  WlApplyChanges.RefreshBuffer(True);
-  WlCancelChanges.RefreshBuffer(True);
-  WlRemove.RefreshBuffer(True);
-  WlCancelChanges.Left := WlApplyChanges.AfterRight(PaddingTop);
-  WlRemove.Left := WlCancelChanges.AfterRight(PaddingTop * 2);
+
+  WlApplyChanges.LoadFromResource('DOIT');
+  WlCancelChanges.LoadFromResource('CANCELACTION');
+  WlRemove.LoadFromResource('DELETE_FILE');
 end;
 
 procedure TFormLinkItemSelector.FormDestroy(Sender: TObject);
@@ -370,7 +381,7 @@ end;
 
 function TFormLinkItemSelector.GetFormHeight: Integer;
 begin
-  Result := PaddingTop * 2 + FLinks.Count * (LinkHeight + LinksDy) + 56;
+  Result := PaddingTop * 2 + FLinks.Count * (LinkHeight + LinksDy) + 60;
 end;
 
 function TFormLinkItemSelector.GetFormID: string;
@@ -472,9 +483,8 @@ begin
         WL.Anchors := [akLeft, akBottom];
         WL.Text := 'Add new';
         WL.OnClick := WlAddElementsClick;
-        WL.ImageList := ImPlaces;
-        WL.ImageIndex := 3;
         WL.RefreshBuffer(True);
+        WL.Tag := FActions.Count;
         ProcessActionLink(Action, WL);
 
         FActions.Add(Action);
@@ -628,12 +638,15 @@ procedure TFormLinkItemSelector.WlAddElementsClick(Sender: TObject);
 var
   Data: TDataObject;
   Elements: TListElements;
+  WL: TWebLink;
 begin
   if FIsEditMode then
     Exit;
 
+  WL := TWebLink(Sender);
+
   Data := nil;
-  FEditor.CreateNewItem(Self, Data, '', nil);
+  FEditor.CreateNewItem(Self, Data, FActions[WL.Tag], nil);
   if Data <> nil then
   begin
     Elements := TListElements.Create;
@@ -699,8 +712,6 @@ begin
 
   MoveControlTo(BvSeparator, ToWidth, adHor);
 
-  //for WL in FActionLinks do
-  //  MoveControlTo(WL, ToWidth, adHor);
   for WL in FActionLinks do
     MoveControlTo(WL, ToHeight, adVert);
 
@@ -737,11 +748,12 @@ begin
   Left := PaddingTop;
   for WL in FActionLinks do
   begin
+    WL.RefreshBuffer(True);
     MoveControlTo(WL, Left, adHor);
     Left := Left + WL.Width + PaddingTop;
   end;
   for WL in FActionLinks do
-    MoveControlTo(WL, (ToHeight - ClientHeight) + BvSeparator.Top + PaddingTop, adVert);
+    MoveControlTo(WL, (ToHeight - ClientHeight) + BtnClose.Top - WL.Height - PaddingTop + 2, adVert);
 
   MoveControlTo(WlApplyChanges, ToHeight, adVert);
   MoveControlTo(WlCancelChanges, ToHeight, adVert);
@@ -779,7 +791,7 @@ var
   I: Integer;
   LinkToDelete: TWebLink;
   LabelToDelete: TLabel;
-  Data: TObject;
+  Data: TDataObject;
   WL: TWebLink;
 begin
   LinkToDelete := FLinks[FEditIndex];
@@ -793,6 +805,9 @@ begin
   FLabels.Remove(LabelToDelete);
 
   Data := FData[FEditIndex];
+
+  FEditor.OnDelete(Self, Data, PnEditorPanel);
+
   Data.Free;
   FData.Delete(FEditIndex);
 

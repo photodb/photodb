@@ -40,7 +40,7 @@ type
   private
     { Private declarations }
     procedure RefreshDBList;
-    function GetDBFile: TPhotoDBFile;
+    function GetDBFile: TDatabaseInfo;
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
@@ -50,7 +50,7 @@ type
     procedure Execute; override;
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     function IsFinal: Boolean; override;
-    property DBFile: TPhotoDBFile read GetDBFile;
+    property DBFile: TDatabaseInfo read GetDBFile;
   end;
 
 implementation
@@ -66,7 +66,7 @@ procedure TFrmSelectDBFromList.CbDBListChange(Sender: TObject);
 begin
   inherited;
   if CbDBList.Items.Count > 0 then
-    SelectDBFileNameEdit.Text := DBKernel.DBs[CbDBList.ItemIndex].FileName;
+    SelectDBFileNameEdit.Text := DBKernel.DBs[CbDBList.ItemIndex].Path;
 end;
 
 procedure TFrmSelectDBFromList.Execute;
@@ -76,7 +76,7 @@ begin
   inherited;
   if ValidateStep(False) then
   begin
-    FileName := DBKernel.DBs[CbDBList.ItemIndex].FileName;
+    FileName := DBKernel.DBs[CbDBList.ItemIndex].Path;
     if CbDefaultDB.Checked then
       DBKernel.SetDataBase(FileName);
     dbname := FileName;
@@ -85,7 +85,7 @@ begin
   end;
 end;
 
-function TFrmSelectDBFromList.GetDBFile: TPhotoDBFile;
+function TFrmSelectDBFromList.GetDBFile: TDatabaseInfo;
 begin
   Result := TFormSelectDB(Manager.Owner).DBFile;
 end;
@@ -132,7 +132,7 @@ begin
   begin
     with CbDBList.ItemsEx.Add do
     begin
-      Caption := DBKernel.DBs[I].name;
+      Caption := DBKernel.DBs[I].Title;
       ImageIndex := I + 1;
     end;
     Ico := TIcon.Create;
@@ -158,11 +158,11 @@ begin
     Exit;
 
   Result := True;
-  if not DBKernel.TestDB(DBKernel.DBs[CbDBList.ItemIndex].FileName) then
+  if not DBKernel.TestDB(DBKernel.DBs[CbDBList.ItemIndex].Path) then
   begin
     if not Silent then
       MessageBoxDB(Handle, Format(TFormSelectDB(Manager.Owner).InvalidDBFileMessage,
-          [DBKernel.DBs[CbDBList.ItemIndex].FileName]), L('Error'),
+          [DBKernel.DBs[CbDBList.ItemIndex].Path]), L('Error'),
         TD_BUTTON_OK, TD_ICON_ERROR);
     Result := False;
   end;

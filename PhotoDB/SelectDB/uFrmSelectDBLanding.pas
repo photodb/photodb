@@ -16,14 +16,15 @@ uses
 
   Dmitry.Utils.Files,
 
+  UnitDBFileDialogs,
+  UnitDBKernel,
+  UnitDBDeclare,
+
   uFrameWizardBase,
   uConstants,
-  UnitDBFileDialogs,
   uShellIntegration,
   uDBUtils,
-  UnitDBKernel,
-  uMemory,
-  UnitDBDeclare;
+  uMemory;
 
 type
   TFrmSelectDBLanding = class(TFrameWizardBase)
@@ -34,7 +35,7 @@ type
     FIsFinal: Boolean;
     procedure SetOptions(Options: Integer);
     function GetOptions: Integer;
-    function GetDBFile: TPhotoDBFile;
+    function GetDBFile: TDatabaseInfo;
   protected
     { Protected declarations }
     procedure LoadLanguage; override;
@@ -45,7 +46,7 @@ type
     function InitNextStep: Boolean; override;
     function IsFinal: Boolean; override;
     property Options: Integer read GetOptions;
-    property DBFile: TPhotoDBFile read GetDBFile;
+    property DBFile: TDatabaseInfo read GetDBFile;
   end;
 
 implementation
@@ -60,7 +61,7 @@ uses
 
 { TFrmSelectDBLanding }
 
-function TFrmSelectDBLanding.GetDBFile: TPhotoDBFile;
+function TFrmSelectDBLanding.GetDBFile: TDatabaseInfo;
 begin
   Result := TFormSelectDB(Manager.Owner).DBFile;
 end;
@@ -72,13 +73,12 @@ end;
 
 procedure TFrmSelectDBLanding.Execute;
 var
-  SaveDialog : DBSaveDialog;
-  FileName : string;
-  FA : integer;
+  SaveDialog: DBSaveDialog;
+  FileName: string;
+  FA: integer;
 begin
   inherited;
-  if (RgMode.ItemIndex = 3) or ((RgMode.ItemIndex = 2) and
-      (Options = SELECT_DB_OPTION_GET_DB)) then
+  if (RgMode.ItemIndex = 3) or ((RgMode.ItemIndex = 2) and (Options = SELECT_DB_OPTION_GET_DB)) then
   begin
     // Sample DB
     SaveDialog := DBSaveDialog.Create;
@@ -99,13 +99,12 @@ begin
           Exit;
         end;
 
-        CreateExampleDB(FileName, Application.ExeName + ',0',
-          ExtractFileDir(Application.ExeName));
+        CreateExampleDB(FileName, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
 
-        DBFile.Name := DBKernel.NewDBName(L('My collection'));
-        DBFile.FileName := FileName;
+        DBFile.Title := DBKernel.NewDBName(L('My collection'));
+        DBFile.Path := FileName;
         DBFile.Icon := Application.ExeName + ',0';
-        DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
+        DBKernel.AddDB(DBFile.Title, DBFile.Path, DBFile.Icon);
 
         MessageBoxDB(Handle, Format(L('Collection "%s" successfully created!'),
             [FileName]), L('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);

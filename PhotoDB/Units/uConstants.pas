@@ -242,6 +242,7 @@ const
   DB_IC_SHELF          = 126;
   DB_IC_PHOTO_SHARE    = 127;
   DB_IC_EDIT_PROFILE   = 128;
+  DB_IC_PHOTO_DATABASE = 129;
 
 const
     WM_DROPFILES = $0233;

@@ -576,6 +576,8 @@ type
     PmCut: TPopupActionBar;
     MiCopyTo: TMenuItem;
     MiCutTo: TMenuItem;
+    MiCollectionsSeparator: TMenuItem;
+    MiCollections: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -861,6 +863,7 @@ type
     procedure PmLocationsPopup(Sender: TObject);
     procedure PmCopyPopup(Sender: TObject);
     procedure PmCutPopup(Sender: TObject);
+    procedure EditDatabasesClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1582,6 +1585,8 @@ begin
   MiCDExport.Caption := L('Export images to CD');
   MiCDMapping.Caption := L('CD mapping');
 
+  MiCollections.Caption := L('Edit collections');
+
   PmHelp.Images := DBKernel.ImageList;
   PmOptions.Images := DBKernel.ImageList;
 
@@ -1601,13 +1606,16 @@ begin
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
 
-  if IsWindows8 then
-    TLoad.Instance.RequiredDBKernelIcons;
+  MiCollections.ImageIndex := DB_IC_PHOTO_DATABASE;
 
   LoadDBList;
 
   TW.I.Start('LoadLanguage');
   LoadLanguage;
+
+  if IsWindows8 then
+    TLoad.Instance.RequiredDBKernelIcons;
+
   TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBarMain.Images := ToolBarNormalImageList;
   ToolBarMain.DisabledImages := ToolBarDisabledImageList;
@@ -3081,7 +3089,7 @@ var
 begin
   DBIndex := TMenuItem(Sender).Tag;
 
-  SelectDB(Self, DBKernel.DBs[DBIndex].FileName);
+  SelectDB(Self, DBKernel.DBs[DBIndex].Path);
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -5816,6 +5824,9 @@ begin
   MiUpdater.Visible := not FolderView;
   MiManageDB.Visible := not FolderView;
   MiCDExport.Visible := not FolderView;
+
+  MiCollections.Visible := DBKernel.DBs.Count <= 1;
+  MiCollectionsSeparator.Visible := MiCollections.Visible;
 end;
 
 procedure TExplorerForm.ShowProgress;
@@ -8951,7 +8962,7 @@ var
   Data: TList<TDataObject>;
   Editor: ILinkEditor;
 begin
-  Editor := TLinkListEditorFolder.Create(Self);
+  Editor := TLinkListEditorFolder.Create(Self, FCurrentPath);
   Data := TList<TDataObject>.Create;
   try
     ReadPlacesList(TList<TLinkInfo>(Data));
@@ -12879,22 +12890,22 @@ procedure TExplorerForm.LoadDBList;
 var
   I: Integer;
   MI: TMenuItem;
-  DB: TPhotoDBFile;
+  DB: TDatabaseInfo;
   Ico: HIcon;
   IconFileName: string;
   LB: TLayeredBitmap;
 begin
   IconFileName := '';
-  TbDatabase.Visible := DBkernel.DBs.Count > 1;
+  TbDatabase.Visible := DBKernel.DBs.Count > 1;
 
   ImDBList.Clear;
   PmDBList.Items.Clear;
-  for I := 0 to DBkernel.DBs.Count - 1 do
+  for I := 0 to DBKernel.DBs.Count - 1 do
   begin
-    DB := DBkernel.DBs[I];
+    DB := DBKernel.DBs[I];
 
     MI := TMenuItem.Create(PmDBList);
-    MI.Caption := DB.Name;
+    MI.Caption := DB.Title;
     MI.ImageIndex := I;
     MI.OnClick := ChangeDBClick;
     MI.Tag := I;
@@ -12906,7 +12917,7 @@ begin
       DestroyIcon(Ico);
     end;
 
-    if AnsiLowerCase(DB.FileName) = AnsiLowerCase(dbname) then
+    if AnsiLowerCase(DB.Path) = AnsiLowerCase(dbname) then
     begin
       MI.Default := True;
       IconFileName := DB.Icon;
@@ -12937,7 +12948,36 @@ begin
     finally
       DestroyIcon(Ico);
     end;
+  end;
 
+  MI := TMenuItem.Create(PmDBList);
+  MI.Caption := '-';
+  PmDBList.Items.Add(MI);
+
+  MI := TMenuItem.Create(PmDBList);
+  MI.Caption := L('Edit');
+  MI.ImageIndex := ImDBList.Count;
+  MI.OnClick := EditDatabasesClick;
+  PmDBList.Items.Add(MI);
+
+  ImageList_ReplaceIcon(ImDBList.Handle, -1, UnitDBKernel.Icons[DB_IC_RENAME + 1]);
+end;
+
+procedure TExplorerForm.EditDatabasesClick(Sender: TObject);
+var
+  Data: TList<TDataObject>;
+  Editor: ILinkEditor;
+begin
+  Editor := TLinkListEditorDatabases.Create(Self);
+  try
+    Data := TList<TDataObject>(DBKernel.DBs);
+    if LinkItemSelectForm.Execute(450, L('List of collections'), Data, Editor) then
+      DBKernel.SaveDBs;
+
+    DBKernel.LoadDBs;
+    LoadDBList;
+  finally
+    Editor := nil;
   end;
 end;
 

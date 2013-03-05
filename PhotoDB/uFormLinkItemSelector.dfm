@@ -42,7 +42,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
       157)
     object BvSeparator: TBevel
       Left = 8
-      Top = 130
+      Top = 126
       Width = 414
       Height = 2
       Anchors = [akLeft, akRight, akBottom]
@@ -90,8 +90,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Anchors = [akLeft, akBottom]
     Text = 'Apply'
     OnClick = WlApplyChangesClick
-    ImageList = ImPlaces
-    ImageIndex = 2
+    ImageIndex = 0
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -111,8 +110,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Anchors = [akLeft, akBottom]
     Text = 'Cancel'
     OnClick = WlCancelChangesClick
-    ImageList = ImPlaces
-    ImageIndex = 2
+    ImageIndex = 0
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -124,7 +122,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
   end
   object WlRemove: TWebLink
     Tag = 2
-    Left = 163
+    Left = 143
     Top = 166
     Width = 73
     Height = 18
@@ -132,8 +130,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Anchors = [akLeft, akBottom]
     Text = 'Remove'
     OnClick = WlRemoveClick
-    ImageList = ImPlaces
-    ImageIndex = 2
+    ImageIndex = 0
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -148,7 +145,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Left = 56
     Top = 8
     Bitmap = {
-      494C010105004C00580010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010105004C00740010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000800000008000000000000000

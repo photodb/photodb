@@ -10,13 +10,13 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
     Left = 0
     Top = 0
     Width = 480
-    Height = 297
+    Height = 273
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Select file on hard disk'
     TabOrder = 0
     DesignSize = (
       480
-      297)
+      273)
     object LbName: TLabel
       Left = 8
       Top = 24
@@ -80,15 +80,6 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
       TabOrder = 3
       OnClick = BtnChooseIconClick
     end
-    object BtnChangeDBOptions: TButton
-      Left = 8
-      Top = 248
-      Width = 225
-      Height = 25
-      Caption = 'Change DB Options'
-      TabOrder = 5
-      OnClick = BtnChangeDBOptionsClick
-    end
     object BtnSelectFile: TButton
       Left = 383
       Top = 40
@@ -101,8 +92,8 @@ inherited FrmSelectDBExistedFile: TFrmSelectDBExistedFile
     end
     object WlDBOptions: TWebLink
       Left = 8
-      Top = 276
-      Width = 217
+      Top = 251
+      Width = 212
       Height = 13
       Cursor = crHandPoint
       Text = 'To convert DB to other format press this link'

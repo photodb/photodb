@@ -665,7 +665,7 @@ end;
 
 procedure TFormManager.Load;
 var
-  DBFile: TPhotoDBFile;
+  DBFile: TDatabaseInfo;
   DBVersion: Integer;
   StringDBCheckKey: string;
 
@@ -709,9 +709,9 @@ begin
         begin
           DBFile := DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
           try
-            if DBKernel.TestDB(DBFile.FileName) then
-              DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
-            DBKernel.SetDataBase(DBFile.FileName);
+            if DBKernel.TestDB(DBFile.Path) then
+              DBKernel.AddDB(DBFile.Title, DBFile.Path, DBFile.Icon);
+            DBKernel.SetDataBase(DBFile.Path);
 
             DBVersion := DBKernel.TestDBEx(Dbname, True);
             if not DBKernel.ValidDBVersion(Dbname, DBVersion) then

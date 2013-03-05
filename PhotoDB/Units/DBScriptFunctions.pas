@@ -545,9 +545,7 @@ var
 begin
   SetLength(Result, DBkernel.DBs.Count);
   for I := 0 to DBkernel.DBs.Count - 1 do
-  begin
-    Result[I] := DBkernel.DBs[I].name;
-  end;
+    Result[I] := DBkernel.DBs[I].Title;
 end;
 
 function GetDBFileList: TArrayOfString;
@@ -556,9 +554,7 @@ var
 begin
   SetLength(Result, DBkernel.DBs.Count);
   for I := 0 to DBkernel.DBs.Count - 1 do
-  begin
-    Result[I] := DBkernel.DBs[I].FileName;
-  end;
+    Result[I] := DBkernel.DBs[I].Path;
 end;
 
 function GetDBIcoList: TArrayOfString;
@@ -567,9 +563,7 @@ var
 begin
   SetLength(Result, DBkernel.DBs.Count);
   for I := 0 to DBkernel.DBs.Count - 1 do
-  begin
     Result[I] := DBkernel.DBs[I].Icon;
-  end;
 end;
 
 function AAnsiLowerCase(S: string): string;
@@ -599,11 +593,11 @@ end;
 
 procedure AddDBFile;
 var
-  DBFile: TPhotoDBFile;
+  DBFile: TDatabaseInfo;
 begin
   DBFile := DoChooseDBFile();
-  if DBKernel.TestDB(DBFile.FileName) then
-    DBKernel.AddDB(DBFile.name, DBFile.FileName, DBFile.Icon);
+  if DBKernel.TestDB(DBFile.Path) then
+    DBKernel.AddDB(DBFile.Title, DBFile.Path, DBFile.Icon);
 end;
 
 function PromtUserCryptImageFile(FileName: string): string;

@@ -3,21 +3,24 @@ unit uFrmSelectDBCreationSummary;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  uFrameWizardBase,
-  StdCtrls,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.StdCtrls,
+
   UnitDBDeclare,
   UnitDBKernel,
   CommonDBSupport,
+
+  uFrameWizardBase,
   uShellIntegration,
   uConstants,
   uDBUtils,
+  uLinkListEditorDatabases,
   uInterfaces;
 
 type
@@ -25,7 +28,7 @@ type
     MemInfo: TMemo;
   private
     { Private declarations }
-    function GetDBFile: TPhotoDBFile;
+    function GetDBFile: TDatabaseInfo;
     procedure WriteNewDBOptions;
     function GetImageOptions: TImageDBOptions;
   public
@@ -33,7 +36,7 @@ type
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Execute; override;
     function IsFinal: Boolean; override;
-    property DBFile: TPhotoDBFile read GetDBFile;
+    property DBFile: TDatabaseInfo read GetDBFile;
     property ImageOptions: TImageDBOptions read GetImageOptions;
   end;
 
@@ -52,8 +55,8 @@ begin
   MemInfo.Clear;
   MemInfo.Lines.Add(L('The new collection will be created with the following settings:')+#13#13);
   MemInfo.Lines.Add('');
-  MemInfo.Lines.Add(Format(L('Collection name: "%s"'), [DBFile.Name]));
-  MemInfo.Lines.Add(Format(L('Path to collection: "%s"'), [DBFile.FileName]));
+  MemInfo.Lines.Add(Format(L('Collection name: "%s"'), [DBFile.Title]));
+  MemInfo.Lines.Add(Format(L('Path to collection: "%s"'), [DBFile.Path]));
   MemInfo.Lines.Add(Format(L('Path to icon: "%s"'), [DBFile.Icon]));
   MemInfo.Lines.Add('');
   MemInfo.Lines.Add(Format(L('Size of collection previews: %dpx'),
@@ -71,26 +74,25 @@ begin
   inherited;
   SettingsFrame := Manager.GetStepByType(TFrmSelectDBNewPathAndIcon) as TFrmSelectDBNewPathAndIcon;
 
-  DBKernel.CreateDBbyName(DBFile.FileName);
-  CommonDBSupport.ADOCreateSettingsTable(DBFile.FileName);
+  DBKernel.CreateDBbyName(DBFile.Path);
+  CommonDBSupport.ADOCreateSettingsTable(DBFile.Path);
   ImageOptions.Description := SettingsFrame.EdName.Text;
-  CommonDBSupport.UpdateImageSettings(DBFile.FileName, ImageOptions);
+  CommonDBSupport.UpdateImageSettings(DBFile.Path, ImageOptions);
   if SettingsFrame.CbAddDefaultGroups.Checked then
-    CreateExampleGroups(DBFile.FileName, Application.ExeName + ',0',
+    CreateExampleGroups(DBFile.Path, Application.ExeName + ',0',
       ExtractFileDir(Application.ExeName));
 
   if SettingsFrame.CbSetAsDefaultDB.Checked then
-    DBKernel.SetDataBase(DBFile.FileName);
+    DBKernel.SetDataBase(DBFile.Path);
 
-  MessageBoxDB(Handle, Format(L('Collection "%s" successfully created!'),
-      [DBFile.FileName]), L('Information'), TD_BUTTON_OK,
+  MessageBoxDB(Handle, Format(L('Collection "%s" successfully created!'), [DBFile.Path]), L('Information'), TD_BUTTON_OK,
     TD_ICON_INFORMATION);
 
   IsStepComplete := True;
   Changed;
 end;
 
-function TFrmSelectDBCreationSummary.GetDBFile: TPhotoDBFile;
+function TFrmSelectDBCreationSummary.GetDBFile: TDatabaseInfo;
 begin
   Result := TFormSelectDB(Manager.Owner).DBFile;
 end;

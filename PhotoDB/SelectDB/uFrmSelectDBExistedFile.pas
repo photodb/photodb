@@ -40,7 +40,6 @@ type
     EdFileName: TWatermarkedEdit;
     EdDBType: TWatermarkedEdit;
     BtnChooseIcon: TButton;
-    BtnChangeDBOptions: TButton;
     BtnSelectFile: TButton;
     WlDBOptions: TWebLink;
     EdInternalName: TWatermarkedEdit;
@@ -48,10 +47,9 @@ type
     procedure BtnChooseIconClick(Sender: TObject);
     procedure BtnSelectFileClick(Sender: TObject);
     procedure EdInternalNameChange(Sender: TObject);
-    procedure BtnChangeDBOptionsClick(Sender: TObject);
     procedure WlDBOptionsClick(Sender: TObject);
   private
-    function GetDBFile: TPhotoDBFile;
+    function GetDBFile: TDatabaseInfo;
     { Private declarations }
   protected
     { Protected declarations }
@@ -60,7 +58,7 @@ type
     { Public declarations }
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     function IsFinal: Boolean; override;
-    property DBFile: TPhotoDBFile read GetDBFile;
+    property DBFile: TDatabaseInfo read GetDBFile;
     function ValidateStep(Silent: Boolean): Boolean; override;
     procedure Execute; override;
   end;
@@ -68,13 +66,13 @@ type
 implementation
 
 uses
-  UnitSelectDB, UnitConvertDBForm, UnitDBOptions;
+  UnitSelectDB, UnitConvertDBForm;
 
 {$R *.dfm}
 
 { TFrmSelectDBExistedFile }
 
-function TFrmSelectDBExistedFile.GetDBFile: TPhotoDBFile;
+function TFrmSelectDBExistedFile.GetDBFile: TDatabaseInfo;
 begin
   Result := TFormSelectDB(Manager.Owner).DBFile;
 end;
@@ -92,13 +90,13 @@ end;
 
 procedure TFrmSelectDBExistedFile.EdInternalNameChange(Sender: TObject);
 begin
-  DBFile.Name := EdInternalName.Text;
+  DBFile.Title := EdInternalName.Text;
 end;
 
 procedure TFrmSelectDBExistedFile.Execute;
 begin
   inherited;
-  DBKernel.AddDB(DBFile.Name, DBFile.FileName, DBFile.Icon);
+  DBKernel.AddDB(DBFile.Title, DBFile.Path, DBFile.Icon);
   IsStepComplete := True;
   Changed;
 end;
@@ -116,7 +114,6 @@ begin
   LbDBType.Caption := L('Collection type') + ':';
   LbIconPreview.Caption := L('Icon preview') + ':';
   BtnChooseIcon.Caption := L('Choose icon');
-  BtnChangeDBOptions.Caption := L('Change Collection Settings');
   BtnSelectFile.Caption := L('Select file');
   BtnChooseIcon.Caption := L('Choose an icon');
   LbDisplayName.Caption := L('Display name');
@@ -125,18 +122,6 @@ begin
   EdInternalName.WatermarkText := L('Short collection description');
   EdInternalName.Text := DBKernel.NewDBName(L('New collection'));
   WlDBOptions.Text := L('Change the size and quality of previews');
-end;
-
-procedure TFrmSelectDBExistedFile.BtnChangeDBOptionsClick(Sender: TObject);
-begin
-  if DBKernel.ValidDBVersion(DBFile.FileName,
-    DBKernel.TestDBEx(DBFile.FileName)) then
-    ChangeDBOptions('', DBFile.FileName)
-  else
-  begin
-    MessageBoxDB(Handle, L('Please select any collection at first!'), L('Warning'),
-      TD_BUTTON_OK, TD_ICON_WARNING);
-  end;
 end;
 
 procedure TFrmSelectDBExistedFile.BtnChooseIconClick(Sender: TObject);
@@ -168,14 +153,13 @@ function TFrmSelectDBExistedFile.ValidateStep(Silent: Boolean): Boolean;
 begin
   if EdFileName.Text <> '' then
   begin
-    DBFile.FileName := EdFileName.Text;
-    DBFile.Name := ExtractFileName(EdFileName.Text);
+    DBFile.Path := EdFileName.Text;
+    DBFile.Title := ExtractFileName(EdFileName.Text);
   end else
   begin
     if not Silent then
     begin
-      MessageBoxDB(Handle, L(
-          'File isn''t selected! Please, select an file and try again.'),
+      MessageBoxDB(Handle, L('File isn''t selected! Please, select an file and try again.'),
         L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
       BtnSelectFileClick(Self);
     end;
@@ -216,7 +200,7 @@ begin
         if not DBKernel.ValidDBVersion(FileName, DBVersion) then
         begin
           DialogResult := MessageBoxDB(Handle,
-            'This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?', L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
+            L('This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
           if ID_YES = DialogResult then
             ConvertDB(FileName);
 
@@ -224,7 +208,7 @@ begin
       DBTestOK := DBKernel.TestDB(FileName);
       if DBTestOK then
       begin
-        DBFile.FileName := FileName;
+        DBFile.Path := FileName;
         EdFileName.Text := FileName;
         EdDBType.Text := DBKernel.StringDBVersion(DBKernel.TestDBEx(FileName));
       end else
@@ -238,9 +222,9 @@ end;
 
 procedure TFrmSelectDBExistedFile.WlDBOptionsClick(Sender: TObject);
 begin
-  if DBKernel.TestDBEx(DBFile.FileName) > 0 then
+  if DBKernel.TestDBEx(DBFile.Path) > 0 then
   begin
-    ConvertDB(DBFile.FileName);
+    ConvertDB(DBFile.Path);
   end else
   begin
     MessageBoxDB(Handle, L('Please select any collection at first!'), L('Warning'),

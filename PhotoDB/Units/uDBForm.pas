@@ -286,6 +286,7 @@ type
     procedure FixFormPosition;
     function QueryInterfaceEx(const IID: TGUID; out Obj): HResult;
 
+    procedure PrepaireMask;
     procedure ShowMask;
     procedure HideMask;
     function ShowModal: Integer; override;
@@ -697,7 +698,7 @@ begin
   end;
 end;
 
-procedure TDBForm.ShowMask;
+procedure TDBForm.PrepaireMask;
 {$IFDEF PHOTODB}
 var
  Mask: TBitmap;
@@ -744,6 +745,7 @@ begin
       FMaskPanel.Parent := Self;
       FMaskPanel.BevelOuter := bvNone;
       FMaskPanel.ParentBackground := False;
+      FMaskPanel.DoubleBuffered := True;
     end;
     FMaskPanel.SetBounds(0, 0, ClientWidth, ClientHeight);
 
@@ -763,27 +765,21 @@ begin
 {$ENDIF}
 end;
 
+procedure TDBForm.ShowMask;
+begin
+{$IFDEF PHOTODB}
+  FMaskPanel.Show;
+{$ENDIF}
+end;
+
 function TDBForm.ShowModal: Integer;
 var
   I: Integer;
   Form: TDBForm;
+  Forms: TList<TDBForm>;
 begin
-  Form := nil;
-
-  for I := 0 to Screen.FormCount - 1 do
-  begin
-    if (Screen.Forms[I] is TDBForm) and (Screen.Forms[I] <> Self) and (Screen.Forms[I].Visible) then
-    begin
-      Form := TDBForm(Screen.Forms[I]);
-
-      if Form.CanUseMaskingForModal then
-        Form.ShowMask;
-    end;
-  end;
-
+  Forms := TList<TDBForm>.Create;
   try
-    Result := inherited ShowModal;
-  finally
     for I := 0 to Screen.FormCount - 1 do
     begin
       if (Screen.Forms[I] is TDBForm) and (Screen.Forms[I] <> Self) and (Screen.Forms[I].Visible) then
@@ -791,9 +787,25 @@ begin
         Form := TDBForm(Screen.Forms[I]);
 
         if Form.CanUseMaskingForModal then
-          Form.HideMask;
+          Forms.Add(Form);
       end;
     end;
+
+    for Form in Forms do
+      Form.PrepaireMask;
+
+    for Form in Forms do
+      Form.ShowMask;
+
+    try
+      Result := inherited ShowModal;
+    finally
+      for Form in Forms do
+        Form.HideMask;
+    end;
+
+  finally
+    F(Forms);
   end;
 end;
 

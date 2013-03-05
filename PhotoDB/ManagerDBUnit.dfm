@@ -38,20 +38,6 @@ object ManagerDB: TManagerDB
         Height = 13
         Caption = 'GoToRecord ID:'
       end
-      object Label9: TLabel
-        Left = 360
-        Top = 8
-        Width = 8
-        Height = 13
-        Caption = '='
-      end
-      object Label10: TLabel
-        Left = 212
-        Top = 56
-        Width = 32
-        Height = 13
-        Caption = 'Where'
-      end
       object Label11: TLabel
         Left = 656
         Top = 45
@@ -59,180 +45,12 @@ object ManagerDB: TManagerDB
         Height = 13
         Caption = 'BackUps:'
       end
-      object CbSetField: TComboBox
-        Left = 296
-        Top = 8
-        Width = 65
-        Height = 21
-        Style = csDropDownList
-        ParentColor = True
-        TabOrder = 0
-        OnChange = ComboBox1Change
-        Items.Strings = (
-          'Rating'
-          'Rotate'
-          'Access'
-          'Width'
-          'Height'
-          'Attributes'
-          'Name'
-          'FFileName'
-          'Comment'
-          'KeyWords'
-          'Owner'
-          'Collection')
-      end
-      object Edit2: TEdit
-        Left = 368
-        Top = 8
-        Width = 81
-        Height = 21
-        TabOrder = 1
-        Text = '0'
-      end
-      object CbWhereField1: TComboBox
-        Left = 212
-        Top = 72
-        Width = 89
-        Height = 21
-        Style = csDropDownList
-        ParentColor = True
-        TabOrder = 2
-        OnChange = CbWhereField1Change
-        Items.Strings = (
-          'Rating'
-          'Rotate'
-          'Access'
-          'Width'
-          'Height'
-          'Attributes'
-          'Name'
-          'FFileName'
-          'Comment'
-          'KeyWords'
-          'Owner'
-          'Collection')
-      end
-      object Edit3: TEdit
-        Left = 360
-        Top = 72
-        Width = 89
-        Height = 21
-        TabOrder = 3
-        Text = '0'
-      end
-      object BtnExecSQL: TButton
-        Left = 212
-        Top = 162
-        Width = 237
-        Height = 25
-        Caption = 'Exes SQL'
-        TabOrder = 4
-        OnClick = BtnExecSQLClick
-      end
-      object CbWhereCombinator: TComboBox
-        Left = 212
-        Top = 100
-        Width = 49
-        Height = 21
-        Style = csDropDownList
-        ParentColor = True
-        TabOrder = 5
-        OnChange = CbWhereCombinatorChange
-        Items.Strings = (
-          'OR'
-          'AND'
-          ' ')
-      end
-      object Edit4: TEdit
-        Left = 360
-        Top = 128
-        Width = 89
-        Height = 21
-        TabOrder = 6
-        Text = '0'
-      end
-      object CbWhereField2: TComboBox
-        Left = 212
-        Top = 128
-        Width = 89
-        Height = 21
-        Style = csDropDownList
-        ParentColor = True
-        TabOrder = 7
-        OnChange = CbWhereField1Change
-        Items.Strings = (
-          'Rating'
-          'Rotate'
-          'Access'
-          'Width'
-          'Height'
-          'Attributes'
-          'Name'
-          'FFileName'
-          'Comment'
-          'KeyWords'
-          'Owner'
-          'Collection')
-      end
-      object CbOperatorWhere1: TComboBox
-        Left = 304
-        Top = 72
-        Width = 49
-        Height = 21
-        Style = csDropDownList
-        ParentColor = True
-        TabOrder = 8
-        OnChange = CbOperatorWhere1Change
-        Items.Strings = (
-          '='
-          '>'
-          '<'
-          '<>'
-          'Like')
-      end
-      object CbOperatorWhere2: TComboBox
-        Left = 304
-        Top = 128
-        Width = 49
-        Height = 21
-        Style = csDropDownList
-        ParentColor = True
-        TabOrder = 9
-        OnChange = CbOperatorWhere1Change
-        Items.Strings = (
-          '='
-          '>'
-          '<'
-          '<>'
-          'Like')
-      end
-      object RbSQLSet: TRadioButton
-        Left = 212
-        Top = 8
-        Width = 76
-        Height = 17
-        Caption = 'Set'
-        Checked = True
-        TabOrder = 10
-        TabStop = True
-        OnClick = RbSQLSetClick
-      end
-      object RbSQLDelete: TRadioButton
-        Left = 212
-        Top = 32
-        Width = 237
-        Height = 17
-        Caption = 'Delete'
-        TabOrder = 11
-        OnClick = RbSQLSetClick
-      end
       object RecordNumberEdit: TEdit
         Left = 656
         Top = 19
         Width = 177
         Height = 21
-        TabOrder = 12
+        TabOrder = 0
         Text = '1'
         OnChange = RecordNumberEditChange
       end
@@ -243,7 +61,7 @@ object ManagerDB: TManagerDB
         Height = 137
         Style = lbOwnerDrawFixed
         ItemHeight = 20
-        TabOrder = 13
+        TabOrder = 1
         OnContextPopup = LbBackupsContextPopup
         OnDrawItem = LbBackupsDrawItem
       end
@@ -256,8 +74,6 @@ object ManagerDB: TManagerDB
         Text = 'Pack Table'
         OnClick = PackTabelLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -276,8 +92,6 @@ object ManagerDB: TManagerDB
         Text = 'Export Table'
         OnClick = ExportTableLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -296,8 +110,6 @@ object ManagerDB: TManagerDB
         Text = 'Import Table'
         OnClick = ImportTableLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -316,8 +128,6 @@ object ManagerDB: TManagerDB
         Text = 'Recreate IDEx'
         OnClick = RecreateIDExLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -336,8 +146,6 @@ object ManagerDB: TManagerDB
         Text = 'Scan for Bad Links'
         OnClick = ScanforBadLinksLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -356,8 +164,6 @@ object ManagerDB: TManagerDB
         Text = 'BackUp DB'
         OnClick = BackUpDBLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -376,8 +182,6 @@ object ManagerDB: TManagerDB
         Text = 'Cleaning'
         OnClick = CleaningLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -386,27 +190,6 @@ object ManagerDB: TManagerDB
         HightliteImage = False
         StretchImage = True
         CanClick = True
-      end
-      object LbDatabases: TListBox
-        Left = 456
-        Top = 32
-        Width = 193
-        Height = 169
-        Style = lbOwnerDrawFixed
-        ItemHeight = 20
-        TabOrder = 21
-        OnContextPopup = LbDatabasesContextPopup
-        OnDblClick = LbDatabasesDblClick
-        OnDrawItem = LbDatabasesDrawItem
-      end
-      object BtnAddDB: TButton
-        Left = 456
-        Top = 8
-        Width = 193
-        Height = 17
-        Caption = 'Add DB'
-        TabOrder = 22
-        OnClick = BtnAddDBClick
       end
       object DuplicatesLink: TWebLink
         Left = 8
@@ -417,8 +200,6 @@ object ManagerDB: TManagerDB
         Text = 'Optimizing Duplicates'
         OnClick = DuplicatesLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -437,8 +218,6 @@ object ManagerDB: TManagerDB
         Text = 'Convert DB'
         OnClick = ConvertLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -457,8 +236,6 @@ object ManagerDB: TManagerDB
         Text = 'Change Path in DB (if files was moved)'
         OnClick = ChangePathLinkClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -766,33 +543,5 @@ object ManagerDB: TManagerDB
   object PopupMenuFile: TPopupActionBar
     Left = 601
     Top = 496
-  end
-  object DBImageList: TImageList
-    ColorDepth = cd32Bit
-    Left = 497
-    Top = 129
-  end
-  object PmRestore: TPopupActionBar
-    Left = 561
-    Top = 129
-    object SelectDB1: TMenuItem
-      Caption = 'SelectDB'
-      OnClick = SelectDB1Click
-    end
-    object RenameDB1: TMenuItem
-      Caption = 'Rename DB'
-      OnClick = RenameDB1Click
-    end
-    object N1: TMenuItem
-      Caption = '-'
-    end
-    object EditDB1: TMenuItem
-      Caption = 'Edit DB'
-      OnClick = EditDB1Click
-    end
-    object DeleteDB1: TMenuItem
-      Caption = 'Delete DB'
-      OnClick = DeleteDB1Click
-    end
   end
 end
