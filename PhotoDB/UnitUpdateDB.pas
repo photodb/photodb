@@ -188,8 +188,6 @@ uses
   FormManegerUnit,
   UnitHistoryForm,
   uManagerExplorer,
-  UnitScripts,
-  DBScriptFunctions,
   UnitUpdateDBThread;
 
 procedure CreateUpdaterForm;

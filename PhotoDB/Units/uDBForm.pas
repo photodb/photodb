@@ -34,7 +34,6 @@ uses
   uVistaFuncs,
   {$IFDEF PHOTODB}
   uFastLoad,
-  uMainMenuStyleHook,
   uGraphicUtils,
   {$ENDIF}
   uThemesUtils,
@@ -448,8 +447,6 @@ procedure TDBForm.DoCreate;
 begin
   inherited;
   {$IFDEF PHOTODB}
-  if Menu is TMainMenu then
-    TMainMenuStyleHook.RegisterMenu(TMainMenu(Menu));
   if ClassName <> 'TFormManager' then
     TLoad.Instance.RequiredStyle;
 

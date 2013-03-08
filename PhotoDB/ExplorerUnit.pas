@@ -67,8 +67,6 @@ uses
   Dmitry.Controls.ImButton,
 
   PrintMainForm,
-  uScript,
-  UnitScripts,
   ExplorerTypes,
   uExplorerFolderImages,
   DBCMenu,
@@ -626,7 +624,6 @@ type
     procedure CutClick(Sender: TObject);
     procedure ImPreviewContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure PropertyPanelResize(Sender: TObject);
-    procedure ScriptExecuted(Sender: TObject);
     procedure CopyToLinkClick(Sender: TObject);
     procedure MoveToLinkClick(Sender: TObject);
     procedure PasteClick(Sender: TObject);
@@ -874,7 +871,6 @@ type
     FPictureSize: Integer;
     ListView: Integer;
     ElvMain: TEasyListView;
-    AScript: TScript;
     RefreshIDList: TStrings;
     Rdown: Boolean;
     Outdrag: Boolean;
@@ -2249,7 +2245,6 @@ begin
   ClearList;
   DirectoryWatcher.StopWatch;
   F(DirectoryWatcher);
-  F(AScript);
   F(DragFilesPopup);
   F(FBitmapImageList);
 
@@ -10047,13 +10042,6 @@ end;
 function TExplorerForm.UpdatingNow(FileName: string): Boolean;
 begin
   Result := RefreshIDList.IndexOf(FileName) > -1;
-end;
-
-procedure TExplorerForm.ScriptExecuted(Sender: TObject);
-begin
-  LoadItemVariables(aScript,Sender as TMenuItemW);
-  if Trim((Sender as TMenuItemW).Script) <> '' then
-    ExecuteScript(Sender as TMenuItemW, AScript, '', FExtImagesInImageList, DBkernel.ImageList, ScriptExecuted);
 end;
 
 function TExplorerForm.GetVisibleItems: TStrings;

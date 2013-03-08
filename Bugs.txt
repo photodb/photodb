@@ -8,6 +8,7 @@ http://answers.microsoft.com/ru-ru/windows/forum/windows_7-system/%D0%BA%D0%B0%D
 - Shelf slide show button enabling;
 - Update window position of cursor, size;
 - Update automatically?
+- Portable persons;
 [F] Import set password;
 [F] resize - raw use preview checkbox;
 [F] png watermarks;

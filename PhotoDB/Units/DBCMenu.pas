@@ -26,8 +26,6 @@ uses
   PrintMainForm,
   ShellContextMenu,
   UnitSQLOptimizing,
-  UnitScripts,
-  DBScriptFunctions,
   UnitRefreshDBRecordsThread,
   EasyListview,
   UnitINI,
@@ -40,7 +38,6 @@ uses
   uMemoryEx,
   uTime,
   uIconUtils,
-  uScript,
   uLogger,
   uCDMappingTypes,
   uGroupTypes,
@@ -78,12 +75,17 @@ type
     FPopUpPoint: TPoint;
     FUserMenu: TList<TExecutableInfo>;
     FBusy: Boolean;
-    aScript: TScript;
     FOwner: TDBForm;
   public
     class function Instance: TDBPopupMenu;
     constructor Create;
     destructor Destroy; override;
+    procedure MiFindFileManuallyClick(Sender: TObject);
+    procedure MiApplyActionsClick(Sender: TObject);
+    procedure MiShowKeyWordClick(Sender: TObject);
+    procedure MiStenoClick(Sender: TObject);
+    procedure MiDeStenoClick(Sender: TObject);
+
     procedure ShowItemPopUpMenu_(Sender: TObject);
     procedure ShellExecutePopUpMenu_(Sender: TObject);
     procedure DeleteLItemPopUpMenu_(Sender: TObject);
@@ -118,20 +120,9 @@ type
     procedure AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TDBPopupMenuInfo);
     procedure AddUserMenu(Item: TMenuItem; Insert: Boolean; index: Integer);
     procedure SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
-    procedure ScriptExecuted(Sender: TObject);
     function GetGroupImageInImageList(GroupCode: string): Integer;
-    function LoadVariablesNo(Int: Integer): Integer;
-    function LoadVariablesSelectedFileNo(Int: Integer): Integer;
     function CheckDBReadOnly: Boolean;
   end;
-
-procedure ReloadIDMenu;
-
-const
-  DBMenuID = 'DBMenu';
-
-var
-  MenuScript: string;
 
 implementation
 
@@ -143,39 +134,58 @@ uses
   ImEditor,
   FormManegerUnit;
 
+const
+  DBMenuID = 'DBMenu';
+
 var
   DBPopupMenu: TDBPopupMenu = nil;
 
 { TDBPopupMenu }
 
-procedure ReloadIDMenu;
+function L(TextToTranslate: string): string;
 begin
-  MenuScript := ReadScriptFile('Scripts\IDMenu.dbini');
+  Result := TA(TextToTranslate, DBMenuID);
 end;
 
-procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem;
-  Info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TDBPopupMenuInfo);
+const
+  RotateTitles: array[0..3] of string = ('No rotate', 'Rotate right', 'Rotate 180°', 'Rotate left');
+  RatingIcons: array[0..5] of Integer = (DB_IC_RATING_STAR, DB_IC_RATING_1, DB_IC_RATING_2, DB_IC_RATING_3, DB_IC_RATING_4, DB_IC_RATING_5);
+
 var
   I: Integer;
-  FE, Isrecord, IsFile, IsCurrentFile: Boolean;
+  FE, Isrecord, IsFile, IsCurrentFile, IsStaticFile: Boolean;
   MenuGroups: TGroups;
   GroupsList: TStringList;
-  StrGroups, Script: string;
+  StrGroups: string;
+  KeyWords: TArray<string>;
   BusyMenu, ErrorMenu: TMenuItem;
   OnlyCurrentDBinfoSelected: Boolean;
   NoDBInfoNeeded: Boolean;
-  APanelTexts, AGroupsNames, AGroupsCodes: TArrayOfString;
+  MI: TMenuItem;
+  DBItem: TDBPopupMenuInfoRecord;
 
-const
-  ShowGroupsInContextMenu = True;
+  function CreateMenuItemEx(Item: TMenuItem; Text: string; ImageIndex: Integer = 0; Tag: Integer = 0; Default: Boolean = False): TMenuItem;
+  begin
+    Result := TMenuItem.Create(_popupMenu);
+    Result.Caption := L(Text);
+    Result.ImageIndex := ImageIndex;
+    Result.Tag := Tag;
+    Result.Default := Default;
+    Item.Add(Result);
+  end;
+
+  function CreateMenuItem(Text: string; ImageIndex: Integer = 0): TMenuItem;
+  begin
+    Result := CreateMenuItemEx(Item, Text, ImageIndex);
+  end;
 
 begin
   if FBusy then
   begin
     for I := 0 to Item.Count - 1 do
       Item.Delete(0);
-    BusyMenu := Tmenuitem.Create(_popupMenu);
-    BusyMenu.Caption := TA('Busy...', DBMenuID);
+    BusyMenu := CreateMenuItem('Busy...');
     BusyMenu.Enabled := False;
     Item.Add(BusyMenu);
     Exit;
@@ -184,8 +194,7 @@ begin
   begin
     for I := 0 to Item.Count - 1 do
       Item.Delete(0);
-    ErrorMenu := TMenuItem.Create(_popupMenu);
-    ErrorMenu.Caption := TA('Unable to show menu!', DBMenuID);
+    ErrorMenu := CreateMenuItem('Unable to show menu!');
     ErrorMenu.Enabled := False;
     Item.Add(ErrorMenu);
     Exit;
@@ -210,6 +219,8 @@ begin
   end;
   NoDBInfoNeeded := False;
 
+  DBItem := FInfo[FInfo.Position];
+
   OnlyCurrentDBinfoSelected := True;
   if FInfo.Count > 1 then
     for I := 0 to FInfo.Count - 1 do
@@ -217,17 +228,17 @@ begin
         if FInfo[I].Selected then
           if FInfo.Position <> I then
             OnlyCurrentDBinfoSelected := False;
-  if FInfo[FInfo.Position].Selected then
-    if FInfo[FInfo.Position].ID = 0 then
+  if DBItem.Selected then
+    if DBItem.ID = 0 then
       if not OnlyCurrentDBinfoSelected then
         NoDBInfoNeeded := True;
   if not Isrecord then
     NoDBInfoNeeded := True;
-  if FInfo[FInfo.Position].ID = 0 then
+  if DBItem.ID = 0 then
     NoDBInfoNeeded := True;
 
   TW.I.Start('FileExists');
-  FE := (FInfo[FInfo.Position].Exists = 1) or FileExistsSafe(FInfo[FInfo.Position].FileName);
+  FE := (DBItem.Exists = 1) or FileExistsSafe(DBItem.FileName);
   IsCurrentFile := FE;
 
   IsFile := IsCurrentFile;
@@ -240,56 +251,237 @@ begin
       end;
 
   SetLength(MenuGroups, 0);
+  IsStaticFile := StaticPath(DBItem.FileName);
 
-  Script := MenuScript;
-
-  TW.I.Start('Vars');
-  SetBoolAttr(AScript, '$CanRename', Finfo.IsListItem);
-  SetBoolAttr(AScript, '$IsRecord', IsRecord);
-  SetBoolAttr(AScript, '$IsFile', IsFile);
-  SetIntAttr(AScript, '$SelectionCount', FInfo.SelectionCount);
-  SetBoolAttr(AScript, '$NoDBInfoNeeded', NoDBInfoNeeded);
-
-  SetIntAttr(AScript, '$MenuLength', FInfo.Count);
-  SetIntAttr(AScript, '$Position', FInfo.Position);
-  SetBoolAttr(AScript, '$ItemInShelf', PhotoShelf.PathInShelf(FInfo[FInfo.Position].FileName) > -1);
-
-  // if user haven't rights to get FileName its only possible way to know
-  SetBoolAttr(AScript, '$FileExists', FE);
-
-  // END Access section
-  SetBoolAttr(aScript, '$IsCurrentFile', IsCurrentFile);
-
-  LoadVariablesNo(FInfo.Position);
-
-  TW.I.Start('Groups');
   GroupsList := TStringList.Create;
   try
     for I := 0 to FInfo.Count - 1 do
       if FInfo[I].Selected then
         GroupsList.Add(FInfo[I].Groups);
 
-    SetNamedValueArrayStrings(AScript, '$Panels', APanelTexts);
     StrGroups := GetCommonGroups(GroupsList);
   finally
     F(GroupsList);
   end;
+
   MenuGroups := EnCodeGroups(StrGroups);
-  SetLength(AGroupsNames, Length(MenuGroups));
-  SetLength(AGroupsCodes, Length(MenuGroups));
-  for I := 0 to Length(MenuGroups) - 1 do
+
+  if IsStaticFile and not IsFile then
   begin
-    AGroupsNames[I] := MenuGroups[I].GroupName;
-    AGroupsCodes[I] := MenuGroups[I].GroupCode;
+    MI := CreateMenuItem('Find file manually', DB_IC_SEARCH);
+    MI.OnClick := MiFindFileManuallyClick;
   end;
-  SetNamedValueArrayStrings(AScript, '$GroupsNames', AGroupsNames);
-  SetNamedValueArrayStrings(AScript, '$GroupsCodes', AGroupsCodes);
-  TW.I.Start('LoadMenuFromScript');
-  LoadMenuFromScript(Item, DBKernel.ImageList, Script, AScript, ScriptExecuted, FExtImagesInImageList, True);
-  TW.I.Start('LoadMenuFromScript - end');
+
+  MI := CreateMenuItem('Slide Show', DB_IC_SLIDE_SHOW);
+  MI.OnClick := ShowItemPopUpMenu_;
+
+  MI := CreateMenuItem('Apply actions', DB_IC_APPLY_ACTION);
+  MI.OnClick := MiApplyActionsClick;
+
+  if ShiftKeyDown and FE then
+  begin
+    MI := CreateMenuItem('Shell', DB_IC_SHELL);
+    MI.OnClick := ShellExecutePopUpMenu_;
+  end;
+
+  //links
+
+  if not NoDBInfoNeeded then
+  begin
+    MI := CreateMenuItem('Refresh', DB_IC_REFRESH_THUM);
+    MI.OnClick := RefreshThumItemPopUpMenu_;
+  end;
+
+  if not NoDBInfoNeeded and IsRecord then
+  begin
+    MI := CreateMenuItem('Rotate', DB_IC_ROTATED_0);
+
+    for I := 0 to 3 do
+      CreateMenuItemEx(MI, RotateTitles[I], DB_IC_ROTATED_0 + I, I, I = DBItem.Rotation).OnClick := SetRotateItemPopUpMenu_;
+
+    MI := CreateMenuItem('Rating', DB_IC_RATING_STAR);
+
+    for I := 0 to 5 do
+      CreateMenuItemEx(MI, IntToStr(I), RatingIcons[I], I, I = DBItem.Rating).OnClick := SetRatingItemPopUpMenu_;
+
+    if DBItem.Access = Db_access_none then
+    begin
+      MI := CreateMenuItem('Private', DB_IC_PRIVATE);
+      MI.Tag := 0;
+      MI.OnClick := PrivateItemPopUpMenu_;
+    end;
+
+    if DBItem.Access = Db_access_private then
+    begin
+      MI := CreateMenuItem('Public', DB_IC_COMMON);
+      MI.Tag := 1;
+      MI.OnClick := PrivateItemPopUpMenu_;
+    end;
+
+    MI := CreateMenuItem('Date', DB_IC_EDIT_DATE);
+    MI.OnClick := DateItemPopUpMenu_;
+
+    MI := CreateMenuItem('Groups', DB_IC_GROUPS);
+
+    for I := 0 to Length(MenuGroups) - 1 do
+      CreateMenuItemEx(MI, MenuGroups[I].GroupName, GetGroupImageInImageList(MenuGroups[I].GroupCode)).OnClick := QuickGroupInfoPopUpMenu_;
+
+    CreateMenuItemEx(MI, '-');
+    CreateMenuItemEx(MI, 'Edit groups', DB_IC_GROUPS).OnClick := GroupsPopUpMenu_;
+
+  end;
+
+  KeyWords := DBItem.KeyWords.Split([' '], TStringSplitOptions.ExcludeEmpty);
+  if Length(KeyWords) > 0 then
+  begin
+    MI := CreateMenuItem('Keywords', DB_IC_NOTEPAD);
+    for I := 0 to Length(KeyWords) - 1 do
+      CreateMenuItemEx(MI, KeyWords[I], DB_IC_NOTEPAD).OnClick := MiShowKeyWordClick;
+  end;
+
+  if not IsDevicePath(DBItem.FileName) then
+  begin
+    MI := CreateMenuItem('Encrypting', DB_IC_KEY);
+
+    if DBItem.Encrypted then
+    begin
+      CreateMenuItemEx(MI, 'Enter password', DB_IC_PASSWORD).OnClick := EnterPasswordItemPopUpMenu_;
+      CreateMenuItemEx(MI, 'Decrypt', DB_IC_DECRYPTIMAGE).OnClick := DeCryptItemPopUpMenu_;
+    end else
+      CreateMenuItemEx(MI, 'Encrypt', DB_IC_CRYPTIMAGE).OnClick := CryptItemPopUpMenu_;
+
+    CreateMenuItemEx(MI, '-');
+
+    CreateMenuItemEx(MI, 'Hide info in image', DB_IC_STENO).OnClick := MiStenoClick;
+    if ExtinMask('|BMP|PNG|JPG|JPEG|', GetExt(DBItem.FileName)) then
+      CreateMenuItemEx(MI, 'Extract info from image', DB_IC_STENO).OnClick := MiDeStenoClick;
+
+  end;
+
+  if not DBItem.Encrypted and IsWallpaper(DBItem.FileName) and IsCurrentFile then
+  begin
+    MI := CreateMenuItem('Set as desktop wallpaper', DB_IC_WALLPAPER);
+    CreateMenuItemEx(MI, 'Stretch', DB_IC_WALLPAPER).OnClick := WallpaperStretchItemPopUpMenu_;
+    CreateMenuItemEx(MI, 'Center', DB_IC_WALLPAPER).OnClick := WallpaperCenterItemPopUpMenu_;
+    CreateMenuItemEx(MI, 'Tile', DB_IC_WALLPAPER).OnClick := WallpaperTileItemPopUpMenu_;
+  end;
+
+  if IsCurrentFile then
+    CreateMenuItem('Image editor', DB_IC_IMEDITOR).OnClick := ImageEditorItemPopUpMenu_;
+
+  if IsCurrentFile then
+    CreateMenuItem('Convert image', DB_IC_RESIZE).OnClick := ConvertItemPopUpMenu_;
+
+  //user menu
+
+  if not NoDBInfoNeeded and IsCurrentFile and IsRecord then
+    CreateMenuItem('Update info', DB_IC_REFRESH_ID).OnClick := RefreshIDItemPopUpMenu_;
+
+  if IsCurrentFile then
+    CreateMenuItem('Print' , DB_IC_PRINTER).OnClick := PrintItemPopUpMenu_;
+
+  if DBItem.Attr = Db_attr_duplicate then
+  begin
+    CreateMenuItem('Show duplicates', DB_IC_DUPLICATE).OnClick := ShowDuplicatesItemPopUpMenu_;
+    CreateMenuItem('Delete duplicates', DB_IC_DEL_DUPLICAT).OnClick := DeleteDuplicatesItemPopUpMenu_;
+  end;
+
+  if not NoDBInfoNeeded and IsRecord then
+  begin
+    MI := CreateMenuItem('Delete', DB_IC_DELETE_FILE);
+
+    CreateMenuItemEx(MI, 'Delete info from collection', DB_IC_DELETE_FILE).OnClick := DeleteLItemPopUpMenu_;
+
+    if (IsFile and FE) then
+      CreateMenuItemEx(MI, 'Delete file', DB_IC_DELETE_FILE).OnClick := DeleteItemPopUpMenu_;
+  end;
+
+  if IsFile and FE then
+    CreateMenuItem('Copy', DB_IC_COPY).OnClick := CopyItemPopUpMenu_;
+
+  if not IsDevicePath(DBItem.FileName) and Finfo.IsListItem and FE then
+    CreateMenuItem('Rename', DB_IC_RENAME).OnClick := RenameItemPopUpMenu_;
+
+  CreateMenuItem('-');
+
+  if FE then
+    CreateMenuItem('Open in Explorer', DB_IC_EXPLORER).OnClick := ExplorerPopUpMenu_;
+
+  if not IsDevicePath(DBItem.FileName) and FE then
+  begin
+    if PhotoShelf.PathInShelf(DBItem.FileName) > -1 then
+      CreateMenuItem('Unshelve', DB_IC_SHELF).OnClick := ShelfItemPopUpMenu_
+    else
+      CreateMenuItem('Shelve', DB_IC_SHELF).OnClick := ShelfItemPopUpMenu_;
+
+  end;
+
+  CreateMenuItem('Properties', DB_IC_PROPERTIES).OnClick := PropertyItemPopUpMenu_;
+end;
+   
+procedure TDBPopupMenu.MiApplyActionsClick(Sender: TObject);
+begin
+(*
+
+  if ($FileExists=false) {InVisible;};
+  $sID=REGISTER_SCRIPT;
+  $script="$file=GetOpenFileName(""Result.dbact"",""DB Action Files (*.dbact)|*.dbact"");ApplyActionsToSelected("""+$sID+""",$file);";
+  CreateItem("Select",DB_IC_APPLY_ACTION,$script,false,0);
+  CreateItem("-",DB_IC_APPLY_ACTION,"",false,0);
+
+  $DBProgramDir=GetProgramFolder;
+  $ActionsDir=$DBProgramDir+"Actions";
+  $files=GetDirListing($ActionsDir,"|DBACT|");
+
+  $FilesLength=ArrayStringLength($files);
+  for($i=0;$i<$FilesLength;$i=%$i+1)
+  {
+     $file=GetStringItem($files,$i);
+
+     $file_name=GetFileNameWithoutExt($file);
+	 $file_name=T($file_name);
+     $script="ApplyActionsToSelected("""+$sID+""","""+$file+""");";
+     CreateItem($file_name,DB_IC_APPLY_ACTION,$script,false,0);
+  };
+
+*)
+
 end;
 
-procedure TDBPopupMenu.AddUserMenu(Item: TMenuItem; Insert : Boolean; Index: Integer);
+procedure TDBPopupMenu.MiFindFileManuallyClick(Sender: TObject);
+begin
+ (* $mask=GetImagesMask;
+ $caption=T("Find this file manually");
+ $File=GetOpenImageFileName($caption,$mask);
+ if ($File!="")
+ {
+  SetFileNameByID($ID,$File);
+ }; *)
+end;
+
+procedure TDBPopupMenu.MiShowKeyWordClick(Sender: TObject);
+var
+  S: string;
+begin
+  S := (Sender as TMenuItem).Caption.Replace('&', '');
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    SetPath(cDBSearchPath + ':KeyWord(' + S + '):');
+    Show;
+  end;
+end;
+
+procedure TDBPopupMenu.MiDeStenoClick(Sender: TObject);
+begin
+  SteganographyForm.ExtractData(FInfo[FInfo.Position].FileName);
+end;
+
+procedure TDBPopupMenu.MiStenoClick(Sender: TObject);
+begin
+  SteganographyForm.HideData(FInfo[FInfo.Position].FileName);
+end;
+
+procedure TDBPopupMenu.AddUserMenu(Item: TMenuItem; Insert: Boolean; Index: Integer);
 var
   Reg: TBDRegistry;
   S: TStrings;
@@ -345,7 +537,7 @@ begin
       if C > 0 then
       begin
         _user_group_menu := TMenuItem.Create(Item);
-        _user_group_menu.Caption := Settings.ReadString('', 'UserMenuName', TA('User menu', DBMenuID));
+        _user_group_menu.Caption := Settings.ReadString('', 'UserMenuName', L('User menu'));
         Icon := Settings.ReadString('', 'UserMenuIcon');
         if Icon = '' then
           Icon := '%SystemRoot%\system32\shell32.dll,126';
@@ -478,41 +670,6 @@ begin
   FBusy := False;
   Finfo := TDBPopupMenuInfo.Create;
   FUserMenu := TList<TExecutableInfo>.Create;
-  AScript := TScript.Create(FOwner, '');
-  AScript.Description := 'ID Menu';
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShellExecutePopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShellExecutePopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteLItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteLItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'RefreshThumItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshThumItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'PropertyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PropertyItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetRatingItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRatingItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'SetRotateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,SetRotateItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'PrivateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,PrivateItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'RenameItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RenameItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'CopyItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CopyItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShelfItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShelfItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ExplorerPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ExplorerPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'GroupsPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,GroupsPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'DateItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DateItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'CryptItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,CryptItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeCryptItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeCryptItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'QuickGroupInfoPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,QuickGroupInfoPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'EnterPasswordItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,EnterPasswordItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ImageEditorItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ImageEditorItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperStretchItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperStretchItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperCenterItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperCenterItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'WallpaperTileItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,WallpaperTileItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'RefreshIDItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,RefreshIDItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ShowDuplicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ShowDuplicatesItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'DeleteDuplicatesItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,DeleteDuplicatesItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'UserMenuItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,UserMenuItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'PrintItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT, PrintItemPopUpMenu_);
-  AddScriptObjFunction(aScript.PrivateEnviroment, 'ConvertItemPopUpMenu',F_TYPE_OBJ_PROCEDURE_TOBJECT,ConvertItemPopUpMenu_);
-
-  AddScriptObjFunctionStringIsInteger( aScript.PrivateEnviroment, 'GetGroupImage',Self.GetGroupImageInImageList);
-  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesNo',Self.LoadVariablesNo);
-  AddScriptObjFunctionIntegerIsInteger(aScript.PrivateEnviroment, 'LoadVariablesSelectedFileNo',Self.LoadVariablesSelectedFileNo);
 
   _popupMenu := TPopupActionBar.Create(nil);
 end;
@@ -745,7 +902,7 @@ var
 begin
   if CheckDBReadOnly then
     Exit;
-  if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want to delete this info from collection?'), TA('Confirm'),
+  if ID_OK = MessageBoxDB(GetActiveFormHandle, L('Do you really want to delete this info from collection?'), L('Confirm'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     FQuery := GetQuery;
@@ -792,8 +949,9 @@ var
 begin
   if CheckDBReadOnly then
     Exit;
- if IdOk = MessageBoxDB(GetActiveFormHandle, TA('Do you really want to delete this info from collection?', DBMenuID),
-    TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
+
+  if IdOk = MessageBoxDB(GetActiveFormHandle, L('Do you really want to delete this info from collection?'),
+    L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     FQuery := GetQuery;
     try
@@ -824,8 +982,6 @@ destructor TDBPopupMenu.destroy;
 begin
   FreeList(FUserMenu);
   F(_popupMenu);
-  if GOM.IsObj(aScript) then
-    F(aScript);
   F(Finfo);
   inherited;
 end;
@@ -1131,62 +1287,9 @@ end;
 class function TDBPopupMenu.Instance: TDBPopupMenu;
 begin
   if DBPopupMenu = nil then
-  begin
-    ReloadIDMenu;
     DBPopupMenu := TDBPopupMenu.Create;
-  end;
 
   Result := DBPopupMenu
-end;
-
-function TDBPopupMenu.LoadVariablesSelectedFileNo(Int: Integer): Integer;
-var
-  Item: TDBPopupMenuInfoRecord;
-begin
-  Result := 0;
-  if Int < 0 then
-    Exit;
-  if Int > Finfo.Count - 1 then
-    Exit;
-  Item := Finfo[Int];
-
-  SetBoolAttr(AScript, '$Selected', Item.Selected);
-  SetNamedValueStr(AScript, '$FileName', ProcessPath(Item.FileName));
-end;
-
-function TDBPopupMenu.LoadVariablesNo(Int: Integer): Integer;
-var
-  Item: TDBPopupMenuInfoRecord;
-begin
-  Result := 0;
-  if Int < 0 then
-    Exit;
-  if Int > Finfo.Count - 1 then
-    Exit;
-  Item := Finfo[Int];
-
-  SetBoolAttr(AScript, '$Crypted', Item.Encrypted);
-  SetBoolAttr(AScript, '$StaticImage', StaticPath(Item.FileName));
-  SetBoolAttr(AScript, '$WallPaper', IsWallpaper(Item.FileName));
-  SetBoolAttr(AScript, '$Selected', Item.Selected);
-  if Item.Encrypted then
-  begin
-    if DBkernel.FindPasswordForCryptImageFile(Item.FileName) <> '' then
-      SetNamedValue(AScript, '$CanDecrypt', 'true')
-    else
-      SetNamedValue(AScript, '$CanDecrypt', 'false');
-  end;
-
-  SetBoolAttr(AScript, '$Duplicate', Item.Attr = Db_attr_duplicate);
-  SetNamedValue(AScript, '$Attr', IntToStr(Item.Attr));
-  SetNamedValueInt(AScript, '$Access', Item.Access);
-  SetNamedValueInt(AScript, '$Rotation', Item.Rotation);
-  SetNamedValueInt(AScript, '$Rating', Item.Rating);
-  SetNamedValueInt(AScript, '$ID', Item.ID);
-  SetNamedValueStr(AScript, '$FileName', ProcessPath(Item.FileName));
-  SetNamedValueStr(AScript, '$KeyWords', Item.KeyWords);
-  SetNamedValueStr(AScript, '$Links', Item.Links);
-  SetNamedValue(AScript, '$DeviceItem', IIF(IsDevicePath(Item.FileName), 'true', 'false'));
 end;
 
 procedure TDBPopupMenu.PrintItemPopUpMenu_(Sender: TObject);
@@ -1392,15 +1495,6 @@ begin
     TEasyListview(TEasyItem(FInfo.ListItem).OwnerListview).EditManager.Enabled := True;
     TEasyItem(FInfo.ListItem).Edit;
   end;
-end;
-
-procedure TDBPopupMenu.ScriptExecuted(Sender: TObject);
-var
-  C: Integer;
-begin
-  LoadItemVariables(AScript, Sender as TMenuItemW);
-  if Trim((Sender as TMenuItemW).Script) <> '' then
-    ExecuteScript(Sender as TMenuItemW, AScript, '', C, nil);
 end;
 
 procedure TDBPopupMenu.ShelfItemPopUpMenu_(Sender: TObject);

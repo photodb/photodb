@@ -18,7 +18,6 @@ uses
 
   Dolphin_DB,
   UnitScripts,
-  ReplaseIconsInScript,
   GraphicCrypt,
 
   UnitINI,
@@ -90,7 +89,7 @@ end;
 
 function InitializeScriptString(Script: string): string;
 begin
-  Result := AddIcons(Script);
+  Result := Script;//AddIcons(Script);
 end;
 
 procedure ShowUpdateWindow;

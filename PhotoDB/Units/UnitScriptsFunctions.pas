@@ -21,7 +21,6 @@ uses
   UnitScripts,
   Dolphin_DB,
   UnitDBFileDialogs,
-  ReplaseIconsInScript,
 
   uScript,
   uConstants,
@@ -114,7 +113,7 @@ begin
         if LoadScript[I] = #13 then
           LoadScript[I] := ' ';
       end;
-      LoadScript := AddIcons(LoadScript);
+      //LoadScript := AddIcons(LoadScript);
       AFS.Free;
     except
     end;

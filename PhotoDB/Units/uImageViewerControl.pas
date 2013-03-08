@@ -608,8 +608,8 @@ begin
       InfoWidth := FDrawImage.Canvas.TextHeight(Infos[I]);
       if InfoHeight > InfoHeightMax then
         InfoHeightMax := InfoHeight;
-      if InfoWidthMax > InfoWidthMax then
-        InfoWidthMax := InfoWidthMax;
+      if InfoWidth > InfoWidthMax then
+        InfoWidthMax := InfoWidth;
     end;
 
     InfoBarHeight := InfosCountByColumn * InfoHeightMax + PaddingVertical * 2;

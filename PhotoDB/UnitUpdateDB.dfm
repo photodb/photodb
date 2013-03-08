@@ -276,8 +276,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Open Image'
     OnClick = WebLinkOpenImageClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -300,8 +298,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Open Folder'
     OnClick = WebLinkOpenFolderClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -323,8 +319,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Close Window'
     OnClick = WlCloseClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -347,8 +341,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Break adding images!'
     OnClick = ButtonBreakClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -408,8 +400,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Run\Stop adding prosess'
     OnClick = ButtonRunStopClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -431,8 +421,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Show history windows'
     OnClick = History1Click
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False
@@ -454,8 +442,6 @@ object UpdateDBForm: TUpdateDBForm
     Text = 'Options'
     OnMouseUp = WebLinkOptionsMouseUp
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False

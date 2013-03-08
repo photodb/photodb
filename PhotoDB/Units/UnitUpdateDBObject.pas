@@ -17,7 +17,6 @@ uses
 
   Dolphin_DB,
   UnitINI,
-  UnitScripts,
   UnitDBDeclare,
   UnitDBKernel,
 
@@ -33,7 +32,6 @@ uses
   uSettings,
   uAssociations,
   uLogger,
-  uScript,
   uUpdateDBTypes,
   uInterfaceManager;
 

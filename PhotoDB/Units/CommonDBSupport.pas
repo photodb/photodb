@@ -31,10 +31,7 @@ uses
   uShellUtils,
                
   UnitINI,
-  UnitDBCommon,
-  ReplaseIconsInScript,
-
-  uScript;
+  UnitDBCommon;
 
 const
   DB_TYPE_UNKNOWN = 0;

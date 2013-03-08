@@ -388,7 +388,6 @@
         <DCCReference Include="Units\UnitSQLOptimizing.pas"/>
         <DCCReference Include="Units\CommonDBSupport.pas"/>
         <DCCReference Include="Units\UnitScripts.pas"/>
-        <DCCReference Include="Units\ReplaseIconsInScript.pas"/>
         <DCCReference Include="Units\DBScriptFunctions.pas"/>
         <DCCReference Include="Units\UnitScriptsFunctions.pas"/>
         <DCCReference Include="Units\UnitUpdateDBObject.pas"/>
@@ -671,7 +670,6 @@
         <DCCReference Include="Units\Styles\uHSLUtils.pas"/>
         <DCCReference Include="Units\Styles\Vcl.Styles.Ext.pas"/>
         <DCCReference Include="Units\Styles\Vcl.Styles.Utils.pas"/>
-        <DCCReference Include="Units\Styles\uMainMenuStyleHook.pas"/>
         <DCCReference Include="PropertyForm.pas">
             <Form>PropertiesForm</Form>
         </DCCReference>
