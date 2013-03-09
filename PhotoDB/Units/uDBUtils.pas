@@ -94,6 +94,7 @@ function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 function SumRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
+procedure SetFileNameByID(ID: Integer; FileName: string);
 
 { DB Types }
 
@@ -1823,6 +1824,25 @@ begin
     F(Rec);
   end;
 end;
+
+procedure SetFileNameByID(ID: Integer; FileName: string);
+var
+  FQuery: TDataSet;
+begin
+  FQuery := GetQuery;
+  try
+    FQuery.Active := False;
+    FileName := NormalizeDBString(AnsiLowerCase(FileName));
+    SetSQL(FQuery, 'Update $DB$ Set FFileName="' + FileName + '" WHERE ID=' + Inttostr(ID));
+    try
+      ExecSQL(FQuery);
+    except
+    end;
+  finally
+    FreeDS(FQuery);
+  end;
+end;
+
 
 ///
 ///  END DB TYPES

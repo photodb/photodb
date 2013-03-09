@@ -97,8 +97,6 @@ procedure FastRenameManyFiles(Files : TStrings; IDS : TArInteger);
 
 implementation
 
-uses UnitScriptsFunctions;
-
 {$R *.dfm}
 
 procedure FastRenameManyFiles(Files : TStrings; IDS : TArInteger);

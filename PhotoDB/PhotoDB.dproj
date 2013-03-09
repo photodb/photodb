@@ -387,9 +387,6 @@
         <DCCReference Include="Units\UnitGroupsTools.pas"/>
         <DCCReference Include="Units\UnitSQLOptimizing.pas"/>
         <DCCReference Include="Units\CommonDBSupport.pas"/>
-        <DCCReference Include="Units\UnitScripts.pas"/>
-        <DCCReference Include="Units\DBScriptFunctions.pas"/>
-        <DCCReference Include="Units\UnitScriptsFunctions.pas"/>
         <DCCReference Include="Units\UnitUpdateDBObject.pas"/>
         <DCCReference Include="Units\acWorkRes.pas"/>
         <DCCReference Include="Units\UnitPropeccedFilesSupport.pas"/>
@@ -409,7 +406,6 @@
         <DCCReference Include="Threads\uAssociatedIcons.pas"/>
         <DCCReference Include="Units\uLogger.pas"/>
         <DCCReference Include="Units\uConstants.pas"/>
-        <DCCReference Include="Units\uScript.pas"/>
         <DCCReference Include="Units\uStringUtils.pas"/>
         <DCCReference Include="Threads\UnitLoadDBKernelIconsThread.pas"/>
         <DCCReference Include="Threads\UnitLoadDBSettingsThread.pas"/>
@@ -629,7 +625,6 @@
         <DCCReference Include="Units\PortableDevices\uPortableDeviceManager.pas"/>
         <DCCReference Include="Units\MSXML2_TLB.pas"/>
         <DCCReference Include="Units\PortableDevices\uPortableDeviceUtils.pas"/>
-        <DCCReference Include="Units\uPortableScriptUtils.pas"/>
         <DCCReference Include="Units\uShellNamespaceUtils.pas"/>
         <DCCReference Include="Units\uManagerExplorer.pas"/>
         <DCCReference Include="Threads\uExplorerPastePIDLsThread.pas"/>

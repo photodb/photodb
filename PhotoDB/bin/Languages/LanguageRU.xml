@@ -807,6 +807,9 @@
 	<translate name="Smart smooth - FullHD (1920x1080)" value="Умное сглаживание - FullHD (1920x1080)" />
 	<translate name="Shelve" value="Отложить" />
 	<translate name="Unshelve" value="Отложить (отмена)" />
+	<translate name="Open with" value="Открыть в" />
+	<translate name="Add application" value="Добавить приложение" />
+	<translate name="List of applications" value="Список приложений" />	
   </scope>
   <scope name="Viewer">
 	<translate name="Stop timer" value="Остановить таймер" />

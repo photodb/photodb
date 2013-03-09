@@ -31,7 +31,10 @@ uses
   UnitDBKernel,
   MPCommonUtilities,
   EasyListView,
+  UnitBitmapImageList,
 
+  uBitmapUtils,
+  uSettings,
   uListViewUtils,
   uEditorTypes,
   uMemory,
@@ -63,7 +66,8 @@ type
     CloseLink: TWebLink;
     MakeItLink: TWebLink;
     EffectsChooser: TEasyListView;
-    ImageList: TImageList;
+  //  ImageList: TImageList;
+    FImageList: TBitmapImageList;
     EM: TEffectsManager;
     BaseEffects: TBaseEffectProcedures;
     ExEffects: TExEffects;
@@ -71,6 +75,9 @@ type
     FOnDone: TNotifyEvent;
     ApplyOnDone: Boolean;
     procedure FreeNewImage;
+    procedure ListViewItemThumbnailDraw(
+      Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
+      ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
   protected
     function LangID: string; override;
   public
@@ -144,18 +151,22 @@ begin
   EffectsChooser.DoubleBuffered := True;
   EffectsChooser.EditManager.Enabled := False;
   EffectsChooser.OnKeyAction := EffectChooserPress;
+  EffectsChooser.Scrollbars.SmoothScrolling := Settings.Readbool('Options', 'SmoothScrolling', True);
   if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
     EffectsChooser.ShowThemedBorder := False;
+  EffectsChooser.OnItemThumbnailDraw := ListViewItemThumbnailDraw;
+  SetLVThumbnailSize(EffectsChooser, 130);
 
   SetLVSelection(EffectsChooser, False, [cmbLeft]);
   EffectsChooser.Selection.BlendIcon := False;
   EffectsChooser.Selection.FullRowSelect := True;
 
-  ImageList := TImageList.Create(nil);
-  ImageList.Width := 100;
-  ImageList.Height := 100;
+  FImageList := TBitmapImageList.Create;
+{  ImageList := TImageList.Create(nil);
+  ImageList.Width := 130;
+  ImageList.Height := 130;
   ImageList.ColorDepth := cd32Bit;
-  EffectsChooser.ImagesLarge := ImageList;
+  EffectsChooser.ImagesLarge := ImageList; }
   EffectsChooser.View := elsThumbnail;
 
   MakeItLink := TWebLink.Create(nil);
@@ -187,7 +198,7 @@ begin
   F(EffectsChooser);
   F(MakeItLink);
   F(EM);
-  F(ImageList);
+  F(FImageList);
   F(BaseImage);
   FreeNewImage;
   inherited;
@@ -217,7 +228,7 @@ procedure TEffectsToolPanelClass.FillEffects(OneEffectID: string = '');
 var
   Item: TEasyItem;
   I: Integer;
-  Bitmap: Tbitmap;
+  Bitmap, Bitmap32: TBitmap;
   ExEffect: TExEffect;
   Filter_ID: string;
 begin
@@ -242,9 +253,18 @@ begin
           Continue;
 
       BaseEffects[I].Proc(BaseImage, Bitmap);
-      ImageList.Add(Bitmap, nil);
+      Bitmap32 := TBitmap.Create;
+      try
+        DrawShadowToImage(Bitmap32, Bitmap);
+        FImageList.AddBitmap(Bitmap32);
+        Bitmap32 := nil;
+      finally
+        F(Bitmap32);
+      end;
+
+      //ImageList.Add(Bitmap, nil);
       Item := EffectsChooser.Items.Add;
-      Item.ImageIndex := ImageList.Count - 1;
+      Item.ImageIndex := FImageList.Count - 1;
       Item.Data := Pointer(I);
       Item.Caption := BaseEffects[I].name;
     end;
@@ -258,9 +278,18 @@ begin
             Continue;
 
         ExEffect.GetPreview(BaseImage, Bitmap);
-        ImageList.Add(Bitmap, nil);
+
+        Bitmap32 := TBitmap.Create;
+        try
+          DrawShadowToImage(Bitmap32, Bitmap);
+          FImageList.AddBitmap(Bitmap32);
+          Bitmap32 := nil;
+        finally
+          F(Bitmap32);
+        end;
+
         Item := EffectsChooser.Items.Add;
-        Item.ImageIndex := ImageList.Count - 1;
+        Item.ImageIndex := FImageList.Count - 1;
         Item.Data := Pointer(I + Length(BaseEffects));
         Item.Caption := ExEffect.GetName;
       finally
@@ -293,6 +322,30 @@ end;
 function TEffectsToolPanelClass.LangID: string;
 begin
   Result := 'EffectsTool';
+end;
+
+procedure TEffectsToolPanelClass.ListViewItemThumbnailDraw(
+  Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
+  AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
+var
+  W, H: Integer;
+  X, Y: Integer;
+  ImageW, ImageH: Integer;
+  Graphic: TBitmap;
+begin
+  Graphic := FImageList[Item.ImageIndex].Bitmap;
+
+  W := ARect.Right - ARect.Left;
+  H := ARect.Bottom - ARect.Top + 4;
+  ImageW := Graphic.Width;
+  ImageH := Graphic.Height;
+  ProportionalSize(W, H, ImageW, ImageH);
+
+  X := ARect.Left + W div 2 - ImageW div 2;
+  Y := ARect.Bottom - ImageH;
+
+  Graphic.AlphaFormat := afDefined;
+  ACanvas.Draw(X, Y, Graphic, 255);
 end;
 
 procedure TEffectsToolPanelClass.MakeTransform;

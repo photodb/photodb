@@ -46,9 +46,7 @@ uses
 
   CommCtrl,
   DateUtils,
-  uScript,
   uVistaFuncs,
-  UnitScripts,
   CmpUnit,
   DBCMenu,
   Dolphin_DB,
@@ -988,7 +986,7 @@ begin
   end;
 end;
 
-function SpilitWords(S : string) : TArrayOfString;
+function SpilitWords(S: string): TArray<string>;
 var
   I, J: Integer;
   Pi_: PInteger;
@@ -1022,7 +1020,7 @@ var
   P: TPoint;
   Item: TListItem;
   I, J: Integer;
-  Words: TArrayOfString;
+  Words: TArray<string>;
   MenuItem: TMenuItem;
   G: TGroups;
   B, Bit, TempB: TBitmap;

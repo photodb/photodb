@@ -70,6 +70,7 @@ type
     procedure BtnCloseClick(Sender: TObject);
     procedure BtnSaveClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     FLinks: TList<TWebLink>;
@@ -106,6 +107,7 @@ type
     property FormHeight: Integer read GetFormHeight;
   protected
     function GetFormID: string; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
@@ -220,6 +222,9 @@ end;
 
 procedure TFormLinkItemSelector.BtnSaveClick(Sender: TObject);
 begin
+  if FIsEditMode then
+    WlApplyChangesClick(Sender);
+
   if FEditor.OnApply(Self) then
   begin
     Close;
@@ -322,6 +327,12 @@ begin
       EnableComposited(TWinControl(WinControl.Controls[i]));
 end;
 
+procedure TFormLinkItemSelector.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caHide;
+end;
+
 procedure TFormLinkItemSelector.FormCreate(Sender: TObject);
 begin
   FEditIndex := -1;
@@ -387,6 +398,12 @@ end;
 function TFormLinkItemSelector.GetFormID: string;
 begin
   Result := 'LinkListEditor';
+end;
+
+procedure TFormLinkItemSelector.InterfaceDestroyed;
+begin
+  inherited;
+  Release;
 end;
 
 procedure TFormLinkItemSelector.CreateListElements(Elements: TListElements);
@@ -541,6 +558,7 @@ begin
     AnimationInfo.TillTime := IncMilliSecond(Now, AnimationDurationMs);
     FAnimations.Add(AnimationInfo);
 
+    TmrAnimation.Enabled := True;
   end else
   begin
     if Control is TForm then
@@ -558,7 +576,6 @@ begin
     end;
   end;
 
-  TmrAnimation.Enabled := True;
 end;
 
 procedure TFormLinkItemSelector.MoveControlToIndex(Control: TControl; Index: Integer);
@@ -734,6 +751,10 @@ begin
   PnEditorPanel.Hide;
   ToWidth := FListWidth;
   ToHeight := FormHeight;
+
+  MoveControlTo(Self, ToWidth, adHor);
+  MoveControlTo(Self, ToHeight, adVert);
+
   for I := 0 to FLinks.Count - 1 do
   begin
     MoveControlToIndex(FLinks[I], FLinks[I].Tag);
@@ -759,8 +780,6 @@ begin
   MoveControlTo(WlCancelChanges, ToHeight, adVert);
   MoveControlTo(WlRemove, ToHeight, adVert);
 
-  MoveControlTo(Self, ToWidth, adHor);
-  MoveControlTo(Self, ToHeight, adVert);
 end;
 
 procedure TFormLinkItemSelector.WlApplyChangesClick(Sender: TObject);

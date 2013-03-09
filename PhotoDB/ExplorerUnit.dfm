@@ -82,10 +82,6 @@ object ExplorerForm: TExplorerForm
         Margins.Right = 0
         Margins.Bottom = 0
         Caption = 'Tasks'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PropertyPanel: TPanel
           Left = 0
           Top = 0
@@ -294,10 +290,6 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 580
@@ -336,10 +328,6 @@ object ExplorerForm: TExplorerForm
         TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -499,10 +487,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -523,10 +507,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -1380,7 +1360,7 @@ object ExplorerForm: TExplorerForm
         Width = 21
         Height = 21
         ImageNormal.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1471,7 +1451,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00EFC6
           B500D24F1A00}
         ImageEnter.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1562,7 +1542,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF7F500E8AA
           9300CC3B0500}
         ImageClick.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1653,7 +1633,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF6F400ECBA
           A700CC3B0500}
         ImageDisabled.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1950,10 +1930,6 @@ object ExplorerForm: TExplorerForm
           Caption = 'TsMediaPreview'
           ImageIndex = 1
           OnResize = TsMediaPreviewResize
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnRightPreview: TPanel
             Left = 0
             Top = 0
@@ -2118,10 +2094,6 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 527
@@ -2260,7 +2232,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.007390833340000000
+      Date = 41177.653349201390000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

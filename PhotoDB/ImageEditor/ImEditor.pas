@@ -60,7 +60,6 @@ uses
   PropertyForm,
   UnitCrypting,
   GraphicEx,
-  UnitScripts,
   PngImage,
   DragDrop,
   DragDropFile,
@@ -69,12 +68,12 @@ uses
   UnitDBCommonGraphics,
 
   uInterfaces,
+  uBitmapUtils,
   uTiffImage,
   uJpegUtils,
   uGUIDUtils,
   uMemory,
   uManagerExplorer,
-  uScript,
   uVistaFuncs,
   uCDMappingTypes,
   uLogger,
@@ -125,7 +124,6 @@ type
     EffectsLink: TWebLink;
     FitToSizeLink: TWebLink;
     ColorsLink: TWebLink;
-    SampleImage: TImage;
     RedEyeLink: TWebLink;
     SaveLink: TWebLink;
     FullSizeLink: TWebLink;
@@ -278,6 +276,7 @@ type
     function OpenFileName(FileName: string): Boolean;
     procedure SaveImageFile(FileName: string; AfterEnd: Boolean = False);
     procedure ReadActions(Actions: TStrings);
+    procedure ReadActionsFile(FileName: string);
     function EditImage(Image: TBitmap): Boolean; override;
     function EditFile(Image: string; BitmapOut: TBitmap): Boolean; override;
     procedure MakeImage(ResizedWindow: Boolean = False); override;
@@ -1024,29 +1023,11 @@ end;
 
 procedure TImageEditor.FormClose(Sender: TObject;
   var Action: TCloseAction);
-var
-  AFScript: TScript;
-  C: Integer;
 begin
-  try
-    if ToolClass <> nil then
-      ToolClass.ClosePanel;
-  except
-    on E: Exception do
-      EventLog(':TImageEditor::FormClose() throw exception: ' + E.message);
-  end;
-
   Action := caHide;
 
   if not FIsEditImage then
     DestroyTimer.Enabled := True;
-
-  if FScript <> '' then
-    if ScriptsManager.ScriptExists(FScript) then
-    begin
-      AFScript := ScriptsManager.GetScriptByID(FScript);
-      ExecuteScript(nil, AFScript, FScriptProc + '("' + FScript + '");', C, nil);
-    end;
 end;
 
 procedure TImageEditor.FormMouseDown(Sender: TObject; Button: TMouseButton;
@@ -1732,6 +1713,14 @@ end;
 
 procedure TImageEditor.FormDestroy(Sender: TObject);
 begin
+  try
+    if ToolClass <> nil then
+      ToolClass.ClosePanel;
+  except
+    on E: Exception do
+      EventLog(':TImageEditor::FormClose() throw exception: ' + E.message);
+  end;
+
   UnRegisterMainForm(Self);
   ActionForm.Release;
   SaveWindowPos1.SavePosition;
@@ -2053,7 +2042,8 @@ begin
   ToolClass.CancelPointerToImage := CancelPointerToNewImage;
   BaseImage := TBitmap.Create;
   try
-    BaseImage.Assign(SampleImage.Picture.Graphic);
+    BaseImage.Assign(CurrentImage);
+    KeepProportions(BaseImage, 130, 130);
     (ToolClass as TEffectsToolPanelClass).SetBaseImage(BaseImage);
     (ToolClass as TEffectsToolPanelClass).FillEffects;
   finally
@@ -2835,6 +2825,19 @@ begin
   ReadNextAction(nil);
 end;
 
+procedure TImageEditor.ReadActionsFile(FileName: string);
+var
+  AActions: TStrings;
+begin
+  AActions := TStringList.Create;
+  try
+    if LoadActionsFromfileA(FileName, AActions) then
+      ReadActions(AActions);
+  finally
+    F(AActions);
+  end;
+end;
+
 procedure TImageEditor.ReadNextAction(Sender: TObject);
 var
   Action, ID, Filter_ID: string;
@@ -2895,7 +2898,8 @@ begin
 
     BaseImage := TBitmap.Create;
     try
-      BaseImage.Assign(SampleImage.Picture.Graphic);
+      BaseImage.Assign(CurrentImage);
+      KeepProportions(BaseImage, 130, 130);
       (ToolClass as TEffectsToolPanelClass).SetBaseImage(BaseImage);
     finally
       F(BaseImage);
@@ -2927,7 +2931,6 @@ begin
   ForseSaveFileName := FileName;
 
   SaveLinkClick(Self);
-  Close;
 end;
 
 initialization

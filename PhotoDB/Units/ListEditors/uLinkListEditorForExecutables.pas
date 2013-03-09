@@ -21,6 +21,7 @@ uses
   uVclHelpers,
   uIconUtils,
   uShellIntegration,
+  uTranslate,
   uFormInterfaces;
 
 type
@@ -30,8 +31,9 @@ type
     Path: string;
     Icon: string;
     Parameters: string;
+    SortOrder: Integer;
     UseSubMenu: Boolean;
-    constructor Create(Title, Path, Icon, Parameters: string; UseSubMenu: Boolean);
+    constructor Create(Title, Path, Icon, Parameters: string; UseSubMenu: Boolean; SortOrder: Integer);
     function Clone: TDataObject; override;
     procedure Assign(Source: TDataObject); override;
   end;
@@ -74,21 +76,23 @@ begin
     Icon := EI.Icon;
     Parameters := EI.Parameters;
     UseSubMenu := EI.UseSubMenu;
+    SortOrder := EI.SortOrder;
   end;
 end;
 
 function TExecutableInfo.Clone: TDataObject;
 begin
-  Result := TExecutableInfo.Create(Title, Path, Icon, Parameters, UseSubMenu);
+  Result := TExecutableInfo.Create(Title, Path, Icon, Parameters, UseSubMenu, SortOrder);
 end;
 
-constructor TExecutableInfo.Create(Title, Path, Icon, Parameters: string; UseSubMenu: Boolean);
+constructor TExecutableInfo.Create(Title, Path, Icon, Parameters: string; UseSubMenu: Boolean; SortOrder: Integer);
 begin
   Self.Title := Title;
   Self.Path := Path;
   Self.Icon := Icon;
   Self.Parameters := Parameters;
   Self.UseSubMenu := UseSubMenu;
+  Self.SortOrder := SortOrder;
 end;
 
 { TLinkListEditorForExecutables }
@@ -147,7 +151,7 @@ begin
     WlChangeLocation.RefreshBuffer(True);
     WlChangeLocation.Top := 8 + WedCaption.Height div 2 - WlChangeLocation.Height div 2;
     WlChangeLocation.Left := 240;
-    //WlChangeLocation.Icon := TIcon(Image1.Picture.Graphic);
+    WlChangeLocation.LoadFromResource('NAVIGATE');
     WlChangeLocation.OnClick := OnChangePlaceClick;
   end;
 
@@ -210,7 +214,7 @@ begin
       OpenDialog.Filter := ('Programs (*.exe)|*.exe|All Files (*.*)|*.*');
       OpenDialog.FilterIndex := 1;
       if OpenDialog.Execute then
-        Data := TExecutableInfo.Create(ExtractFileName(OpenDialog.FileName), OpenDialog.FileName, OpenDialog.FileName + ',0', '%1', True);
+        Data := TExecutableInfo.Create(ExtractFileName(OpenDialog.FileName), OpenDialog.FileName, OpenDialog.FileName + ',0', '%1', True, Sender.DataList.Count);
 
     finally
       F(OpenDialog);
@@ -236,7 +240,8 @@ begin
   AddActionProc(['Create'],
     procedure(Action: string; WebLink: TWebLink)
     begin
-      WebLink.Text := 'Create new';
+      WebLink.Text := TA('Add application', 'DBMenu');
+      WebLink.LoadFromResource('NEW');
     end
   );
 end;

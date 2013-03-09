@@ -119,7 +119,6 @@ object FormFastFileRenamer: TFormFastFileRenamer
       OnClick = WebLinkWarningClick
       ImageIndex = 0
       IconWidth = 0
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False

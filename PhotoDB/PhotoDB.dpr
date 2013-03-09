@@ -165,9 +165,6 @@ uses
   UnitGroupsTools in 'Units\UnitGroupsTools.pas',
   UnitSQLOptimizing in 'Units\UnitSQLOptimizing.pas',
   CommonDBSupport in 'Units\CommonDBSupport.pas',
-  UnitScripts in 'Units\UnitScripts.pas',
-  DBScriptFunctions in 'Units\DBScriptFunctions.pas',
-  UnitScriptsFunctions in 'Units\UnitScriptsFunctions.pas',
   UnitUpdateDBObject in 'Units\UnitUpdateDBObject.pas',
   acWorkRes in 'Units\acWorkRes.pas',
   UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
@@ -187,7 +184,6 @@ uses
   uAssociatedIcons in 'Threads\uAssociatedIcons.pas',
   uLogger in 'Units\uLogger.pas',
   uConstants in 'Units\uConstants.pas',
-  uScript in 'Units\uScript.pas',
   uStringUtils in 'Units\uStringUtils.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
   UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
@@ -332,7 +328,6 @@ uses
   uPortableDeviceManager in 'Units\PortableDevices\uPortableDeviceManager.pas',
   MSXML2_TLB in 'Units\MSXML2_TLB.pas',
   uPortableDeviceUtils in 'Units\PortableDevices\uPortableDeviceUtils.pas',
-  uPortableScriptUtils in 'Units\uPortableScriptUtils.pas',
   uShellNamespaceUtils in 'Units\uShellNamespaceUtils.pas',
   uManagerExplorer in 'Units\uManagerExplorer.pas',
   uExplorerPastePIDLsThread in 'Threads\uExplorerPastePIDLsThread.pas',
@@ -542,9 +537,6 @@ begin
 
     if FolderView then
       DBID := ReadInternalFSContent('ID');
-    // Lazy init enviroment procedure
-    TW.I.Start('TScriptEnviroments');
-    TScriptEnviroments.Instance.GetEnviroment('').SetInitProc(InitEnviroment);
 
     // PREPAIRING ----------------------------------------------------
     if GetParamStrDBBool('/SLEEP') then
@@ -686,11 +678,6 @@ begin
       FormManager.RunInBackground;
 
     EventLog('Application Started!...');
-
-    if GetParamStrDBBool('/Execute') then
-    begin
-      ExecuteScriptFile(AnsiDequotedStr(GetParamStrDBValue('/Execute'), '"'));
-    end;
 
     if GetParamStrDBBool('/AddPass') then
     begin

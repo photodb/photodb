@@ -95,7 +95,6 @@ implementation
 
 uses
   UnitUpdateDBThread,
-  DBScriptFunctions,
   CommonDBSupport,
   FormManegerUnit,
   UnitUpdateDB,

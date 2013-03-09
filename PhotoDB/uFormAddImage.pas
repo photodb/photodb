@@ -48,6 +48,7 @@ type
     procedure DrawForm;
     function GetFormID: string; override;
     procedure InterfaceDestroyed; override;
+    function DisableMasking: Boolean; override;
   public
     { Public declarations }
     procedure Execute(Info: TDBPopupMenuInfoRecord);
@@ -61,6 +62,11 @@ uses
 {$R *.dfm}
 
 { TFormAddingImage }
+
+function TFormAddingImage.DisableMasking: Boolean;
+begin
+  Result := True;
+end;
 
 procedure TFormAddingImage.ChangedDBDataByID(Sender: TObject; ID: Integer;
   params: TEventFields; Value: TEventValues);
@@ -136,9 +142,9 @@ end;
 
 procedure TFormAddingImage.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  Action := caHide;
   TmrRedraw.Enabled := False;
   DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  Action := caHide;
 end;
 
 procedure TFormAddingImage.FormCreate(Sender: TObject);
@@ -149,7 +155,8 @@ end;
 
 procedure TFormAddingImage.FormDestroy(Sender: TObject);
 begin
-//
+  TmrRedraw.Enabled := False;
+  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 function TFormAddingImage.GetFormID: string;

@@ -270,6 +270,7 @@ type
     function _Release: Integer; stdcall;
     procedure InterfaceDestroyed; virtual;
     function CanUseMaskingForModal: Boolean; virtual;
+    function DisableMasking: Boolean; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -441,6 +442,11 @@ begin
     TStyleManager.Engine.RegisterStyleHook(TCustomForm, TFormStyleHook);
     TStyleManager.Engine.RegisterStyleHook(TForm, TFormStyleHook);    
   end;
+end;
+
+function TDBForm.DisableMasking: Boolean;
+begin
+  Result := False;
 end;
 
 procedure TDBForm.DoCreate;
@@ -775,6 +781,9 @@ var
   Form: TDBForm;
   Forms: TList<TDBForm>;
 begin
+  if Self.DisableMasking then
+    Exit(inherited ShowModal);
+
   Forms := TList<TDBForm>.Create;
   try
     for I := 0 to Screen.FormCount - 1 do

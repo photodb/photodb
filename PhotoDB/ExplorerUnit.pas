@@ -187,7 +187,6 @@ uses
   uMonthCalendar,
 
   uLinkListEditorFolders,
-  uLinkListEditorForExecutables,
   uLinkListEditorDatabases;
 
 const
@@ -1190,12 +1189,12 @@ uses
   UnitBigImagesSize,
   uOperationProgress,
 
+  UnitInternetUpdate,
   UnitListOfKeywords,
   ExplorerThreadUnit,
   UnitHintCeator,
   UnitExplorerThumbnailCreatorThread,
   UnitHelp,
-  DBScriptFunctions,
   UnitUpdateDBObject;
 
 {$R *.dfm}
@@ -5577,12 +5576,12 @@ end;
 
 procedure TExplorerForm.MiAboutClick(Sender: TObject);
 begin
-  DoAbout;
+  AboutForm.Execute;
 end;
 
 procedure TExplorerForm.MiActivationClick(Sender: TObject);
 begin
-  DoActivation;
+  ActivationForm.Execute;
 end;
 
 procedure TExplorerForm.MiAuthorEmailClick(Sender: TObject);
@@ -5602,7 +5601,7 @@ end;
 
 procedure TExplorerForm.MiCheckUpdatesClick(Sender: TObject);
 begin
-  GetUpdates(False);
+  TInternetUpdate.Create(nil, False, nil);
 end;
 
 procedure TExplorerForm.MiCopyAddressClick(Sender: TObject);
@@ -5737,7 +5736,7 @@ end;
 
 procedure TExplorerForm.MiManageDBClick(Sender: TObject);
 begin
-  DoManager;
+  CollectionManagerForm.Show;
 end;
 
 procedure TExplorerForm.LockItems;
@@ -7648,7 +7647,7 @@ end;
 
 procedure TExplorerForm.MiUpdaterClick(Sender: TObject);
 begin
-  ShowUpdateWindow;
+  UpdaterDB.ShowWindowNow;
 end;
 
 procedure TExplorerForm.AddLinkClick(Sender: TObject);
@@ -8961,7 +8960,7 @@ begin
   Data := TList<TDataObject>.Create;
   try
     ReadPlacesList(TList<TLinkInfo>(Data));
-    
+
     if LinkItemSelectForm.Execute(450, L('List of directories'), Data, Editor) then
       WritePlacesList(TList<TLinkInfo>(Data));
 
