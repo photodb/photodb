@@ -9,13 +9,9 @@ uses
   System.SyncObjs,
   Winapi.Windows,
 
-  Dmitry.Graphics.Types,
-
   UnitDBDeclare,
   ExplorerTypes,
-  Dolphin_DB,
 
-  uLogger,
   uGOM,
   uMemory,
   uTime,

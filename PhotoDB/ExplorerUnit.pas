@@ -8,10 +8,8 @@ uses
   System.Types,
   System.Math,
   System.SysUtils,
-  System.SyncObjs,
   System.DateUtils,
   System.Classes,
-  System.StrUtils,
   System.Win.ComObj,
   System.Win.Registry,
   Winapi.CommCtrl,
@@ -25,12 +23,10 @@ uses
   Vcl.Forms,
   Vcl.Themes,
   Vcl.ComCtrls,
-  Vcl.Shell.ShellCtrls,
   Vcl.ImgList,
   Vcl.Menus,
   Vcl.Imaging.pngimage,
   Vcl.ExtCtrls,
-  Vcl.ToolWin,
   Vcl.Buttons,
   Vcl.StdCtrls,
   Vcl.Clipbrd,
@@ -41,14 +37,13 @@ uses
   Vcl.Grids,
   Vcl.ValEdit,
   Vcl.ActnMan,
+  Vcl.ToolWin,
   Vcl.XPActnCtrls,
   Data.DB,
 
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
   Dmitry.Utils.ShellIcons,
-  Dmitry.Utils.Network,
-  Dmitry.Graphics.Types,
   Dmitry.Graphics.Utils,
   Dmitry.Graphics.LayeredBitmap,
   Dmitry.PathProviders,
@@ -63,8 +58,12 @@ uses
   Dmitry.Controls.LoadingSign,
   Dmitry.Controls.PathEditor,
   Dmitry.Controls.WatermarkedEdit,
-  Dmitry.Controls.ScrollPanel,
   Dmitry.Controls.ImButton,
+
+  DropSource,
+  DragDropFile,
+  DragDrop,
+  DropTarget,
 
   PrintMainForm,
   ExplorerTypes,
@@ -77,21 +76,14 @@ uses
   UnitLinksSupport,
   UnitBitmapImageList,
   GraphicCrypt,
-  UnitCrypting,
-  DropSource,
-  DragDropFile,
-  DragDrop,
-  DropTarget,
   CmpUnit,
   UnitCDMappingSupport,
   ShellContextMenu,
-  ProgressActionUnit,
   CommonDBSupport,
   EasyListview,
   MPCommonUtilities,
   MPCommonObjects,
   UnitRefreshDBRecordsThread,
-  UnitPropeccedFilesSupport,
   UnitCryptingImagesThread,
   wfsU,
 
@@ -101,16 +93,12 @@ uses
   uShellUtils,
   uGUIDUtils,
   uPrivateHelper,
-  uVistaFuncs,
-  uGOM,
   uLockedFileNotifications,
   UnitDBDeclare,
   UnitDBFileDialogs,
   uFormListView,
   uIconUtils,
   uBitmapUtils,
-  uDBThread,
-  UnitDBCommon,
   uCDMappingTypes,
   uResources,
   uListViewUtils,
@@ -125,7 +113,6 @@ uses
   uW7TaskBar,
   uMemory,
   uPNGUtils,
-  uDBGraphicTypes,
   uGraphicUtils,
   uDBBaseTypes,
   uDBTypes,
@@ -142,10 +129,9 @@ uses
   uExplorerDateStackProviders,
   uTranslate,
   uVCLHelpers,
-  uImageListUtils,
+
   PDB.uVCLRewriters,
   uActivationUtils,
-
   uMachMask,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
@@ -175,7 +161,6 @@ uses
   uPathProvideTreeView,
   uDBInfoEditorUtils,
   uFormInterfaces,
-
   uTransparentEncryption,
   uMediaEncryption,
   uIImageViewer,
@@ -185,7 +170,6 @@ uses
   uEXIFDisplayControl,
   uProgramStatInfo,
   uMonthCalendar,
-
   uLinkListEditorFolders,
   uLinkListEditorDatabases;
 
@@ -220,7 +204,6 @@ type
     New1: TMenuItem;
     Directory1: TMenuItem;
     MainPanel: TPanel;
-    PropertyPanel: TPanel;
     Refresh2: TMenuItem;
     OpenInNewWindow1: TMenuItem;
     Exit2: TMenuItem;
@@ -263,7 +246,6 @@ type
     DropFileSourceMain: TDropFileSource;
     DragImageList: TImageList;
     DropFileTargetFake: TDropFileTarget;
-    HelpTimer: TTimer;
     ImageEditor2: TMenuItem;
     N13: TMenuItem;
     Othertasks1: TMenuItem;
@@ -299,17 +281,6 @@ type
     N03: TMenuItem;
     N04: TMenuItem;
     N05: TMenuItem;
-    ScrollBox1: TScrollPanel;
-    TypeLabel: TLabel;
-    TasksLabel: TLabel;
-    SizeLabel: TLabel;
-    RatingLabel: TLabel;
-    NameLabel: TLabel;
-    ImPreview: TImage;
-    IDLabel: TLabel;
-    DimensionsLabel: TLabel;
-    AddLink: TWebLink;
-    AccessLabel: TLabel;
     PmListViewType: TPopupActionBar;
     Thumbnails1: TMenuItem;
     Icons1: TMenuItem;
@@ -376,7 +347,6 @@ type
     ImFilterWarning: TImage;
     SearchfileswithEXIF1: TMenuItem;
     ImPathDropDownMenu: TImageList;
-    WlCreateObject: TWebLink;
     PmPathMenu: TPopupActionBar;
     MiCopyAddress: TMenuItem;
     MiEditAddress: TMenuItem;
@@ -395,12 +365,10 @@ type
     MiShelf: TMenuItem;
     PnShelf: TPanel;
     WlGoToShelf: TWebLink;
-    WlClear: TWebLink;
     TmrDelayedStart: TTimer;
     TmrCheckItemVisibility: TTimer;
     MiShare: TMenuItem;
     PcTasks: TPageControl;
-    TsTasks: TTabSheet;
     TsExplorer: TTabSheet;
     TsInfo: TTabSheet;
     TsEXIF: TTabSheet;
@@ -575,6 +543,13 @@ type
     MiCutTo: TMenuItem;
     MiCollectionsSeparator: TMenuItem;
     MiCollections: TMenuItem;
+    DimensionsLabel: TLabel;
+    SizeLabel: TLabel;
+    TypeLabel: TLabel;
+    NameLabel: TLabel;
+    ImPreview: TImage;
+    TbbCreateObject: TToolButton;
+    TbbClear: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -636,8 +611,6 @@ type
     procedure ShowPrivate1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
     procedure MiTreeViewOpenInNewWindowClick(Sender: TObject);
-    procedure AddLinkClick(Sender: TObject);
-    procedure ScrollBox1Resize(Sender: TObject);
     procedure RefreshLinkClick(Sender: TObject);
     procedure JumpHistoryClick(Sender: TObject);
     procedure DragTimerTimer(Sender: TObject);
@@ -662,9 +635,6 @@ type
     procedure DropFileTargetMainDrop(Sender: TObject; ShiftState: TShiftState;  Point: TPoint; var Effect: Integer);
     procedure DropFileTargetMainEnter(Sender: TObject;  ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure DropFileTargetMainLeave(Sender: TObject);
-    procedure HelpTimerTimer(Sender: TObject);
-    procedure Help1NextClick(Sender: TObject);
-    procedure Help1CloseClick(Sender : TObject; var CanClose : Boolean);
     procedure ImageEditor1Click(Sender: TObject);
     procedure ImageEditor2Click(Sender: TObject);
     procedure ImageEditorLinkClick(Sender: TObject);
@@ -691,8 +661,6 @@ type
     procedure EasyListview1ItemThumbnailDraw(Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
         ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
     procedure EasyListview1ItemSelectionChanged(Sender: TCustomEasyListview; Item: TEasyItem);
-    procedure ScrollBox1Reallign(Sender: TObject);
-    procedure BackGround(Sender: TObject; x, y, w, h: integer; Bitmap: TBitmap);
     procedure Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
       var CompareResult: Integer);
     procedure EasyListview1ItemImageDraw(Sender: TCustomEasyListview; Item: TEasyItem; Column: TEasyColumn; ACanvas: TCanvas;
@@ -740,7 +708,6 @@ type
     procedure PopupMenuBackPopup(Sender: TObject);
     procedure EncryptLinkClick(Sender: TObject);
     procedure PePathGetItemIconEvent(Sender: TPathEditor; Item: TPathItem);
-    procedure WlCreateObjectClick(Sender: TObject);
     procedure TbDeleteClick(Sender: TObject);
     procedure PePathImageContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure PePathContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -760,7 +727,6 @@ type
     procedure FormResize(Sender: TObject);
     procedure MiShelfClick(Sender: TObject);
     procedure WlGoToShelfClick(Sender: TObject);
-    procedure WlClearClick(Sender: TObject);
     procedure TmrDelayedStartTimer(Sender: TObject);
     procedure WlShareClick(Sender: TObject);
     procedure TmrCheckItemVisibilityTimer(Sender: TObject);
@@ -860,6 +826,8 @@ type
     procedure PmCopyPopup(Sender: TObject);
     procedure PmCutPopup(Sender: TObject);
     procedure EditDatabasesClick(Sender: TObject);
+    procedure TbbCreateObjectClick(Sender: TObject);
+    procedure TbbClearClick(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1180,7 +1148,7 @@ type
 implementation
 
 uses
-  UnitUpdateDB,
+
   PropertyForm,
   FormManegerUnit,
   UnitFileRenamerForm,
@@ -1194,7 +1162,6 @@ uses
   ExplorerThreadUnit,
   UnitHintCeator,
   UnitExplorerThumbnailCreatorThread,
-  UnitHelp,
   UnitUpdateDBObject;
 
 {$R *.dfm}
@@ -1392,16 +1359,6 @@ begin
         Bitmap.Canvas.Draw(0, 0, ExplorerBackgroundBMP);
 
         LoadPNGImage32bit(ExplorerBackground, ExplorerBackgroundBMP, Theme.PanelColor);
-
-        Background := ScrollBox1.BackGround;
-        Background.PixelFormat := pf24bit;
-        Background.SetSize(130, 150);
-
-        Background.Canvas.Brush.Color := Theme.PanelColor;
-        Background.Canvas.Pen.Color := Theme.PanelColor;
-        Background.Canvas.Rectangle(0, 0, BackGround.Width, BackGround.Height);
-        DrawTransparent(ExplorerBackgroundBMP, Background, 40);
-        ScrollBox1Resize(Self);
       finally
         F(ExplorerBackgroundBMP);
        end;
@@ -2992,7 +2949,7 @@ end;
 
 function TExplorerForm.GetIsExplorerTreeViewVisible: Boolean;
 begin
-  Result := PcTasks.ActivePageIndex = 1;
+  Result := PcTasks.ActivePageIndex = 0;
 end;
 
 function TExplorerForm.GetItemsCount: Integer;
@@ -3103,9 +3060,6 @@ var
       if AnsiLowerCase(Info[I].FileName) = Value.Name then
       begin
         Info[I].SID := GetGUID;
-
-        if HelpNo = 3 then
-          Help1NextClick(Self);
 
         ReRotation := GetNeededRotation(Info[I].Rotation, Value.Rotate);
         Info[I].ID := ID;
@@ -4630,16 +4584,13 @@ begin
     PnNavigation.Color := Theme.EditColor;
 
   //tabs
-  FLeftTabs := [eltsTasks, eltsExplorer];
+  FLeftTabs := [eltsInfo, eltsExplorer];
   if TbSearch.Down then
     FLeftTabs := FLeftTabs + [eltsSearch];
 
   FActiveLeftTab := eltsExplorer;
   ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
 
-  //hack for second explorer window, preview panel is hidden
-  if FActiveLeftTab = eltsTasks then
-    PcTasks.ActivePageIndex := Integer(eltsExplorer);
   ApplyLeftTabs;
 
   FRightTabs := [ertsPreview, ertsMap];
@@ -6099,13 +6050,12 @@ var
   end;
 
 begin
-  ScrollBox1.UpdatingPanel := True;
   IsReallignInfo := True;
   EventLog('ReallignInfo...');
 
   VerifyPaste(Self);
 
-  BeginScreenUpdate(ScrollBox1.Handle);
+  BeginScreenUpdate(Handle);
   try
     S := ExtractFileName(FSelectedInfo.FileName) + ' ';
     for I := Length(S) downto 1 do
@@ -6113,8 +6063,8 @@ begin
         Insert('&', S, I);
 
     NameLabel.Caption := S;
-    NameLabel.Constraints.MaxWidth := ScrollBox1.Width - ScrollBox1.Left - otstup - ScrollBox1.VertScrollBar.ButtonSize;
-    NameLabel.Constraints.MinWidth := ScrollBox1.Width - ScrollBox1.Left - Otstup - ScrollBox1.VertScrollBar.ButtonSize;
+    NameLabel.Constraints.MaxWidth := TsInfo.ClientWidth - otstup;
+    NameLabel.Constraints.MinWidth := TsInfo.ClientWidth - otstup;
     NewTop := NameLabel.BoundsRect.Bottom;
 
     if FSelectedInfo.FileTypeW <> '' then
@@ -6175,46 +6125,21 @@ begin
       begin
         SizeLabel.Caption := Format(L('Size = %s'), [SizeInText(FSelectedInfo.Size)]);
         SizeLabel.Visible := True;
-        SizeLabel.Top := NewTop + H;
+        if DimensionsLabel.Visible then
+        begin
+          SizeLabel.Top := DimensionsLabel.Top;
+          SizeLabel.Left := DimensionsLabel.Left + DimensionsLabel.Width + H * 2;
+        end else
+        begin
+          SizeLabel.Top := NewTop + H;
+          SizeLabel.Left := DimensionsLabel.Left;
+        end;
         NewTop := SizeLabel.BoundsRect.Bottom;
       end;
     end else
       SizeLabel.Visible := False;
 
-    if FSelectedInfo.ID <> 0 then
-    begin
-      IDLabel.Show;
-
-      IDLabel.Caption := Format(L('ID = %d'), [FSelectedInfo.ID]);
-      IDLabel.Top := NewTop + H;
-      NewTop := IDLabel.BoundsRect.Bottom;
-
-      if FSelectedInfo.Rating <> 0 then
-      begin
-        RatingLabel.Caption := Format(L('Rating = %d'), [FSelectedInfo.Rating]);
-        RatingLabel.Top := NewTop + H;
-        NewTop := RatingLabel.BoundsRect.Bottom;
-        RatingLabel.Show;
-      end else
-        RatingLabel.Hide;
-
-      if FSelectedInfo.Access = Db_access_private then
-      begin
-        AccessLabel.Caption := L('Private image');
-        AccessLabel.Top := NewTop + H;
-        NewTop := AccessLabel.BoundsRect.Bottom;
-        AccessLabel.Show;
-      end else
-        AccessLabel.Hide;
-
-    end else
-    begin
-      IDLabel.Hide;
-      RatingLabel.Hide;
-      AccessLabel.Hide;
-    end;
-
-    if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
       NewTop := NewTop + H * 4;
 
@@ -6267,9 +6192,6 @@ begin
       TbbShare.Enabled := False;
     end;
 
-    NewTop := NewTop + H * 4;
-    TasksLabel.Top := NewTop;
-    NewTop := TasksLabel.BoundsRect.Bottom;
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
@@ -6283,12 +6205,14 @@ begin
 
     if (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) then
     begin
-      WlCreateObject.Text := L('New group');
-      WlCreateObject.Visible := True;
-      WlCreateObject.Top := NewTop + H;
-      NewTop := WlCreateObject.BoundsRect.Bottom;
+      TbbCreateObject.Caption := L('New group');
+      TbbCreateObject.Visible := True;
+      TbbCreateObject.Tag := 0;
     end else
-      WlCreateObject.Visible := False;
+    begin
+      TbbCreateObject.Visible := False;
+      TbbCreateObject.Tag := 1;
+    end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -6321,33 +6245,15 @@ begin
     else
       TbbProperties.Enabled := False;
 
-   { if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
-        (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE)) then
+    if ((FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) and (SelCount = 0) then
     begin
-      if SelCount <> 0 then
-      begin
-        DeleteLink.Visible := True;
-        DeleteLink.Top := NewTop + H;
-        NewTop := DeleteLink.BoundsRect.Bottom;
-      end else
-        DeleteLink.Visible := False;
+      TbbClear.Visible := True;
+      TbbClear.Tag := 0;
     end else
-      DeleteLink.Visible := False;    }
-
-    if ((FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) then
     begin
-      if SelCount = 0 then
-      begin
-        WlClear.Visible := True;
-        WlClear.Top := NewTop + H;
-        NewTop := WlClear.BoundsRect.Bottom;
-      end else
-        WlClear.Visible := False;
-    end else
-      WlClear.Visible := False;
+      TbbClear.Visible := False;
+      TbbClear.Tag := 1;
+    end;
 
     if (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
     begin
@@ -6357,69 +6263,10 @@ begin
         TbbShare.Enabled := False;
     end;
 
-     if ElvMain.Items.Count < 400 then
-    begin
-      if ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE)) and
-        (SelCount = 0) then
-      begin
-        B := True;
-      end else
-      begin
-        B := False;
-        if FFilesInfo.Count <> 0 then
-          for I := 0 to ElvMain.Items.Count - 1 do
-            if ElvMain.Items[I].Selected then
-            begin
-              index := ItemIndexToMenuIndex(I);
-              if ((FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE) and (FFilesInfo[index].ID = 0)) or
-                ((FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) or
-                  (FFilesInfo[index].FileType = EXPLORER_ITEM_DRIVE)) then
-              begin
-                B := True;
-                Break;
-              end;
-            end;
-      end;
-    end else
-    begin
-      B := ((SelCount > 1) or ((SelCount = 1) and (FSelectedInfo.Id = 0)));
-      B := ((FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and B);
-    end;
-
-    if B and not FolderView then
-    begin
-      if SelCount = 1 then AddLink.Text := L('Add object');
-      if SelCount > 1 then
-        AddLink.Text := L('Add objects');
-      if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
-        (SelCount = 0) then
-        AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_ADD_FOLDER + 1]);
-
-      if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) and (SelCount <> 0) then
-        AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_ADD_SINGLE_FILE + 1]);
-
-      AddLink.Visible := True;
-      AddLink.Top := NewTop + H;
-      NewTop := AddLink.BoundsRect.Bottom;
-    end else
-      AddLink.Visible := False;
-
     IsReallignInfo := False;
 
-    ScrollBox1.UpdatingPanel := False;
-    ScrollBox1.Realign;
-
-    if HelpNO = 2 then
-      if FSelectedInfo.Id = 0 then
-        if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
-          if SelCount < 3 then
-          begin
-            Activate;
-            DoHelpHintCallBackOnCanClose(L('Help'), SecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
-              L('Next...'), Help1CloseClick);
-          end;
   finally
-    EndScreenUpdate(ScrollBox1.Handle, False);
+    EndScreenUpdate(Handle, False);
   end;
   EventLog('ReallignInfo OK');
 end;
@@ -7114,7 +6961,7 @@ var
 begin
   PcTasks.DisableTabChanging;
   try
-    for Tab in [eltsTasks..eltsSearch] do
+    for Tab in [eltsExplorer..eltsSearch] do
       if (Tab in FLeftTabs) then
         PcTasks.ShowTab(Integer(Tab))
       else
@@ -7175,7 +7022,7 @@ end;
 
 procedure TExplorerForm.TreeViewSelectCurrentPath;
 begin
-  if GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH then
+  if (GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH) and (PePath.PathEx<> nil) then
     TreeView.SelectPathItem(PePath.PathEx)
   else
     TreeView; //just start tree without any selection
@@ -7419,12 +7266,8 @@ procedure TExplorerForm.LoadLanguage;
 begin
   BeginTranslate;
   try
-    WlClear.Text := L('Clear');
-
-    AddLink.Text := L('Add to collection');
     TbImport.Hint := L('Import pictures');
 
-    TasksLabel.Caption := L('Tasks');
     Open1.Caption := L('Open');
     SlideShow1.Caption := L('Show');
     NewWindow1.Caption := L('New Window');
@@ -7546,7 +7389,6 @@ begin
     MiCopyAddress.Caption := L('Copy address');
     MiEditAddress.Caption := L('Edit address');
 
-    TsTasks.Caption := L('Tasks');
     TsExplorer.Caption := L('Explorer');
     TsInfo.Caption := L('Info');
     TsEXIF.Caption := L('EXIF');
@@ -7574,6 +7416,7 @@ begin
       TbbProperties.Caption := L('Properties');
       TbbShare.Caption := L('Share');
       TbbOpenDirectory.Caption := L('Open directory');
+      TbbClear.Caption := L('Clear');
     finally
       ToolBarBottom.ShowCaptions := True;
     end;
@@ -7648,17 +7491,6 @@ end;
 procedure TExplorerForm.MiUpdaterClick(Sender: TObject);
 begin
   UpdaterDB.ShowWindowNow;
-end;
-
-procedure TExplorerForm.AddLinkClick(Sender: TObject);
-begin
-  AddFile1Click(Sender);
-end;
-
-procedure TExplorerForm.ScrollBox1Resize(Sender: TObject);
-begin
-  ScrollBox1.BackgroundLeft := ScrollBox1.Width - ScrollBox1.BackGround.Width - 3;
-  ScrollBox1.BackgroundTop := ScrollBox1.Height - ScrollBox1.BackGround.Height - 3;
 end;
 
 procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean);
@@ -8330,9 +8162,8 @@ begin
   //Bottom toolbar width customization
   TotalWidth := 0;
   for I := 0 to ToolBarBottom.ButtonCount - 1 do
-  begin
-    Inc(TotalWidth, ToolBarBottom.Buttons[I].Width);
-  end;
+    if ToolBarBottom.Buttons[I].Tag = 0 then
+      Inc(TotalWidth, ToolBarBottom.Buttons[I].Width);
 
   ToolButtonsToHide := TList<TToolButton>.Create;
   try
@@ -8348,6 +8179,9 @@ begin
     WidthDiff := ToolBarBottom.Width - TotalWidth;
     for I := 0 to ToolButtonsToHide.Count - 1 do
     begin
+      if ToolBarBottom.Buttons[I].Tag = 1 then
+        Continue;
+
       if WidthDiff < 0 then
         ToolButtonsToHide[I].Visible := False
       else
@@ -8616,59 +8450,6 @@ begin
     end else if not ChangeTreeView then
       MessageBoxDB(Handle, Format(L('Directory "%s" not found!'), [S]), L('Warning'), TD_BUTTON_OK, TD_ICON_ERROR);
   end;
-end;
-
-procedure TExplorerForm.HelpTimerTimer(Sender: TObject);
-var
-  MessageText: string;
-begin
-  if not Active then
-    Exit;
-
-  if HelpNO = 1 then
-  begin
-    HelpTimer.Enabled := False;
-    MessageText := '     ' + L('Find in explorer folder with your photos, select the photo and press "Add item(s)" in menu.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$', 'Help');
-    DoHelpHintCallBackOnCanClose(L('Help'), MessageText, Point(0, 0), ElvMain, Help1NextClick,
-      L('Next...'), Help1CloseClick);
-  end;
-  if HelpNO = 2 then
-  begin
-    HelpTimer.Enabled := False;
-    DoHelpHintCallBackOnCanClose(L('Help'), SecondStepHelp, Point(0, 0), AddLink, Help1NextClick,
-      L('Next...'), Help1CloseClick);
-  end;
-  if HelpNO = 4 then
-  begin
-    HelpTimer.Enabled := False;
-
-    MessageText := '     ' + L('Now the pictures that do not have icon (+) in the upper left corner are in the collection. They are available using the search and for them advanced context menu is available. Further help is available from the main menu (Help -> Help).$nl$$nl$', 'Help');
-    DoHelpHint(L('Help'), MessageText, Point(0, 0), ElvMain);
-    HelpNO := 0;
-    Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
-  end;
-end;
-
-procedure TExplorerForm.Help1CloseClick(Sender: TObject;
-  var CanClose: Boolean);
-begin
-  CanClose := ID_OK = MessageBoxDB(Handle, L('Do you really want to refuse help?', 'Help'), L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_INFORMATION);
-  if CanClose then
-  begin
-    HelpNo := 0;
-    Settings.WriteBool('HelpSystem', 'CheckRecCount', False);
-  end;
-end;
-
-procedure TExplorerForm.Help1NextClick(Sender: TObject);
-begin
-  if HelpNo = 4 then
-    Exit;
-
-  HelpNo := HelpNo + 1;
-
-  if HelpNo = 4 then
-    HelpTimer.Enabled := True;
 end;
 
 procedure TExplorerForm.ImageEditor1Click(Sender: TObject);
@@ -9245,8 +9026,6 @@ begin
         finally
           F(Info);
         end;
-        if HelpNo = 2 then
-          HelpTimer.Enabled := True;
       end;
 
       ReallignToolInfo;
@@ -9784,23 +9563,6 @@ begin
     Key := #0;
     SbDoSearchClick(Sender);
   end;
-end;
-
-procedure TExplorerForm.WlClearClick(Sender: TObject);
-var
-  EventInfo: TEventValues;
-begin
-  ClearList;
-  PhotoShelf.Clear;
-  EventInfo.Image := nil;
-  DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
-
-  SpeedButton1Click(Sender);
-end;
-
-procedure TExplorerForm.WlCreateObjectClick(Sender: TObject);
-begin
-  GroupCreateForm.CreateGroup;
 end;
 
 procedure TExplorerForm.WlCropClick(Sender: TObject);
@@ -10787,27 +10549,6 @@ begin
   end;
 end;
 
-procedure TExplorerForm.ScrollBox1Reallign(Sender: TObject);
-var
-  I: Integer;
-begin
-  if IsReallignInfo then
-    Exit;
-
-  // to match backgroupd image
-  for I := 0 to ScrollBox1.ControlCount - 1 do
-  begin
-    if ScrollBox1.Controls[I] is TWebLink then
-      TWebLink(ScrollBox1.Controls[I]).RefreshBuffer;
-  end;
-end;
-
-procedure TExplorerForm.BackGround(Sender: TObject; X, Y, W, H: integer;
-  Bitmap: TBitmap);
-begin
-  ScrollBox1.GetBackGround(X, Y, W, H, Bitmap);
-end;
-
 procedure TExplorerForm.Listview1IncrementalSearch(Item: TEasyCollectionItem; const SearchBuffer: WideString; var Handled: Boolean;
       var CompareResult: Integer);
 var
@@ -11327,6 +11068,23 @@ begin
       Explorer.Show;
     end;
   end;
+end;
+
+procedure TExplorerForm.TbbClearClick(Sender: TObject);
+var
+  EventInfo: TEventValues;
+begin
+  ClearList;
+  PhotoShelf.Clear;
+  EventInfo.Image := nil;
+  DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
+
+  SpeedButton1Click(Sender);
+end;
+
+procedure TExplorerForm.TbbCreateObjectClick(Sender: TObject);
+begin
+  GroupCreateForm.CreateGroup;
 end;
 
 procedure TExplorerForm.TbbOpenDirectoryClick(Sender: TObject);
@@ -12838,7 +12596,7 @@ begin
   begin
     FShellTreeView := TPathProvideTreeView.Create(Self);
     FShellTreeView.Parent := TsExplorer;
-    FShellTreeView.Align := AlClient;
+    FShellTreeView.Align := alClient;
     FShellTreeView.LoadHomeDirectory(Self);
     FShellTreeView.OnGetPopupMenu := PathTreeViewGetPopupMenu;
     FShellTreeView.OnSelectPathItem := PathTreeViewChange;
@@ -13005,6 +12763,8 @@ begin
   TbbProperties.ImageIndex := DB_IC_PROPERTIES;
   TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
   TbbOpenDirectory.ImageIndex := DB_IC_DIRECTORY;
+  TbbCreateObject.ImageIndex := DB_IC_NEW_SHELL;
+  TbbClear.ImageIndex := DB_IC_DELETE_INFO;
   ToolBarBottom.EnableToolBarForButtons;
 
   ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1]);
@@ -13126,9 +12886,6 @@ begin
   if not IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
 
-  WlClear.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
-  AddLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW + 1]);
-  WlCreateObject.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_NEW_SHELL + 1]);
   WlGoToShelf.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELF + 1]);
 end;
 

@@ -69,224 +69,13 @@ object ExplorerForm: TExplorerForm
       Top = 0
       Width = 140
       Height = 629
-      ActivePage = TsTasks
+      ActivePage = TsInfo
       Align = alClient
       MultiLine = True
       ParentShowHint = False
       ShowHint = False
       TabOrder = 0
       OnChange = PcTasksChange
-      object TsTasks: TTabSheet
-        Margins.Left = 0
-        Margins.Top = 0
-        Margins.Right = 0
-        Margins.Bottom = 0
-        Caption = 'Tasks'
-        object PropertyPanel: TPanel
-          Left = 0
-          Top = 0
-          Width = 132
-          Height = 601
-          Align = alClient
-          BevelOuter = bvNone
-          ParentColor = True
-          TabOrder = 0
-          OnResize = PropertyPanelResize
-          object ScrollBox1: TScrollPanel
-            Left = 0
-            Top = 0
-            Width = 132
-            Height = 601
-            HorzScrollBar.Increment = 10
-            HorzScrollBar.Visible = False
-            VertScrollBar.Smooth = True
-            VertScrollBar.Tracking = True
-            DefaultDraw = True
-            BackGroundTransparent = 0
-            OnReallign = ScrollBox1Reallign
-            BackgroundLeft = 0
-            BackgroundTop = 0
-            UpdatingPanel = False
-            Align = alClient
-            BevelOuter = bvNone
-            FullRepaint = False
-            TabOrder = 0
-            OnResize = ScrollBox1Resize
-            object TypeLabel: TLabel
-              Left = 7
-              Top = 137
-              Width = 49
-              Height = 13
-              Caption = 'TypeLabel'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-              WordWrap = True
-            end
-            object TasksLabel: TLabel
-              Tag = 1
-              Left = 8
-              Top = 230
-              Width = 33
-              Height = 13
-              Caption = 'Tasks'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = [fsBold]
-              ParentFont = False
-            end
-            object SizeLabel: TLabel
-              Left = 7
-              Top = 160
-              Width = 44
-              Height = 13
-              Caption = 'SizeLabel'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
-            object RatingLabel: TLabel
-              Left = 8
-              Top = 192
-              Width = 31
-              Height = 13
-              Caption = 'Rating'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
-            object NameLabel: TLabel
-              Tag = 1
-              Left = 7
-              Top = 124
-              Width = 62
-              Height = 13
-              Caption = 'NameLabel'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = [fsBold]
-              ParentFont = False
-              WordWrap = True
-            end
-            object ImPreview: TImage
-              Left = 5
-              Top = 3
-              Width = 118
-              Height = 118
-              ParentCustomHint = False
-              OnContextPopup = ImPreviewContextPopup
-              OnDblClick = ImPreviewDblClick
-            end
-            object IDLabel: TLabel
-              Left = 8
-              Top = 176
-              Width = 36
-              Height = 13
-              Caption = 'IDLabel'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
-            object DimensionsLabel: TLabel
-              Left = 7
-              Top = 149
-              Width = 78
-              Height = 13
-              Caption = 'DimensionsLabel'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
-            object AccessLabel: TLabel
-              Left = 8
-              Top = 208
-              Width = 58
-              Height = 13
-              Caption = 'AccessLabel'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -11
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
-            object AddLink: TWebLink
-              Left = 5
-              Top = 270
-              Width = 75
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Add Object'
-              OnClick = AddLinkClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlCreateObject: TWebLink
-              Left = 5
-              Top = 250
-              Width = 54
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Create'
-              Visible = False
-              OnClick = WlCreateObjectClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-            object WlClear: TWebLink
-              Left = 5
-              Top = 290
-              Width = 46
-              Height = 16
-              Cursor = crHandPoint
-              Text = 'Clear'
-              OnClick = WlClearClick
-              ImageIndex = 0
-              UseEnterColor = False
-              EnterColor = clBlack
-              EnterBould = False
-              TopIconIncrement = 0
-              UseSpecIconSize = True
-              HightliteImage = False
-              StretchImage = False
-              CanClick = True
-            end
-          end
-        end
-      end
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
@@ -325,7 +114,6 @@ object ExplorerForm: TExplorerForm
       object TsInfo: TTabSheet
         Caption = 'Info'
         ImageIndex = 2
-        TabVisible = False
         OnResize = TsInfoResize
         OnShow = TsInfoShow
         object PnInfoContainer: TPanel
@@ -342,23 +130,23 @@ object ExplorerForm: TExplorerForm
             601)
           object LbEditComments: TLabel
             Tag = 2
-            Left = 5
-            Top = 336
+            Left = 8
+            Top = 494
             Width = 54
             Height = 13
             Caption = 'Comments:'
           end
           object LbEditKeywords: TLabel
             Tag = 2
-            Left = 5
-            Top = 258
+            Left = 8
+            Top = 416
             Width = 53
             Height = 13
             Caption = 'KeyWords:'
           end
           object ImHistogramm: TImage
-            Left = 2
-            Top = 24
+            Left = 5
+            Top = 182
             Width = 130
             Height = 105
             Anchors = [akLeft, akTop, akRight]
@@ -367,15 +155,79 @@ object ExplorerForm: TExplorerForm
             Stretch = True
           end
           object LbHistogramImage: TLabel
-            Left = 3
-            Top = 5
+            Left = 6
+            Top = 163
             Width = 91
             Height = 13
             Caption = 'Histogramm image:'
           end
+          object DimensionsLabel: TLabel
+            Left = 8
+            Top = 144
+            Width = 78
+            Height = 13
+            Caption = 'DimensionsLabel'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+          end
+          object SizeLabel: TLabel
+            Left = 92
+            Top = 144
+            Width = 44
+            Height = 13
+            Caption = 'SizeLabel'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+          end
+          object TypeLabel: TLabel
+            Left = 6
+            Top = 130
+            Width = 49
+            Height = 13
+            Caption = 'TypeLabel'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object NameLabel: TLabel
+            Tag = 1
+            Left = 7
+            Top = 113
+            Width = 62
+            Height = 13
+            Caption = 'NameLabel'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+            WordWrap = True
+          end
+          object ImPreview: TImage
+            Left = 5
+            Top = 3
+            Width = 104
+            Height = 104
+            ParentCustomHint = False
+            OnContextPopup = ImPreviewContextPopup
+            OnDblClick = ImPreviewDblClick
+          end
           object BtnSaveInfo: TButton
-            Left = 59
-            Top = 411
+            Left = 62
+            Top = 569
             Width = 73
             Height = 24
             Anchors = [akTop, akRight]
@@ -386,8 +238,8 @@ object ExplorerForm: TExplorerForm
           end
           object MemComments: TMemo
             Tag = 1
-            Left = 2
-            Top = 355
+            Left = 5
+            Top = 513
             Width = 130
             Height = 50
             Anchors = [akLeft, akTop, akRight]
@@ -399,8 +251,8 @@ object ExplorerForm: TExplorerForm
           end
           object MemKeyWords: TMemo
             Tag = 1
-            Left = 2
-            Top = 277
+            Left = 5
+            Top = 435
             Width = 130
             Height = 50
             Anchors = [akLeft, akTop, akRight]
@@ -411,8 +263,8 @@ object ExplorerForm: TExplorerForm
             OnEnter = MemKeyWordsEnter
           end
           object WllGroups: TWebLinkList
-            Left = 2
-            Top = 211
+            Left = 5
+            Top = 369
             Width = 130
             Height = 42
             HorzScrollBar.Visible = False
@@ -430,8 +282,8 @@ object ExplorerForm: TExplorerForm
             PaddingLeft = 2
           end
           object DteTime: TDateTimePicker
-            Left = 2
-            Top = 184
+            Left = 5
+            Top = 342
             Width = 130
             Height = 21
             Anchors = [akLeft, akTop, akRight]
@@ -447,8 +299,8 @@ object ExplorerForm: TExplorerForm
             OnEnter = DteTimeEnter
           end
           object DteDate: TDateTimePicker
-            Left = 2
-            Top = 157
+            Left = 5
+            Top = 315
             Width = 130
             Height = 21
             Anchors = [akLeft, akTop, akRight]
@@ -465,8 +317,8 @@ object ExplorerForm: TExplorerForm
             OnEnter = DteTimeEnter
           end
           object ReRating: TRating
-            Left = 3
-            Top = 135
+            Left = 6
+            Top = 293
             Width = 96
             Height = 16
             Cursor = crHandPoint
@@ -2232,7 +2084,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 160
-      Date = 41177.653349201390000000
+      Date = 41177.470967407400000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2297,8 +2149,17 @@ object ExplorerForm: TExplorerForm
       Transparent = True
       Wrapable = False
       OnResize = CoolBarBottomResize
-      object TbbPlay: TToolButton
+      object TbbCreateObject: TToolButton
         Left = 0
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbCreateObject'
+        ImageIndex = 9
+        Visible = False
+        OnClick = TbbCreateObjectClick
+      end
+      object TbbPlay: TToolButton
+        Left = 99
         Top = 0
         AutoSize = True
         Caption = 'TbbPlay'
@@ -2306,7 +2167,7 @@ object ExplorerForm: TExplorerForm
         OnClick = SlideShowLinkClick
       end
       object TbbEncrypt: TToolButton
-        Left = 54
+        Left = 153
         Top = 0
         AutoSize = True
         Caption = 'TbbEncrypt'
@@ -2314,7 +2175,7 @@ object ExplorerForm: TExplorerForm
         OnClick = EncryptLinkClick
       end
       object TbbShare: TToolButton
-        Left = 125
+        Left = 224
         Top = 0
         AutoSize = True
         Caption = 'TbbShare'
@@ -2324,7 +2185,7 @@ object ExplorerForm: TExplorerForm
         OnClick = WlShareClick
       end
       object TbbGeo: TToolButton
-        Left = 187
+        Left = 286
         Top = 0
         AutoSize = True
         Caption = 'TbbGeo'
@@ -2332,7 +2193,7 @@ object ExplorerForm: TExplorerForm
         OnClick = WlGeoLocationClick
       end
       object TbbResize: TToolButton
-        Left = 240
+        Left = 339
         Top = 0
         AutoSize = True
         Caption = 'TbbResize'
@@ -2340,7 +2201,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Resize1Click
       end
       object TbbConvert: TToolButton
-        Left = 305
+        Left = 404
         Top = 0
         AutoSize = True
         Caption = 'TbbConvert'
@@ -2348,7 +2209,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Convert1Click
       end
       object TbbCrop: TToolButton
-        Left = 378
+        Left = 477
         Top = 0
         AutoSize = True
         Caption = 'TbbCrop'
@@ -2356,7 +2217,7 @@ object ExplorerForm: TExplorerForm
         OnClick = WlCropClick
       end
       object TbbEditor: TToolButton
-        Left = 435
+        Left = 534
         Top = 0
         AutoSize = True
         Caption = 'TbbEditor'
@@ -2364,7 +2225,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ImageEditorLinkClick
       end
       object TbbPrint: TToolButton
-        Left = 497
+        Left = 596
         Top = 0
         AutoSize = True
         Caption = 'TbbPrint'
@@ -2372,14 +2233,14 @@ object ExplorerForm: TExplorerForm
         OnClick = PrintLinkClick
       end
       object TbBottomFileActionsSeparator: TToolButton
-        Left = 553
+        Left = 652
         Top = 0
         Width = 8
         ImageIndex = 9
         Style = tbsSeparator
       end
       object TbbOpenDirectory: TToolButton
-        Left = 561
+        Left = 660
         Top = 0
         AutoSize = True
         Caption = 'TbbOpenDirectory'
@@ -2389,7 +2250,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbbOpenDirectoryClick
       end
       object TbbRename: TToolButton
-        Left = 686
+        Left = 785
         Top = 0
         AutoSize = True
         Caption = 'TbbRename'
@@ -2397,12 +2258,21 @@ object ExplorerForm: TExplorerForm
         OnClick = Rename1Click
       end
       object TbbProperties: TToolButton
-        Left = 759
+        Left = 858
         Top = 0
         AutoSize = True
         Caption = 'TbbProperties'
         ImageIndex = 8
         OnClick = PropertiesLinkClick
+      end
+      object TbbClear: TToolButton
+        Left = 941
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbClear'
+        ImageIndex = 9
+        Visible = False
+        OnClick = TbbClearClick
       end
     end
   end
@@ -2824,13 +2694,6 @@ object ExplorerForm: TExplorerForm
     Left = 656
     Top = 104
   end
-  object HelpTimer: TTimer
-    Enabled = False
-    Interval = 2000
-    OnTimer = HelpTimerTimer
-    Left = 536
-    Top = 440
-  end
   object PmDragMode: TPopupActionBar
     Left = 360
     Top = 192
@@ -3244,8 +3107,8 @@ object ExplorerForm: TExplorerForm
     Enabled = False
     Interval = 200
     OnTimer = TmrReloadTreeViewTimer
-    Left = 672
-    Top = 568
+    Left = 536
+    Top = 440
   end
   object PmShareAdditionalTasks: TPopupActionBar
     OnGetControlClass = PmShareAdditionalTasksGetControlClass

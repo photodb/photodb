@@ -89,8 +89,6 @@ type
   end;
 
 var
-  HelpNO: Integer = 0;
-  HelpActivationNO: Integer = 0;
   FExtImagesInImageList: Integer;
 
 procedure LoadNickJpegImage(Image: TImage);

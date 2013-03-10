@@ -66,7 +66,7 @@ type
     property CurrentPath: string read GetCurrentPath;
   end;
 
-  TExplorerLeftTab = (eltsTasks, eltsExplorer, eltsInfo, eltsEXIF, eltsSearch, eltsAny);
+  TExplorerLeftTab = (eltsExplorer, eltsInfo, eltsEXIF, eltsSearch, eltsAny);
 
   TExplorerRightTab = (ertsPreview, ertsMap, ertsAny);
 

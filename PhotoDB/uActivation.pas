@@ -70,8 +70,6 @@ type
     function GetFormID: string; override;
   public
     { Public declarations }
-    procedure HelpActivationNextClick(Sender: TObject);
-    procedure HelpActivationCloseClick(Sender: TObject; var CanClose : Boolean);
   end;
                              
 implementation
@@ -198,23 +196,6 @@ begin
   BtnPrevious.Left := BtnFinish.Left - BtnPrevious.Width - 5;
   BtnCancel.Left := BtnPrevious.Left - BtnCancel.Width - 5;
   Bevel1.Width := ClientWidth - 10;
-end;
-
-procedure TActivateForm.HelpActivationCloseClick(Sender: TObject;
-  var CanClose: Boolean);
-begin
-  CanClose := ID_OK = MessageBoxDB(GetActiveFormHandle, L('Do you really want to refuse help?', 'Help'), L('Confirm'), TD_BUTTON_OKCANCEL,
-    TD_ICON_INFORMATION);
-  if CanClose then
-  begin
-    HelpActivationNO := 0;
-    Settings.WriteBool('HelpSystem', 'ActivationHelp', False);
-  end;
-end;
-
-procedure TActivateForm.HelpActivationNextClick(Sender: TObject);
-begin
-  Inc(HelpActivationNO);
 end;
 
 procedure TActivateForm.FormClose(Sender: TObject; var Action: TCloseAction);

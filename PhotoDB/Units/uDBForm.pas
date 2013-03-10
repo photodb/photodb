@@ -843,28 +843,36 @@ begin
   //when styles enabled and form is visible -> white rectangle in all client rect
   //it causes flicking on black theme if Aero is enabled
   //this is fix for form startup
-  if StyleServices.Enabled and not FWasPaint then
+  if ClassName <> 'TFormManager' then
   begin
-    if (Message.Msg = WM_NCPAINT) and (Win32MajorVersion >= 6) then
+    if StyleServices.Enabled and not FWasPaint then
     begin
-      if DwmCompositionEnabled then
+      if (Message.Msg = WM_NCPAINT) and (Win32MajorVersion >= 6) then
       begin
-        Canvas := TCanvas.Create;
-        try
-          Canvas.Handle := GetWindowDC(Handle);
-          LDetails.Element := teWindow;
-          LDetails.Part := 0;
-          //get window size from API because VCL size not correct at this moment
-          GetWindowRect(Handle, WindowRect);
-          StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, WindowRect.Width, WindowRect.Height));
-        finally
-          ReleaseDC(Self.Handle, Canvas.Handle);
-          F(Canvas);
+        if DwmCompositionEnabled then
+        begin
+          Canvas := TCanvas.Create;
+          try
+            Canvas.Handle := GetWindowDC(Handle);
+            LDetails.Element := teWindow;
+            LDetails.Part := 0;
+            //get window size from API because VCL size not correct at this moment
+            GetWindowRect(Handle, WindowRect);
+            StyleServices.DrawElement(Canvas.Handle, LDetails, Rect(0, 0, WindowRect.Width, WindowRect.Height));
+          finally
+            ReleaseDC(Self.Handle, Canvas.Handle);
+            F(Canvas);
+          end;
+          CustomFormAfterDisplay;
         end;
-        CustomFormAfterDisplay;
       end;
     end;
+  end else
+  begin
+    if Message.Msg = WM_SIZE then
+      Message.Msg := 0;
   end;
+
   if (Message.Msg = WM_PAINT) and StyleServices.Enabled then
     FWasPaint := True;
 

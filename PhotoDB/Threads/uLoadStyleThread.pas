@@ -55,7 +55,7 @@ begin
     end else
     begin
       TStyleManager.Initialize;
-      if TStyleManager.TryLoadFromResource(HInstance, 'MOBILE_STYLE', PWideChar(StyleResourceSection), StyleHandle ) then
+      if TStyleManager.TryLoadFromResource(HInstance, 'MOBILE_STYLE', PWideChar(StyleResourceSection), StyleHandle) then
         TStyleManager.SetStyle(StyleHandle);
     end;
     TW.I.Start('TLoadStyleThread - END');

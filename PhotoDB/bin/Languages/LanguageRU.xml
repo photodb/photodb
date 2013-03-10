@@ -248,12 +248,10 @@
 	<translate name="Add directory" value="Добавить" />
 	<translate name="Edit list" value="Редактировать" />
 	<translate name="New group" value="Создать группу" />
-	<translate name="Add to collection" value="Добавить в базу" />
 	<translate name="Preview" value="Предпросмотр" />
 	<translate name="Explorer" value="Проводник" />
 	<translate name="Info" value="Информация" />
 	<translate name="EXIF" value="EXIF" />
-	<translate name="Tasks" value="Задачи" />
 	<translate name="Open" value="Открыть" />
 	<translate name="Show" value="Просмотр" />
 	<translate name="New Window" value="Новое окно" />

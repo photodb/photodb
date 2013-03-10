@@ -22,7 +22,6 @@ uses
   EasyListView,
   UnitDBDeclare,
   UnitDBCommon,
-  Dolphin_DB,
 
   uAppUtils,
   uLogger,
@@ -37,10 +36,7 @@ uses
   uMultiCPUThreadManager,
   uShellIntegration,
   uRuntime,
-  uDBBaseTypes,
-  uDBFileTypes,
   uDBUtils,
-  uDBPopupMenuInfo,
   uSettings,
   uAssociations,
   uDBCustomThread,
@@ -70,7 +66,7 @@ type
     FCheckCount: Integer;
     WasIde: Boolean;
     ExitAppl: Boolean;
-    LockCleaning: Boolean;
+    FLockCleaning: Boolean;
     FSetLanguageMessage: Cardinal;
     procedure ExitApplication;
     function GetTimeLimitMessage: string;
@@ -673,7 +669,7 @@ begin
   TW.I.Start('FM -> Load');
   Caption := DBID;
 
-  LockCleaning := True;
+  FLockCleaning := True;
   try
 
     try
@@ -748,7 +744,7 @@ begin
       end;
     end;
   finally
-    LockCleaning := False;
+    FLockCleaning := False;
   end;
 
   TW.I.Start('FM -> HidefromTaskBar');
@@ -791,7 +787,7 @@ begin
   FMainForms := TList.Create;
   WasIde := False;
   ExitAppl := False;
-  LockCleaning := False;
+  FLockCleaning := False;
   inherited Create(AOwner);
 end;
 

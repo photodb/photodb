@@ -387,6 +387,21 @@ function TCustomImageListHelper.LoadFromCache(CacheFileName: string): Boolean;
 var
   FileName: string;
   FS: TFileStream;
+
+  procedure ReadData(Stream: TFileStream);
+  var
+    LAdapter: TStreamAdapter;
+  begin
+    LAdapter := TStreamAdapter.Create(Stream);
+    try
+      Handle := ImageList_Read(LAdapter);
+    finally
+      LAdapter.Free;
+    end;
+
+    ImageList_SetImageCount(Handle, ImageList_GetImageCount(Handle));
+  end;
+
 begin
   Result := True;
   FileName := GetAppDataDirectoryFromSettings + CommonCacheDirectory + CacheFileName + '.imlist';
@@ -394,7 +409,8 @@ begin
   try
     try
       FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-      TCustomImageListEx(Self).ReadData(FS);
+      ReadData(FS);
+      //TCustomImageListEx(Self).ReadData(FS);
     except
       on e: Exception do
       begin
