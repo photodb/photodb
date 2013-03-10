@@ -26,7 +26,6 @@ uses
   Dmitry.Controls.SaveWindowPos,
 
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uThreadForm,

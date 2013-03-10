@@ -11,7 +11,7 @@ uses
   Vcl.Graphics,
   Dmitry.Graphics.Types,
   Scanlines,
-  uEditorTypes,
+
   uDBGraphicTypes,
   uMemory,
   uBitmapUtils;

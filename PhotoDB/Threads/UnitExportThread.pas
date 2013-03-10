@@ -12,7 +12,6 @@ uses
   ActiveX,
   uGroupTypes,
   UnitGroupsWork,
-  UnitDBDeclare,
 
   Dmitry.Utils.Files,
 

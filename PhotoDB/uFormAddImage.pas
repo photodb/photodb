@@ -21,7 +21,6 @@ uses
   UnitDBKernel,
 
   uMemory,
-  uMemoryEx,
   uFormUtils,
   uBitmapUtils,
   uThemesUtils,

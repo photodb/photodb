@@ -10,7 +10,6 @@ uses
   uMemory,
   uConstants,
   EncdDecd,
-  uDBBaseTypes,
   JPEG,
   pngimage,
 

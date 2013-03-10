@@ -13,12 +13,9 @@ uses
 
   Dmitry.Graphics.Utils,
 
-  DDraw,
-  Effects,
   RAWImage,
   GraphicCrypt,
   Dolphin_DB,
-  UnitDBCommonGraphics,
   UnitDBKernel,
 
   uGraphicUtils,
@@ -26,7 +23,6 @@ uses
   uDXUtils,
   uConstants,
   uDBThread,
-  uMemoryEx,
   uAssociations,
   uJpegUtils,
   uBitmapUtils,

@@ -4659,8 +4659,6 @@ procedure DDrawInit;
 
 implementation
 
-uses
-  DXCommon;
   
 function MAKEFOURCC(ch0, ch1, ch2, ch3: Char) : DWORD;
 begin

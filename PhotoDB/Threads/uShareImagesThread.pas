@@ -17,28 +17,19 @@ uses
   CCR.Exif,
 
   UnitDBDeclare,
-  GraphicCrypt,
-  UnitDBKernel,
   RAWImage,
 
   uConstants,
   uRuntime,
   uMemory,
-  uTranslate,
   uThreadEx,
   uThreadForm,
   uAssociations,
-  uPortableDeviceUtils,
-  uJpegUtils,
-  uGraphicUtils,
-  uSettings,
-  uBitmapUtils,
   uLogger,
   uShellThumbnails,
   uAssociatedIcons,
   uPhotoShareInterfaces,
   uShellIntegration,
-  uExifUtils,
   uShareUtils,
   uImageLoader;
 

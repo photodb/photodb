@@ -11,7 +11,7 @@ uses
   ComCtrls,
   GBlur2,
   Classes,
-  Dmitry.Graphics.Types,
+
   SysUtils,
   ExtCtrls,
   Controls,
@@ -21,7 +21,7 @@ uses
   uEditorTypes,
   uGOM,
   uDBThread,
-  UnitDBKernel,
+
   uMemory,
   uSettings,
   System.UITypes;

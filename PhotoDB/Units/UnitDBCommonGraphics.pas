@@ -17,7 +17,6 @@ uses
 
   uBitmapUtils,
   UnitDBDeclare,
-  Effects,
 
   uMemory,
   uDBGraphicTypes,

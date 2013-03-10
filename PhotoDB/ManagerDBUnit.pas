@@ -46,17 +46,17 @@ uses
 
   CommCtrl,
   DateUtils,
-  uVistaFuncs,
-  CmpUnit,
+
+
   DBCMenu,
   Dolphin_DB,
   UnitDBkernel,
   uGroupTypes,
   UnitGroupsWork,
   UnitFormManagerHint,
-  UnitConvertDBForm,
+
   UnitDBDeclare,
-  UnitDBCommon,
+
   uBitmapUtils,
   uCDMappingTypes,
   uConstants,
@@ -74,7 +74,7 @@ uses
   uSettings,
   uThreadForm,
   uDBAdapter,
-  uIconUtils,
+
   uVCLHelpers,
   uThemesUtils,
   uConfiguration,
@@ -229,7 +229,7 @@ uses
   ProgressActionUnit,
   UnitMenuDateForm,
   UnitChangeDBPath,
-  UnitSelectDB,
+
   uThreadLoadingManagerDB,
   uListViewUtils;
 

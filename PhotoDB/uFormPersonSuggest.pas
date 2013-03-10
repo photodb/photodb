@@ -16,7 +16,6 @@ uses
   Dmitry.PathProviders,
   Dmitry.Controls.WebLink,
 
-  uExplorerPathProvider,
   uExplorerPersonsProvider,
   uDBForm;
 

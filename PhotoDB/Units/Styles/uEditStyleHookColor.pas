@@ -4,7 +4,6 @@ interface
 
 uses
   System.UITypes,
-  System.SysUtils,
   Winapi.Windows,
   Winapi.Messages,
   VCL.StdCtrls,

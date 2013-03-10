@@ -10,7 +10,6 @@ uses
   Classes,
   Controls,
   Vcl.Styles,
-  Winapi.CommCtrl,
   Vcl.ComCtrls,
   Vcl.ExtCtrls;
 

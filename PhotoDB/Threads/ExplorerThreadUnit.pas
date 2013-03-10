@@ -34,7 +34,6 @@ uses
   uShellIntegration,
   UnitDBKernel,
   ExplorerUnit,
-  UnitGroupsWork,
   GraphicCrypt,
   RAWImage,
   UnitDBDeclare,
@@ -73,7 +72,6 @@ uses
   uExplorerSearchProviders,
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
-  uExplorerPortableDeviceProvider,
   uExplorerDateStackProviders,
   uPhotoShelf,
   uImageLoader;

@@ -13,7 +13,6 @@ uses
   UnitGroupsWork,
   ProgressActionUnit,
   uConstants,
-  uMemory,
   uMemoryEx,
   uTranslate,
   uShellIntegration,

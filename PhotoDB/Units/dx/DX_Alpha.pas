@@ -15,9 +15,7 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
-  Vcl.ExtDlgs,
   Vcl.ComCtrls,
-  Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.AppEvnts,
 
@@ -32,7 +30,6 @@ uses
   uMemory,
   uSettings,
   uBitmapUtils,
-  uMemoryEx,
   uVCLHelpers,
   uFormInterfaces;
 

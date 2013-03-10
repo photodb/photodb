@@ -25,7 +25,6 @@ uses
   DragDrop,
   DropTarget,
 
-  Dmitry.Utils.Files,
   Dmitry.Controls.Base,
   Dmitry.Controls.ComboBoxExDB,
   Dmitry.Controls.WatermarkedEdit,
@@ -34,7 +33,6 @@ uses
   DragDropFile,
   UnitCDMappingSupport,
   UnitDBFileDialogs,
-  UnitDBCommonGraphics,
   Dolphin_DB,
   UnitDBKernel,
 

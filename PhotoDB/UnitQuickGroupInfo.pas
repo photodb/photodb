@@ -27,9 +27,7 @@ uses
   UnitGroupsWork,
 
   uMemory,
-  uMemoryEx,
   uConstants,
-  uVistaFuncs,
   uGroupTypes,
   uBitmapUtils,
   uDBForm,

@@ -15,15 +15,11 @@ uses
   DB,
 
   Dmitry.Utils.Files,
-  Dmitry.Graphics.Types,
 
   GIFImage,
   UnitDBkernel,
   CommonDBSupport,
-  uTiffImage,
   ActiveX,
-  UnitDBCommonGraphics,
-  UnitDBCommon,
   UnitDBDeclare,
   RAWImage,
 
@@ -31,7 +27,6 @@ uses
   uPNGUtils,
   uDBThread,
   uGraphicUtils,
-  uDBUtils,
   uViewerTypes,
   uJpegUtils,
   uBitmapUtils,

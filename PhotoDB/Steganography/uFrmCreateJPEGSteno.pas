@@ -28,11 +28,7 @@ uses
   CCR.Exif,
 
   UnitDBDeclare,
-  GraphicCrypt,
   DBCMenu,
-  UnitDBKernel,
-  UnitDBCommon,
-  UnitDBCommonGraphics,
   Dolphin_db,
   UnitDBFileDialogs,
 
@@ -43,7 +39,6 @@ uses
   uJpegUtils,
   uShellIntegration,
   uConstants,
-  uGraphicUtils,
   uCryptUtils,
   uDBBaseTypes,
   uAssociations,

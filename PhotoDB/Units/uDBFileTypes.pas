@@ -7,8 +7,6 @@ uses
   System.SysUtils,
   Winapi.Windows,
 
-  UnitDBDeclare,
-
   uMemory,
   uDBBaseTypes;
 

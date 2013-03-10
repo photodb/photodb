@@ -12,7 +12,6 @@ uses
   Winapi.Messages,
   Winapi.ShlObj,
   Winapi.ActiveX,
-  Vcl.StdCtrls,
   Vcl.ComCtrls,
   Vcl.Controls,
   Vcl.Forms,

@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   Winapi.CommCtrl,
   System.SysUtils,
   System.Classes,
@@ -20,13 +19,11 @@ uses
   Vcl.ActnPopup,
   DB,
 
-  DropSource,
   DropTarget,
   DragDrop,
   DragDropFile,
 
   Dmitry.Utils.Files,
-  Dmitry.Utils.Dialogs,
   Dmitry.Controls.WatermarkedEdit,
 
   CommonDBSupport,
@@ -34,18 +31,18 @@ uses
   UnitGroupsWork,
   UnitDBDeclare,
   UnitDBFileDialogs,
-  UnitDBCommon,
+
 
   uFormInterfaces,
   uGroupTypes,
-  uVistaFuncs,
-  uLogger,
+
+
   uConstants,
   uDBForm,
   uShellIntegration,
   uMemory,
   uAssociations,
-  uThemesUtils,
+
   uVCLHelpers,
   uProgramStatInfo,
   uDBUtils;

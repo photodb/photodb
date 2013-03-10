@@ -7,9 +7,9 @@ uses
   System.Classes,
   Vcl.Graphics,
 
-  Dmitry.Graphics.Types,
 
-  EffectsToolUnit,
+
+
   UnitResampleFilters,
 
   uBitmapUtils,

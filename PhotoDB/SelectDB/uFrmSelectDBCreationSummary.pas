@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -20,7 +19,6 @@ uses
   uShellIntegration,
   uConstants,
   uDBUtils,
-  uLinkListEditorDatabases,
   uInterfaces;
 
 type

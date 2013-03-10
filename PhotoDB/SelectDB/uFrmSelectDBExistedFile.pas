@@ -18,7 +18,6 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   UnitDBKernel,
-  UnitDBCommonGraphics,
   UnitDBDeclare,
   UnitDBFileDialogs,
 

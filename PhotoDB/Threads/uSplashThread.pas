@@ -9,7 +9,6 @@ uses
    Graphics,
    uTime,
    uPngUtils,
-   uConstants,
    uResources,
    uMemory,
    pngimage,

@@ -16,23 +16,19 @@ uses
   Vcl.ExtCtrls,
   Vcl.AppEvnts,
   Vcl.Clipbrd,
-  Vcl.ImgList,
 
   Dmitry.Utils.System,
   Dmitry.Controls.DmProgress,
 
-  UnitDBKernel,
   UnitPasswordKeeper,
   UnitDBDeclare,
   UnitDBCommonGraphics,
 
-  uVistaFuncs,
   uGraphicUtils,
   uConstants,
   uRuntime,
   uShellIntegration,
   uDBBaseTypes,
-  uDBTypes,
   uDBForm,
   uMemory;
 

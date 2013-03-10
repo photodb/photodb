@@ -16,7 +16,6 @@ uses
   Dmitry.CRC32,
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
-  Dmitry.Graphics.Utils,
 
   CCR.Exif,
 
@@ -43,7 +42,6 @@ uses
   uPrivateHelper,
   uRuntime,
   uShellIntegration,
-  uVistaFuncs,
   uDBBaseTypes,
   uMemory,
   uJpegUtils,

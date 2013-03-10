@@ -5,7 +5,6 @@ interface
 uses
   Generics.Collections,
   System.Classes,
-  System.Win.ComObj,
   System.SyncObjs,
   System.SysUtils,
   Winapi.Windows,

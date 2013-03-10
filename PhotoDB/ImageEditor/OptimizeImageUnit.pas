@@ -7,8 +7,6 @@ uses
   Graphics,
   GBlur2,
   Dmitry.Graphics.Types,
-  ScanlinesFX,
-  uEditorTypes,
   uMemory;
 
 type

@@ -12,19 +12,19 @@ uses
   Vcl.StdCtrls,
   Vcl.ComCtrls,
   Vcl.Dialogs,
-  Vcl.ExtDlgs,
+
   Vcl.Clipbrd,
 
   Dmitry.Graphics.Types,
-  Dmitry.Graphics.Utils,
+
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
-  ImageHistoryUnit,
+
   Effects,
   CustomSelectTool,
   UnitDBFileDialogs,
-  UnitDBCommonGraphics,
+
 
   uBitmapUtils,
   uDBGraphicTypes,

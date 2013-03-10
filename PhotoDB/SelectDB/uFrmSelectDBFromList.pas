@@ -17,7 +17,6 @@ uses
   Dmitry.Controls.ComboBoxExDB,
 
   UnitDBKernel,
-  UnitDBCommonGraphics,
   UnitDBDeclare,
 
   uFrameWizardBase,

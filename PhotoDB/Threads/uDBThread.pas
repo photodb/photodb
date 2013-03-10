@@ -16,7 +16,6 @@ uses
   uPortableDeviceManager,
   {$ENDIF}
 
-  uMemory,
   uGOM,
   uDBForm,
   uIME,

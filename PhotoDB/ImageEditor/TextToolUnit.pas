@@ -20,7 +20,7 @@ uses
   Effects,
   CustomSelectTool,
   Dmitry.Graphics.Types,
-  UnitDBKernel,
+
 
   uDBGraphicTypes,
   uMemory,

@@ -7,7 +7,6 @@ uses
   System.Classes,
   System.SysUtils,
   System.SyncObjs,
-  System.StrUtils,
   Winapi.Windows,
   Vcl.Controls,
   Vcl.Forms,
@@ -22,8 +21,6 @@ uses
 
   uDBPopupMenuInfo,
   uConstants,
-  uAppUtils,
-  uGOM,
   uMemory,
   uRuntime,
   uMemoryEx,

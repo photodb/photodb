@@ -12,14 +12,12 @@ uses
   Vcl.StdCtrls,
   Vcl.ComCtrls,
 
-  Dmitry.Graphics.Types,
-  Dmitry.Graphics.Utils,
+
+
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
   ImageHistoryUnit,
-  Effects,
-  UnitDBKernel,
 
   uMemory;
 

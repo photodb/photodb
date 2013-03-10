@@ -12,7 +12,6 @@ uses
   Forms,
   Dialogs,
   uFrameWizardBase,
-  uConstants,
   Dolphin_DB;
 
 type

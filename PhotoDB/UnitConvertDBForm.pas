@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Controls,
@@ -13,8 +12,6 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
-  Vcl.Menus,
-  Vcl.ExtDlgs,
   Vcl.Graphics,
   Vcl.AppEvnts,
   Vcl.Imaging.jpeg,
@@ -24,10 +21,6 @@ uses
 
   Dolphin_DB,
   CommonDBSupport,
-  UnitDBDeclare,
-  UnitDBCommonGraphics,
-  UnitDBFileDialogs,
-  UnitDBCommon,
 
   uMemoryEx,
   uWizards,
@@ -36,8 +29,6 @@ uses
   uMemory,
   uConstants,
   uShellIntegration,
-  uDBBaseTypes,
-  uDBTypes,
   uInterfaces,
   uVCLHelpers;
 

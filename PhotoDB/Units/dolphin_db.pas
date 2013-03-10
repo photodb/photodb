@@ -24,7 +24,6 @@ uses
   UnitDBFileDialogs,
 
   uConstants,
-  uLogger,
   uTranslate,
   uMemory,
   uRuntime,

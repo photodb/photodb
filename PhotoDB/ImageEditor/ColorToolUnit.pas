@@ -13,13 +13,11 @@ uses
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
 
-  Dmitry.Graphics.Utils,
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
   ImageHistoryUnit,
   Effects,
-  UnitDBKernel,
 
   uDBGraphicTypes,
   uMemory;

@@ -21,7 +21,6 @@ uses
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
-  UnitDBKernel,
 
   uSettings,
   uEditorTypes,

@@ -13,7 +13,6 @@ uses
   GraphicCrypt,
   UnitCrypting,
 
-  uMemory,
   uMemoryEx,
   uAppUtils,
   uSplashThread,

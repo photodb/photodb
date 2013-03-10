@@ -5,10 +5,10 @@ interface
 uses
   Windows,
   Classes,
-  Effects,
+
   EffectsToolUnit,
   Graphics,
-  Dmitry.Graphics.Types,
+
   Forms,
   uConstants,
   uLogger,

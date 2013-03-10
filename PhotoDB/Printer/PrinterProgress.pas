@@ -16,7 +16,6 @@ uses
   ExtCtrls,
   Dmitry.Controls.DmProgress,
   uDBForm,
-  uMemory,
   uShellIntegration;
 
 type

@@ -9,8 +9,6 @@ uses
   System.SysUtils,
   System.Classes,
   System.Actions,
-  Vcl.Consts,
-  Vcl.ActnPopup,
   Vcl.Graphics,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnMan,
@@ -43,7 +41,6 @@ implementation
 
 uses
   Vcl.ListActns,
-  Vcl.ActnColorMaps,
   Vcl.Themes,
   Vcl.StdActnMenus;
 

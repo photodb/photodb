@@ -11,8 +11,6 @@ uses
 
   uDBThread,
   uLogger,
-  uShellIntegration,
-  uSplashThread,
   uRuntime,
   uConstants;
 

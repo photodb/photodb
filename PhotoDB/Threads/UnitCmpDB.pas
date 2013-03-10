@@ -15,7 +15,6 @@ uses
   GraphicCrypt,
   JPEG,
   CommonDBSupport,
-  UnitDBDeclare,
   UnitDBKernel,
   uDBTypes,
   uDBGraphicTypes,
@@ -79,7 +78,6 @@ implementation
 
 uses
   UnitCompareProgress,
-  UnitExportThread,
   UnitUpdateDBThread;
 
 { UnitCmpDB }

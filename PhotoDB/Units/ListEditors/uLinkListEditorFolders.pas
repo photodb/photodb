@@ -11,7 +11,6 @@ uses
   Vcl.ExtCtrls,
   Vcl.Graphics,
 
-  Dmitry.Controls.Base,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WebLink,
   Dmitry.PathProviders,

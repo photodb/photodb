@@ -12,7 +12,6 @@ uses
   ActiveX,
   uGroupTypes,
   UnitGroupsWork,
-  UnitDBDeclare,
   CommonDBSupport,
 
   Dmitry.CRC32,
@@ -22,7 +21,6 @@ uses
   uLogger,
   uConstants,
   uShellIntegration,
-  uDBTypes,
   uDBBaseTypes,
   uDBForm,
   uDBThread,
@@ -33,7 +31,6 @@ uses
   uTranslate,
   uResourceUtils,
   Graphics,
-  uVistaFuncs,
   uDBShellUtils,
   uRuntime;
 

@@ -10,7 +10,6 @@ uses
   uConstants,
   CommonDBSupport,
   uMemory,
-  uGOM,
 
   Dmitry.CRC32,
 

@@ -7,7 +7,6 @@ uses
   System.Classes,
   Winapi.ActiveX,
   System.SysUtils,
-  System.DateUtils,
 
   Dmitry.PathProviders,
   Dmitry.PathProviders.FileSystem,

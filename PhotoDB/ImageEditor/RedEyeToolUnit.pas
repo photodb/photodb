@@ -14,14 +14,14 @@ uses
   Vcl.Dialogs,
 
   Dmitry.Graphics.Types,
-  Dmitry.Graphics.Utils,
+
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
-  ImageHistoryUnit,
+
   Effects,
   CustomSelectTool,
-  UnitDBKernel,
+
 
   uDBGraphicTypes,
   uMemory,

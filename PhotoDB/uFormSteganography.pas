@@ -22,7 +22,6 @@ uses
   uDBForm,
   uWizards,
   uMemory,
-  uMemoryEx,
   uVCLHelpers,
   uFormInterfaces;
 

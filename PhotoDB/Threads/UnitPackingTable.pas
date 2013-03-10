@@ -5,8 +5,8 @@ interface
 uses
   Classes,
   Dolphin_DB,
-  Windows, Sysutils,
-  UnitGroupsWork,
+  Windows, 
+  Sysutils,
   ComObj,
   ActiveX,
   UnitDBDeclare,

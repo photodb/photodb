@@ -3,7 +3,6 @@ unit UnitCleanUpThread;
 interface
 
 uses
-  UnitDBKernel,
   Windows,
   Messages,
   CommCtrl,

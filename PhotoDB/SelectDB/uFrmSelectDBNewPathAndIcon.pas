@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -17,7 +16,6 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   UnitDBDeclare,
-  UnitDBCommonGraphics,
   UnitDBFileDialogs,
 
   uFrameWizardBase,

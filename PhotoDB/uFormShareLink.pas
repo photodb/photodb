@@ -5,7 +5,6 @@ interface
 uses
   Generics.Collections,
   Winapi.Windows,
-  Winapi.Messages,
   Winapi.ShellApi,
   System.SysUtils,
   System.Classes,
@@ -18,7 +17,6 @@ uses
   Vcl.Clipbrd,
 
   IdHTTP,
-  IdMultipartFormData,
   IdGlobal,
   IdSSLOpenSSL,
 
@@ -31,7 +29,7 @@ uses
   Dmitry.Controls.LoadingSign,
 
   UnitDBDeclare,
-  UnitDBKernel,
+
 
   uConstants,
   uMemory,

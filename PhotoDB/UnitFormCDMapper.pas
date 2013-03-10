@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -23,11 +22,9 @@ uses
   Dolphin_DB,
   UnitDBKernel,
   UnitCDMappingSupport,
-  UnitDBCommonGraphics,
   CommonDBSupport,
   UnitDBDeclare,
 
-  uVistaFuncs,
   uLogger,
   uDBForm,
   uMemory,

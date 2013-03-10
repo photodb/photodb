@@ -4,7 +4,6 @@ interface
 
 uses
   System.Types,
-  System.SysUtils,
   System.Classes,
   Winapi.Windows,
   Winapi.Messages,
@@ -14,10 +13,7 @@ uses
   Vcl.Dialogs,
   Vcl.ExtCtrls,
   Vcl.AppEvnts,
-  Vcl.ImgList,
   Vcl.ComCtrls,
-  Vcl.ToolWin,
-  Vcl.Themes,
 
   Dmitry.Utils.System,
 

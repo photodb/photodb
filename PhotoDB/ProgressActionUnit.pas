@@ -24,8 +24,6 @@ uses
   Dolphin_DB,
   uGUIDUtils,
   uConstants,
-  uVistaFuncs,
-  uGOM,
   uMemory,
   uShellIntegration,
   uDBForm;

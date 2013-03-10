@@ -32,8 +32,6 @@ uses
   GIFImage,
   DragDropFile,
   DragDrop,
-  UnitDBCommon,
-  UnitBitmapImageList,
   UnitHintCeator,
   UnitDBDeclare,
 
@@ -47,7 +45,6 @@ uses
   uConstants,
   uDBPopupMenuInfo,
   uFormUtils,
-  uAnimatedJPEG,
   uAnimationHelper,
   Themes,
   uThemesUtils,

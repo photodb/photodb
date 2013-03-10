@@ -4,11 +4,9 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.ActiveX,
   Vcl.Graphics,
   Vcl.OleCtrls,
 
-  SHDocVw,
   MSHTML,
 
   ExplorerTypes,

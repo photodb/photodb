@@ -12,14 +12,14 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
 
-  Dmitry.Graphics.Utils,
+
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
   ImageHistoryUnit,
   UnitResampleFilters,
 
-  uDBBaseTypes,
+
   uSettings,
   uBitmapUtils,
   uConstants,

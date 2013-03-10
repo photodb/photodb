@@ -7,7 +7,7 @@ uses
   ActiveX,
   uMemory,
   uThreadForm,
-  uImageSource,
+
   UnitDBDeclare,
   uDBPopupMenuInfo;
 

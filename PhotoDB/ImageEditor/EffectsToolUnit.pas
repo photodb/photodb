@@ -12,14 +12,14 @@ uses
   Vcl.Forms,
   Vcl.Controls,
   Vcl.Graphics,
-  Vcl.StdCtrls,
+
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
   Vcl.Themes,
-  Vcl.ImgList,
 
-  Dmitry.Graphics.Types,
-  Dmitry.Graphics.Utils,
+
+
+
   Dmitry.Controls.WebLink,
 
   ToolsUnit,
@@ -28,7 +28,7 @@ uses
   ExEffects,
   ExEffectsUnitW,
   OptimizeImageUnit,
-  UnitDBKernel,
+
   MPCommonUtilities,
   EasyListView,
   UnitBitmapImageList,

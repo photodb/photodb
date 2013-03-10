@@ -9,8 +9,6 @@ uses
   SysUtils,
   uAssociations,
 
-  Dmitry.Utils.Files,
-
   uDBThread,
   uDBForm,
   uShellIntegration,

@@ -6,19 +6,14 @@ uses
   Winapi.Windows,
   Winapi.ActiveX,
   Winapi.ShlObj,
-  Winapi.CommCtrl,
-  Winapi.ShellAPI,
   System.Classes,
   System.SysUtils,
   System.SyncObjs,
-  System.Win.ComObj,
   System.Win.Registry,
   Vcl.Graphics,
   Vcl.Forms,
 
   Dmitry.Utils.ShellIcons,
-
-  UnitDBKernel,
 
   uConstants,
   uMemory;

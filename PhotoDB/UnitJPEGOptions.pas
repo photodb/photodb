@@ -16,8 +16,6 @@ uses
   ComCtrls,
   uDBForm,
   JPEG,
-  uJpegUtils,
-  uMemory,
   uSettings,
   pngimage,
   uFormInterfaces;

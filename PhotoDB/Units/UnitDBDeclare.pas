@@ -7,7 +7,6 @@ uses
   System.Classes,
   System.SysUtils,
   System.DateUtils,
-  Vcl.Menus,
   Vcl.Graphics,
   Vcl.Imaging.JPEG,
   Data.DB,

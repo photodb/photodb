@@ -17,7 +17,6 @@ uses
   uAnimatedJPEG,
   GraphicEx,
   Math,
-  UnitDBCommonGraphics,
   Dialogs,
   StdCtrls,
   ComCtrls,
@@ -25,12 +24,10 @@ uses
   RAWImage,
   uJpegUtils,
   GraphicCrypt,
-  uGOM,
 
   Dmitry.Utils.Files,
 
   uDBForm,
-  uExifUtils,
   uMemory,
   SyncObjs,
   dolphin_db,

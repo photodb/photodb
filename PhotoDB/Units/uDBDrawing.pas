@@ -3,7 +3,6 @@ unit uDBDrawing;
 interface
 
 uses
-  System.SysUtils,
   System.Classes,
   System.SyncObjs,
   Winapi.Windows,

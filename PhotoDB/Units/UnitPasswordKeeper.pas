@@ -10,7 +10,6 @@ uses
 
   Dmitry.CRC32,
 
-  GraphicCrypt,
   UnitDBDeclare,
   UnitDBKernel,
 

@@ -8,7 +8,6 @@ uses
   System.SysUtils,
   System.Classes,
   Winapi.Windows,
-  Winapi.Messages,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -28,7 +27,6 @@ uses
   UnitDBKernel,
   FormManegerUnit,
   GraphicCrypt,
-  UnitDBDeclare,
 
   uConstants,
   uDBForm,

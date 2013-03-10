@@ -8,7 +8,6 @@ uses
   System.Win.Registry,
   System.SysUtils,
   Winapi.ShlObj,
-  Winapi.ShellApi,
   uMemory,
   uAppUtils,
   uSettings,

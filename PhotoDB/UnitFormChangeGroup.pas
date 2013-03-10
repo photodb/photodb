@@ -19,7 +19,6 @@ uses
   Vcl.AppEvnts,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
-  Vcl.ExtDlgs,
   Vcl.Imaging.jpeg,
 
   Dmitry.Utils.Files,

@@ -15,7 +15,6 @@ uses
   StdCtrls,
   Dolphin_DB,
   uDBForm,
-  uMemory,
   uThemesUtils,
   uMemoryEx;
 

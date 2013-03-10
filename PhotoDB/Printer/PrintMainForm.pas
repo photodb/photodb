@@ -4,9 +4,7 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   Winapi.ShellAPI,
-  Winapi.CommCtrl,
   System.SysUtils,
   System.Classes,
   System.Math,
@@ -22,7 +20,6 @@ uses
   Vcl.ActnPopup,
   Vcl.ImgList,
   Vcl.Printers,
-  Vcl.ExtDlgs,
   Vcl.Imaging.jpeg,
 
   ScrollingImage,
@@ -43,7 +40,6 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.Controls.SaveWindowPos,
 
-  uVistaFuncs,
   uCDMappingTypes,
   uConstants,
   uMemory,

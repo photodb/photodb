@@ -18,7 +18,6 @@ uses
   Dmitry.Utils.Dialogs,
 
   {$IFDEF PHOTODB}
-  UnitDBCommon,
   uAppUtils,
   uPortableDeviceManager,
   {$ENDIF}

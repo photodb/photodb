@@ -6,11 +6,11 @@ uses
   Windows,
   Classes,
   Effects,
-  EffectsToolUnit,
+
   Graphics,
   RotateToolUnit,
-  Dmitry.Graphics.Types,
-  ScanlinesFX,
+
+
   uEditorTypes,
   uMemory,
   uDBThread;

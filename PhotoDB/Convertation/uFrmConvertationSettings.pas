@@ -11,16 +11,13 @@ uses
   Vcl.Controls,
   Vcl.Forms,
   Vcl.Dialogs,
-  Vcl.ExtCtrls,
   Vcl.StdCtrls,
-  Vcl.Menus,
   Vcl.Imaging.jpeg,
 
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
 
   Dolphin_DB,
-  UnitDBFileDialogs,
   CommonDBSupport,
   UnitDBDeclare,
 
@@ -29,7 +26,6 @@ uses
   uJpegUtils,
   uBItmapUtils,
   uResources,
-  uConstants,
   uInterfaces;
 
 type
@@ -79,7 +75,6 @@ uses
   UnitConvertDBForm,
   UnitSelectDB,
   UnitHintCeator,
-  UnitDBKernel,
   uFrmSelectDBCreationSummary;
 
 {$R *.dfm}

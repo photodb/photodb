@@ -11,7 +11,6 @@ uses
   Dmitry.Utils.Files,
 
   Dolphin_DB,
-  UnitDBCommon,
   uLogger,
   uDBThread;
 

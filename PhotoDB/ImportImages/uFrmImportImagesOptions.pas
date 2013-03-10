@@ -13,16 +13,13 @@ uses
   Dialogs,
   StdCtrls,
 
-  Dmitry.Utils.Files,
+
   Dmitry.Controls.WatermarkedEdit,
 
-  UnitDBFileDialogs,
-  UnitDBKernel,
+
+
 
   uFrameWizardBase,
-  uShellIntegration,
-  uConstants,
-  uMemory,
   uSettings;
 
 type

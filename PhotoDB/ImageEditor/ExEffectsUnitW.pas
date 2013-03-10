@@ -8,10 +8,10 @@ uses
   Graphics,
   StdCtrls,
   ComCtrls,
-  GBlur2,
+
   uDBThread,
   Classes,
-  Dmitry.Graphics.Types,
+
   SysUtils,
   ExtCtrls,
   Controls,

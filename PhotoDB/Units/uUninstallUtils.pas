@@ -4,7 +4,6 @@ interface
 
 uses
   System.Classes,
-  System.SysUtils,
   System.Win.Registry,
   Winapi.Windows,
 

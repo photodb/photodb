@@ -7,12 +7,7 @@ uses
   System.Classes,
   Vcl.Graphics,
 
-  Dmitry.Utils.Files,
-
   acWorkRes,
-  uTranslate,
-  uConstants,
-  uMemory,
   uTime;
 
 function ReplaceIcon(ExeFileName: string; IcoTempNameW: PWideChar): Boolean;

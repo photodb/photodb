@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   Winapi.ShlObj,
   System.SysUtils,
   System.Classes,
@@ -27,9 +26,6 @@ uses
 
   UnitDBFileDialogs,
   dolphin_db,
-  UnitDBKernel,
-  UnitDBCommonGraphics,
-  UnitDBCommon,
   UnitDBDeclare,
   DBCMenu,
 
@@ -38,7 +34,7 @@ uses
   GraphicCrypt,
   uAssociations,
   uShellIntegration,
-  uGraphicUtils,
+
   uDBPopupMenuInfo,
   uCryptUtils,
   uMemory,

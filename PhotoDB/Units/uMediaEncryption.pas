@@ -8,8 +8,6 @@ uses
   Classes,
   Registry,
   uConstants,
-  uMemory,
-  uStrongCrypt,
   uTransparentEncryption,
   uFormInterfaces,
   uSettings,

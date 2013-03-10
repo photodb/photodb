@@ -8,13 +8,10 @@ uses
   SysUtils,
   Classes,
   Graphics,
-  UnitDBDeclare,
   JPEG,
   DB,
   uMemory,
   uConstants,
-
-  Dmitry.Utils.Files,
 
   uRuntime,
   uGroupTypes,

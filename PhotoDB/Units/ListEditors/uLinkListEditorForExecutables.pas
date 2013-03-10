@@ -10,7 +10,6 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
 
-  Dmitry.Controls.Base,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WebLink,
 

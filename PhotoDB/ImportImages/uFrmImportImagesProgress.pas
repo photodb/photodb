@@ -12,26 +12,26 @@ uses
   Vcl.StdCtrls,
   Vcl.Forms,
   Vcl.Dialogs,
-  Vcl.ExtCtrls,
+
   Vcl.Imaging.pngimage,
 
-  Dmitry.Utils.Files,
+
   Dmitry.Controls.DmProgress,
 
   Dolphin_DB,
-  UnitDBDeclare,
+
 
   uFrameWizardBase,
-  uGraphicUtils,
+
   uMemory,
   uRuntime,
-  UnitDBkernel,
+
   UnitUpdateDBObject,
-  uCounters,
+
   uConstants,
-  uBitmapUtils,
-  uUpdateDBTypes,
-  uInterfaceManager,
+
+
+
   uProgramStatInfo,
   uDBForm;
 

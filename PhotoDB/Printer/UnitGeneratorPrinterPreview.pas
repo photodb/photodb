@@ -8,7 +8,6 @@ uses
   UnitPrinterTypes,
   Printers,
   PrinterProgress,
-  uTranslate,
   uMemory,
   uDBThread,
   uDBForm;

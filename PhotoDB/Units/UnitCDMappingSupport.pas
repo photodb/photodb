@@ -13,7 +13,6 @@ uses
   Dmitry.Utils.Files,
 
   uShellIntegration,
-  uVistaFuncs,
   uMemory,
   uTranslate,
   uConstants,

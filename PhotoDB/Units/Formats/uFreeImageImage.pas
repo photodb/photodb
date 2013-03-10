@@ -8,8 +8,6 @@ uses
   Graphics,
   Classes,
   uMemory,
-  uConstants,
-  Dmitry.Utils.Files,
   Dmitry.Graphics.Types,
   uTime,
   FreeBitmap,

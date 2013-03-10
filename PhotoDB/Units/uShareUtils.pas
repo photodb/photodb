@@ -16,7 +16,6 @@ uses
   uJpegUtils,
   uAssociatedIcons,
   uImageLoader,
-  uDBUtils,
   uDBRepository,
   uSettings;
 

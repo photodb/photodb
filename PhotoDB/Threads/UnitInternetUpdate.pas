@@ -4,9 +4,7 @@ interface
 
 uses
   System.Classes,
-  System.Win.Registry,
   System.SysUtils,
-  System.DateUtils,
   Winapi.Windows,
   Winapi.ActiveX,
   Vcl.Forms,
@@ -14,10 +12,8 @@ uses
 
   Dmitry.Utils.System,
 
-  UnitDBKernel,
   Dolphin_DB,
 
-  uVistaFuncs,
   uLogger,
   uConstants,
   uShellIntegration,

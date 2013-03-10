@@ -10,7 +10,6 @@ uses
   Winapi.Windows,
   Winapi.ActiveX,
   Winapi.ShlObj,
-  Winapi.ShellAPI,
   Vcl.Controls,
 
   Dmitry.Utils.System,

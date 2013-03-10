@@ -46,9 +46,6 @@ type
 
 implementation
 
-uses
-  CMDUnit;
-
 { BackUpTableInCMD }
 
 constructor BackUpTableInCMD.Create(Options: TBackUpTableThreadOptions);

@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   Winapi.ShellAPI,
   System.SysUtils,
   System.Classes,
@@ -13,7 +12,6 @@ uses
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.StdCtrls,
-  Vcl.ExtCtrls,
   Vcl.ComCtrls,
 
   Dmitry.Utils.System,
@@ -23,7 +21,6 @@ uses
   Dolphin_DB,
 
   uSettings,
-  uTranslate,
   uDBForm,
   uInternetUtils;
 

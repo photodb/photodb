@@ -7,7 +7,6 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
-  System.StrUtils,
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.Imaging.jpeg,

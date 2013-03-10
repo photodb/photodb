@@ -23,7 +23,6 @@ uses
   UnitDBKernel,
 
   uRuntime,
-  uMemory,
   uMemoryEx,
   uConstants,
   uGroupTypes,

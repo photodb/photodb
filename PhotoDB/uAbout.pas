@@ -30,7 +30,6 @@ uses
   uRuntime,
   uActivationUtils,
   uDBForm,
-  uMemoryEx,
   UnitInternetUpdate,
   uInternetUtils,
   ShellApi,

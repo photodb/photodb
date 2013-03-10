@@ -26,7 +26,6 @@ uses
   uDBTypes,
   uDBUtils,
   uDBThread,
-  uGOM,
   uDBForm,
   uConstants,
   uFormInterfaces;

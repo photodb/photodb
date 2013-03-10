@@ -34,7 +34,6 @@ uses
   GraphicCrypt,
   DBCMenu,
   CommonDBSupport,
-  UnitDBCommon,
   Dolphin_DB,
 
   uListViewUtils,
@@ -44,7 +43,6 @@ uses
   uMemory,
   uRuntime,
   uDBForm,
-  uGraphicUtils,
   uDBUtils,
   uThemesUtils,
   uConstants,

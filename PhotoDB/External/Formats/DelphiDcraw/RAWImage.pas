@@ -10,7 +10,6 @@ uses
 
   CCR.Exif,
 
-  Dmitry.Utils.Files,
   Dmitry.Graphics.Types,
 
   FreeBitmap,

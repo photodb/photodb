@@ -17,7 +17,6 @@ uses
   Dmitry.Controls.SaveWindowPos,
 
   Dolphin_DB,
-  UnitDBKernel,
 
   uConstants,
   uDBForm,

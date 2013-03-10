@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -13,9 +12,7 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.ComCtrls,
-  uMemory,
   uMemoryEx,
-  uShellIntegration,
   uDBForm;
 
 type

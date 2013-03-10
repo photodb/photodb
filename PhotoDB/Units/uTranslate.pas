@@ -9,9 +9,7 @@ uses
   System.SysUtils,
   System.SyncObjs,
   System.Win.Registry,
-  System.Win.ComObj,
   Winapi.Windows,
-  Winapi.ActiveX,
 
   MSXML2_TLB,
 

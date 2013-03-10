@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.ActiveX,  
   Winapi.ShellApi,
   System.SysUtils,
   System.Classes,
@@ -30,7 +29,6 @@ uses
   uSplashThread,
   uShellUtils,
                
-  UnitINI,
   UnitDBCommon;
 
 const

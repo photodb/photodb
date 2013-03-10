@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -12,7 +11,6 @@ uses
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.StdCtrls,
-  Vcl.ExtCtrls,
 
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.DmProgress,

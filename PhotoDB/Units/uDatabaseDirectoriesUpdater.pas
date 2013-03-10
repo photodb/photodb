@@ -5,7 +5,6 @@ interface
 uses
   System.SyncObjs,
 
-  uMemory,
   uDBThread,
   uSettings;
 

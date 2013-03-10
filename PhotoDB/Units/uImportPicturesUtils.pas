@@ -13,7 +13,6 @@ uses
   CCR.Exif,
 
   uMemory,
-  uTranslate,
   uExplorerPortableDeviceProvider,
   uRawExif,
   uAssociations,

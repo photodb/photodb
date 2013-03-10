@@ -4,10 +4,8 @@ interface
 
 uses
   System.SysUtils,
-  System.Variants,
   System.Classes,
   Winapi.Windows,
-  Winapi.Messages,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
@@ -21,7 +19,6 @@ uses
   Dmitry.Controls.WebLink,
 
   ImageHistoryUnit,
-  UnitDBDeclare,
   UnitDBFileDialogs,
 
   uDBForm,

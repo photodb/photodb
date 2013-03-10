@@ -191,7 +191,6 @@ uses
 {$IFDEF USE_VCL_STYLESAPI}
  System.ZLib,
  System.UITypes,
- Vcl.StdCtrls,
  Vcl.ImgList,
  Vcl.Consts,
  Vcl.GraphUtil,

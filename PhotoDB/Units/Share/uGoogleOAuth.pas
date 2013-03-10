@@ -8,7 +8,6 @@ uses
   Character,
   idHTTP,
   IdSSLOpenSSL,
-  IdException,
   idUri,
   uInternetUtils,
   uTranslate,

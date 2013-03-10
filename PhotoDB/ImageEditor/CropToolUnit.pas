@@ -11,14 +11,11 @@ uses
   Vcl.Controls,
   Vcl.Graphics,
   Vcl.StdCtrls,
-  Vcl.Menus,
 
-  Dmitry.Graphics.Utils,
   Dmitry.Controls.WebLink,
 
   ImageHistoryUnit,
   Dmitry.Graphics.Types,
-  UnitDBKernel,
   ToolsUnit,
 
   uSettings,

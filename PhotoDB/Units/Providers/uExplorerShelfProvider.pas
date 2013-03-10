@@ -14,7 +14,6 @@ uses
   uConstants,
   uMemory,
   uTranslate,
-  uIconUtils,
   uPhotoShelf,
   uExplorerPathProvider;
 

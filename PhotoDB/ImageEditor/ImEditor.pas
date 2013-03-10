@@ -5,7 +5,7 @@ interface
 uses
   System.Types,
   System.SysUtils,
-  System.Variants,
+
   System.Classes,
   System.Math,
   Winapi.Windows,
@@ -17,14 +17,14 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
-  Vcl.ExtDlgs,
+
   Vcl.Clipbrd,
   Vcl.Menus,
   Vcl.Buttons,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   Vcl.Themes,
-  Vcl.Samples.Spin,
+
   Vcl.Imaging.Jpeg,
 
   CCR.Exif,
@@ -37,7 +37,7 @@ uses
   Dmitry.Controls.SaveWindowPos,
 
   GIFImage,
-  DropSource,
+
   DropTarget,
   ToolsUnit,
   CropToolUnit,
@@ -58,14 +58,14 @@ uses
   FormManegerUnit,
   UnitDBKernel,
   PropertyForm,
-  UnitCrypting,
+
   GraphicEx,
   PngImage,
   DragDrop,
   DragDropFile,
   UnitDBDeclare,
   UnitDBFileDialogs,
-  UnitDBCommonGraphics,
+
 
   uInterfaces,
   uBitmapUtils,
@@ -74,7 +74,7 @@ uses
   uGUIDUtils,
   uMemory,
   uManagerExplorer,
-  uVistaFuncs,
+
   uCDMappingTypes,
   uLogger,
   uAssociations,
@@ -86,7 +86,7 @@ uses
   uDBFileTypes,
   uConstants,
   uSettings,
-  uPortableDeviceUtils,
+
   uThemesUtils,
   uImageLoader,
   uFormInterfaces,

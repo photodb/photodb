@@ -4,7 +4,7 @@ interface
 
 uses
   Classes, Forms, uThreadForm, uThreadEx, ActiveX, uMemory, uConstants,
-  UnitDBCommon, UnitDBDeclare, uDBUtils, uDBPopupMenuInfo, uAssociations;
+  uDBUtils, uDBPopupMenuInfo, uAssociations;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)

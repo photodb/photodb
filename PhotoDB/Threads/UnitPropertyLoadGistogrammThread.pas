@@ -9,7 +9,6 @@ uses
   SysUtils,
   UnitDBDeclare,
   uDBForm,
-  Dmitry.Graphics.Types,
   uMemory,
   uBitmapUtils,
   uDBGraphicTypes,

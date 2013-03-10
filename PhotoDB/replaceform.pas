@@ -45,7 +45,6 @@ uses
   uShellIntegration,
   uDBTypes,
   uDBForm,
-  uSettings,
   uListViewUtils,
   uAssociations,
   uDBAdapter,

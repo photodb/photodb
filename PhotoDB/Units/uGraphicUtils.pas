@@ -4,7 +4,6 @@ interface
 
 uses
   System.Math,
-  System.SysUtils,
   System.Classes,
   Winapi.Windows,
   Winapi.Messages,
@@ -18,8 +17,6 @@ uses
   RAWImage,
   GIFImage,
 
-  uConstants,
-  uMemory,
   uBitmapUtils,
   uJpegUtils,
   uPngUtils,

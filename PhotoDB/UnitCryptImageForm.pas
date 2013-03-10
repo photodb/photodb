@@ -29,8 +29,6 @@ uses
 
   uFormInterfaces,
   uConstants,
-  uMemory,
-  uStrongCrypt,
   uDBForm,
   uShellIntegration,
   uSettings,

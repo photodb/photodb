@@ -3,10 +3,10 @@ unit ExEffects;
 interface
 
 uses
-  Effects,
+
   StdCtrls,
   Graphics,
-  Dmitry.Graphics.Types,
+
   Forms,
   StrUtils,
   SysUtils,

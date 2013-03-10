@@ -13,7 +13,6 @@ uses
   Dialogs,
   uTranslate,
   uDBForm,
-  uThemesUtils,
   uGOM;
 
 type

@@ -26,7 +26,6 @@ uses
   uGUIDUtils,
   uFaceDetection,
   uSettings,
-  uFastLoad,
   uDBForm,
   uPersonDB,
   uGroupTypes,

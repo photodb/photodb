@@ -32,7 +32,7 @@ interface
 
 implementation
 
-uses SysUtils, DECUtil, DECFmt, DECHash;
+uses SysUtils, DECUtil, DECHash;
 
 var
   RandomClass: TDECHashClass = THash_SHA1;

@@ -6,7 +6,6 @@ uses
   uDBBaseTypes,
   SysUtils,
   Classes,
-  uConstants,
   uMemory;
 
 type

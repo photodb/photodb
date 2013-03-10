@@ -4,7 +4,6 @@ interface
 
 uses
   uMemory,
-  uConstants,
   UnitDBDeclare,
   UnitDBKernel,
   uDBForm,

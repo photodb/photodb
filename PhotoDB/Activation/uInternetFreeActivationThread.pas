@@ -5,11 +5,9 @@ interface
 uses
   Classes,
   SysUtils,
-  uMemory,
   uInternetUtils,
   uConstants,
   uActivationUtils,
-  uTranslate,
   uGOM,
   uDBForm,
   uDBThread,

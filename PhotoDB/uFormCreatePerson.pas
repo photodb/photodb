@@ -51,8 +51,6 @@ uses
   uGroupTypes,
   uConstants,
   uEditorTypes,
-  uLogger,
-  uJpegUtils,
   uFastLoad,
   uVCLHelpers,
   uDBClasses,

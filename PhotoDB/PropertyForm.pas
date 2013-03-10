@@ -65,7 +65,6 @@ uses
 
   uGUIDUtils,
   uGroupTypes,
-  uDBClasses,
   uRawExif,
   uLogger,
   uBitmapUtils,
@@ -396,7 +395,6 @@ var
 implementation
 
 uses
-  UnitHintCeator,
   CmpUnit,
   UnitEditLinkForm,
   UnitHelp,

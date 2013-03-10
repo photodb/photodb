@@ -26,7 +26,6 @@ uses
   uAssociations,
   uICCProfile,
   uTranslate,
-  uEXIFDisplayControl,
   uLogger;
 
 type

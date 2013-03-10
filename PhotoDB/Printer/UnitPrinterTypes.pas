@@ -11,14 +11,11 @@ uses
   Classes,
   ComObj,
   uLogger,
-  UnitDBKernel,
-  GraphicCrypt,
   Dmitry.Graphics.Types,
   ActiveX,
   uMemory,
   uAssociations,
   uBitmapUtils,
-  uPortableDeviceUtils,
   UnitDBDeclare,
   uImageLoader;
 

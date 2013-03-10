@@ -19,21 +19,13 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.LoadingSign,
 
-  UnitINI,
   dolphin_db,
 
-  uVistaFuncs,
-  uActivationUtils,
-  uShellIntegration,
   uRuntime,
   uDBForm,
   uMemory,
-  uConstants,
   uWizards,
   uResources,
-  uPNGUtils,
-  uSettings,
-  uMemoryEx,
   uThemesUtils,
   uVCLHelpers,
   uFormInterfaces;
@@ -75,7 +67,7 @@ type
 implementation
 
 uses
-  UnitHelp,
+
   FormManegerUnit,
   uFrameActivationLanding;
 

@@ -16,12 +16,10 @@ uses
   UnitDBKernel,
   UnitPropeccedFilesSupport,
   UnitCrypting,
-  GraphicCrypt,
   CommonDBSupport,
   UnitDBDeclare,
 
   uGOM,
-  uDBBaseTypes,
   uDBForm,
   uLogger,
   uDBThread,

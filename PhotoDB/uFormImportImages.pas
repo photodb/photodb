@@ -5,10 +5,8 @@ interface
 uses
   Generics.Collections,
   Winapi.Windows,
-  Winapi.Messages,
   Winapi.CommCtrl,
   System.SysUtils,
-  System.Variants,
   System.Classes,
   System.Math,
   System.DateUtils,
@@ -59,7 +57,6 @@ uses
   uListViewUtils,
   uDBPopupMenuInfo,
   uAssociations,
-  uStringUtils,
   uDateUtils,
   uPathUtils,
   uList64,

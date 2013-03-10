@@ -7,7 +7,6 @@ uses
   Classes,
   UnitDBKernel,
   Forms,
-  UnitGroupsWork,
   SysUtils,
   UnitDBDeclare,
 

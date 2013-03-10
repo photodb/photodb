@@ -10,13 +10,13 @@ uses
   Vcl.Graphics,
   Vcl.ComCtrls,
   Vcl.Forms,
-  Vcl.Menus,
+
   Vcl.Controls,
 
   ImageHistoryUnit,
-  Dmitry.Graphics.Types,
 
-  uDBForm,
+
+
   uEditorTypes,
   uTranslate,
   uMemory;

@@ -14,7 +14,6 @@ uses
   Vcl.Forms,
 
   Dmitry.Utils.Files,
-  Dmitry.Controls.Base,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WebLink,
 

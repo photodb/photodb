@@ -4,7 +4,6 @@ interface
 
 uses
   Winapi.Windows,
-  Winapi.Messages,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -13,7 +12,6 @@ uses
   Vcl.Dialogs,
   Vcl.StdCtrls,
   Vcl.CheckLst,
-  Vcl.ExtCtrls,
   Data.DB,
 
   Dmitry.Utils.System,
