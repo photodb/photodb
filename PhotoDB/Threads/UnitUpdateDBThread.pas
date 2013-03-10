@@ -10,39 +10,39 @@ uses
   Forms,
   SysUtils,
   DB,
-  GraphicCrypt,
   DateUtils,
-  CommonDBSupport,
-
-  Dmitry.CRC32,
-  Dmitry.Utils.Files,
-
+  ActiveX,
   Jpeg,
-  UnitUpdateDBObject,
-  uLogger,
+
+  CCR.Exif,
+
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.CRC32,
+
+  GraphicCrypt,
+  CommonDBSupport,
+  UnitDBKernel,
   UnitDBDeclare,
+  UnitUpdateDBObject,
+
+  uLogger,
   uMemory,
   uDBPopupMenuInfo,
   uConstants,
-  CCR.Exif,
   uShellIntegration,
   uDBTypes,
   uRuntime,
   uDBUtils,
-  Dmitry.Utils.System,
+  uActivationUtils,
   uTranslate,
-  ActiveX,
   uSettings,
   uMemoryEx,
-  UnitDBKernel,
   uAssociations,
   uDBThread,
   uExifUtils,
   uGroupTypes,
   UnitGroupsWork;
-
-type
-  TFileProcessProcedureOfObject = procedure(var FileName: string) of object;
 
 type
   UpdateDBThread = class(TDBThread)
@@ -101,14 +101,11 @@ type
     FTerminating: PBoolean;
     IntParam: Int64;
     FOnFileFounded: TFileFoundedEvent;
-    FProcessFileEvent: TFileProcessProcedureOfObject;
   protected
     procedure Execute; override;
   public
-    constructor Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean;
-      OnFileFounded: TFileFoundedEvent; ProcessFileEvent: TFileProcessProcedureOfObject = nil);
+    constructor Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded: TFileFoundedEvent);
     procedure DoOnDone;
-    procedure DoFileProcessed;
     procedure DoOnFileFounded;
     function GetDirectory(DirectoryName: string; Files: TDBPopupMenuInfo; Terminating: PBoolean): Int64;
   end;
@@ -853,9 +850,6 @@ begin
       begin
         Result := Result + SearchRec.Size;
         FileName := DirectoryName + SearchRec.Name;
-        StrParam := FileName;
-        SynchronizeEx(DoFileProcessed);
-        FileName := StrParam;
 
         Item := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
         Item.Include := True;
@@ -874,14 +868,12 @@ begin
   FindClose(SearchRec);
 end;
 
-constructor DirectorySizeThread.Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded: TFileFoundedEvent;
-  ProcessFileEvent: TFileProcessProcedureOfObject = nil);
+constructor DirectorySizeThread.Create(Directory: string; OnDone: TNotifyEvent; Terminating: PBoolean; OnFileFounded: TFileFoundedEvent);
 begin
   inherited Create(nil, False);
   FDirectory := Directory;
   FTerminating := Terminating;
   FOnFileFounded := OnFileFounded;
-  FProcessFileEvent := ProcessFileEvent;
   FOnDone := OnDone;
 end;
 
@@ -916,12 +908,6 @@ begin
   finally
     F(FItems);
   end;
-end;
-
-procedure DirectorySizeThread.DoFileProcessed;
-begin
-  if Assigned(FProcessFileEvent) then
-    FProcessFileEvent(StrParam);
 end;
 
 procedure DirectorySizeThread.DoOnFileFounded;

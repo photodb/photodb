@@ -28,7 +28,7 @@ uses
   uSettings,
   uSplashThread,
   uShellUtils,
-               
+
   UnitDBCommon;
 
 const
@@ -1242,7 +1242,7 @@ begin
     FConnections.Delete(Index);
 end;
 
-function GetPathCRC(FileFullPath : string; IsFile: Boolean) : Integer;
+function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
 var
   Folder, ApplicationPath : string;
   CRC: Cardinal;

@@ -76,7 +76,7 @@
         <DCC_MapFile>3</DCC_MapFile>
         <DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
         <DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
-        <DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\..\Dmitry\;C:\Users\Public\Documents\Mustangpeak\Common Library\Source;C:\Users\Public\Documents\Mustangpeak\EasyListview\Source;External\FastMM;..\DBIcons;$(BDS)\Source\DUnit\src;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\..\Dmitry\;External\Mustangpeak\Common Library\Source;External\Mustangpeak\EasyListview\Source;External\FastMM;..\DBIcons;$(BDS)\Source\DUnit\src;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_ExeOutput>bin</DCC_ExeOutput>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_DependencyCheckOutputName>bin\PhotoDB.exe</DCC_DependencyCheckOutputName>
@@ -120,15 +120,18 @@
         <DCC_Optimize>false</DCC_Optimize>
         <VerInfo_MinorVer>0</VerInfo_MinorVer>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
-        <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
+        <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
         <VerInfo_Build>603</VerInfo_Build>
         <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.0.0.603;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.0;ProductVersion=4.0;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
-        <Icon_MainIcon>MAINICON.ico</Icon_MainIcon>
+        <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
+        <VerInfo_Build>0</VerInfo_Build>
+        <VerInfo_Release>0</VerInfo_Release>
+        <VerInfo_MinorVer>0</VerInfo_MinorVer>
+        <VerInfo_MajorVer>1</VerInfo_MajorVer>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <Manifest_File>None</Manifest_File>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

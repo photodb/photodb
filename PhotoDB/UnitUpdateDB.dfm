@@ -11,6 +11,7 @@ object UpdateDBForm: TUpdateDBForm
   ClientWidth = 398
   Color = clWhite
   DockSite = True
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

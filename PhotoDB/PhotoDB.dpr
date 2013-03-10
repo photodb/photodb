@@ -713,7 +713,6 @@ begin
     AllowDragAndDrop;
 
     TW.I.Start('Application.Run');
-
     Application.Run;
 
     if DBTerminating then

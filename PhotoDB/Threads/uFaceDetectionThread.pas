@@ -137,7 +137,7 @@ begin
     Exit(False);
   if (Graphic is TGIFImage) then
     Exit(False);
-  if (Graphic.Width <= 10) or (Graphic.Height <= 10) then
+  if (Graphic.Width <= 20) or (Graphic.Height <= 20) then
     Exit(False);
   if IsDevicePath(FileName) then
     Exit(False);

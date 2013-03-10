@@ -35,6 +35,7 @@ type
   IDirectoryWatcher = interface(IInterface)
     ['{887A08D0-3D36-4744-9241-9454BAAA9D53}']
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
   end;
 
 implementation

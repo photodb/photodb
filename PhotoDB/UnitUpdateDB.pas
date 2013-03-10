@@ -14,6 +14,7 @@ uses
   StdCtrls,
   Menus,
   ExtCtrls,
+  Vcl.Themes,
   DB,
 
   Dmitry.Utils.Files,
@@ -149,8 +150,10 @@ type
     FFullSize: Int64;
     FInfoText: string;
     procedure WMMouseDown(var S: TMessage); message WM_LBUTTONDOWN;
+    procedure DrawControls(HCanvas: THandle);
   protected
     function GetFormID: string; override;
+    procedure WndProc(var Message: TMessage); override;
     procedure LoadLanguage;
   public
     { Public declarations }
@@ -199,6 +202,49 @@ end;
 procedure TUpdateDBForm.WMMouseDown(var S: TMessage);
 begin
   Perform(WM_NCLBUTTONDOWN, HTCAPTION, S.LParam);
+end;
+
+procedure TUpdateDBForm.WndProc(var Message: TMessage);
+var
+  C: TColor;
+  DC: HDC;
+  BrushInfo: TagLOGBRUSH;
+  Brush: HBrush;
+  B: TBitmap;
+begin
+  if (Message.Msg = WM_ERASEBKGND) and StyleServices.Enabled then
+  begin
+    Message.Result := 1;
+
+    DC := TWMEraseBkgnd(Message).DC;
+    if DC = 0 then
+      Exit;
+
+    B := TBitmap.Create;
+    try
+      B.PixelFormat := pf24bit;
+      B.SetSize(ClientWidth, ClientHeight);
+
+      C := Theme.WindowColor;
+      brushInfo.lbStyle := BS_SOLID;
+      brushInfo.lbColor := ColorToRGB(C);
+      Brush := CreateBrushIndirect(brushInfo);
+
+      FillRect(B.Canvas.Handle, Rect(1, 1, Width - 1, Height - 1), Brush);
+      DrawControls(B.Canvas.Handle);
+      BitBlt(DC, 0, 0, Width, Height, B.Canvas.Handle, 0, 0, SRCCOPY);
+
+      if(Brush > 0) then
+        DeleteObject(Brush);
+
+    finally
+      F(B);
+    end;
+
+    Exit;
+  end;
+
+  inherited;
 end;
 
 procedure TUpdateDBForm.WlCloseClick(Sender: TObject);
@@ -493,6 +539,58 @@ begin
   UpdaterDB.DoTerminate;
 end;
 
+procedure TUpdateDBForm.DrawControls(HCanvas: THandle);
+var
+  R: TRect;
+  Canvas: TCanvas;
+
+const
+  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
+
+begin
+  Canvas := TCanvas.Create;
+  try
+    Canvas.Handle := HCanvas;
+    Canvas.Pen.Color := 0;
+    Canvas.Brush.Color := 0;
+    Canvas.MoveTo(0, 0);
+    Canvas.LineTo(Width - 1, 0);
+    Canvas.LineTo(Width - 1, Height - 1);
+    Canvas.LineTo(0, Height - 1);
+    Canvas.LineTo(0, 0);
+
+    Canvas.Pen.Color := ClGray;
+    Canvas.Brush.Color := ClGray;
+
+    R.Left := 120;
+    R.Top := 24;
+    R.Right := R.Left + 273;
+    R.Bottom := R.Top + 57;
+
+    Canvas.MoveTo(R.Left - 1, R.Top - 1);
+    Canvas.LineTo(R.Right, R.Top - 1);
+    Canvas.LineTo(R.Right, R.Bottom);
+    Canvas.LineTo(R.Left - 1, R.Bottom);
+    Canvas.LineTo(R.Left - 1, R.Top - 1);
+
+    Canvas.Font.Color := Theme.WindowTextColor;
+    Canvas.Brush.Color := Theme.WindowColor;
+    Canvas.Font.Style := [];
+
+    DrawText(Canvas.Handle, PChar(FInfoText), Length(FInfoText), R, DrawTextOpt);
+
+    if FCurrentImage <> nil then
+      Canvas.Draw(10 + 50 - FCurrentImage.Width div 2, 10 + 50 - FCurrentImage.Height div 2, FCurrentImage);
+
+    Canvas.Font.Style := [FsBold];
+    Canvas.TextOut(120, 5, L('Progress status') + ':');
+
+    ProgressBar.DoPaintOnXY(Canvas, ProgressBar.Left, ProgressBar.Top);
+  finally
+    F(Canvas);
+  end;
+end;
+
 procedure TUpdateDBForm.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 var
@@ -564,8 +662,7 @@ begin
 
   if (Msg.Message = WM_LBUTTONDOWN) then
   begin
-    if (Msg.hwnd = MemInfoCaption.Handle)
-    or (Msg.hwnd = ProgressBar.Handle) then
+    if (Msg.hwnd = MemInfoCaption.Handle) or (Msg.hwnd = ProgressBar.Handle) then
     begin
       Perform(WM_NCLBUTTONDOWN, HTcaption, Msg.lparam);
       Handled := True;
@@ -714,49 +811,9 @@ begin
 end;
 
 procedure TUpdateDBForm.FormPaint(Sender: TObject);
-var
-  R: TRect;
-
-const
-  DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;
-
 begin
-
-  Canvas.Pen.Color := 0;
-  Canvas.Brush.Color := 0;
-  Canvas.MoveTo(0, 0);
-  Canvas.LineTo(Width - 1, 0);
-  Canvas.LineTo(Width - 1, Height - 1);
-  Canvas.LineTo(0, Height - 1);
-  Canvas.LineTo(0, 0);
-
-  Canvas.Pen.Color := ClGray;
-  Canvas.Brush.Color := ClGray;
-
-  R.Left := 120;
-  R.Top := 24;
-  R.Right := R.Left + 273;
-  R.Bottom := R.Top + 57;
-
-  Canvas.MoveTo(R.Left - 1, R.Top - 1);
-  Canvas.LineTo(R.Right, R.Top - 1);
-  Canvas.LineTo(R.Right, R.Bottom);
-  Canvas.LineTo(R.Left - 1, R.Bottom);
-  Canvas.LineTo(R.Left - 1, R.Top - 1);
-
-  Canvas.Font.Color := Theme.WindowTextColor;
-  Canvas.Brush.Color := Theme.WindowColor;
-  Canvas.Font.Style := [];
-
-  DrawText(Canvas.Handle, PChar(FInfoText), Length(FInfoText), R, DrawTextOpt);
-
-  if FCurrentImage <> nil then
-    Canvas.Draw(10 + 50 - FCurrentImage.Width div 2, 10 + 50 - FCurrentImage.Height div 2, FCurrentImage);
-
-  Canvas.Font.Style := [FsBold];
-  Canvas.TextOut(120, 5, L('Progress status') + ':');
-
-  ProgressBar.DoPaintOnXY(Canvas, ProgressBar.Left, ProgressBar.Top);
+ if not StyleServices.Enabled then
+    DrawControls(Canvas.Handle);
 end;
 
 function TUpdateDBForm.GetFormID: string;

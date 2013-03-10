@@ -964,13 +964,11 @@ type
     procedure LoadIcons;
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
     function GetMyComputer: string;
-    function GetSecondStepHelp: string;
     function GetViewInfo: TExplorerViewInfo;
     procedure SetView(const Value: Integer);
     function GetItemsCount: Integer;
     function GetIsExplorerTreeViewVisible: Boolean;
     function GetW7TaskBar: ITaskbarList3;
-    property SecondStepHelp: string read GetSecondStepHelp;
     function GetPathDescription(Path: string; FileType: Integer): string;
     procedure ListViewRefreshList;
     procedure EasyListview1ItemPaintText(Sender: TCustomEasyListview; Item: TEasyItem; Position: Integer; ACanvas: TCanvas);
@@ -1111,6 +1109,7 @@ type
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     procedure UpdateMenuItems(Menu: TPopupActionBar; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
     procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
     function AddBitmap(Bitmap: TBitmap; FileGUID: TGUID): Boolean;
@@ -1340,7 +1339,7 @@ end;
 procedure TExplorerForm.CreateBackgrounds;
 var
   ExplorerBackground: TPNGImage;
-  Bitmap, ExplorerBackgroundBMP, Background: TBitmap;
+  Bitmap, ExplorerBackgroundBMP: TBitmap;
 begin
   Bitmap := TBitmap.Create;
   try
@@ -6001,37 +6000,9 @@ const
   H = 3;
 
 var
-  Index, I, NewTop: Integer;
-  B: Boolean;
+  I, NewTop: Integer;
   S: string;
-  //PersonalPath, MyPicturesPath: string;
   OldMode: Cardinal;
-
-  {function GetShellPath(Name: string): string;
-  var
-    Reg: TRegIniFile;
-  begin
-    Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
-    try
-      Result := Reg.ReadString('Shell Folders', name, '');
-    finally
-      F(Reg);
-    end;
-  end;
-
-  function GetPersonalFolder: string;
-  begin
-    if PersonalPath = '' then
-      PersonalPath := GetShellPath('Personal');
-    Result := PersonalPath;
-  end;
-
-  function GetMyPicturesFolder: string;
-  begin
-    if MyPicturesPath = '' then
-      MyPicturesPath := GetShellPath('My Pictures');
-    Result := MyPicturesPath;
-  end;   }
 
   procedure AddEncryptMenu;
   begin
@@ -7707,7 +7678,7 @@ begin
       TW.I.Start(' -> DirectoryWatcher.StopWatch');
       DirectoryWatcher.StopWatch;
       TW.I.Start(' -> DirectoryWatcher.Start');
-      DirectoryWatcher.Start(S, Self, StateID);
+      DirectoryWatcher.Start(S, Self, Self, StateID, False);
     except
       TW.I.Start(' -> EXCEPTION!!!');
     end;
@@ -8528,6 +8499,12 @@ begin
   end;
 end;
 
+
+procedure TExplorerForm.TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
+begin
+  if IsActualState(SID) then
+    Close;
+end;
 
 procedure TExplorerForm.TextFile2Click(Sender: TObject);
 var
@@ -9934,11 +9911,6 @@ end;
 function CanPasteFileInByType(FileType : integer) : boolean;
 begin
   Result := ((FileType=EXPLORER_ITEM_DRIVE) or (FileType=EXPLORER_ITEM_FOLDER) or (FileType=EXPLORER_ITEM_SHARE));
-end;
-
-function TExplorerForm.GetSecondStepHelp: string;
-begin
-  Result := '     ' + L('Click the "Add item (s)" to add photos to the database. After that the pictures you can add information.$nl$$nl$     Click "More ..." for further assistance.$nl$     Or click on the cross at the top to help no longer displayed.$nl$$nl$', 'Help');
 end;
 
 procedure TExplorerForm.CloseTimerTimer(Sender: TObject);

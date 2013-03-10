@@ -155,28 +155,6 @@ begin
   end;
 end;
 
-{procedure GetUsbDrives(List: TStrings);
-var
-  DriveBits: set of 0..25;
-  I: Integer;
-  Drive: AnsiChar;
-begin
-  List.BeginUpdate;
-  try
-    Cardinal(DriveBits) := GetLogicalDrives;
-
-    for I := 0 to 25 do
-      if I in DriveBits then
-      begin
-        Drive := AnsiChar(Ord('a') + I);
-        if GetBusType(Drive) = BusTypeUsb then
-          List.Add(string(Drive));
-      end;
-  finally
-    List.EndUpdate;
-  end;
-end;  }
-
 function CheckDriveItems(Path: string): Boolean;
 var
   OldMode: Cardinal;
@@ -201,13 +179,16 @@ begin
         try
           while Found = 0 do
           begin
-            if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') and (faDirectory and SearchRec.Attr = 0) then
-              Exit(True);
+            if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+            begin
+              if (faDirectory and SearchRec.Attr = 0) then
+                Exit(True);
 
-            if faDirectory and SearchRec.Attr <> 0 then
-              Directories.Enqueue(Dir + SearchRec.Name );
+              if faDirectory and SearchRec.Attr <> 0 then
+                Directories.Enqueue(Dir + SearchRec.Name);
 
-            Found := System.SysUtils.FindNext(SearchRec);
+              Found := System.SysUtils.FindNext(SearchRec);
+            end;
           end;
         finally
           FindClose(SearchRec);

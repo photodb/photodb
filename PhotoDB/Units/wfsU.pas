@@ -18,6 +18,7 @@ uses
   uThreadEx,
   uDBThread,
   uThreadForm,
+  uInterfaces,
   uLockedFileNotifications;
 
 type
@@ -52,7 +53,7 @@ type
   protected
     procedure Execute; override;
     procedure DoCallBack;
-    procedure TDoTerminate;
+    procedure DoTerminate;
     procedure DoClosingEvent;
   public
     constructor Create(PublicOwner: TObject; pName: string;
@@ -65,7 +66,8 @@ type
     WFS: TWFS;
     FOnDirectoryChanged: TNotifyDirectoryChangeW;
     FCID: TGUID;
-    FOwner: TThreadForm;
+    FOwner: TObject;
+    FWatcherCallBack: IDirectoryWatcher;
     { Start monitoring file system
       Parametrs:
       pName    - Directory name for monitoring
@@ -73,14 +75,14 @@ type
       pSubTree - Watch sub directories
       pInfoCallback - callback porcedure, this procedure called with synchronization for main thread }
     procedure StartWatch(PName: string; PFilter: Cardinal; PSubTree: Boolean;
-      PInfoCallback: TWatchFileSystemCallback; CID : TGUID);
+      PInfoCallback: TWatchFileSystemCallback; CID: TGUID);
     procedure CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
-    procedure OnNeedClosing(Sender: TObject; StateID : TGUID);
+    procedure OnNeedClosing(Sender: TObject; StateID: TGUID);
     procedure OnThreadClosing(Sender: TObject);
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Start(Directory: string; Owner: TThreadForm; CID: TGUID);
+    procedure Start(Directory: string; Owner: TObject; WatcherCallBack: IDirectoryWatcher; CID: TGUID; WatchSubTree: Boolean);
     procedure StopWatch;
     procedure UpdateStateID(NewStateID: TGUID);
     property OnDirectoryChanged: TNotifyDirectoryChangeW read FOnDirectoryChanged write FOnDirectoryChanged;
@@ -105,8 +107,8 @@ type
 
 implementation
 
-uses
-  ExplorerUnit, uManagerExplorer;
+{uses
+  ExplorerUnit, uManagerExplorer;    }
 
 var
   OM: TManagerObjects = nil;
@@ -115,8 +117,8 @@ var
 
 procedure TWachDirectoryClass.CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
 begin
-  if ExplorerManager.IsExplorerForm(FOwner) then
-    (FOwner as TExplorerForm).DirectoryChanged(Self, FCID, PInfo)
+  if GOM.IsObj(FOwner) then
+    FWatcherCallBack.DirectoryChanged(Self, FCID, PInfo)
 end;
 
 constructor TWachDirectoryClass.Create;
@@ -133,9 +135,8 @@ end;
 
 procedure TWachDirectoryClass.OnNeedClosing(Sender: TObject; StateID : TGUID);
 begin
-  if ExplorerManager.IsExplorerForm(FOwner) then
-    if FOwner.IsActualState(StateID) then
-      (FOwner as TExplorerForm).Close
+  if GOM.IsObj(FOwner) then
+    FWatcherCallBack.TerminateWatcher(Self, StateID, WFS.FName);
 end;
 
 procedure TWachDirectoryClass.OnThreadClosing(Sender: TObject);
@@ -143,16 +144,16 @@ begin
   //empty stub
 end;
 
-procedure TWachDirectoryClass.Start(Directory: string; Owner: TThreadForm;
-  CID: TGUID);
+procedure TWachDirectoryClass.Start(Directory: string; Owner: TObject; WatcherCallBack: IDirectoryWatcher; CID: TGUID; WatchSubTree: Boolean);
 begin
   TW.I.Start('TWachDirectoryClass.Start');
   FCID := CID;
   FOwner := Owner;
+  FWatcherCallBack := WatcherCallBack;
   FSync.Enter;
   try
     StartWatch(Directory, FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_DIR_NAME + FILE_NOTIFY_CHANGE_CREATION +
-        FILE_NOTIFY_CHANGE_LAST_WRITE, False, CallBack, CID);
+        FILE_NOTIFY_CHANGE_LAST_WRITE, WatchSubTree, CallBack, CID);
   finally
     FSync.Leave;
   end;
@@ -290,14 +291,14 @@ begin
       FInfoCallback.FAction := PFileNotifyInformation(Ptr).Action;
       if (FInfoCallback.FAction = 0) and (FileName = '') and not DirectoryExists(FName + FileName) then
       begin
-        TW.I.Start('EXPLORER - CLOSE, file = "' + FName + FileName + '", BytesWrite = ' + IntToStr(FBytesWrite)
+        TW.I.Start('WATCHER - CLOSE, file = "' + FName + FileName + '", BytesWrite = ' + IntToStr(FBytesWrite)
         + ' hEvent = ' + IntToStr(FPOverLapp.hEvent)
         + ' Internal = ' + IntToStr(FPOverLapp.Internal)
         + ' InternalHigh = ' + IntToStr(FPOverLapp.InternalHigh)
         + ' Offset = ' + IntToStr(FPOverLapp.Offset)
         + ' OffsetHigh = ' + IntToStr(FPOverLapp.OffsetHigh));
 
-        Synchronize(TDoTerminate); // CloseExplorer
+        Synchronize(DoTerminate);
         Terminate;
         Exit;
       end;
@@ -356,7 +357,7 @@ begin
         + ' Offset = ' + IntToStr(FPOverLapp.Offset)
         + ' OffsetHigh = ' + IntToStr(FPOverLapp.OffsetHigh));
 
-        Synchronize(HandleEvent);
+        HandleEvent;
         if not Terminated then
         begin
           ZeroMemory(@FWatchBuf, SizeOf(FWatchBuf));
@@ -376,7 +377,7 @@ begin
     FInfoCallback(InfoCallback);
 end;
 
-procedure TWFS.TDoTerminate;
+procedure TWFS.DoTerminate;
 begin
   if OM.IsObj(FPublicOwner) then
     FOnNeedClosing(Self, FCID);

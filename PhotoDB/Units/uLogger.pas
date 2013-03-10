@@ -7,7 +7,6 @@ uses
   System.SysUtils,
   System.SyncObjs,
   Winapi.Windows,
-  uConfiguration,
   uMemory;
 
 {$DEFINE _EVENTLOG}

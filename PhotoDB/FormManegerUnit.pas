@@ -49,6 +49,7 @@ uses
   uActivationUtils,
   {$ENDIF}
   uProgramStatInfo,
+  uDatabaseDirectoriesUpdater,
   uFormInterfaces;
 
 type
@@ -68,6 +69,7 @@ type
     ExitAppl: Boolean;
     FLockCleaning: Boolean;
     FSetLanguageMessage: Cardinal;
+    FDirectoryWatcher: IDirectoryWatcher;
     procedure ExitApplication;
     function GetTimeLimitMessage: string;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
@@ -427,6 +429,8 @@ begin
 
   EventLog(':TFormManager::ExitApplication()...');
 
+  FDirectoryWatcher := nil;
+
   // stop updating process, queue will be saved in registry
   UpdaterObjectSaveWork;
 
@@ -603,6 +607,13 @@ begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
         CleanUpThread.Create(Self, False);
     end;
+
+    if (FCheckCount = {4}5) and not FolderView then
+    begin
+      FDirectoryWatcher := TUserDirectoriesWatcher.Create;
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
+    end;
+
     if (FCheckCount = 50) and not FolderView then // after 4 sec.
     begin
       TW.I.Start('FM -> DBCheck');
@@ -678,8 +689,7 @@ begin
       begin
         Dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
 
-        if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase
-            (GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
+        if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
           Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
       end;
     except

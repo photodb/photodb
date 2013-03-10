@@ -12,6 +12,8 @@ uses
   uDBThread,
   uLogger,
   uRuntime,
+  uSplashThread,
+  uShellIntegration,
   uConstants;
 
 type
@@ -23,6 +25,7 @@ type
   end;
 
 implementation
+
 
 { TLoadCRCCheckThread }
 

@@ -24,6 +24,7 @@ const
   ActionsFolder: string = 'Actions\';
   ImagesFolder: string = 'Images\';
   FaceCacheDirectory: string = '\CVCache\Face\';
+  UpdaterDirectory: string = '\Updater\';
   ShareAlbumCacheDirectory: string = '\Share\Albums';
   CascadesDirectory: string = 'Cascades';
   DBRestoreFolder: string = '\DB\';

@@ -3,7 +3,6 @@ REM  cd "D:\Dmitry\Delphi exe\Photo Database"
 
 SET PLAYER=MEDIA_PLAYER
 SET DELPHI=C:\Program Files (x86)\Embarcadero\RAD Studio\10.0
-SET PROGS=C:\Users\Public\Documents
 SET DCC32=%DELPHI%\BIN\DCC32.EXE
 SET DCC64=%DELPHI%\BIN\DCC64.EXE
 SET BRCC32=%DELPHI%\BIN\BRCC32.EXE
@@ -56,7 +55,7 @@ cd ..
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"%PROGS%\Mustangpeak\EasyListview\Source";"%PROGS%\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM";"External\Controls\virtual-treeview\Common";"External\jcl\source\windows";"External\jcl\source\common" -I"External\jcl-2.4.1.4571\source\include" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE" -Ebin -W -N0dcu --inline:on -U"%DM%";"External\Mustangpeak\EasyListview\Source";"External\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM";"External\Controls\virtual-treeview\Common";"External\jcl\source\windows";"External\jcl\source\common" -I"External\jcl-2.4.1.4571\source\include" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..
