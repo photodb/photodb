@@ -195,7 +195,6 @@ begin
     SetStrParam(FQuery, 1, AnsiLowerCase(Path));
     SetIntParam(FQuery, 2, GetFileSize(Path));
 
-
     //if date isn't defined yet
     if not ((YearOf(Date) > 1900) and IsTime and IsDate) then
     begin

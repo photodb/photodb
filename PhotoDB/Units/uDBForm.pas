@@ -225,10 +225,16 @@ type
     procedure WMSysCommand(var Message: TMessage); message WM_SYSCOMMAND;
     procedure WMDestroy(var Message: TMessage); message WM_DESTROY;
   strict protected
+    procedure Close; virtual;
+    procedure Help; virtual;
+    procedure Maximize; virtual;
+    procedure MDIClientWndProc(var Message: TMessage); virtual;
+    procedure Minimize; virtual;
     procedure MouseEnter; override;
     procedure MouseLeave; override;
     procedure PaintBackground(Canvas: TCanvas); override;
     procedure PaintNC(Canvas: TCanvas); override;
+    procedure Restore; virtual;
     procedure WndProc(var Message: TMessage); override;
     property Form: TDBForm read GetForm;
   public
@@ -2849,6 +2855,43 @@ begin
   end;
 end;
 
+procedure TFormStyleHookEx.MDIClientWndProc(var Message: TMessage);
+var
+  FCallOldProc: Boolean;
+  R: TRect;
+  Details: TThemedElementDetails;
+begin
+  FCallOldProc := True;
+  case Message.Msg of
+    WM_NCACTIVATE:
+      begin
+        if TForm(Control).ActiveMDIChild <> nil then
+          SendMessage(TForm(Control).ActiveMDIChild.Handle,
+            Message.Msg, Message.wParam, Message.LParam);
+        FCallOldProc := False;
+        Message.Result := 1;
+      end;
+    WM_NCCALCSIZE:
+      FCallOldProc := False;
+   WM_NCPAINT:
+      FCallOldProc := False;
+    WM_ERASEBKGND:
+      if StyleServices.Available then
+      begin
+        Details.Element := teWindow;
+        Details.Part := 0;
+        R := Rect(0, 0, TForm(Control).ClientWidth, TForm(Control).ClientHeight);
+        if StyleServices.Available then
+          StyleServices.DrawElement(Message.wParam, Details, R);
+        FCallOldProc := False;
+      end;
+  end;
+
+  if FCallOldProc then
+    with Message do
+      Result := CallWindowProc(FMDIPrevClientProc, Form.ClientHandle,
+        Msg, wParam, lParam);
+end;
 procedure TFormStyleHookEx.PaintBackground(Canvas: TCanvas);
 var
   Details: TThemedElementDetails;
@@ -4117,13 +4160,60 @@ begin
   end;
 end;
 
-procedure TFormStyleHookEx.WMNCUAHDrawCaption(var Message: TMessage);
+ procedure TFormStyleHookEx.WMNCUAHDrawCaption(var Message: TMessage);
+ begin
+   if IsStyleBorder then
+   begin
+     InvalidateNC;
+     Handled := True;
+   end;
+ end;
+
+procedure TFormStyleHookEx.Close;
 begin
-  if IsStyleBorder then
+  if Handle <> 0 then
+    SendMessage(Handle, WM_SYSCOMMAND, SC_CLOSE, 0);
+end;
+
+procedure TFormStyleHookEx.Restore;
+begin
+  FPressedButton := 0;
+  FHotButton := 0;
+
+  if Handle <> 0 then
+    SendMessage(Handle, WM_SYSCOMMAND, SC_RESTORE, 0);
+end;
+
+procedure TFormStyleHookEx.Maximize;
+begin
+  if Handle <> 0 then
   begin
-    InvalidateNC;
-    Handled := True;
+    FPressedButton := 0;
+    FHotButton := 0;
+
+    if IsZoomed(Handle) then
+      SendMessage(Handle, WM_SYSCOMMAND, SC_RESTORE, 0)
+    else
+      SendMessage(Handle, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
   end;
+end;
+
+procedure TFormStyleHookEx.Minimize;
+begin
+  if Handle <> 0 then
+  begin
+    FPressedButton := 0;
+    FHotButton := 0;
+    if IsIconic(Handle) then
+      SendMessage(Handle, WM_SYSCOMMAND, SC_RESTORE, 0)
+    else
+      SendMessage(Handle, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+   end;
+end;
+
+procedure TFormStyleHookEx.Help;
+begin
+  SendMessage(Handle, WM_SYSCOMMAND, SC_CONTEXTHELP, 0)
 end;
 
 procedure TFormStyleHookEx.WMShowWindow(var Message: TWMShowWindow);

@@ -493,7 +493,6 @@ begin
   try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
-
   {
    //Command line
 

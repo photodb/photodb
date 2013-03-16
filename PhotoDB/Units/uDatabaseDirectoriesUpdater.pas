@@ -10,6 +10,7 @@ uses
   System.SyncObjs,
   System.SysUtils,
   System.Classes,
+  System.Math,
   Data.DB,
 
   Dmitry.CRC32,
@@ -30,6 +31,7 @@ uses
   uDBThread,
   wfsU,
   uGOM,
+  uLockedFileNotifications,
   uSettings;
 
 type
@@ -70,6 +72,8 @@ type
   IUserDirectoriesWatcher = interface
     ['{ED4EF3E3-43A6-4D86-A40D-52AA1DFAD299}']
     procedure Execute;
+    procedure StartWatch;
+    procedure StopWatch;
   end;
 
   TUserDirectoriesWatcher = class(TInterfacedObject, IUserDirectoriesWatcher, IDirectoryWatcher)
@@ -82,14 +86,70 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Execute;
-    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray);
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
+  end;
+
+  TDatabaseTask = class(TObject)
+  public
+    function IsPrepaired: Boolean; virtual;
+  end;
+
+  TUpdateTask = class(TDatabaseTask)
+    procedure Execute;
+  end;
+
+  TAddTask = class(TDatabaseTask)
+  private
+    FFileName: string;
+  public
+    procedure Execute(Items: TArray<TAddTask>);
+    constructor Create(FileName: string);
+    function IsPrepaired: Boolean; override;
+    property FileName: string read FFileName;
+  end;
+
+  TUpdaterStorage = class(TObject)
+  private
+    FSync: TCriticalSection;
+    FTasks: TList<TDatabaseTask>;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    procedure SaveStorage;
+    procedure RestoreStorage;
+
+    function Take<T: TDatabaseTask>(Count: Integer): TArray<T>;
+    procedure Add(Task: TDatabaseTask); overload;
+    procedure Add(Tasks: TList<TDatabaseTask>); overload;
+  end;
+
+  TDatabaseUpdater = class(TDBThread)
+  protected
+    procedure Execute; override;
+  public
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
 
 var
   DirectoriesScanID: TGUID = '{00000000-0000-0000-0000-000000000000}';
+  FUpdaterStorage: TUpdaterStorage = nil;
+  FStorageLock: TCriticalSection = nil;
+
+function UpdaterStorage: TUpdaterStorage;
+begin
+  if FUpdaterStorage = nil then
+  begin
+    FUpdaterStorage := TUpdaterStorage.Create;
+    FUpdaterStorage.RestoreStorage;
+  end;
+
+  Result := FUpdaterStorage;
+end;
 
 procedure FillDatabaseDirectories(FolderList: TList<TDatabaseDirectory>);
 const
@@ -412,19 +472,200 @@ begin
 end;
 
 procedure TUserDirectoriesWatcher.DirectoryChanged(Sender: TObject; SID: TGUID;
-  pInfo: TInfoCallBackDirectoryChangedArray);
+  pInfos: TInfoCallBackDirectoryChangedArray);
+var
+  Info: TInfoCallback;
 begin
-  if FState = SID then
+  if FState <> SID then
+    Exit;
+
+  for Info in pInfos do
   begin
 
+    if (Info.FNewFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.FNewFileName) then
+      Continue;
+    if (Info.FOldFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.FOldFileName) then
+      Continue;
+
+    case Info.FAction of
+      FILE_ACTION_ADDED:
+        UpdaterStorage.Add(TAddTask.Create(Info.FNewFileName));
+      FILE_ACTION_REMOVED,
+      FILE_ACTION_RENAMED_NEW_NAME:
+    end;
   end;
 end;
 
 procedure TUserDirectoriesWatcher.TerminateWatcher(Sender: TObject; SID: TGUID;
   Folder: string);
 begin
-  //do nothing
+  //do nothing for now
 end;
+
+{ TDatabaseTask }
+
+function TDatabaseTask.IsPrepaired: Boolean;
+begin
+  Result := True;
+end;
+
+{ TUpdateTask }
+
+procedure TUpdateTask.Execute;
+begin
+
+end;
+
+{ TAddTask }
+
+constructor TAddTask.Create(FileName: string);
+begin
+  FFileName := FileName;
+end;
+
+{ TUpdaterStorage }
+
+procedure TUpdaterStorage.Add(Task: TDatabaseTask);
+begin
+  FSync.Enter;
+  try
+    FTasks.Add(Task);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.Add(Tasks: TList<TDatabaseTask>);
+begin
+  FSync.Enter;
+  try
+    FTasks.AddRange(Tasks.ToArray());
+  finally
+    FSync.Leave;
+  end;
+end;
+
+constructor TUpdaterStorage.Create;
+begin
+  FSync := TCriticalSection.Create;
+  FTasks := TList<TDatabaseTask>.Create;
+  TDatabaseUpdater.Create;
+end;
+
+destructor TUpdaterStorage.Destroy;
+begin
+  F(FSync);
+  FreeList(FTasks);
+  inherited;
+end;
+
+procedure TUpdaterStorage.RestoreStorage;
+begin
+
+end;
+
+procedure TUpdaterStorage.SaveStorage;
+begin
+
+end;
+
+function TUpdaterStorage.Take<T>(Count: Integer): TArray<T>;
+var
+  I: Integer;
+  FItems: TList<T>;
+begin
+  FSync.Enter;
+  try
+    FItems := TList<T>.Create;
+    try
+      for I := 0 to FTasks.Count - 1 do
+        if (FTasks[I] is T) and FTasks[I].IsPrepaired then
+        begin
+          FItems.Add(FTasks[I]);
+          if FItems.Count = Count then
+            Break;
+        end;
+
+      for I := 0 to FItems.Count - 1 do
+        FTasks.Remove(FItems[I]);
+
+      Result := FItems.ToArray();
+    finally
+      F(FItems);
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+{ TDatabaseUpdater }
+
+constructor TDatabaseUpdater.Create;
+begin
+  inherited Create(nil, False);
+end;
+
+destructor TDatabaseUpdater.Destroy;
+begin
+  inherited;
+end;
+
+procedure TDatabaseUpdater.Execute;
+var
+  AddTasks: TArray<TAddTask>;
+  UpdateTasks: TArray<TUpdateTask>;
+begin
+  inherited;
+  FreeOnTerminate := True;
+
+  //task will work in background
+  while True do
+  begin
+    if DBTerminating then
+      Break;
+
+    AddTasks := UpdaterStorage.Take<TAddTask>(4);
+    if Length(AddTasks) > 0 then
+     AddTasks[0].Execute(AddTasks);
+
+    if DBTerminating then
+      Break;
+
+    UpdateTasks := UpdaterStorage.Take<TUpdateTask>(4);
+    if Length(UpdateTasks) > 0 then
+      UpdateTasks[0].Execute;
+
+
+  end;
+end;
+
+procedure TAddTask.Execute(Items: TArray<TAddTask>);
+begin
+
+end;
+
+function TAddTask.IsPrepaired: Boolean;
+var
+  hFile: THandle;
+begin
+  Result := False;
+
+  //don't allow to write to file and try to open file
+  hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  try
+    Result := (hFile <> INVALID_HANDLE_VALUE) and (hFile <> 0);
+  finally
+    if Result then
+      CloseHandle(hFile);
+  end;
+end;
+
+initialization
+  FStorageLock := TCriticalSection.Create;
+
+finalization
+  F(FUpdaterStorage);
+  F(FStorageLock);
 
 end.
 

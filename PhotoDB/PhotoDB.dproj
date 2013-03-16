@@ -741,7 +741,6 @@
         <DCCReference Include="Units\uWinApi.pas"/>
         <DCCReference Include="uImportSource.pas">
             <Form>FormImportSource</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Units\Styles\uPopupActionBarEx.pas"/>
         <DCCReference Include="Units\uDatabaseDirectoriesUpdater.pas"/>

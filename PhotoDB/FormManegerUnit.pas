@@ -429,7 +429,11 @@ begin
 
   EventLog(':TFormManager::ExitApplication()...');
 
-  FDirectoryWatcher := nil;
+  if FDirectoryWatcher <> nil then
+  begin
+   (FDirectoryWatcher as IUserDirectoriesWatcher).StopWatch;
+    FDirectoryWatcher := nil;
+  end;
 
   // stop updating process, queue will be saved in registry
   UpdaterObjectSaveWork;

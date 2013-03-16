@@ -8150,9 +8150,6 @@ begin
     WidthDiff := ToolBarBottom.Width - TotalWidth;
     for I := 0 to ToolButtonsToHide.Count - 1 do
     begin
-      if ToolBarBottom.Buttons[I].Tag = 1 then
-        Continue;
-
       if WidthDiff < 0 then
         ToolButtonsToHide[I].Visible := False
       else

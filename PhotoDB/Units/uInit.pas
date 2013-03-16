@@ -10,7 +10,6 @@ uses
 implementation
 
 initialization
-
   if ProcessorCount > 1 then
     SetPriorityClass(GetCurrentProcess, HIGH_PRIORITY_CLASS);
   SetThreadPriority(MainThreadID, THREAD_PRIORITY_ABOVE_NORMAL);
