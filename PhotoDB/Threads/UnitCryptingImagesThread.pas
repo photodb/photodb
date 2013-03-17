@@ -12,7 +12,6 @@ uses
 
   Dmitry.Utils.Files,
 
-  Dolphin_DB,
   UnitDBKernel,
   UnitPropeccedFilesSupport,
   UnitCrypting,

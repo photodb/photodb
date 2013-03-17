@@ -33,7 +33,6 @@ uses
   UnitInternetUpdate,
   uInternetUtils,
   ShellApi,
-  Dolphin_DB,
   uMobileUtils,
   uFormInterfaces;
 

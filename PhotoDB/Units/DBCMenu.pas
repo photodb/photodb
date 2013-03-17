@@ -20,7 +20,6 @@ uses
   Vcl.Menus,
   Data.DB,
 
-  Dolphin_DB,
   UnitGroupsWork,
   UnitDBKernel,
   CommonDBSupport,
@@ -38,6 +37,7 @@ uses
   Dmitry.Utils.Files,
   Dmitry.PathProviders,
 
+  uRuntime,
   uMemoryEx,
   uTime,
   uIconUtils,
@@ -47,6 +47,7 @@ uses
   uMemory,
   CmpUnit,
   uBitmapUtils,
+  uGraphicUtils,
   uDBPopupMenuInfo,
   uAssociations,
   uConstants,
@@ -951,7 +952,7 @@ var
 begin
   if CheckDBReadOnly then
     Exit;
-  if ID_OK = MessageBoxDB(GetActiveFormHandle, TA('Do you really want ot delete this info from DB?', DBMenuID),
+  if ID_OK = MessageBoxDB(0, TA('Do you really want ot delete this info from DB?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     for I := 0 to Finfo.Count - 1 do
@@ -1017,7 +1018,7 @@ var
 begin
   if CheckDBReadOnly then
     Exit;
-  if ID_OK = MessageBoxDB(GetActiveFormHandle, L('Do you really want to delete this info from collection?'), L('Confirm'),
+  if ID_OK = MessageBoxDB(0, L('Do you really want to delete this info from collection?'), L('Confirm'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     FQuery := GetQuery;
@@ -1065,7 +1066,7 @@ begin
   if CheckDBReadOnly then
     Exit;
 
-  if IdOk = MessageBoxDB(GetActiveFormHandle, L('Do you really want to delete this info from collection?'),
+  if IdOk = MessageBoxDB(0, L('Do you really want to delete this info from collection?'),
     L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
     FQuery := GetQuery;
@@ -1108,7 +1109,6 @@ var
   ID: Integer;
   DA: TDBAdapter;
 begin
-  EventInfo.Image := nil;
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
     if RequestPasswordForm.ForImage(FInfo[FInfo.Position].FileName) <> '' then
@@ -1597,7 +1597,6 @@ var
   I: Integer;
   EventInfo: TEventValues;
 begin
-  EventInfo.Image := nil;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
       DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Image], EventInfo);
@@ -1722,8 +1721,7 @@ begin
     if FInfo[I].Selected then
       Inc(AllOperations);
   if AllOperations > 10 then
-    if ID_OK <> MessageBoxDB(GetActiveFormHandle,
-      Format(TA('Running %s objects can slow down computer work! Continue?', DBMenuID), [Inttostr(AllOperations)]),
+    if ID_OK <> MessageBoxDB(0, Format(TA('Running %s objects can slow down computer work! Continue?', DBMenuID), [Inttostr(AllOperations)]),
       TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
       Exit;
   for I := 0 to FInfo.Count - 1 do
@@ -1756,7 +1754,7 @@ function TDBPopupMenu.CheckDBReadOnly: Boolean;
 begin
   Result := DBReadOnly;
   if Result then
-    MessageBoxDB(GetActiveFormHandle, TA('Collection is read only!', DBMenuID), TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    MessageBoxDB(0, TA('Collection is read only!', DBMenuID), TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
 end;
 
 procedure TDBPopupMenu.ConvertItemPopUpMenu_(Sender: TObject);
@@ -1787,7 +1785,7 @@ begin
   FileName := ProcessPath(Finfo[Finfo.Position].FileName);
   if not FileExistsSafe(FileName) then
   begin
-    MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
+    MessageBoxDB(0, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;
   end;
   SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_STRETCH);
@@ -1800,7 +1798,7 @@ begin
   FileName := ProcessPath(Finfo[Finfo.Position].FileName);
   if not FileExistsSafe(FileName) then
   begin
-    MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
+    MessageBoxDB(0, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;
   end;
   SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_CENTER);
@@ -1813,7 +1811,7 @@ begin
   FileName := ProcessPath(Finfo[Finfo.Position].FileName);
   if not FileExistsSafe(FileName) then
   begin
-    MessageBoxDB(GetActiveFormHandle, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
+    MessageBoxDB(0, TA('Can''t find the file!', DBMenuID), TA('Warning'), TD_BUTTON_OKCANCEL,TD_ICON_WARNING);
     Exit;
   end;
   SetDesktopWallpaper(ProcessPath(FileName), WPSTYLE_TILE);

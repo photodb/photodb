@@ -1940,8 +1940,6 @@
 	<translate name="Install code" value="Установить код"/>
 	<translate name="Get personal code" value="Получить код"/>
 	<translate name="Activation key saved! Please restart the application!" value="Ключ для активации сохранён! Перезапустите приложение для результата!"/>
-	<translate name="You are working with a non-activated program!$nl$You can only add %d items!" value="Вы работаете в неактивированной программой!$nl$Вы можете добавить только %d записей!"/>
-	<translate name="Requires activation of the program" value="Необходима активация программы" />
   </scope>
   <scope name="Updates">
 	<translate name="New version is available - %s" value="Доступна новая версия - %s"/>

@@ -802,8 +802,8 @@ begin
       _SetSql := _SetSql + 'StrThCrc=:StrThCrc,';
       _SetSql := _SetSql + 'thum=:thum,';
 
-      _SetSql := _SetSql + Format('Width=%d,', [Res.OrWidth]);
-      _SetSql := _SetSql + Format('Height=%d,', [Res.OrHeight]);
+      _SetSql := _SetSql + Format('Width=%d,', [Res.ImageWidth]);
+      _SetSql := _SetSql + Format('Height=%d,', [Res.ImageHeight]);
       _SetSql := _SetSql + Format('FileSize=%d,', [GetFileSizeByName(ProcessPath(FileName))]);
 
       if not FolderView then
@@ -934,11 +934,11 @@ begin
       SetStrParam(Table, Next, Res.ImTh);
       SetIntParam(Table, Next, Integer(StringCRC(Res.ImTh)));
       // if crypted file not password entered
-      if Res.Encrypted or (Res.Password <> '') then
+      if Res.IsEncrypted or (Res.Password <> '') then
       begin
         MS := TMemoryStream.Create;
         try
-          CryptGraphicImage(Res.Jpeg, Res.Password, MS);
+          EncryptGraphicImage(Res.Jpeg, Res.Password, MS);
           LoadParamFromStream(Table, Next, MS, FtBlob);
         finally
           MS.Free;
@@ -1249,21 +1249,21 @@ begin
   if ADBJpegCompressionQuality = 0 then
     ADBJpegCompressionQuality := DBJpegCompressionQuality;
 
-  Result.Encrypted := False;
+  Result.IsEncrypted := False;
   Result.Password := '';
   Result.ImTh := '';
   Result.Count := 0;
   Result.UsedFileNameSearch := False;
   Result.IsError := False;
   Result.Jpeg := nil;
-  Result.OrWidth := 0;
-  Result.Orheight := 0;
+  Result.ImageWidth := 0;
+  Result.ImageHeight := 0;
 
   G := nil;
   try
     try
       LoadGraphic(FileName, G, IsEncrypted, PassWord);
-      Result.Encrypted := IsEncrypted;
+      Result.IsEncrypted := IsEncrypted;
       Result.Password := Password;
       if G = nil then
         Exit;
@@ -1277,8 +1277,8 @@ begin
       end;
     end;
 
-    Result.OrWidth := G.Width;
-    Result.OrHeight := G.Height;
+    Result.ImageWidth := G.Width;
+    Result.ImageHeight := G.Height;
     try
       JpegScale(G, AThImageSize, AThImageSize);
       Result.Jpeg := TJpegImage.Create;

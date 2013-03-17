@@ -19,7 +19,7 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
 
-  dolphin_db,
+  UnitDBDeclare,
   UnitDBKernel,
   UnitDBCommon,
 

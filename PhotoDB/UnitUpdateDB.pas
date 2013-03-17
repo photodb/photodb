@@ -27,7 +27,6 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitHelp,
-  dolphin_db,
   AppEvnts,
   DragDrop,
   DragDropFile,
@@ -42,6 +41,7 @@ uses
   jpeg,
   uMemory,
 
+  uTranslateUtils,
   uW7TaskBar,
   uGraphicUtils,
   uDBForm,
@@ -437,7 +437,6 @@ begin
     if not CryptFileWithoutPassChecked then
     begin
       Show;
-      Delay(100);
       DoHelpHint(L('Warning'), L( 'Unable to add to collection one or more files. Choose "History" in context menu for details.'), P, Self);
     end;
   end;

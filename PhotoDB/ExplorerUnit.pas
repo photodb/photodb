@@ -71,7 +71,6 @@ uses
   DBCMenu,
   UnitDBKernel,
   UnitINI,
-  dolphin_db,
   UnitGroupsWork,
   UnitLinksSupport,
   UnitBitmapImageList,
@@ -91,6 +90,7 @@ uses
   uDBCustomThread,
   uGroupTypes,
   uShellUtils,
+  uSiteUtils,
   uGUIDUtils,
   uPrivateHelper,
   uLockedFileNotifications,
@@ -120,6 +120,7 @@ uses
   uDBUtils,
   uPathUtils,
   uSettings,
+  uStringUtils,
   uAssociations,
   uExplorerPersonsProvider,
   uExplorerGroupsProvider,
@@ -128,6 +129,7 @@ uses
   uExplorerShelfProvider,
   uExplorerDateStackProviders,
   uTranslate,
+  uTranslateUtils,
   uVCLHelpers,
 
   PDB.uVCLRewriters,
@@ -1491,7 +1493,7 @@ begin
   FShowStatusBar := Settings.Readbool('Options', 'ShowStatusBar', False);
   ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
   RegisterMainForm(Self);
-  FStatusProgress := CreateProgressBar(StatusBarMain, 0);
+  FStatusProgress := StatusBarMain.CreateProgressBar(0);
   FStatusProgress.Visible := False;
   FHistory.OnHistoryChange := HistoryChanged;
   TbBack.Enabled := False;
@@ -5719,7 +5721,7 @@ begin
 
   NotSetOldPath := False;
   ElvMain.SetFocus;
-  ToolBarBottom.SetDropDownButtonStyle(TbbShare);
+  TbbShare.Style := tbsDropDown;
 end;
 
 procedure TExplorerForm.NewWindow1Click(Sender: TObject);
@@ -6008,14 +6010,14 @@ var
   begin
     if not FSelectedInfo.Encrypted then
     begin
-      TbbEncrypt.SetCaption(L('Encrypt'));
+      TbbEncrypt.Caption := L('Encrypt');
       TbbEncrypt.Tag := ACTION_ENCRYPT_IMAGES;
-      TbbEncrypt.SetImageIndexEx(DB_IC_CRYPTIMAGE);
+      TbbEncrypt.ImageIndex := DB_IC_CRYPTIMAGE;
     end else
     begin
-      TbbEncrypt.SetCaption(L('Decrypt'));
+      TbbEncrypt.Caption := L('Decrypt');
       TbbEncrypt.Tag := ACTION_DECRYPT_IMAGES;
-      TbbEncrypt.SetImageIndexEx(DB_IC_DECRYPTIMAGE);
+      TbbEncrypt.ImageIndex := DB_IC_DECRYPTIMAGE;
     end;
     TbbEncrypt.Enabled := True;
   end;
@@ -8070,7 +8072,6 @@ var
 begin
   if FFilesInfo[PmItemPopup.Tag].ID <> 0 then
   begin
-    EventInfo.Image := nil;
     if RequestPasswordForm.ForImage(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
       DBKernel.DoIDEvent(Self, FFilesInfo[PmItemPopup.Tag].ID, [EventID_Param_Image], EventInfo);
   end else
@@ -10692,7 +10693,6 @@ var
   EventInfo: TEventValues;
 begin
   PhotoShelf;
-  EventInfo.Image := nil;
   DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
   TmrDelayedStart.Enabled := False;
 end;
@@ -11045,7 +11045,6 @@ var
 begin
   ClearList;
   PhotoShelf.Clear;
-  EventInfo.Image := nil;
   DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
 
   SpeedButton1Click(Sender);

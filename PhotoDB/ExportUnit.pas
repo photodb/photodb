@@ -16,8 +16,6 @@ uses
   Dmitry.Controls.DmProgress,
   Dmitry.Utils.Files,
 
-  Dolphin_db,
-
   uConstants,
   uShellIntegration,
   uProgramStatInfo,

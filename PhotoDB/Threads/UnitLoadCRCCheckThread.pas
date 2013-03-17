@@ -6,7 +6,6 @@ uses
   Windows,
   Classes,
 
-  Dolphin_DB,
   UnitDBCommon,
 
   uDBThread,

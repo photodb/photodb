@@ -53,8 +53,8 @@ type
     Count: Integer;
     Attr: array of Integer;
     Jpeg: TJpegImage;
-    OrWidth, OrHeight: Integer;
-    Encrypted: Boolean;
+    ImageWidth, ImageHeight: Integer;
+    IsEncrypted: Boolean;
     Password: string;
     Size: Integer;
     UsedFileNameSearch: Boolean;

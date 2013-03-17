@@ -39,7 +39,6 @@ uses
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.SaveWindowPos,
 
-  Dolphin_DB,
   UnitDBKernel,
   UnitINI,
   UnitDBDeclare,

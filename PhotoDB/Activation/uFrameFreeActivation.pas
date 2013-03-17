@@ -16,11 +16,10 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.LoadingSign,
 
-  Dolphin_DB,
-
   uFrameWizardBase,
   uShellIntegration,
   uConstants,
+  uSiteUtils,
   uActivationUtils,
   uLogger;
 

@@ -7,7 +7,6 @@ uses
   SysUtils,
   DB,
   CommonDBSupport,
-  Dolphin_DB,
   uThreadForm,
   uThreadEx,
   ActiveX,

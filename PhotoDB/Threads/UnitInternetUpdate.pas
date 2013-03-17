@@ -12,8 +12,6 @@ uses
 
   Dmitry.Utils.System,
 
-  Dolphin_DB,
-
   uLogger,
   uConstants,
   uShellIntegration,

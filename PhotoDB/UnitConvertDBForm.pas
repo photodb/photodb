@@ -19,7 +19,6 @@ uses
 
   Dmitry.Controls.DmProgress,
 
-  Dolphin_DB,
   CommonDBSupport,
 
   uMemoryEx,

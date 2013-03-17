@@ -110,6 +110,26 @@ type
     property Image: TJpegImage read FValue;
   end;
 
+  TStreamParameter = class(TParameter)
+  private
+    FStream: TStream;
+  protected
+    function GetValue: Variant; override;
+  public
+    constructor Create(Name: string; Stream: TStream);
+    property Stream: TStream read FStream;
+  end;
+
+  TPersistentParameter = class(TParameter)
+  private
+    FPersistentObject: TPersistent;
+  protected
+    function GetValue: Variant; override;
+  public
+    constructor Create(Name: string; PersistentObject: TPersistent);
+    property PersistentObject: TPersistent read FPersistentObject;
+  end;
+
   FParameterCollection = class
   private
     FList: TList<TParameter>;
@@ -353,7 +373,10 @@ var
       begin
         TJpegParameter(Parameter).Image.Compress;
         ADOParameter.Assign(TJpegParameter(Parameter).Image);
-      end;
+      end else if Parameter is TStreamParameter then
+        ADOParameter.LoadFromStream(TStreamParameter(Parameter).Stream, ftBlob)
+      else if Parameter is TPersistentParameter then
+        ADOParameter.Assign(TPersistentParameter(Parameter).PersistentObject);
     end;
   end;
 
@@ -607,6 +630,33 @@ begin
 end;
 
 function TJpegParameter.GetValue: Variant;
+begin
+  Result := Null;
+end;
+
+{ TStreamParameter }
+
+constructor TStreamParameter.Create(Name: string; Stream: TStream);
+begin
+  inherited Create(Name, paNone);
+  FStream := Stream;
+end;
+
+function TStreamParameter.GetValue: Variant;
+begin
+  Result := Null;
+end;
+
+{ TPersistentParameter }
+
+constructor TPersistentParameter.Create(Name: string;
+  PersistentObject: TPersistent);
+begin
+  inherited Create(Name, paNone);
+  FPersistentObject := PersistentObject;
+end;
+
+function TPersistentParameter.GetValue: Variant;
 begin
   Result := Null;
 end;

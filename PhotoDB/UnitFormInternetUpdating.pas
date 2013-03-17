@@ -18,9 +18,8 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
 
-  Dolphin_DB,
-
   uSettings,
+  uSiteUtils,
   uDBForm,
   uInternetUtils;
 

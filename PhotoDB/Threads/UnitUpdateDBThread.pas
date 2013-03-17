@@ -5,7 +5,6 @@ interface
 uses
   ReplaceForm,
   Windows,
-  Dolphin_db,
   Classes,
   Forms,
   SysUtils,
@@ -25,6 +24,7 @@ uses
   UnitDBKernel,
   UnitDBDeclare,
   UnitUpdateDBObject,
+  UnitGroupsWork,
 
   uLogger,
   uMemory,
@@ -42,7 +42,7 @@ uses
   uDBThread,
   uExifUtils,
   uGroupTypes,
-  UnitGroupsWork;
+  uDBUpdateUtils;
 
 type
   UpdateDBThread = class(TDBThread)
@@ -61,16 +61,10 @@ type
     FInfo: TDBPopupMenuInfo;
     FUseFileNameScaning: Boolean;
     FileNumber: Integer;
-    Time, Date: TDateTime;
-    IsTime: Boolean;
-    IsDate: Boolean;
     FNoLimit: Boolean;
-    FGroupsParam: TGroups;
-    FInfoParam: TDBPopupMenuInfoRecord;
   protected
     procedure Execute; override;
   public
-    procedure LimitError;
     Procedure DoOnDone;
     procedure ExecuteReplaceDialog;
     procedure AddAutoAnswer;
@@ -87,8 +81,6 @@ type
       OnDone: TNotifyEvent; AutoAnswer: Integer; UseFileNameScaning: Boolean;
       Terminating, Pause: PBoolean; NoLimit: Boolean = False);
     destructor Destroy; override;
-    procedure ProcessGroups(Info: TDBPopupMenuInfoRecord; ExifGroups: string);
-    procedure ProcessGroupsSync;
   end;
 
 type
@@ -115,17 +107,7 @@ var
   CryptFileWithoutPassChecked: Boolean = False;
   FAutoAnswer: Integer = -1;
 
-function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
-  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Include: Boolean; Rating: Integer = 0;
-  Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
-
 implementation
-
-uses
-   UnitGroupsReplace;
-
-var
-  GroupReplaceActions: TGroupsActionsW;
 
 { UpdateDBThread }
 
@@ -153,232 +135,19 @@ begin
     FOnDone(Self);
 end;
 
-function SQL_AddFileToDB(Path: string; Crypted: Boolean; JPEG: TJpegImage; ImTh: string; KeyWords, Comment, Password: string;
-  OrWidth, OrHeight: Integer; var Date, Time: TDateTime; var IsDate, IsTime: Boolean; Include: Boolean; Rating: Integer = 0;
-  Rotated: Integer = DB_IMAGE_ROTATE_0; Links: string = ''; Access: Integer = 0; Groups: string = ''): Boolean;
-var
-  ExifData: TExifData;
-  Sql: string;
-  FQuery: TDataSet;
-  M: TMemoryStream;
-
-  procedure HandleError(Error: string);
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        MessageBoxDB(GetActiveFormHandle, Error, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-        EventLog(Error);
-      end
-    );
-  end;
-
-begin
-  Result := False;
-  if Settings.ReadBool('Options', 'DontAddSmallImages', True) then
-  begin
-    if (Settings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64) > OrWidth) or (Settings.ReadInteger('Options',
-        'DontAddSmallImagesHeight', 64) > OrHeight) then
-      // small images - no photos
-      Exit;
-  end;
-
-  FQuery := GetQuery;
-  try
-    Sql := 'insert into $DB$';
-    Sql := Sql +
-      ' (Name,FFileName,FileSize,DateToAdd,Thum,StrTh,KeyWords,Owner,Collection,Access,Width,Height,Comment,Attr,Rotated,Rating,IsDate,Include,aTime,IsTime,Links,Groups,FolderCRC,StrThCRC)';
-    Sql := Sql +
-      ' values (:Name,:FFileName,:FileSize,:DateToAdd,:Thum,:StrTh,:KeyWords,:Owner,:Collection,:Access,:Width,:Height,:Comment,:Attr,:Rotated,:Rating,:IsDate,:Include,:aTime,:IsTime,:Links,:Groups,:FolderCRC,:StrThCRC) ';
-    SetSQL(FQuery, Sql);
-    SetStrParam(FQuery, 0, ExtractFileName(Path));
-    SetStrParam(FQuery, 1, AnsiLowerCase(Path));
-    SetIntParam(FQuery, 2, GetFileSize(Path));
-
-    //if date isn't defined yet
-    if not ((YearOf(Date) > 1900) and IsTime and IsDate) then
-    begin
-      ExifData := TExifData.Create;
-      try
-        Date := 0;
-        Time := 0;
-        IsDate := False;
-        IsTime := False;
-        try
-          ExifData.LoadFromGraphic(Path);
-          if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) then
-          begin;
-            Date := DateOf(ExifData.DateTimeOriginal);
-            Time := TimeOf(ExifData.DateTimeOriginal);
-            IsDate := True;
-            IsTime := True;
-            //if rotation no==isn't set
-            if (Rotated and DB_IMAGE_ROTATE_MASK = DB_IMAGE_ROTATE_0) and (Rotated <> DB_IMAGE_ROTATE_FIXED) then
-              Rotated := ExifOrientationToRatation(Ord(ExifData.Orientation));
-          end;
-        except
-          on e: Exception do
-            Eventlog('Reading EXIF failed: ' + e.Message);
-        end;
-      finally
-        F(ExifData);
-      end;
-    end;
-    Rotated := Rotated and DB_IMAGE_ROTATE_MASK;
-
-    SetBoolParam(FQuery, 16, True);
-    if YearOf(Date) < 1900 then
-    begin
-      SetDateParam(FQuery, 'DateToAdd', Now);
-      SetDateParam(FQuery, 'aTime', TimeOf(Now));
-      SetBoolParam(FQuery, 19, False);
-    end else
-    begin
-      SetDateParam(FQuery, 'DateToAdd', Date);
-      SetDateParam(FQuery, 'aTime', TimeOf(Time));
-      SetBoolParam(FQuery, 19, True);
-    end;
-    IsTime := GetBoolParam(FQuery, 19);
-    if Crypted then
-    begin
-      M := TMemoryStream.Create;
-      try
-        CryptGraphicImage(Jpeg, Password, M);
-        LoadParamFromStream(FQuery, 4, M, FtBlob);
-      finally
-        F(M);
-      end;
-    end else
-      AssignParam(FQuery, 4, Jpeg);
-
-    SetStrParam(FQuery, 5, ImTh);
-    SetStrParam(FQuery, 6, KeyWords);
-    SetStrParam(FQuery, 7, GetWindowsUserName);
-    SetStrParam(FQuery, 8, 'DB');
-    SetIntparam(FQuery, 9, Access);
-    SetIntparam(FQuery, 10, OrWidth);
-    SetIntparam(FQuery, 11, OrHeight);
-    SetStrParam(FQuery, 12, Comment);
-    SetIntParam(FQuery, 13, Db_attr_norm);
-    SetIntParam(FQuery, 14, Rotated);
-    SetIntParam(FQuery, 15, Rating);
-    SetBoolParam(FQuery, 17, Include);
-    SetStrParam(FQuery, 20, Links);
-    SetStrParam(FQuery, 21, Groups);
-
-  {$R-}
-    SetIntParam(FQuery, 22, GetPathCRC(Path, True));
-    SetIntParam(FQuery, 23, StringCRC(ImTh));
-    try
-      ExecSQL(FQuery);
-      if LastInseredID = 0 then
-      begin
-        SetSQL(FQuery, 'SELECT Max(ID) as MaxID FROM $DB$');
-        try
-          FQuery.Open;
-          if FQuery.RecordCount > 0 then
-            LastInseredID := FQuery.FieldByName('MaxID').AsInteger;
-        except
-          on e: Exception do
-            HandleError('Error getting count of DB items: ' + e.Message);
-        end;
-      end else
-        Inc(LastInseredID);
-    except
-      on e: Exception do
-        HandleError('Error adding file to DB: ' + e.Message);
-    end;
-  finally
-    FreeDS(FQuery);
-  end;
-  Result := True;
-end;
-
 procedure UpdateDBThread.Execute;
 var
-  DemoTable: TDataSet;
   FQuery: TDataSet;
   Counter: Integer;
   AutoAnswerSetted: Boolean;
-
-  procedure AddFileToDB;
-  var
-    Info: TDBPopupMenuInfoRecord;
-    Groups, ExifGroups: string;
-  begin
-    try
-      Info := FInfo[FileNumber];
-      Info.FileName := AnsiLowerCase(Info.FileName);
-
-      //save original groups and extract Exif groups
-      Groups := Info.Groups;
-      ExifGroups := '';
-      Info.Groups := '';
-      UpdateImageRecordFromExif(Info, True, True);
-
-      ExifGroups := Info.Groups;
-      Info.Groups := Groups;
-      ProcessGroups(Info, ExifGroups);
-
-      if SQL_AddFileToDB(Info.FileName, Res.Encrypted, Res.Jpeg, Res.ImTh, Info.KeyWords,
-        Info.Comment, Res.Password, Res.OrWidth, Res.OrHeight, Date, Time, IsDate, IsTime, Info.Include, Info.Rating,
-        Info.Rotation, Info.Links, Info.Access, Info.Groups) then
-      begin
-        Res.Jpeg.DIBNeeded;
-        SynchronizeEx(SetImages);
-      end else
-        F(ResArray[FileNumber].Jpeg);
-
-    except
-      on e: Exception do
-        EventLog(e);
-    end;
-  end;
-
-  function GetRecordsCount: Integer;
-  begin
-    DemoTable := GetQuery(Dbname);
-    try
-      SetSQL(DemoTable, 'Select Count(*) as RecordCount from $DB$');
-      DemoTable.Open;
-      Result := Demotable.FieldByName('RecordCount').AsInteger;
-    finally
-      FreeDS(Demotable);
-    end;
-  end;
-
-  procedure FixdateTime;
-  begin
-    Date := FInfo[FileNumber].Date;
-    IsDate := FInfo[FileNumber].IsDate;
-    Time := FInfo[FileNumber].Time;
-    IsTime := FInfo[FileNumber].IsTime;
-  end;
 
 begin
   inherited;
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
-
     FileNumber := 0;
     AutoAnswerSetted := False;
-
-    {$IFDEF LICENCE}
-    if TActivationManager.Instance.IsDemoMode then
-    begin
-      if GetRecordsCount > LimitDemoRecords then
-      begin
-        if ShowMessageAboutLimit then
-        begin
-          SynchronizeEx(Limiterror);
-          ShowMessageAboutLimit := False;
-        end;
-        EventLog(':Limit of records! --> exit updating DB');
-        Exit;
-      end;
-    end;
-    {$ENDIF}
 
     ResArray := GetImageIDWEx(FInfo, FUseFileNameScaning);
 
@@ -426,8 +195,7 @@ begin
                 end;
               Result_Add:
                 begin
-                  FixdateTime;
-                  AddFileToDB;
+                  TDatabaseUpdateManager.AddFile(FInfo[FileNumber], Res);
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
@@ -479,7 +247,7 @@ begin
             end;
             if FAutoAnswer = Result_add_All then
             begin
-              AddFileToDB;
+              TDatabaseUpdateManager.AddFile(FInfo[FileNumber], Res);
               FQuery := GetQuery;
               try
                 SetSQL(FQuery, 'Update $DB$ Set Attr = :Attr Where StrTh = :s');
@@ -541,7 +309,7 @@ begin
                 end;
               Result_Add:
                 begin
-                  AddFileToDB;
+                  TDatabaseUpdateManager.AddFile(FInfo[FileNumber], Res);
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
@@ -562,7 +330,7 @@ begin
                   FAutoAnswer := Result_Add_All;
                   SynchronizeEx(AddAutoAnswer);
                   AutoAnswerSetted := True;
-                  AddFileToDB;
+                  TDatabaseUpdateManager.AddFile(FInfo[FileNumber], Res);
                   FQuery := GetQuery;
                   try
                     SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
@@ -595,7 +363,7 @@ begin
             end else
             if FAutoAnswer = Result_Add_All then
             begin
-              AddFileToDB;
+              TDatabaseUpdateManager.AddFile(FInfo[FileNumber], Res);
               FQuery := GetQuery;
               try
                 SetSQL(FQuery, 'Update $DB$ Set Attr=:Attr Where StrTh=:s');
@@ -618,10 +386,7 @@ begin
         AutoAnswerSetted := False;
 
         if Res.Count = 0 then
-        begin
-          FixdateTime;
-          AddFileToDB;
-        end;
+          TDatabaseUpdateManager.AddFile(FInfo[FileNumber], Res);
       end else
       begin
         SynchronizeEx(CryptFileWithoutPass);
@@ -635,47 +400,6 @@ begin
     CoUninitialize;
     SynchronizeEx(DoOnDone);
   end;
-end;
-
-procedure UpdateDBThread.LimitError;
-begin
-  MessageBoxDB(GetActiveFormHandle, Format(TA('You are working with a non-activated program!$nl$You can only add %d items!', 'Activation'), [LimitDemoRecords]),
-    TA('Requires activation of the program', 'Activation'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-end;
-
-procedure UpdateDBThread.ProcessGroups(Info: TDBPopupMenuInfoRecord;
-  ExifGroups: string);
-begin
-  if ExifGroups <> '' then
-  begin
-    FInfoParam := Info;
-    FStringParam := ExifGroups;
-
-    FGroupsParam := GetRegisterGroupList(False);
-    try
-      Synchronize(ProcessGroupsSync);
-    finally
-      FreeGroups(FGroupsParam);
-    end;
-
-    Info.Groups := FStringParam;
-  end;
-end;
-
-procedure UpdateDBThread.ProcessGroupsSync;
-var
-  Groups, GExifGroups: TGroups;
-  InRegGroups: TGroups;
-begin
-  Groups := EncodeGroups(FInfoParam.Groups);
-  GExifGroups := EncodeGroups(FStringParam);
-  //in groups are empty because in exif no additional groups information
-  SetLength(InRegGroups, 0);
-
-  FilterGroups(GExifGroups, FGroupsParam, InRegGroups, GroupReplaceActions);
-
-  AddGroupsToGroups(Groups, GExifGroups);
-  FStringParam := CodeGroups(Groups);
 end;
 
 procedure UpdateDBThread.ExecuteReplaceDialog;
@@ -777,18 +501,19 @@ begin
   EventInfo.KeyWords := Info.KeyWords;
   EventInfo.Access := Info.Access;
   EventInfo.Attr := Info.Attr;
-  EventInfo.Date := Date;
-  EventInfo.IsDate := True;
-  EventInfo.IsTime := IsTime;
-  EventInfo.Time := TimeOf(Time);
-  EventInfo.Image := nil;
+  EventInfo.Date := Info.Date;
+  EventInfo.IsDate := Info.IsDate;
+  EventInfo.IsTime := Info.IsTime;
+  EventInfo.Time := TimeOf(Info.Time);
   EventInfo.Groups := Info.Groups;
   EventInfo.JPEGImage := Res.Jpeg;
-  EventInfo.Encrypted := Res.Encrypted;
+  EventInfo.Encrypted := Res.IsEncrypted;
   EventInfo.Include := Info.Include;
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [SetNewIDFileData], EventInfo);
+
   if Res.Jpeg <> nil then
     Res.Jpeg.Free;
+
   ResArray[FileNumber].Jpeg := nil;
 end;
 
@@ -806,14 +531,13 @@ begin
   EventInfo.KeyWords := Info.KeyWords;
   EventInfo.Access := Info.Access;
   EventInfo.Attr := Info.Attr;
-  EventInfo.Date := Date;
-  EventInfo.IsDate := True;
-  EventInfo.IsTime := IsTime;
-  EventInfo.Time := TimeOf(Time);
-  EventInfo.Image := nil;
+  EventInfo.Date := Info.Date;
+  EventInfo.IsDate := Info.IsDate;
+  EventInfo.IsTime := Info.IsTime;
+  EventInfo.Time := TimeOf(Info.Time);
   EventInfo.Groups := Info.Groups;
   EventInfo.JPEGImage := Res.Jpeg;
-  EventInfo.Encrypted := Res.Encrypted;
+  EventInfo.Encrypted := Res.IsEncrypted;
   EventInfo.Include := True;
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [EventID_FileProcessed], EventInfo);
 end;
@@ -914,13 +638,5 @@ begin
   if Assigned(FOnFileFounded) then
     FOnFileFounded(nil, StrParam, IntParam);
 end;
-
-initialization
-
-finalization
-  FreeGroup(GroupReplaceActions.ActionForUnKnown.OutGroup);
-  FreeGroup(GroupReplaceActions.ActionForUnKnown.InGroup);
-  FreeGroup(GroupReplaceActions.ActionForKnown.OutGroup);
-  FreeGroup(GroupReplaceActions.ActionForKnown.InGroup);
 
 end.

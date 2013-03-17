@@ -70,8 +70,6 @@ implementation
 
 {$R *.dfm}
 
-uses Dolphin_DB;
-
 { TFormMenuDateEdit }
 
 procedure ChangeDate(var Date: TDateTime; var IsDate: Boolean; out Changed: Boolean; var Time: TDateTime;

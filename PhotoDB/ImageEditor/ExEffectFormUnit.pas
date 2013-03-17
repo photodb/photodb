@@ -23,7 +23,6 @@ uses
   ExEffects,
   ToolsUnit,
   ScrollingImage,
-  Dolphin_DB,
 
   uGOM,
   uMemory,

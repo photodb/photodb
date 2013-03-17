@@ -8,6 +8,7 @@ uses
   System.SysUtils,
   System.DateUtils,
   Vcl.Graphics,
+  Vcl.Forms,
   Vcl.Imaging.JPEG,
   Data.DB,
 
@@ -73,15 +74,12 @@ type
     KeyWords: string;
     Access: Integer;
     Attr: Integer;
-    Image: TBitmap;
     Date: TDateTime;
     IsDate: Boolean;
     IsTime: Boolean;
     Time: TDateTime;
     Groups: string;
     JPEGImage: TJpegImage;
-    Collection: string;
-    Owner: string;
     Encrypted: Boolean;
     Include: Boolean;
     Links: string;
@@ -250,6 +248,50 @@ type
     constructor Create(Title, Path, Icon, Description: string; Order: Integer = 0); overload;
     function Clone: TDataObject; override;
     procedure Assign(Source: TDataObject); override;
+  end;
+
+
+type
+  THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
+  TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
+  TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
+
+type
+  TCallBackBigSizeProc = procedure(Sender: TObject; SizeX, SizeY: Integer) of object;
+
+  TWatermarkOptions = record
+    Text: string;
+    BlockCountX: Integer;
+    BlockCountY: Integer;
+    Transparenty: Byte;
+    Color: TColor;
+    FontName: string;
+    IsBold: Boolean;
+    IsItalic: Boolean;
+  end;
+
+  TPreviewOptions = record
+    GeneratePreview: Boolean;
+    PreviewWidth: Integer;
+    PreviewHeight: Integer;
+  end;
+
+  TProcessingParams = record
+    Rotation: Integer;
+    ResizeToSize: Boolean;
+    Width: Integer;
+    Height: Integer;
+    Resize: Boolean;
+    Rotate: Boolean;
+    PercentResize: Integer;
+    Convert: Boolean;
+    GraphicClass: TGraphicClass;
+    SaveAspectRation: Boolean;
+    Preffix: string;
+    WorkDirectory: string;
+    AddWatermark: Boolean;
+    WatermarkOptions: TWatermarkOptions;
+    PreviewOptions: TPreviewOptions;
   end;
 
   function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;

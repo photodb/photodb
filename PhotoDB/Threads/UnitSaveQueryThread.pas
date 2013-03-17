@@ -9,7 +9,6 @@ uses
   UnitGroupsWork,
   Classes,
   DB,
-  Dolphin_DB,
   CommonDBSupport,
   Forms,
 
@@ -272,13 +271,8 @@ begin
   except
     on e: Exception do
     begin
-      TThread.Synchronize(nil,
-        procedure
-        begin
-          MessageBoxDB(GetActiveFormHandle, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-          EventLog(e);
-        end
-      );
+      MessageBoxDB(0, E.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      EventLog(e);
     end;
   end;
 end;
@@ -322,7 +316,7 @@ end;
 
 procedure TSaveQueryThread.ReplaceIconAction;
 begin
-  if ID_YES = MessageBoxDB(GetActiveFormHandle, TA('Do you want to change the icon for the final collection?', 'Mobile'), TA('Question'),
+  if ID_YES = MessageBoxDB(0, TA('Do you want to change the icon for the final collection?', 'Mobile'), TA('Question'),
     TD_BUTTON_YESNO, TD_ICON_QUESTION) then
     GetIconForFile(NewIcon, OutIconName, OriginalIconLanguage);
 end;

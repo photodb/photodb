@@ -53,7 +53,6 @@ uses
   InsertImageToolUnit,
   Dmitry.Graphics.Types,
   GraphicCrypt,
-  Dolphin_DB,
   UnitPasswordForm,
   FormManegerUnit,
   UnitDBKernel,
@@ -66,7 +65,6 @@ uses
   UnitDBDeclare,
   UnitDBFileDialogs,
 
-
   uInterfaces,
   uBitmapUtils,
   uTiffImage,
@@ -74,7 +72,6 @@ uses
   uGUIDUtils,
   uMemory,
   uManagerExplorer,
-
   uCDMappingTypes,
   uLogger,
   uAssociations,
@@ -86,7 +83,7 @@ uses
   uDBFileTypes,
   uConstants,
   uSettings,
-
+  uVCLHelpers,
   uThemesUtils,
   uImageLoader,
   uFormInterfaces,
@@ -407,7 +404,7 @@ begin
   Buffer := TBitmap.Create;
   Buffer.PixelFormat := Pf24bit;
   Tool := ToolNone;
-  FStatusProgress := CreateProgressBar(StatusBar1, 0);
+  FStatusProgress := StatusBar1.CreateProgressBar(0);
   LockedImage := False;
   TempImage := False;
   Screen.Cursors[CUR_UPDOWN] := LoadCursor(HInstance, 'UPDOWN');

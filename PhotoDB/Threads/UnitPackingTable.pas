@@ -4,7 +4,6 @@ interface
 
 uses
   Classes,
-  Dolphin_DB,
   Windows, 
   Sysutils,
   ComObj,

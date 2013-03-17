@@ -8,7 +8,6 @@ uses
   DBCommon,
   SysUtils,
   Forms,
-  Dolphin_DB,
   Dmitry.Utils.Files,
   uMemory,
   uLogger,

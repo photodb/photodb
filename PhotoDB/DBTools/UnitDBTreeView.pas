@@ -34,8 +34,8 @@ uses
   GraphicCrypt,
   DBCMenu,
   CommonDBSupport,
-  Dolphin_DB,
 
+  uVCLHelpers,
   uListViewUtils,
   uBitmapUtils,
   uDBDrawing,
@@ -361,7 +361,7 @@ begin
   DropFileTarget1.Register(Self);
   FTerminating := False;
   FCanFree := False;
-  FStatusProgress := CreateProgressBar(StatusBar1, 0);
+  FStatusProgress := StatusBar1.CreateProgressBar(0);
   LoadLanguage;
 
   TreeView1.Color := Theme.WindowColor;

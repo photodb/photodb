@@ -37,7 +37,6 @@ uses
   Effects,
   UnitDBKernel,
   DBCMenu,
-  Dolphin_db,
 
   uMemory,
   uConstants,
@@ -63,7 +62,8 @@ uses
   uManagerExplorer,
   uAnimationHelper,
   uStringUtils,
-  uTranslate;
+  uTranslate,
+  uTranslateUtils;
 
 type
   TRequireImageHandler = procedure(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer) of object;

@@ -49,7 +49,6 @@ uses
   GraphicCrypt,
   FormManegerUnit,
   DBCMenu,
-  dolphin_db,
   ShellContextMenu,
   GIFImage,
   Effects,

@@ -3,21 +3,23 @@ unit uInternetUtils;
 interface
 
 uses
-  Windows,
-  Graphics,
-  Classes,
-  SysUtils,
-  uMemory,
-  uConstants,
-  EncdDecd,
-  JPEG,
-  pngimage,
+  Winapi.Windows,
+  Winapi.MAPI,
+  System.Classes,
+  System.SysUtils,
+  Vcl.Imaging.JPEG,
+  Vcl.Imaging.pngimage,
+  Soap.EncdDecd,
+  Vcl.Graphics,
+  Vcl.Forms,
 
   Dmitry.Utils.System,
 
   IdSSLOpenSSL,
   idHTTP,
 
+  uMemory,
+  uConstants,
   uInternetProxy,
   uSysInfo;
 
@@ -86,6 +88,7 @@ function InternetTimeToDateTime(const Value: string): TDateTime;
 function EncodeBase64Url(inputData: string): string;
 function LoadBitmapFromUrl(Url: string; Bitmap: TBitmap; Container: THTTPRequestContainer = nil; ProxyBaseUrl: string = ''): Boolean;
 function GetMimeContentType(Content: Pointer; Len: integer): string;
+function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;
 
 implementation
 
@@ -347,6 +350,99 @@ end;
 function EncodeURLElement(const Value: string): AnsiString;
 begin
   Result := EncodeTriplet(AnsiString(Value), '%', URLSpecialChar + URLFullSpecialChar);
+end;
+
+function SendEMail(Handle: THandle; ToAddress, ToName, Subject, Body: string; Files: TStrings): Cardinal;
+type
+  TAttachAccessArray = array [0..0] of TMapiFileDesc;
+  PAttachAccessArray = ^TAttachAccessArray;
+var
+  MapiMessage: TMapiMessage;
+  Receip: TMapiRecipDesc;
+  Attachments: PAttachAccessArray;
+  i1: integer;
+  FileName: string;
+  dwRet: Cardinal;
+  MAPI_Session: Cardinal;
+  WndList: Pointer;
+begin
+  if ToName = '' then
+    ToName := ToAddress;
+
+  dwRet := MapiLogon(Handle,
+    PAnsiChar(''),
+    PAnsiChar(''),
+    MAPI_LOGON_UI or MAPI_NEW_SESSION,
+    0, @MAPI_Session);
+
+  if (dwRet <> SUCCESS_SUCCESS) then
+  begin
+    Result := Cardinal(-1);
+    Exit;
+  end else
+  begin
+    FillChar(MapiMessage, SizeOf(MapiMessage), #0);
+    Attachments := nil;
+    FillChar(Receip, SizeOf(Receip), #0);
+
+    if ToAddress <> '' then
+    begin
+      Receip.ulReserved := 0;
+      Receip.ulRecipClass := MAPI_TO;
+      Receip.lpszName := StrNew(PAnsiChar(AnsiString(ToName)));
+      Receip.lpszAddress := StrNew(PAnsiChar(AnsiString('SMTP:' + ToAddress)));
+      Receip.ulEIDSize := 0;
+      MapiMessage.nRecipCount := 1;
+      MapiMessage.lpRecips := @Receip;
+    end;
+
+    if Files.Count > 0 then
+    begin
+      GetMem(Attachments, SizeOf(TMapiFileDesc) * Files.Count);
+
+      for i1 := 0 to Files.Count - 1 do
+      begin
+        FileName := Files[i1];
+        Attachments[i1].ulReserved := 0;
+        Attachments[i1].flFlags := 0;
+        Attachments[i1].nPosition := ULONG($FFFFFFFF);
+        Attachments[i1].lpszPathName := StrNew(PAnsiChar(AnsiString(FileName)));
+        Attachments[i1].lpszFileName := StrNew(PAnsiChar(AnsiString(ExtractFileName(FileName))));
+        Attachments[i1].lpFileType := nil;
+      end;
+      MapiMessage.nFileCount := Files.Count;
+      MapiMessage.lpFiles := @Attachments^;
+    end;
+
+    if Subject <> '' then
+      MapiMessage.lpszSubject := StrNew(PAnsiChar(AnsiString(Subject)));
+    if Body <> '' then
+      MapiMessage.lpszNoteText := StrNew(PAnsiChar(AnsiString(Body)));
+
+    WndList := DisableTaskWindows(0);
+    try
+      Result := MapiSendMail(MAPI_Session, Handle,
+        MapiMessage, MAPI_DIALOG, 0);
+    finally
+      EnableTaskWindows( WndList );
+    end;
+
+    for i1 := 0 to Files.Count - 1 do
+    begin
+      StrDispose(Attachments[i1].lpszPathName);
+      StrDispose(Attachments[i1].lpszFileName);
+    end;
+
+    if Assigned(MapiMessage.lpszSubject) then
+      StrDispose(MapiMessage.lpszSubject);
+    if Assigned(MapiMessage.lpszNoteText) then
+      StrDispose(MapiMessage.lpszNoteText);
+    if Assigned(Receip.lpszAddress) then
+      StrDispose(Receip.lpszAddress);
+    if Assigned(Receip.lpszName) then
+      StrDispose(Receip.lpszName);
+    MapiLogOff(MAPI_Session, Handle, 0, 0);
+  end;
 end;
 
 { THTTPRequestContainer }

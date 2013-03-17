@@ -121,17 +121,15 @@ type
   public
     procedure DisableToolBarForButtons;
     procedure EnableToolBarForButtons;
-    procedure SetDropDownButtonStyle(Button: TToolButton);
   end;
 
-
-  TToolButtonHelper = class helper for TToolButton
-    procedure SetImageIndexEx(Value: Integer);
-    procedure SetCaption(Value: string);
+  TStatusBarHelper = class helper for TStatusBar
+    function CreateProgressBar(Index: Integer): TProgressBar;
   end;
 
-type
-  TToolButtonEx = class(TToolButton);
+  TScreenHelper = class helper for TScreen
+    function ActiveFormHandle: THandle;
+  end;
 
 type
   TNotifyEventRef = reference to procedure(Sender: TObject);
@@ -570,81 +568,33 @@ begin
     TToolBarButtonEx(Self.Buttons[I]).FToolBar := Self;
 end;
 
-type
-  TToolButtonRewrite = class(TGraphicControl)
-  private
-    FAllowAllUp: Boolean;
-    FAutoSize: Boolean;
-    FDown: Boolean;
-    FGrouped: Boolean;
-    FImageIndex: TImageIndex;
-    FIndeterminate: Boolean;
-    FMarked: Boolean;
-    FMenuItem: TMenuItem;
-    FDropdownMenu: TPopupMenu;
-    FEnableDropdown: Boolean;
-    FWrap: Boolean;
-    FStyle: TToolButtonStyle;
-  end;
+{ TStatusBarHelper }
 
-procedure TToolBarHelper.SetDropDownButtonStyle(Button: TToolButton);
+function TStatusBarHelper.CreateProgressBar(Index: Integer): TProgressBar;
 var
-  ButtonInfo: TTBButtonInfo;
-  Rect: TRect;
+  Findleft: Integer;
+  I: Integer;
 begin
-  Button.Style := tbsDropDown;
-  {ButtonInfo.cbSize := SizeOf(ButtonInfo);
-  ButtonInfo.dwMask := TBIF_STYLE;
-
-  SendMessage(Self.Handle, TB_GETBUTTONINFO, Button.Index, LPARAM(@ButtonInfo));
-  ButtonInfo.fsStyle := ButtonInfo.fsStyle or BTNS_DROPDOWN;
-
-  SendMessage(Self.Handle, TB_SETBUTTONINFO, Button.Index, LPARAM(@ButtonInfo));
-
-  TToolButtonRewrite(Button).FStyle := tbsDropDown;  }
+  Result := TProgressBar.Create(Self);
+  Result.Parent := Self;
+  Result.Visible := True;
+  Result.Top := 2;
+  FindLeft := 0;
+  for I := 0 to index - 1 do
+    FindLeft := FindLeft + Self.Panels[I].Width + 1;
+  Result.Left := Findleft;
+  Result.Width := Self.Panels[index].Width - 4;
+  Result.Height := Self.Height - 2;
 end;
 
-procedure TToolButtonHelper.SetImageIndexEx(Value: Integer);
-var
-  TB: TToolBar;
-  ButtonIndex: Integer;
+{ TScreenHelper }
+
+function TScreenHelper.ActiveFormHandle: THandle;
 begin
-  ImageIndex := Value;
-  {
-  ButtonIndex := Index;
-
-  TB := TToolButtonEx(Self).FToolBar;
-  TToolButtonEx(Self).FToolBar := nil;
-
-  ImageIndex := Value;
-  TB.Perform(TB_CHANGEBITMAP, ButtonIndex, LPARAM(Value));
-  if TB.Transparent or TB.Flat then Invalidate;
-
-  TToolButtonEx(Self).FToolBar := TB;  }
+  if Self.ActiveForm <> nil then
+    Result := Self.ActiveForm.Handle
+  else
+    Result := 0;
 end;
-
-procedure TToolButtonHelper.SetCaption(Value: string);
-var
-  TB: TToolBar;
-  I, ButtonIndex: Integer;
-  ButtonInfo: TTBButtonInfo;
-begin
-  Caption := Value;
-  {ButtonIndex := Index;
-
-  TB := TToolButtonEx(Self).FToolBar;
-  TToolButtonEx(Self).FToolBar := nil;
-
-  Caption := Value;
-
-  ButtonInfo.cbSize := SizeOf(ButtonInfo);
-  ButtonInfo.dwMask := TBIF_TEXT;
-  ButtonInfo.pszText := PChar(Value);
-  ButtonInfo.cchText := Length(Value);
-  SendMessage(TB.Handle, TB_SETBUTTONINFO, ButtonIndex, LPARAM(@ButtonInfo));
-
-  TToolButtonEx(Self).FToolBar := TB;  }
-end;
-
 
 end.

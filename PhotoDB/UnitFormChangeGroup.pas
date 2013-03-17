@@ -31,7 +31,6 @@ uses
   UnitDBDeclare,
   GraphicSelectEx,
   UnitGroupsWork,
-  Dolphin_DB,
   UnitGroupsTools,
 
   uRuntime,
@@ -45,6 +44,7 @@ uses
   uGroupTypes,
   uMemoryEx,
   uShellIntegration,
+  uDialogUtils,
   uMemory,
   uThemesUtils,
   uProgramStatInfo,
@@ -281,7 +281,7 @@ end;
 
 procedure TFormChangeGroup.MiLoadFromFileClick(Sender: TObject);
 begin
-  LoadNickJpegImage(ImgMain);
+  LoadNickJpegImage(ImgMain.Picture);
 end;
 
 procedure TFormChangeGroup.MiLoadFromMiniGalleryClick(Sender: TObject);

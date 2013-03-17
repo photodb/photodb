@@ -35,7 +35,6 @@ uses
   CCR.Exif,
   uDBUtils,
   uGraphicUtils,
-  Dolphin_DB,
   uAssociations,
   uExifUtils,
   uBitmapUtils,

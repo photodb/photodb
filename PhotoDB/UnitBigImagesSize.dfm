@@ -68,8 +68,6 @@ object BigImagesSizeForm: TBigImagesSizeForm
       Text = 'Close'
       OnClick = LnkCloseClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False

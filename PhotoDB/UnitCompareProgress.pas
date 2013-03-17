@@ -3,7 +3,6 @@ unit UnitCompareProgress;
 interface
 
 uses
-  Dolphin_DB,
   Windows,
   Messages,
   SysUtils,

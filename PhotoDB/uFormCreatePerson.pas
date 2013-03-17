@@ -34,10 +34,8 @@ uses
 
   UnitDBDeclare,
   UnitDBKernel,
-  RAWImage,
   CommonDBSupport,
   UnitGroupsWork,
-  Dolphin_db,
 
   uFaceDetection,
   uPeopleSupport,
@@ -58,6 +56,7 @@ uses
   uSettings,
   uExplorerPersonsProvider,
   uThemesUtils,
+  uDialogUtils,
   uProgramStatInfo,
   uFormInterfaces;
 

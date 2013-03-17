@@ -16,7 +16,6 @@ uses
   GraphicCrypt,
   UnitDBDeclare,
   ActiveX,
-  Dolphin_DB,
   CommonDBSupport,
   UnitDBKernel,
 
@@ -153,11 +152,11 @@ var
       Table.Edit;
       if Info.Jpeg <> nil then
       begin
-        if Info.Encrypted or Crypting then
+        if Info.IsEncrypted or Crypting then
         begin
           MS := TMemoryStream.Create;
           try
-            CryptGraphicImage(Info.Jpeg, Info.Password, MS);
+            EncryptGraphicImage(Info.Jpeg, Info.Password, MS);
             BF := TBlobField(Table.FieldByName('thum'));
             MS.Seek(0, SoFromBeginning);
             BF.LoadFromStream(Ms);

@@ -5,6 +5,7 @@ interface
 uses
   System.Math,
   System.Classes,
+  System.SysUtils,
   Winapi.Windows,
   Winapi.Messages,
   Vcl.Graphics,
@@ -13,6 +14,7 @@ uses
   Vcl.Imaging.pngimage,
 
   Dmitry.Graphics.Types,
+  Dmitry.Utils.Files,
 
   RAWImage,
   GIFImage,
@@ -35,8 +37,20 @@ procedure AssignToGraphic(Dest: TGraphic; Src: TBitmap);
 procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 procedure InitGraphic(G: TGraphic);
 function IsAnimatedGraphic(G: TGraphic): Boolean;
+function IsWallpaper(FileName: string): Boolean;
 
 implementation
+
+function IsWallpaper(FileName: string): Boolean;
+var
+  Str: string;
+begin
+  Str := AnsiUpperCase(ExtractFileExt(FileName));
+  Result := (Str = '.HTML') or (Str = '.HTM') or (Str = '.GIF') or (Str = '.JPG') or (Str = '.JPEG') or (Str = '.JPE') or
+    (Str = '.BMP');
+  Result := Result and FileExistsSafe(FileName);
+end;
+
 
 procedure InitGraphic(G: TGraphic);
 begin

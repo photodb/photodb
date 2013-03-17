@@ -58,6 +58,7 @@ function Mid(Str: string; S, E: Integer): string;
 function Left(Str: string; P: Integer): string;
 function UpperCaseFirstLetter(S: string): string;
 function NotEmptyString(S1, S2: string): string;
+function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
 
 implementation
 
@@ -549,6 +550,62 @@ begin
   finally
     FreeList(Founds);
   end;
+end;
+
+function AnsiCompareTextWithNum(Text1, Text2: string): Integer;
+var
+  S1, S2: string;
+
+  function Num(Str: string): Boolean;
+  var
+    I: Integer;
+  begin
+    Result := True;
+    for I := 1 to Length(Str) do
+    begin
+      if not CharInSet(Str[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+      begin
+        Result := False;
+        Break;
+      end;
+    end;
+  end;
+
+  function TrimNum(Str: string): string;
+  var
+    I: Integer;
+  begin
+    Result := Str;
+    if Result <> '' then
+      for I := 1 to Length(Result) do
+      begin
+        if CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+        begin
+          Delete(Result, 1, I - 1);
+          Break;
+        end;
+      end;
+    for I := 1 to Length(Result) do
+    begin
+      if not CharInSet(Result[I], ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) then
+      begin
+        Result := Copy(Result, 1, I - 1);
+        Break;
+      end;
+    end;
+    if Result = '' then
+      Result := Str;
+  end;
+
+begin
+  S1 := TrimNum(Text1);
+  S2 := TrimNum(Text2);
+  if Num(S1) or Num(S2) then
+  begin
+    Result := StrToIntDef(S1, 0) - StrToIntDef(S2, 0);
+    Exit;
+  end;
+  Result := AnsiCompareStr(Text1, Text2);
 end;
 
 end.

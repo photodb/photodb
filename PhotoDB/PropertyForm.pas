@@ -42,7 +42,6 @@ uses
 
   DBCMenu,
   UnitGroupsWork,
-  dolphin_db,
   UnitDBKernel,
   Effects,
   GraphicCrypt,
@@ -63,6 +62,7 @@ uses
   UnitPropertyLoadGistogrammThread,
   UnitDBDeclare,
 
+  uTranslateUtils,
   uGUIDUtils,
   uGroupTypes,
   uRawExif,

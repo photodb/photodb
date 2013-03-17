@@ -19,7 +19,6 @@ uses
   Vcl.Menus,
   Data.DB,
 
-  Dolphin_DB,
   UnitDBKernel,
   UnitCDMappingSupport,
   CommonDBSupport,

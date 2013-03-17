@@ -101,13 +101,17 @@ type
 
   TAddTask = class(TDatabaseTask)
   private
-    FFileName: string;
+    FData: TDBPopupMenuInfoRecord;
+    function GetFileName: string;
   public
     procedure Execute(Items: TArray<TAddTask>);
-    constructor Create(FileName: string);
+    constructor Create(FileName: string); overload;
+    constructor Create(Data: TDBPopupMenuInfoRecord); overload;
     function IsPrepaired: Boolean; override;
-    property FileName: string read FFileName;
+    property FileName: string read GetFileName;
   end;
+
+  TDatabaseTaskPriority = (dtpNormal, dtpHigh);
 
   TUpdaterStorage = class(TObject)
   private
@@ -121,8 +125,8 @@ type
     procedure RestoreStorage;
 
     function Take<T: TDatabaseTask>(Count: Integer): TArray<T>;
-    procedure Add(Task: TDatabaseTask); overload;
-    procedure Add(Tasks: TList<TDatabaseTask>); overload;
+    procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh); overload;
+    procedure Add(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh); overload;
   end;
 
   TDatabaseUpdater = class(TDBThread)
@@ -513,33 +517,76 @@ end;
 
 procedure TUpdateTask.Execute;
 begin
-
+  //currently not implemented
 end;
 
 { TAddTask }
 
 constructor TAddTask.Create(FileName: string);
 begin
-  FFileName := FileName;
+  FData := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+end;
+
+constructor TAddTask.Create(Data: TDBPopupMenuInfoRecord);
+begin
+  if Data = nil then
+    raise Exception.Create('Can''t create task for null task!');
+
+  FData := Data.Copy;
+end;
+
+procedure TAddTask.Execute(Items: TArray<TAddTask>);
+begin
+
+end;
+
+function TAddTask.GetFileName: string;
+begin
+  if FData = nil then
+    Exit('');
+
+  Result := FData.FileName;
+end;
+
+function TAddTask.IsPrepaired: Boolean;
+var
+  hFile: THandle;
+begin
+  Result := False;
+
+  //don't allow to write to file and try to open file
+  hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  try
+    Result := (hFile <> INVALID_HANDLE_VALUE) and (hFile <> 0);
+  finally
+    if Result then
+      CloseHandle(hFile);
+  end;
 end;
 
 { TUpdaterStorage }
 
-procedure TUpdaterStorage.Add(Task: TDatabaseTask);
+procedure TUpdaterStorage.Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
 begin
   FSync.Enter;
   try
-    FTasks.Add(Task);
+    if Priority = dtpNormal then
+      FTasks.Add(Task);
+    if Priority = dtpHigh then
+      FTasks.Insert(0, Task);
   finally
     FSync.Leave;
   end;
 end;
 
-procedure TUpdaterStorage.Add(Tasks: TList<TDatabaseTask>);
+procedure TUpdaterStorage.Add(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 begin
   FSync.Enter;
   try
-    FTasks.AddRange(Tasks.ToArray());
+    if Priority = dtpNormal then
+      FTasks.AddRange(Tasks.ToArray());
+    if Priority = dtpHigh then
+      FTasks.InsertRange(0, Tasks.ToArray());
   finally
     FSync.Leave;
   end;
@@ -634,29 +681,6 @@ begin
     UpdateTasks := UpdaterStorage.Take<TUpdateTask>(4);
     if Length(UpdateTasks) > 0 then
       UpdateTasks[0].Execute;
-
-
-  end;
-end;
-
-procedure TAddTask.Execute(Items: TArray<TAddTask>);
-begin
-
-end;
-
-function TAddTask.IsPrepaired: Boolean;
-var
-  hFile: THandle;
-begin
-  Result := False;
-
-  //don't allow to write to file and try to open file
-  hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-  try
-    Result := (hFile <> INVALID_HANDLE_VALUE) and (hFile <> 0);
-  finally
-    if Result then
-      CloseHandle(hFile);
   end;
 end;
 

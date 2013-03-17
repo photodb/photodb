@@ -3,9 +3,10 @@ unit UnitManageGroups;
 interface
 
 uses
+  Winapi.Windows,
+  Winapi.CommCtrl,
+  Winapi.Messages,
   System.UITypes,
-  Windows,
-  Messages,
   SysUtils,
   Classes,
   Math,
@@ -14,8 +15,7 @@ uses
   Vcl.Forms,
   Vcl.ComCtrls,
   Vcl.AppEvnts,
-  jpeg,
-  Winapi.CommCtrl,
+  Vcl.Imaging.jpeg,
   Vcl.Menus,
   Vcl.ToolWin,
   Vcl.ImgList,
@@ -37,12 +37,12 @@ uses
   uDBForm,
   uGraphicUtils,
   uShellIntegration,
-  Dolphin_DB,
   uGroupTypes,
   CommonDBSupport,
   UnitGroupsWork,
   uSettings,
   uThemesUtils,
+  uSiteUtils,
   uExplorerGroupsProvider,
   uFormInterfaces;
 

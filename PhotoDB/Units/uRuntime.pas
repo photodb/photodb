@@ -24,6 +24,7 @@ var
   CMDInProgress: Boolean = False;
   ProgramVersionString: string = '';
   BlockClosingOfWindows: Boolean = False;
+  FExtImagesInImageList: Integer = 0;
 
 var
   ProcessorCount: Integer = 0;

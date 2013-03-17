@@ -147,8 +147,6 @@ object PrintForm: TPrintForm
         Text = 'Make Image'
         OnClick = ALvMainDblClick
         ImageIndex = 0
-        IconWidth = 16
-        IconHeight = 16
         UseEnterColor = False
         EnterColor = clBlack
         EnterBould = False
@@ -285,8 +283,6 @@ object PrintForm: TPrintForm
       Text = 'Zoom In'
       OnClick = ZoomInLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -343,8 +339,6 @@ object PrintForm: TPrintForm
       Text = 'Zoom Out'
       OnClick = ZoomOutLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -401,8 +395,6 @@ object PrintForm: TPrintForm
       Text = 'Full Size'
       OnClick = FullSizeLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -459,8 +451,6 @@ object PrintForm: TPrintForm
       Text = 'Fit Image'
       OnClick = FitToSizeLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False

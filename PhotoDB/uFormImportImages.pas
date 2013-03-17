@@ -34,10 +34,10 @@ uses
   Dmitry.PathProviders.FileSystem,
   Dmitry.PathProviders.MyComputer,
 
-  Dolphin_db,
   MPCommonUtilities,
   MPCommonObjects,
   EasyListview,
+
   UnitDBFileDialogs,
   UnitDBDeclare,
   UnitBitmapImageList,
@@ -53,6 +53,7 @@ uses
   uThreadForm,
   uGraphicUtils,
   uTranslate,
+  uTranslateUtils,
   uVCLHelpers,
   uListViewUtils,
   uDBPopupMenuInfo,

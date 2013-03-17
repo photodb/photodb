@@ -29,7 +29,6 @@ uses
 
   UnitDBDeclare,
   DBCMenu,
-  Dolphin_db,
   UnitDBFileDialogs,
 
   uFrameWizardBase,
@@ -43,6 +42,7 @@ uses
   uDBBaseTypes,
   uAssociations,
   uStenography,
+  uTranslateUtils,
   uPortableDeviceUtils,
   uProgramStatInfo,
   uFormInterfaces;

@@ -29,9 +29,6 @@ procedure DeleteGroup(GroupToDelete: string); overload;
 
 implementation
 
-uses
-  Dolphin_DB;
-
 procedure DeleteGroup(GroupToDelete: string);
 begin
   DeleteGroup(EncodeGroups(GroupToDelete)[0]);
@@ -76,7 +73,7 @@ begin
         on E: Exception do
         begin
           Error := E.message;
-          MessageBoxDB(GetActiveFormHandle, Format(TA('An error occurred during the delete group %s', 'Groups'), [Error]), TA('Error'),
+          MessageBoxDB(0, Format(TA('An error occurred during the delete group %s', 'Groups'), [Error]), TA('Error'),
             TD_BUTTON_OK, TD_ICON_ERROR)
         end;
       end;
@@ -148,7 +145,7 @@ begin
         on E: Exception do
         begin
           Error := E.message;
-          MessageBoxDB(GetActiveFormHandle, Format(TA('An error occurred during the rename group %s', 'Groups'), [Error]), TA('Error'),
+          MessageBoxDB(0, Format(TA('An error occurred during the rename group %s', 'Groups'), [Error]), TA('Error'),
             TD_BUTTON_OK, TD_ICON_ERROR);
         end;
       end;
@@ -211,7 +208,7 @@ begin
           SetSQL(FQuery, 'Select Groups from $DB$ where ID=' + IntToStr(Table.FieldByName('ID').AsInteger));
           FQuery.Open;
           if Groups <> FQuery.FieldByName('Groups').AsString then
-            MessageBoxDB(GetActiveFormHandle, Format(TA('An error occurred during the move group %s to group %s (%s)', 'Groups'), [GroupToMove.GroupName,
+            MessageBoxDB(0, Format(TA('An error occurred during the move group %s to group %s (%s)', 'Groups'), [GroupToMove.GroupName,
                 GroupToMove.GroupCode, IntoGroup.GroupName, IntoGroup.GroupCode]), TA('Error'), TD_BUTTON_OK,
               TD_ICON_ERROR);
         finally
@@ -225,7 +222,7 @@ begin
     begin
       if Error = '' then
         Error := E.message;
-      MessageBoxDB(GetActiveFormHandle, Format(TA('An error occurred during the move group %s', 'Groups'), [Error]), TA('Error'), TD_BUTTON_OK,
+      MessageBoxDB(0, Format(TA('An error occurred during the move group %s', 'Groups'), [Error]), TA('Error'), TD_BUTTON_OK,
         TD_ICON_ERROR);
     end;
   end;

@@ -9,7 +9,6 @@ uses
   ADODB,
   ActiveX,
   CommonDBSupport,
-  dolphin_db,
   UnitDBDeclare,
   uThreadEx,
   uThreadForm,

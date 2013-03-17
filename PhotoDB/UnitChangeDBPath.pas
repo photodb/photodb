@@ -20,7 +20,6 @@ uses
   Dmitry.Utils.Files,
   Dmitry.Controls.DmProgress,
 
-  Dolphin_DB,
   UnitDBFileDialogs,
   UnitOpenQueryThread,
   CommonDBSupport,
@@ -224,7 +223,7 @@ begin
       begin
         I := 0;
       end;
-      Delay(5);
+      Application.ProcessMessages;
     until not DBInOpening;
     DprMain.Position := 0;
     DprMain.MaxValue := WorkQuery.RecordCount;
@@ -326,7 +325,7 @@ begin
         if I = 100 then
           I := 0;
 
-        Delay(5);
+        Application.ProcessMessages;
       until not DBInOpening;
       DprMain.Position := 0;
       DprMain.Inverse := False;

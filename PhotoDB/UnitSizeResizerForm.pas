@@ -18,10 +18,8 @@ uses
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
   Vcl.ImgList,
+  Vcl.Imaging.JPEG,
 
-  Dolphin_DB,
-  JPEG,
-  GraphicEx,
   UnitDBkernel,
   UnitDBDeclare,
   UnitDBFileDialogs,

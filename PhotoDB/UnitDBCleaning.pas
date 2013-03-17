@@ -16,8 +16,6 @@ uses
   Dmitry.Controls.DmProgress,
   Dmitry.Controls.SaveWindowPos,
 
-  Dolphin_DB,
-
   uConstants,
   uDBForm,
   uSettings,

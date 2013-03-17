@@ -3,15 +3,16 @@ unit UnitGroupsReplace;
 interface
 
 uses
-  uGroupTypes,
-  UnitGroupsWork,
-  SysUtils,
+  System.SysUtils,
+
   UnitDBKernel,
+  UnitGroupsWork,
+
+  uRuntime,
   uTranslate,
+  uGroupTypes,
   uConstants,
-  uShellIntegration,
-  Dolphin_DB,
-  uRuntime;
+  uShellIntegration;
 
 procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW; FileName: string);
@@ -209,7 +210,7 @@ begin
           InRegGroups := GetRegisterGroupListW(FileName, True, DBKernel.SortGroupsByName);
         end else
         begin
-          MessageBoxDB(GetActiveFormHandle, Format(TA('An error occurred while adding a group', 'Groups'),
+          MessageBoxDB(0, Format(TA('An error occurred while adding a group', 'Groups'),
               [Groups[I].GroupName]), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
         end;
       end;

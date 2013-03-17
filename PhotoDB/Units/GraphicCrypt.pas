@@ -60,7 +60,7 @@ function DeCryptBlobStreamJPG(DF: TField; Password: string; JPEG: TJpegImage): B
 function ValidCryptBlobStreamJPG(DF: TField): Boolean;
 function ValidPassInCryptBlobStreamJPG(DF: TField; Password: string): Boolean;
 function ResetPasswordInCryptBlobStreamJPG(DF: TField; Password: string): Boolean;
-procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
+procedure EncryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 function DecryptFileToStream(FileName: string; Password: string; Stream: TStream): Boolean;
 function DecryptStreamToStream(Src, Dest: TStream; Password: string): Boolean;
 procedure EnryptStreamV3(S, D: TStream; Password: string; Options: Integer; FileName: string; Progress: TFileProgress = nil);
@@ -319,7 +319,7 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
-procedure CryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
+procedure EncryptGraphicImage(Image: TJpegImage; Password: string; Dest: TMemoryStream);
 var
   MS: TMemoryStream;
   ACipher: TDECCipherClass;

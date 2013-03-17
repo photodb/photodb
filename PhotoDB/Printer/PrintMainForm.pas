@@ -28,7 +28,6 @@ uses
 
   UnitDBFileDialogs,
   UnitDBKernel,
-  Dolphin_DB,
   GraphicCrypt,
   Menus,
   EasyListview,
@@ -44,6 +43,7 @@ uses
   uConstants,
   uMemory,
   uDBForm,
+  uVCLHelpers,
   uTranslate,
   uShellIntegration,
   uResources,
@@ -404,7 +404,7 @@ begin
   LvMain.DoubleBuffered := True;
   VirtualBitmap := nil;
 
-  FStatusProgress := CreateProgressBar(StatusBar1, 0);
+  FStatusProgress := StatusBar1.CreateProgressBar(0);
   FStatusProgress.Hide;
 
   Ico := TIcon.Create;

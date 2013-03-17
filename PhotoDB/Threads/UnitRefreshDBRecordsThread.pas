@@ -173,7 +173,6 @@ var
   EventInfo: TEventValues;
 begin
   EventInfo.ID := IntParam;
-  EventInfo.Image := nil;
   DBKernel.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Param_Image], EventInfo);
 end;
 

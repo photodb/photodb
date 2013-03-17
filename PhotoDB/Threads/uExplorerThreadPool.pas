@@ -8,7 +8,6 @@ uses
   Classes,
   SysUtils,
   SyncObjs,
-  dolphin_db,
   ExplorerTypes,
   UnitDBDeclare,
   uMultiCPUThreadManager,

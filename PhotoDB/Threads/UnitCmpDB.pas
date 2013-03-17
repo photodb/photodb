@@ -7,7 +7,6 @@ uses
   CmpUnit,
   Classes,
   DB,
-  dolphin_db,
   SysUtils,
   uRuntime,
   uGroupTypes,
@@ -21,8 +20,10 @@ uses
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
+  UnitDBDeclare,
 
   UnitDBCommonGraphics,
+  uDBUpdateUtils,
   uDBThread,
   uMemory,
   uDBForm,
@@ -77,8 +78,7 @@ var
 implementation
 
 uses
-  UnitCompareProgress,
-  UnitUpdateDBThread;
+  UnitCompareProgress;
 
 { UnitCmpDB }
 
@@ -212,8 +212,8 @@ var
   JPEG: TJpegImage;
   Pass, S: string;
   SDA, QDA: TDBAdapter;
-  Date, Time: TDateTime;
-  IsDate, IsTime: Boolean;
+  DBRec: TImageDBRecordA;
+  Info: TDBPopupMenuInfoRecord;
 
   procedure LoadCurrentJpeg;
   begin
@@ -345,18 +345,19 @@ begin
                         AddGroupsToGroups(Groups_, Groups);
                       end;
 
-                      Date := SDA.Date;
-                      Time := SDA.Time;
-                      IsTime := SDA.IsTime;
-                      IsDate := SDA.IsDate;
-                      SQL_AddFileToDB(GetDBFileName(SDA.FileName, FSourceTableName),
-                        ValidCryptBlobStreamJPG(SDA.Thumb), Jpeg,
-                        SDA.LongImageID, SDA.KeyWords,
-                        SDA.Comment, Pass, SDA.Width,
-                        SDA.Height, Date, Time, IsDate, IsTime, SDA.Include,
-                        SDA.Rating, SDA.Rotation,
-                        SDA.Links, SDA.Access, Groups_);
+                      SDA.Groups := Groups_;
 
+                      DBRec.ImTh := SDA.LongImageID;
+                      DBRec.Jpeg := Jpeg;
+                      DBRec.ImageWidth := SDA.Width;
+                      DBRec.ImageHeight := SDA.Height;
+
+                      Info:= TDBPopupMenuInfoRecord.CreateFromDS(FSourceTable);
+                      try
+                        TDatabaseUpdateManager.AddNewImageRecord(Info, DBRec);
+                      finally
+                        F(Info);
+                      end;
                     end;
                   except
                   end;

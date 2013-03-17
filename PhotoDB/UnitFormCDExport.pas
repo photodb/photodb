@@ -33,7 +33,6 @@ uses
   DragDropFile,
   UnitCDMappingSupport,
   UnitDBFileDialogs,
-  Dolphin_DB,
   UnitDBKernel,
 
   uAssociatedIcons,
@@ -43,6 +42,7 @@ uses
   uShellIntegration,
   uRuntime,
   uConstants,
+  uTranslateUtils,
   uProgramStatInfo,
   uFormInterfaces;
 

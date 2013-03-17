@@ -18,7 +18,6 @@ uses
   Vcl.ClipBrd,
   Data.DB,
 
-  Dolphin_DB,
   ProgressActionUnit,
   CmpUnit,
   UnitDBkernel,

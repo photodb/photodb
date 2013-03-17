@@ -14,7 +14,6 @@ uses
   Dmitry.CRC32,
   Dmitry.Utils.Files,
 
-  Dolphin_DB,
   UnitINI,
   UnitDBDeclare,
   UnitDBKernel,
@@ -59,8 +58,8 @@ type
     class procedure CheckSavedWork;
     constructor Create;
     destructor Destroy; override;
-    function AddFile(FileName: string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
-    function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean; NoExecute: Boolean = False): Boolean;
+    function AddFile(FileName: string; Silent: Boolean = False): Boolean;
+    function AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean): Boolean;
     function AddDirectory(Directory: string): Boolean;
     function HasFile(FileName: string): Boolean;
     procedure EndDirectorySize(Sender: TObject);
@@ -180,7 +179,7 @@ begin
   end;
 end;
 
-function TUpdaterDB.AddFile(FileName: string; Silent: Boolean = False; NoExecute: Boolean = False): Boolean;
+function TUpdaterDB.AddFile(FileName: string; Silent: Boolean = False): Boolean;
 var
   Info: TDBPopupMenuInfoRecord;
 begin
@@ -194,7 +193,7 @@ begin
   end;
 end;
 
-function TUpdaterDB.AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean; NoExecute: Boolean = False): Boolean;
+function TUpdaterDB.AddFileEx(FileInfo: TDBPopupMenuInfoRecord; Silent, Critical: Boolean): Boolean;
 var
   FileName: string;
   Info: TDBPopupMenuInfoRecord;
@@ -232,7 +231,7 @@ begin
         end
       );
 
-      if Auto and not NoExecute then
+      if Auto then
       begin
         Execute;
         if not Silent then

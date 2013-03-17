@@ -147,7 +147,6 @@ uses
   OptimizeImageUnit in 'ImageEditor\OptimizeImageUnit.pas',
   UnitResampleFilters in 'ImageEditor\effects\UnitResampleFilters.pas',
   uVistaFuncs in 'Units\uVistaFuncs.pas',
-  dolphin_db in 'Units\dolphin_db.pas',
   UnitDBKernel in 'Units\UnitDBKernel.pas',
   CmpUnit in 'Units\CmpUnit.pas',
   DBCMenu in 'Units\DBCMenu.pas',
@@ -425,7 +424,11 @@ uses
   uLinkListEditorDatabases in 'Units\ListEditors\uLinkListEditorDatabases.pas',
   uLinkListEditorFolders in 'Units\ListEditors\uLinkListEditorFolders.pas',
   uLinkListEditorForExecutables in 'Units\ListEditors\uLinkListEditorForExecutables.pas',
-  uFormSelectLocation in 'uFormSelectLocation.pas' {FormSelectLocation};
+  uFormSelectLocation in 'uFormSelectLocation.pas' {FormSelectLocation},
+  uDBUpdateUtils in 'Units\uDBUpdateUtils.pas',
+  uSiteUtils in 'Units\uSiteUtils.pas',
+  uTranslateUtils in 'Units\uTranslateUtils.pas',
+  uDialogUtils in 'Units\uDialogUtils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

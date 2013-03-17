@@ -17,8 +17,6 @@ uses
   Dmitry.PathProviders,
   Dmitry.PathProviders.FileSystem,
 
-  Dolphin_DB,
-
   uPathUtils,
   uFormMoveFilesProgress,
   uCounters,
@@ -29,6 +27,7 @@ uses
   uPortableClasses,
   uExplorerPortableDeviceProvider,
   uTranslate,
+  uTranslateUtils,
   uAssociations,
   uImportPicturesUtils,
   uSettings,

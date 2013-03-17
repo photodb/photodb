@@ -3,22 +3,23 @@ unit UnitImHint;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Menus,
-  Math,
-  Dialogs,
-  StdCtrls,
-  ExtCtrls,
-  ComCtrls,
-  ActiveX,
-  AppEvnts,
-  ImgList,
+  Winapi.Windows,
+  Winapi.Messages,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  System.Math,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.StdCtrls,
+  Vcl.ExtCtrls,
+  Vcl.Forms,
+  Vcl.Menus,
+  Vcl.Themes,
+  Vcl.ComCtrls,
+  Vcl.AppEvnts,
+  Vcl.ImgList,
+
   DBCMenu,
 
   Dmitry.Utils.System,
@@ -26,7 +27,6 @@ uses
   Dmitry.Controls.ImButton,
 
   UnitDBKernel,
-  dolphin_db,
   DropSource,
   DropTarget,
   GIFImage,
@@ -46,8 +46,8 @@ uses
   uDBPopupMenuInfo,
   uFormUtils,
   uAnimationHelper,
-  Themes,
   uThemesUtils,
+  uTranslateUtils,
   uRuntime;
 
 type
@@ -305,7 +305,7 @@ begin
     Inc(WindowHeight, 2 * (5 + TextHeight) + (5 + R.Bottom - R.Top) + 5);
 
     //fix window position
-    Rect := Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
+    Rect := System.Classes.Rect(Pos.X, Pos.Y, Pos.X + 100, Pos.Y + 100);
     if Rect.Top + WindowHeight + 10 > Screen.Height then
       WindowTop := Rect.Top - 20 - WindowHeight
     else

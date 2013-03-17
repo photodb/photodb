@@ -81,9 +81,6 @@ var
 
 implementation
 
-uses
-  Dolphin_db;
-
 { TThreadPoolCustom }
 
 function GUIDToString(GUID: TGUID): string;

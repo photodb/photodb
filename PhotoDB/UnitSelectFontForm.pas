@@ -13,7 +13,6 @@ uses
   Forms,
   Dialogs,
   StdCtrls,
-  Dolphin_DB,
   uDBForm,
   uThemesUtils,
   uMemoryEx;

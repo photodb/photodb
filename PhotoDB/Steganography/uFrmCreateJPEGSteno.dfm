@@ -155,8 +155,6 @@ inherited FrmCreateJPEGSteno: TFrmCreateJPEGSteno
       Enabled = False
       Text = 'BlowFish - 56'
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False

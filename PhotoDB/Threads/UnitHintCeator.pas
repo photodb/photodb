@@ -30,7 +30,6 @@ uses
   uDBForm,
   uMemory,
   SyncObjs,
-  dolphin_db,
   UnitDBKernel,
   ActiveX,
   UnitDBDeclare,

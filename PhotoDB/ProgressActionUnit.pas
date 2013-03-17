@@ -21,7 +21,6 @@ uses
   Dmitry.Utils.System,
   Dmitry.Controls.DmProgress,
 
-  Dolphin_DB,
   uGUIDUtils,
   uConstants,
   uMemory,

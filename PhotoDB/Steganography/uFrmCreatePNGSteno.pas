@@ -25,7 +25,6 @@ uses
   Dmitry.Controls.LoadingSign,
 
   UnitDBFileDialogs,
-  dolphin_db,
   UnitDBDeclare,
   DBCMenu,
 
@@ -34,7 +33,7 @@ uses
   GraphicCrypt,
   uAssociations,
   uShellIntegration,
-
+  uTranslateUtils,
   uDBPopupMenuInfo,
   uCryptUtils,
   uMemory,

@@ -15,7 +15,6 @@ uses
 
   RAWImage,
   GraphicCrypt,
-  Dolphin_DB,
   UnitDBKernel,
 
   uGraphicUtils,

@@ -32,7 +32,6 @@ uses
 
   UnitDBDeclare,
   ShellApi,
-  Dolphin_DB,
   GraphicCrypt,
   ShellContextMenu,
 
@@ -59,6 +58,7 @@ uses
   uGOM,
   uTime,
   uLogger,
+  uTranslateUtils,
   uProgramStatInfo,
   uFormInterfaces;
 

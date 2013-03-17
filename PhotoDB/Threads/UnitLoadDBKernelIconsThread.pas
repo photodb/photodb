@@ -3,12 +3,8 @@ unit UnitLoadDBKernelIconsThread;
 interface
 
 uses
-  Windows,
-  Classes,
   UnitDBkernel,
-  Dolphin_DB,
-  uDBThread,
-  uTime;
+  uDBThread;
 
 type
   TLoadDBKernelIconsThread = class(TDBThread)

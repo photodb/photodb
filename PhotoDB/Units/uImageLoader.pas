@@ -14,6 +14,8 @@ uses
   CCR.Exif,
   CCR.Exif.XMPUtils,
 
+  Dmitry.Utils.System,
+
   GraphicEx,
   GraphicCrypt,
   RAWImage,
@@ -33,7 +35,6 @@ uses
   uSettings,
   uBitmapUtils,
   uJpegUtils,
-  Dmitry.Utils.System,
   uTranslate,
   uFormInterfaces,
   uPNGUtils;

@@ -16,7 +16,6 @@ uses
   ExtCtrls,
   Menus,
   clipbrd,
-  Dolphin_DB,
 
   Dmitry.Controls.ImButton,
   Dmitry.Graphics.Types,

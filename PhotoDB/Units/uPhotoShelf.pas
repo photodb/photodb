@@ -82,7 +82,6 @@ begin
         EventInfo: TEventValues;
         I: Integer;
       begin
-        EventInfo.Image := nil;
         EventInfo.ID := 0;
         DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
 
@@ -153,7 +152,6 @@ begin
         EventInfo: TEventValues;
         I: Integer;
       begin
-        EventInfo.Image := nil;
         EventInfo.ID := 0;
         DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
 

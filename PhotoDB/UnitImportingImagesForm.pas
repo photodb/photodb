@@ -16,7 +16,6 @@ uses
   Vcl.ComCtrls,
   Vcl.Imaging.pngimage,
 
-  Dolphin_DB,
   UnitUpdateDBObject,
 
   Dmitry.Controls.Base,

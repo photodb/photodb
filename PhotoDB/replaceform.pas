@@ -5,7 +5,6 @@ interface
 uses
   UnitDBKernel,
   DBCMenu,
-  dolphin_db,
   Windows,
   Messages,
   SysUtils,
@@ -49,6 +48,7 @@ uses
   uAssociations,
   uDBAdapter,
   EasyListview,
+  uTranslateUtils,
   MPCommonUtilities,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,

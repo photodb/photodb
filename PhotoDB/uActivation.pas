@@ -19,8 +19,6 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.LoadingSign,
 
-  dolphin_db,
-
   uRuntime,
   uDBForm,
   uMemory,

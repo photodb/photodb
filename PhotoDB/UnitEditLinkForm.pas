@@ -29,7 +29,7 @@ uses
   UnitLinksSupport,
   UnitDBKernel,
   UnitDBFileDialogs,
-  Dolphin_db,
+  UnitDBDeclare,
 
   uDBUtils,
   uDBForm,

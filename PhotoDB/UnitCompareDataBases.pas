@@ -18,7 +18,6 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   CmpUnit,
-  Dolphin_DB,
   CommonDBSupport,
   UnitDBKernel,
 

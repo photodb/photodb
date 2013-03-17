@@ -28,10 +28,10 @@ uses
   uConstants,
   UnitDBDeclare,
   UnitDBKernel,
-  Dolphin_DB,
 
   uMemory,
   uDBForm,
+  uStringUtils,
   uProgramStatInfo,
   uShellIntegration,
   uDBBaseTypes,

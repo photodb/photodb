@@ -47,14 +47,11 @@ uses
   CommCtrl,
   DateUtils,
 
-
   DBCMenu,
-  Dolphin_DB,
   UnitDBkernel,
   uGroupTypes,
   UnitGroupsWork,
   UnitFormManagerHint,
-
   UnitDBDeclare,
 
   uBitmapUtils,

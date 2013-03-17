@@ -18,6 +18,7 @@ uses
   uMemory,
   uVistaFuncs,
   uAppUtils,
+  uVCLHelpers,
   uShellNamespaceUtils;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer; overload;
@@ -45,7 +46,9 @@ begin
   TThread.Synchronize(nil,
     procedure
     begin
-     Res := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
+      if Handle = 0 then
+        Handle := Screen.ActiveFormHandle;
+      Res := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
     end
   );
   Result := Res;

@@ -18,7 +18,6 @@ uses
   uDBForm,
   uMemory,
   uDBAdapter,
-  dolphin_db,
   uStrongCrypt,
   GraphicCrypt,
   uErrors;
@@ -52,7 +51,7 @@ begin
         JPEG.Assign(DA.Thumb);
         MS := TMemoryStream.Create;
         try
-          CryptGraphicImage(JPEG, Password, MS);
+          EncryptGraphicImage(JPEG, Password, MS);
           SetSQL(Query, 'Update $DB$ Set thum = :thum where ID = ' + IntToStr(ID));
           LoadParamFromStream(Query, 0, MS, ftBlob);
         finally

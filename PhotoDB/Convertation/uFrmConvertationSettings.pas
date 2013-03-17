@@ -17,7 +17,6 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
 
-  Dolphin_DB,
   CommonDBSupport,
   UnitDBDeclare,
 
@@ -26,7 +25,8 @@ uses
   uJpegUtils,
   uBItmapUtils,
   uResources,
-  uInterfaces;
+  uInterfaces,
+  uTranslateUtils;
 
 type
   TFrmConvertationSettings = class(TFrameWizardBase)

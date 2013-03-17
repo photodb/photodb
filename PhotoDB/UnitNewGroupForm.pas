@@ -31,7 +31,6 @@ uses
   UnitGroupsWork,
   GraphicSelectEx,
   UnitDBDeclare,
-  Dolphin_DB,
   UnitDBKernel,
 
   uEditorTypes,
@@ -45,6 +44,7 @@ uses
   uExplorerGroupsProvider,
   uDBForm,
   uShellIntegration,
+  uDialogUtils,
   uThemesUtils,
   uProgramStatInfo,
   uFormInterfaces;
@@ -396,7 +396,7 @@ end;
 
 procedure TNewGroupForm.LoadFromFile1Click(Sender: TObject);
 begin
-  LoadNickJpegImage(ImGroup);
+  LoadNickJpegImage(ImGroup.Picture);
 end;
 
 procedure TNewGroupForm.FillImageList;
