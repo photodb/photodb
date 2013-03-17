@@ -11,15 +11,16 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
+  Vcl.Forms,
   Data.DB,
 
   Dmitry.CRC32,
   Dmitry.Utils.System,
 
   CommonDBSupport,
-  UnitUpdateDBObject,
   UnitINI,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uConstants,
   uRuntime,
@@ -28,10 +29,16 @@ uses
   uInterfaces,
   uAssociations,
   uDBAdapter,
+  uDBForm,
   uDBThread,
   wfsU,
   uGOM,
+  uDBTypes,
+  uDBUtils,
+  uDBUpdateUtils,
+  uDBPopupMenuInfo,
   uLockedFileNotifications,
+  uCDMappingTypes,
   uSettings;
 
 type
@@ -103,12 +110,15 @@ type
   private
     FData: TDBPopupMenuInfoRecord;
     function GetFileName: string;
+    procedure NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
   public
-    procedure Execute(Items: TArray<TAddTask>);
     constructor Create(FileName: string); overload;
+    destructor Destroy; override;
+    procedure Execute(Items: TArray<TAddTask>);
     constructor Create(Data: TDBPopupMenuInfoRecord); overload;
     function IsPrepaired: Boolean; override;
     property FileName: string read GetFileName;
+    property Data: TDBPopupMenuInfoRecord read FData;
   end;
 
   TDatabaseTaskPriority = (dtpNormal, dtpHigh);
@@ -125,8 +135,9 @@ type
     procedure RestoreStorage;
 
     function Take<T: TDatabaseTask>(Count: Integer): TArray<T>;
-    procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh); overload;
-    procedure Add(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh); overload;
+    function TakeOne<T: TDatabaseTask>: T;
+    procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
+    procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
   end;
 
   TDatabaseUpdater = class(TDBThread)
@@ -138,6 +149,9 @@ type
   end;
 
 implementation
+
+const
+  cAddImagesAtOneStep = 4;
 
 var
   DirectoriesScanID: TGUID = '{00000000-0000-0000-0000-000000000000}';
@@ -412,9 +426,17 @@ end;
 procedure TDatabaseDirectoriesUpdater.AddItemsToDatabase(Items: TList<string>);
 var
   FileName: string;
+  AddTasks: TList<TAddTask>;
 begin
-  for FileName in Items do
-    UpdaterDB.AddFile(FileName, True);
+  AddTasks := TList<TAddTask>.Create;
+  try
+     for FileName in Items do
+       AddTasks.Add(TAddTask.Create(FileName));
+
+     UpdaterStorage.AddRange(TList<TDatabaseTask>(AddTasks));
+  finally
+     F(AddTasks);
+  end;
 end;
 
 { TUserDirectoriesWatcher }
@@ -525,6 +547,7 @@ end;
 constructor TAddTask.Create(FileName: string);
 begin
   FData := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+  FData.Include := True;
 end;
 
 constructor TAddTask.Create(Data: TDBPopupMenuInfoRecord);
@@ -535,9 +558,82 @@ begin
   FData := Data.Copy;
 end;
 
+destructor TAddTask.Destroy;
+begin
+  F(FData);
+  inherited;
+end;
+
 procedure TAddTask.Execute(Items: TArray<TAddTask>);
+var
+  I: Integer;
+  ResArray: TImageDBRecordAArray;
+  Infos: TDBPopupMenuInfo;
+  Info: TDBPopupMenuInfoRecord;
+  Res: TImageDBRecordA;
 begin
 
+  Infos := TDBPopupMenuInfo.Create;
+  try
+    for I := 0 to Length(Items) - 1 do
+      Infos.Add(Items[I].Data.Copy);
+
+    ResArray := GetImageIDWEx(Infos, False);
+    try
+      for I := 0 to Length(ResArray) - 1 do
+      begin
+        Res := ResArray[I];
+        Info := Infos[I];
+
+        if Res.Jpeg = nil then
+        begin
+          //failed to load image
+          Continue;
+        end;
+
+        //decode jpeg in background for fasten drawing in GUI
+        Res.Jpeg.DIBNeeded;
+
+        TThread.Synchronize(nil,
+          procedure
+          begin
+            NotifyAboutFileProcessing(Info, Res);
+          end
+        );
+
+        //new file in collection
+        if Res.Count = 0 then
+        begin
+          TDatabaseUpdateManager.AddFile(Info, Res);
+          Continue;
+        end;
+
+        if Res.Count = 1 then
+        begin
+          //moved file
+          if (StaticPath(Res.FileNames[0]) and not FileExists(Res.FileNames[0])) or (Res.Attr[0] = Db_attr_not_exists) then
+          begin
+            TDatabaseUpdateManager.MergeWithExistedInfo(Res.IDs[0], Info, Res);
+            Continue;
+          end;
+
+          //the same file
+          if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
+            Continue;
+        end;
+
+        //add file as diplicate
+        TDatabaseUpdateManager.AddFileAsDuplicate(Info, Res);
+      end;
+
+    finally
+      for I := 0 to Length(ResArray) - 1 do
+        if ResArray[I].Jpeg <> nil then
+           ResArray[I].Jpeg.Free;
+    end;
+  finally
+    F(Infos);
+  end;
 end;
 
 function TAddTask.GetFileName: string;
@@ -564,6 +660,15 @@ begin
   end;
 end;
 
+procedure TAddTask.NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+var
+  EventInfo: TEventValues;
+begin
+  EventInfo.ReadFromInfo(Info);
+  EventInfo.JPEGImage := Res.Jpeg;
+  DBKernel.DoIDEvent(Application.MainForm as TDBForm, LastInseredID, [EventID_FileProcessed], EventInfo);
+end;
+
 { TUpdaterStorage }
 
 procedure TUpdaterStorage.Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
@@ -579,7 +684,7 @@ begin
   end;
 end;
 
-procedure TUpdaterStorage.Add(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
+procedure TUpdaterStorage.AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 begin
   FSync.Enter;
   try
@@ -645,6 +750,17 @@ begin
   end;
 end;
 
+function TUpdaterStorage.TakeOne<T>: T;
+var
+  Tasks: TArray<T>;
+begin
+  Tasks := Take<T>(0);
+  if Length(Tasks) = 0 then
+    Exit(nil);
+
+  Exit(Tasks[0]);
+end;
+
 { TDatabaseUpdater }
 
 constructor TDatabaseUpdater.Create;
@@ -659,6 +775,7 @@ end;
 
 procedure TDatabaseUpdater.Execute;
 var
+  Task: TDatabaseTask;
   AddTasks: TArray<TAddTask>;
   UpdateTasks: TArray<TUpdateTask>;
 begin
@@ -671,16 +788,26 @@ begin
     if DBTerminating then
       Break;
 
-    AddTasks := UpdaterStorage.Take<TAddTask>(4);
-    if Length(AddTasks) > 0 then
-     AddTasks[0].Execute(AddTasks);
+    AddTasks := UpdaterStorage.Take<TAddTask>(cAddImagesAtOneStep);
+    try
+      if Length(AddTasks) > 0 then
+       AddTasks[0].Execute(AddTasks);
+    finally
+      for Task in AddTasks do
+        Task.Free;
+    end;
 
     if DBTerminating then
       Break;
 
-    UpdateTasks := UpdaterStorage.Take<TUpdateTask>(4);
-    if Length(UpdateTasks) > 0 then
-      UpdateTasks[0].Execute;
+    UpdateTasks := UpdaterStorage.Take<TUpdateTask>(1);
+    try
+      if Length(UpdateTasks) > 0 then
+        UpdateTasks[0].Execute;
+    finally
+      for Task in UpdateTasks do
+        Task.Free;
+    end;
   end;
 end;
 

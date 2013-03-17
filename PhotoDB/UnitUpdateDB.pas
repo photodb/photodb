@@ -374,22 +374,22 @@ begin
 
   if (EventID_CancelAddingImage in Params) then
   begin
-    FileSize := GetFileSizeByName(Value.name);
+    FileSize := GetFileSizeByName(Value.FileName);
     FSpeedCounter.AddSpeedInterval(FileSize);
 
     ProgressBar.Text := Format(L('Tile left - %s (&%%%%)'), [TimeIntervalInString(FSpeedCounter.GetTimeRemaining(UpdaterDB.GetSize))]);
-    FCurrentFileName := Value.name;
+    FCurrentFileName := Value.FileName;
     Invalidate;
   end;
   if (SetNewIDFileData in Params) or (EventID_FileProcessed in Params) then
   begin
-    LastFileName := Value.name;
+    LastFileName := Value.FileName;
     LastIDImage := ID;
     Bit := TBitmap.Create;
     try
       Bit.PixelFormat := pf24bit;
       AssignJpeg(Bit, Value.JPEGImage);
-      ApplyRotate(Bit, Value.Rotate);
+      ApplyRotate(Bit, Value.Rotation);
       Bitmap := TBitmap.Create;
       try
         Bitmap.PixelFormat := Pf24bit;
@@ -408,11 +408,11 @@ begin
     finally
       F(Bit);
     end;
-    FileSize := GetFileSizeByName(Value.name);
+    FileSize := GetFileSizeByName(Value.FileName);
     FSpeedCounter.AddSpeedInterval(FileSize);
 
     ProgressBar.Text := Format(L('Tile left - %s (&%%%%)'), [FormatDateTime('hh:mm:ss', FSpeedCounter.GetTimeRemaining(UpdaterDB.GetSize))]);
-    FCurrentFileName := Value.name;
+    FCurrentFileName := Value.FileName;
     WebLinkOpenImage.Enabled := True;
     WebLinkOpenImage.RefreshBuffer;
     WebLinkOpenImage.Repaint;
@@ -425,15 +425,15 @@ begin
   if EventID_Param_Add_Crypt_WithoutPass in Params then
   begin
     B := True;
-    Value.name := AnsiLowerCase(Value.name);
+    Value.FileName := AnsiLowerCase(Value.FileName);
     for I := 0 to BadHistory.Count - 1 do
-      if AnsiLowerCase(BadHistory[I]) = Value.name then
+      if AnsiLowerCase(BadHistory[I]) = Value.FileName then
       begin
         B := False;
         Break;
       end;
     if B then
-      BadHistory.Add(Value.name);
+      BadHistory.Add(Value.FileName);
     if not CryptFileWithoutPassChecked then
     begin
       Show;

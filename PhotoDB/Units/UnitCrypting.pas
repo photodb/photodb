@@ -109,7 +109,7 @@ var
   Info: TEventValues;
   ErrorCode: Integer;
 begin
-  Info.Encrypted := True;
+  Info.IsEncrypted := True;
   Result := CRYPT_RESULT_UNDEFINED;
   if ValidCryptGraphicFile(FileName) and FileExistsSafe(FileName) then
   begin
@@ -133,9 +133,9 @@ begin
     end;
 
   if Result = CRYPT_RESULT_UNDEFINED then
-    Info.Encrypted := True
+    Info.IsEncrypted := True
   else
-    Info.Encrypted := False;
+    Info.IsEncrypted := False;
 
   if ID <> 0 then
     if DoEvent then

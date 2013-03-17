@@ -3,6 +3,7 @@ unit UnitUpdateDBThread;
 interface
 
 uses
+  Generics.Collections,
   ReplaceForm,
   Windows,
   Classes,
@@ -12,8 +13,6 @@ uses
   DateUtils,
   ActiveX,
   Jpeg,
-
-  CCR.Exif,
 
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
@@ -34,7 +33,6 @@ uses
   uDBTypes,
   uRuntime,
   uDBUtils,
-  uActivationUtils,
   uTranslate,
   uSettings,
   uMemoryEx,
@@ -68,7 +66,6 @@ type
     Procedure DoOnDone;
     procedure ExecuteReplaceDialog;
     procedure AddAutoAnswer;
-    procedure SetImages;
     procedure DoEventReplace(ID: Integer; Name: String);
     procedure DoEventReplaceSynch;
     procedure DoEventCancel(Name: String);
@@ -140,7 +137,6 @@ var
   FQuery: TDataSet;
   Counter: Integer;
   AutoAnswerSetted: Boolean;
-
 begin
   inherited;
   FreeOnTerminate := True;
@@ -437,7 +433,7 @@ var
   EventInfo: TEventValues;
 begin
   try
-    EventInfo.Name := NameParam;
+    EventInfo.FileName := NameParam;
     EventInfo.ID := IDParam;
     DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_CancelAddingImage], EventInfo);
   except
@@ -458,7 +454,7 @@ var
   EventInfo: TEventValues;
 begin
   try
-    EventInfo.Name := NameParam;
+    EventInfo.FileName := NameParam;
     EventInfo.NewName := NameParam;
     EventInfo.ID := IDParam;
     DBKernel.DoIDEvent(FSender.Form, IDParam, [EventID_Param_Name, EventID_CancelAddingImage], EventInfo);
@@ -477,7 +473,7 @@ procedure UpdateDBThread.CryptFileWithoutPass;
 var
   EventInfo: TEventValues;
 begin
-  EventInfo.name := FInfo[FileNumber].FileName;
+  EventInfo.FileName := FInfo[FileNumber].FileName;
   DBKernel.DoIDEvent(FSender.Form, -1, [EventID_Param_Add_Crypt_WithoutPass], EventInfo);
   CryptFileWithoutPassChecked := True;
 end;
@@ -487,58 +483,13 @@ begin
   Result := ResArray[FileNumber];
 end;
 
-procedure UpdateDBThread.SetImages;
-var
-  EventInfo: TEventValues;
-  Info: TDBPopupMenuInfoRecord;
-begin
-  Info := FInfo[FileNumber];
-  EventInfo.Name := AnsiLowerCase(Info.FileName);
-  EventInfo.ID := LastInseredID;
-  EventInfo.Rotate := Info.Rotation;
-  EventInfo.Rating := Info.Rating;
-  EventInfo.Comment := Info.Comment;
-  EventInfo.KeyWords := Info.KeyWords;
-  EventInfo.Access := Info.Access;
-  EventInfo.Attr := Info.Attr;
-  EventInfo.Date := Info.Date;
-  EventInfo.IsDate := Info.IsDate;
-  EventInfo.IsTime := Info.IsTime;
-  EventInfo.Time := TimeOf(Info.Time);
-  EventInfo.Groups := Info.Groups;
-  EventInfo.JPEGImage := Res.Jpeg;
-  EventInfo.Encrypted := Res.IsEncrypted;
-  EventInfo.Include := Info.Include;
-  DBKernel.DoIDEvent(FSender.Form, LastInseredID, [SetNewIDFileData], EventInfo);
-
-  if Res.Jpeg <> nil then
-    Res.Jpeg.Free;
-
-  ResArray[FileNumber].Jpeg := nil;
-end;
-
 procedure UpdateDBThread.FileProcessed;
 var
   EventInfo: TEventValues;
   Info: TDBPopupMenuInfoRecord;
 begin
   Info := FInfo[FileNumber];
-  EventInfo.name := AnsiLowerCase(Info.FileName);
-  EventInfo.ID := LastInseredID;
-  EventInfo.Rotate := Info.Rotation;
-  EventInfo.Rating := Info.Rating;
-  EventInfo.Comment := Info.Comment;
-  EventInfo.KeyWords := Info.KeyWords;
-  EventInfo.Access := Info.Access;
-  EventInfo.Attr := Info.Attr;
-  EventInfo.Date := Info.Date;
-  EventInfo.IsDate := Info.IsDate;
-  EventInfo.IsTime := Info.IsTime;
-  EventInfo.Time := TimeOf(Info.Time);
-  EventInfo.Groups := Info.Groups;
-  EventInfo.JPEGImage := Res.Jpeg;
-  EventInfo.Encrypted := Res.IsEncrypted;
-  EventInfo.Include := True;
+  EventInfo.ReadFromInfo(Info);
   DBKernel.DoIDEvent(FSender.Form, LastInseredID, [EventID_FileProcessed], EventInfo);
 end;
 

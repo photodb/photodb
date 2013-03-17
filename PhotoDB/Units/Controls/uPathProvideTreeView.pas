@@ -9,6 +9,7 @@ uses
   Winapi.ActiveX,
   System.SysUtils,
   System.Classes,
+  System.DateUtils,
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.Controls,
@@ -29,8 +30,10 @@ uses
   uGOM,
   uThreadTask,
   uMachMask,
+  uConstants,
   {$IFDEF PHOTODB}
   uThemesUtils,
+  uExplorerDateStackProviders,
   {$ENDIF}
   uVCLHelpers;
 
@@ -80,6 +83,7 @@ type
     procedure SelectPathItem(PathItem: TPathItem);
     procedure SelectPath(Path: string);
     procedure DeletePath(Path: string);
+    procedure AddItemToCalendar(Date: TDateTime);
     procedure SetFilter(Filter: string; Match: Boolean);
     procedure Reload;
     procedure RefreshPathItem(PathItem: TPathItem);
@@ -168,6 +172,108 @@ begin
 
     Node := Node.NextSibling;
   until Node = nil;
+end;
+
+function FindInsertPlace(Tree: TCustomVirtualDrawTree; Node: PVirtualNode; PI: TPathItem): PVirtualNode;
+var
+  Data: PData;
+  Number,
+  NumberNoInsert,
+  Count: Integer;
+
+  function FirstPathItemBiggerThenSecond(Item1, Item2: TPathItem): Boolean;
+  begin
+    Result := False;
+    if (Item1 is TCalendarItem) and (Item2 is TCalendarItem) then
+      Result := TCalendarItem(Item1).Order > TCalendarItem(Item2).Order;
+  end;
+
+begin
+  Result := nil;
+
+  repeat
+    Data := Tree.GetNodeData(Node);
+
+    if (Data <> nil) and (Data.Data <> nil) then
+    begin
+      if FirstPathItemBiggerThenSecond(PI, TPathItem(Data.Data)) then
+        Exit;
+    end;
+
+    Result := Node;
+
+    Node := Node.NextSibling;
+  until Node = nil;
+end;
+
+procedure TPathProvideTreeView.AddItemToCalendar(Date: TDateTime);
+var
+  Path: string;
+  Data: PData;
+  Node, InsertPlaceNode: PVirtualNode;
+  NeedRepainting: Boolean;
+  Calendar: PVirtualNode;
+  ChildData: TData;
+  PrevNode: PVirtualNode;
+  PI: TPathItem;
+
+  function UpdateNode(Path: string): Boolean;
+  begin
+    Result := False;
+    Node := FindPathInTree(Self, GetFirstChild( nil ), AnsiLowerCase(Path));
+    if Node <> nil then
+    begin
+      Data := GetNodeData(Node);
+      TCalendarItem(Data.Data).IntCount;
+      NeedRepainting := True;
+      Result := (vsHasChildren in Node.States) and (Node.ChildCount > 0);
+      PrevNode := Node;
+    end else
+    begin
+      PI := PathProviderManager.CreatePathItem(Path);
+      if PI <> nil then
+      begin
+        TCalendarItem(PI).SetCount(1);
+
+        ChildData.Data := PI;
+        //image is required
+        ChildData.Data.LoadImage(PATH_LOAD_FOR_IMAGE_LIST, 16);
+        ChildData.Data.Tag := FImageList.AddPathImage(ChildData.Data.ExtractImage, True);
+
+        InsertPlaceNode := FindInsertPlace(Self, GetFirstChild( PrevNode ), PI);
+        if InsertPlaceNode = nil then
+          Node := AddChild(PrevNode, Pointer(ChildData))
+        else
+          Node := InsertNode(InsertPlaceNode, amInsertAfter, Pointer(ChildData));
+
+        ValidateNode(PrevNode, False);
+
+        PrevNode := Node;
+      end;
+    end;
+  end;
+
+begin
+  NeedRepainting := False;
+
+  Calendar := FindPathInTree(Self, GetFirstChild( nil ), AnsiLowerCase(cDatesPath));
+  if Calendar = nil then
+    Exit;
+
+  PrevNode := Calendar;
+  if ((vsHasChildren in Node.States) and (Node.ChildCount > 0)) or (not (vsHasChildren in Node.States) and (Node.ChildCount = 0)) then
+  begin
+    if UpdateNode(cDatesPath + '\' + IntToStr(YearOf(Date))) then
+    begin
+      if UpdateNode(cDatesPath + '\' + IntToStr(YearOf(Date)) + '\' + IntToStr(MonthOf(Date))) then
+      begin
+        UpdateNode(cDatesPath + '\' + IntToStr(YearOf(Date)) + '\' + IntToStr(MonthOf(Date)) + '\' + IntToStr(DayOf(Date)));
+      end;
+    end;
+  end;
+
+  if NeedRepainting then
+    Repaint;
 end;
 
 procedure TPathProvideTreeView.AddToSelection(Node: PVirtualNode);

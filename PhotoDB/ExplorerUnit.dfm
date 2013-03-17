@@ -34,7 +34,7 @@ object ExplorerForm: TExplorerForm
     Left = 140
     Top = 48
     Width = 5
-    Height = 677
+    Height = 669
     Constraints.MaxWidth = 150
     ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
@@ -47,7 +47,7 @@ object ExplorerForm: TExplorerForm
     Left = 145
     Top = 48
     Width = 1
-    Height = 677
+    Height = 669
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -58,18 +58,18 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 140
-    Height = 677
+    Height = 669
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
     TabOrder = 0
     OnResize = MainPanelResize
-    ExplicitHeight = 669
+    ExplicitHeight = 677
     object PcTasks: TPageControl
       Left = 0
       Top = 0
       Width = 140
-      Height = 648
+      Height = 640
       ActivePage = TsInfo
       Align = alClient
       MultiLine = True
@@ -77,7 +77,7 @@ object ExplorerForm: TExplorerForm
       ShowHint = False
       TabOrder = 0
       OnChange = PcTasksChange
-      ExplicitHeight = 640
+      ExplicitHeight = 648
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
@@ -87,7 +87,7 @@ object ExplorerForm: TExplorerForm
         ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
-          Top = 580
+          Top = 599
           Width = 132
           Height = 21
           Align = alBottom
@@ -122,23 +122,20 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 612
+        ExplicitHeight = 620
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
           Width = 132
-          Height = 620
+          Height = 612
           Align = alClient
           BevelOuter = bvNone
           ParentBackground = False
           TabOrder = 0
-          ExplicitHeight = 612
+          ExplicitHeight = 620
           DesignSize = (
             132
-            620)
+            612)
           object LbEditComments: TLabel
             Tag = 2
             Left = 8
@@ -358,7 +355,7 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 601
+          Height = 620
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
@@ -389,10 +386,9 @@ object ExplorerForm: TExplorerForm
           ParentBackground = False
           ParentCtl3D = False
           TabOrder = 0
-          ExplicitHeight = 601
           DesignSize = (
             132
-            620)
+            612)
           object BvRating: TBevel
             Left = 3
             Top = 75
@@ -699,14 +695,14 @@ object ExplorerForm: TExplorerForm
     end
     object PnShelf: TPanel
       Left = 0
-      Top = 648
+      Top = 640
       Width = 140
       Height = 29
       Align = alBottom
       ParentBackground = False
       TabOrder = 1
       Visible = False
-      ExplicitTop = 640
+      ExplicitTop = 648
       object WlGoToShelf: TWebLink
         Left = 5
         Top = 6
@@ -740,14 +736,14 @@ object ExplorerForm: TExplorerForm
         Control = ToolBarMain
         ImageIndex = -1
         MinHeight = 21
-        Width = 1008
+        Width = 1014
       end>
     EdgeBorders = []
     FixedOrder = True
     object ToolBarMain: TToolBar
       Left = 2
       Top = 0
-      Width = 1006
+      Width = 1014
       Height = 21
       ButtonHeight = 19
       ButtonWidth = 12
@@ -774,7 +770,7 @@ object ExplorerForm: TExplorerForm
         OnMouseDown = TbBackMouseDown
       end
       object TbForward: TToolButton
-        Left = 25
+        Left = 33
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuForward
@@ -784,14 +780,14 @@ object ExplorerForm: TExplorerForm
         OnMouseDown = TbForwardMouseDown
       end
       object TbUp: TToolButton
-        Left = 50
+        Left = 66
         Top = 0
         AutoSize = True
         ImageIndex = 1
         OnClick = SpeedButton3Click
       end
       object ToolButton4: TToolButton
-        Left = 62
+        Left = 78
         Top = 0
         Width = 8
         Caption = 'ToolButton3'
@@ -799,7 +795,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbCut: TToolButton
-        Left = 70
+        Left = 86
         Top = 0
         AutoSize = True
         DropdownMenu = PmCut
@@ -808,7 +804,7 @@ object ExplorerForm: TExplorerForm
         OnClick = CutClick
       end
       object TbCopy: TToolButton
-        Left = 95
+        Left = 119
         Top = 0
         AutoSize = True
         DropdownMenu = PmCopy
@@ -817,14 +813,14 @@ object ExplorerForm: TExplorerForm
         OnClick = CopyClick
       end
       object TbPaste: TToolButton
-        Left = 120
+        Left = 152
         Top = 0
         AutoSize = True
         ImageIndex = 5
         OnClick = PasteClick
       end
       object ToolButton17: TToolButton
-        Left = 132
+        Left = 164
         Top = 0
         Width = 8
         Caption = 'ToolButton17'
@@ -832,14 +828,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbDelete: TToolButton
-        Left = 140
+        Left = 172
         Top = 0
         AutoSize = True
         ImageIndex = 6
         OnClick = TbDeleteClick
       end
       object ToolButton10: TToolButton
-        Left = 152
+        Left = 184
         Top = 0
         Width = 8
         Caption = 'ToolButton10'
@@ -847,7 +843,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object ToolButtonView: TToolButton
-        Left = 160
+        Left = 192
         Top = 0
         AutoSize = True
         DropdownMenu = PmListViewType
@@ -856,7 +852,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ToolButtonViewClick
       end
       object TbSort: TToolButton
-        Left = 185
+        Left = 225
         Top = 0
         AutoSize = True
         Caption = 'TbSort'
@@ -865,7 +861,7 @@ object ExplorerForm: TExplorerForm
         Visible = False
       end
       object TbSearch: TToolButton
-        Left = 210
+        Left = 258
         Top = 0
         AutoSize = True
         ImageIndex = 10
@@ -873,21 +869,21 @@ object ExplorerForm: TExplorerForm
       end
       object TbPreview: TToolButton
         Tag = 1
-        Left = 222
+        Left = 270
         Top = 0
         AutoSize = True
         ImageIndex = 12
         OnClick = TbPreviewClick
       end
       object TbImport: TToolButton
-        Left = 234
+        Left = 282
         Top = 0
         AutoSize = True
         ImageIndex = 13
         OnClick = TbImportClick
       end
       object ToolButton11: TToolButton
-        Left = 246
+        Left = 294
         Top = 0
         Width = 8
         Caption = 'ToolButton11'
@@ -895,14 +891,14 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbZoomOut: TToolButton
-        Left = 254
+        Left = 302
         Top = 0
         AutoSize = True
         ImageIndex = 8
         OnClick = TbZoomOutClick
       end
       object TbZoomIn: TToolButton
-        Left = 266
+        Left = 314
         Top = 0
         AutoSize = True
         DropdownMenu = PopupMenuZoomDropDown
@@ -911,7 +907,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbZoomInClick
       end
       object ToolButton20: TToolButton
-        Left = 291
+        Left = 347
         Top = 0
         Width = 8
         Caption = 'ToolButton20'
@@ -919,7 +915,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbDatabase: TToolButton
-        Left = 299
+        Left = 355
         Top = 0
         AutoSize = True
         DropdownMenu = PmDBList
@@ -929,7 +925,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbDatabaseClick
       end
       object TbOptions: TToolButton
-        Left = 324
+        Left = 388
         Top = 0
         AutoSize = True
         Caption = 'Options'
@@ -939,7 +935,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Options1Click
       end
       object ToolButton1: TToolButton
-        Left = 349
+        Left = 421
         Top = 0
         Width = 8
         Caption = 'ToolButton1'
@@ -947,7 +943,7 @@ object ExplorerForm: TExplorerForm
         Style = tbsSeparator
       end
       object TbHelp: TToolButton
-        Left = 357
+        Left = 429
         Top = 0
         AutoSize = True
         DropdownMenu = PmHelp
@@ -1134,18 +1130,18 @@ object ExplorerForm: TExplorerForm
     Left = 146
     Top = 48
     Width = 870
-    Height = 677
+    Height = 669
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
     ParentColor = True
     TabOrder = 4
-    ExplicitHeight = 669
+    ExplicitHeight = 677
     object SplRightPanel: TSplitter
       Left = 507
       Top = 33
       Width = 5
-      Height = 611
+      Height = 603
       ResizeStyle = rsUpdate
       Visible = False
       OnCanResize = SplRightPanelCanResize
@@ -1153,12 +1149,13 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 644
+      Top = 636
       Width = 870
       Height = 33
       Align = alBottom
       TabOrder = 0
       Visible = False
+      ExplicitTop = 644
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1235,7 +1232,7 @@ object ExplorerForm: TExplorerForm
         Width = 21
         Height = 21
         ImageNormal.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1326,7 +1323,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00EFC6
           B500D24F1A00}
         ImageEnter.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1417,7 +1414,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF7F500E8AA
           9300CC3B0500}
         ImageClick.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1508,7 +1505,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF6F400ECBA
           A700CC3B0500}
         ImageDisabled.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1748,15 +1745,15 @@ object ExplorerForm: TExplorerForm
       Left = 512
       Top = 33
       Width = 358
-      Height = 611
+      Height = 603
       Align = alClient
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
-      ExplicitHeight = 603
+      ExplicitHeight = 611
       DesignSize = (
         358
-        611)
+        603)
       object SbCloseRightPanel: TSpeedButton
         Left = 325
         Top = 1
@@ -1797,25 +1794,22 @@ object ExplorerForm: TExplorerForm
         Left = 1
         Top = 1
         Width = 356
-        Height = 609
+        Height = 601
         ActivePage = TsMediaPreview
         Align = alClient
         TabOrder = 0
         OnChange = PcRightPreviewChange
-        ExplicitHeight = 601
+        ExplicitHeight = 609
         object TsMediaPreview: TTabSheet
           Caption = 'TsMediaPreview'
           ImageIndex = 1
           OnResize = TsMediaPreviewResize
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 573
+          ExplicitHeight = 581
           object PnRightPreview: TPanel
             Left = 0
             Top = 0
             Width = 348
-            Height = 581
+            Height = 573
             Align = alClient
             BevelOuter = bvNone
             DoubleBuffered = True
@@ -1823,13 +1817,13 @@ object ExplorerForm: TExplorerForm
             ParentBackground = False
             ParentDoubleBuffered = False
             TabOrder = 0
-            ExplicitHeight = 573
+            ExplicitHeight = 581
             DesignSize = (
               348
-              581)
+              573)
             object ToolBarPreview: TToolBar
               Left = 75
-              Top = 547
+              Top = 539
               Width = 263
               Height = 22
               Align = alNone
@@ -1843,7 +1837,7 @@ object ExplorerForm: TExplorerForm
               TabOrder = 0
               Transparent = False
               Wrapable = False
-              ExplicitTop = 539
+              ExplicitTop = 547
               object TbPreviewPrevious: TToolButton
                 Left = 0
                 Top = 0
@@ -1922,7 +1916,7 @@ object ExplorerForm: TExplorerForm
             end
             object WlFaceCount: TWebLink
               Left = 24
-              Top = 552
+              Top = 544
               Width = 41
               Height = 13
               Cursor = crHandPoint
@@ -1940,7 +1934,7 @@ object ExplorerForm: TExplorerForm
               HightliteImage = True
               StretchImage = True
               CanClick = True
-              ExplicitTop = 544
+              ExplicitTop = 552
             end
             object WllPersonsPreview: TWebLinkList
               Left = 0
@@ -1963,7 +1957,7 @@ object ExplorerForm: TExplorerForm
             end
             object LsDetectingFaces: TLoadingSign
               Left = 3
-              Top = 550
+              Top = 542
               Width = 18
               Height = 18
               Visible = False
@@ -1974,12 +1968,16 @@ object ExplorerForm: TExplorerForm
               Anchors = [akLeft, akBottom]
               SignColor = clBlack
               MaxTransparencity = 255
-              ExplicitTop = 542
+              ExplicitTop = 550
             end
           end
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 546
@@ -2009,7 +2007,6 @@ object ExplorerForm: TExplorerForm
               TabOrder = 0
               OnKeyDown = WedGeoSearchKeyDown
               WatermarkText = 'Search location'
-              ExplicitWidth = 304
             end
           end
           object PnGeoTop: TPanel
@@ -2022,7 +2019,6 @@ object ExplorerForm: TExplorerForm
             ParentBackground = False
             TabOrder = 1
             OnResize = PnInfoResize
-            ExplicitWidth = 340
             object WlSaveLocation: TWebLink
               Left = 5
               Top = 8
@@ -2087,15 +2083,15 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 33
       Width = 507
-      Height = 611
+      Height = 603
       Align = alLeft
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 3
-      ExplicitHeight = 603
+      ExplicitHeight = 611
       object StatusBarMain: TStatusBar
         Left = 0
-        Top = 591
+        Top = 583
         Width = 507
         Height = 20
         Panels = <
@@ -2106,7 +2102,7 @@ object ExplorerForm: TExplorerForm
             Width = 500
           end>
         Visible = False
-        ExplicitTop = 583
+        ExplicitTop = 591
       end
     end
   end
@@ -2122,7 +2118,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.677188784720000000
+      Date = 41177.943092037040000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2162,24 +2158,23 @@ object ExplorerForm: TExplorerForm
   end
   object PnBottomToolBar: TPanel
     Left = 0
-    Top = 725
+    Top = 717
     Width = 1016
-    Height = 19
+    Height = 27
     Align = alBottom
     AutoSize = True
     BevelOuter = bvNone
     TabOrder = 7
-    ExplicitTop = 717
-    ExplicitHeight = 27
+    ExplicitTop = 725
     object ToolBarBottom: TToolBar
       Left = 0
       Top = 0
       Width = 1016
-      Height = 19
+      Height = 27
       Align = alBottom
       AutoSize = True
-      ButtonHeight = 19
-      ButtonWidth = 100
+      ButtonHeight = 27
+      ButtonWidth = 106
       EdgeInner = esNone
       GradientEndColor = 11319229
       List = True
@@ -2291,7 +2286,7 @@ object ExplorerForm: TExplorerForm
         OnClick = TbbOpenDirectoryClick
       end
       object TbbRename: TToolButton
-        Left = 777
+        Left = 785
         Top = 0
         AutoSize = True
         Caption = 'TbbRename'
@@ -2299,7 +2294,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Rename1Click
       end
       object TbbProperties: TToolButton
-        Left = 850
+        Left = 858
         Top = 0
         AutoSize = True
         Caption = 'TbbProperties'
@@ -2307,7 +2302,7 @@ object ExplorerForm: TExplorerForm
         OnClick = PropertiesLinkClick
       end
       object TbbClear: TToolButton
-        Left = 933
+        Left = 941
         Top = 0
         AutoSize = True
         Caption = 'TbbClear'
@@ -2347,6 +2342,9 @@ object ExplorerForm: TExplorerForm
     end
     object DBitem1: TMenuItem
       Caption = 'DBitem'
+      OnClick = DBitem1Click
+      object TMenuItem
+      end
     end
     object N8: TMenuItem
       Caption = '-'

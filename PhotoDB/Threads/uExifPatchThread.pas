@@ -68,7 +68,7 @@ begin
       Info := ExifPatchManager.ExtractPatchInfo;
       while Info <> nil do
       begin
-        FileName := Info.Value.Name;
+        FileName := Info.Value.FileName;
         if not FileExistsSafe(FileName) then
           FileName := uDBUtils.GetFileNameById(Info.ID);
           

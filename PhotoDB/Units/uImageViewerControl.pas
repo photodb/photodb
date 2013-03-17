@@ -2347,7 +2347,7 @@ var
 begin
   if SetNewIDFileData in Params then
   begin
-    if AnsiLowerCase(FItem.FileName) = AnsiLowerCase(Value.name) then
+    if AnsiLowerCase(FItem.FileName) = AnsiLowerCase(Value.FileName) then
     begin
       FItem.ID := ID;
       FItem.Date := Value.Date;
@@ -2355,7 +2355,7 @@ begin
       FItem.IsDate := True;
       FItem.IsTime := Value.IsTime;
       FItem.Rating := Value.Rating;
-      FItem.Rotation := Value.Rotate;
+      FItem.Rotation := Value.Rotation;
       FItem.Comment := Value.Comment;
       FItem.KeyWords := Value.Comment;
       FItem.Links := Value.Links;
@@ -2363,7 +2363,7 @@ begin
       FItem.IsDate := True;
       FItem.IsTime := Value.IsTime;
       FItem.InfoLoaded := True;
-      FItem.Encrypted := Value.Encrypted;
+      FItem.Encrypted := Value.IsEncrypted;
       FItem.Links := Value.Links;
     end;
   end;
@@ -2371,7 +2371,7 @@ begin
   if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
   begin
     for I := 0 to FLockEventRotateFileList.Count - 1 do
-      if AnsiLowerCase(Value.Name) = FLockEventRotateFileList[I] then
+      if AnsiLowerCase(Value.FileName) = FLockEventRotateFileList[I] then
       begin
         FLockEventRotateFileList.Delete(I);
         Exit;
@@ -2381,7 +2381,7 @@ begin
   if Id = Item.ID then
   begin
     if (EventID_Param_Rotate in Params) then
-      Item.Rotation := Value.Rotate;
+      Item.Rotation := Value.Rotation;
     if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) and (Text = '') then
       FOnImageRequest(Sender, Item, Screen.DesktopWidth, Screen.DesktopHeight);
   end;

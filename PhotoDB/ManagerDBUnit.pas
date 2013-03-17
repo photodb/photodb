@@ -365,7 +365,7 @@ begin
       if EventID_Param_KeyWords in params then ItemData.KeyWords := Value.KeyWords;
       if EventID_Param_Links in params then ItemData.Links := Value.Links;
       if EventID_Param_Include in params then ItemData.Include := Value.Include;
-      if EventID_Param_Rotate in params then ItemData.Rotation := Value.Rotate;
+      if EventID_Param_Rotate in params then ItemData.Rotation := Value.Rotation;
       if EventID_Param_Rating in params then ItemData.Rating := Value.Rating;
       if EventID_Param_Private in params then ItemData.Access := Value.Access;
       ElvMain.Repaint;

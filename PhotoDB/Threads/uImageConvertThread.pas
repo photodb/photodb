@@ -693,7 +693,7 @@ procedure TImageConvertThread.NotifyDB;
 var
   EventInfo: TEventValues;
 begin
-  EventInfo.Name := FData.FileName;
+  EventInfo.FileName := FData.FileName;
   EventInfo.NewName := FData.FileName;
   DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
 end;
@@ -743,8 +743,8 @@ procedure TImageConvertThread.UpdateDBRotation;
 var
   EventInfo: TEventValues;
 begin
-  EventInfo.Name := FData.FileName;
-  EventInfo.Rotate := FIntParam;
+  EventInfo.FileName := FData.FileName;
+  EventInfo.Rotation := FIntParam;
   DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Rotate], EventInfo);
 end;
 

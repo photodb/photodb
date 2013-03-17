@@ -830,6 +830,7 @@ type
     procedure EditDatabasesClick(Sender: TObject);
     procedure TbbCreateObjectClick(Sender: TObject);
     procedure TbbClearClick(Sender: TObject);
+    procedure DBitem1Click(Sender: TObject);
   private
     { Private declarations }
     FBitmapImageList: TBitmapImageList;
@@ -1817,7 +1818,7 @@ begin
     Print1.Visible := True;
     Othertasks1.Visible := True;
     ImageEditor2.Visible := True;
-    CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
+    CryptFile1.Visible := not IIF(Info.Loaded, Info.Encrypted, ValidCryptGraphicFile(Info.FileName));
     ResetPassword1.Visible := not CryptFile1.Visible;
     EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(Info.FileName) = '');
 
@@ -1999,11 +2000,35 @@ begin
   if Item = nil then
     Item :=  ElvMain.Items[MenuIndexToItemIndex(PmItemPopup.Tag)];
 
+  DBitem1.Tag := NativeInt(Item);
+
   for I := DBitem1.MenuIndex + 1 to N8.MenuIndex - 1 do
     PmItemPopup.Items.Delete(DBitem1.MenuIndex + 1);
 
+  if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
+    if Info.FileType = EXPLORER_ITEM_IMAGE then
+    begin
+      if Info.ID = 0 then
+      begin
+        Infos := GetCurrentPopUpMenuInfo(Item);
+        try
+          TDBPopupMenu.Instance.SetInfo(Self, Infos);
+        finally
+          F(Infos);
+        end;
+      end;
+      TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
+    end;
+end;
+
+procedure TExplorerForm.DBitem1Click(Sender: TObject);
+var
+  Infos: TDBPopupMenuInfo;
+  Item: TEasyItem;
+begin
   if DBitem1.Visible then
   begin
+    Item := TEasyItem(DBitem1.Tag);
     Infos := GetCurrentPopUpMenuInfo(Item);
     try
       if Item <> nil then
@@ -2016,19 +2041,6 @@ begin
       F(Infos);
     end;
   end;
-
-  if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
-    if Info.FileType = EXPLORER_ITEM_IMAGE then
-    begin
-      Infos := GetCurrentPopUpMenuInfo(Item);
-      try
-        if Info.ID = 0 then
-        TDBPopupMenu.Instance.SetInfo(Self, Infos);
-        TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
-      finally
-        F(Infos);
-      end;
-    end;
 end;
 
 procedure TExplorerForm.Rename1Click(Sender: TObject);
@@ -3058,14 +3070,14 @@ var
     I: Integer;
   begin
     for I := 0 to Info.Count - 1 do
-      if AnsiLowerCase(Info[I].FileName) = Value.Name then
+      if AnsiLowerCase(Info[I].FileName) = Value.FileName then
       begin
         Info[I].SID := GetGUID;
 
-        ReRotation := GetNeededRotation(Info[I].Rotation, Value.Rotate);
+        ReRotation := GetNeededRotation(Info[I].Rotation, Value.Rotation);
         Info[I].ID := ID;
         Info[I].Rating := Value.Rating;
-        Info[I].Rotation := Value.Rotate;
+        Info[I].Rotation := Value.Rotation;
         Info[I].Comment := Value.Comment;
         Info[I].KeyWords := Value.KeyWords;
         Info[I].Links := Value.Links;
@@ -3075,7 +3087,7 @@ var
         Info[I].Loaded := True;
         Info[I].Links := '';
         Info[I].Include := Value.Include;
-        Info[I].Encrypted := Value.Encrypted;
+        Info[I].Encrypted := Value.IsEncrypted;
 
         if UpdateImage then
         begin
@@ -3084,7 +3096,7 @@ var
             Bit := TBitmap.Create;
             Bit.PixelFormat := pf24bit;
             Bit.Assign(Value.JPEGImage);
-            ApplyRotate(Bit, Value.Rotate);
+            ApplyRotate(Bit, Value.Rotation);
             FBitmapImageList[Info[I].ImageIndex].Graphic := Bit;
           end else
             ApplyRotate(FBitmapImageList[Info[I].ImageIndex].Bitmap, ReRotation);
@@ -3110,7 +3122,7 @@ begin
     if EventID_ShelfItemRemoved in Params then
     begin
       for I := 0 to FFilesInfo.Count - 1 do
-        if AnsiLowerCase(FFilesInfo[I].FileName) = AnsiLowerCase(Value.Name) then
+        if AnsiLowerCase(FFilesInfo[I].FileName) = AnsiLowerCase(Value.FileName) then
         begin
           Index := MenuIndexToItemIndex(I);
           DeleteItemWithIndex(Index);
@@ -3160,7 +3172,7 @@ begin
     if EventID_GroupChanged in Params then
     begin
       GI := TGroupItem(Value.Data);
-      S := cGroupsPath + '\' + Value.Name;
+      S := cGroupsPath + '\' + Value.FileName;
       for I := 0 to FFilesInfo.Count - 1 do
         if FFilesInfo[I].Path = S then
         begin
@@ -3202,6 +3214,9 @@ begin
     if FEditorInfo <> nil then
       UpdateNewInfo(FEditorInfo, False);
 
+    if FShellTreeView <> nil then
+      FShellTreeView.AddItemToCalendar(Value.Date);
+
     Exit;
   end;
 
@@ -3211,7 +3226,7 @@ begin
     if ID > 0 then
       RefreshItemByID(ID)
     else
-      RefreshItemByName(Value.Name, False);
+      RefreshItemByName(Value.FileName, False);
   end;
 
   ReRotation := 0;
@@ -3227,14 +3242,14 @@ begin
         begin
           if EventID_Param_Rotate in Params then
           begin
-            ReRotation := GetNeededRotation(FFilesInfo[I].Rotation, Value.Rotate);
-            FFilesInfo[I].Rotation := Value.Rotate;
+            ReRotation := GetNeededRotation(FFilesInfo[I].Rotation, Value.Rotation);
+            FFilesInfo[I].Rotation := Value.Rotation;
           end;
 
           if EventID_Param_Private in Params then
             FFilesInfo[I].Access := Value.Access;
           if EventID_Param_Crypt in Params then
-            FFilesInfo[I].Encrypted := Value.Encrypted;
+            FFilesInfo[I].Encrypted := Value.IsEncrypted;
           if EventID_Param_Rating in Params then
             FFilesInfo[I].Rating := Value.Rating;
           if EventID_Param_Date in Params then
@@ -3304,8 +3319,8 @@ begin
 
   if (EventID_Param_Name in Params) then
     if not(FileExistsSafe(Value.NewName) or DirectoryExists(Value.NewName)) and not
-      (FileExistsSafe(Value.Name) or DirectoryExists(Value.Name)) then
-      RefreshItemByName(Value.Name, False)
+      (FileExistsSafe(Value.FileName) or DirectoryExists(Value.FileName)) then
+      RefreshItemByName(Value.FileName, False)
     else
       RefreshItemByName(Value.NewName, False);
 
@@ -6508,6 +6523,7 @@ procedure TExplorerForm.Options1Click(Sender: TObject);
 begin
   OptionsForm.Show;
 end;
+
 
 procedure TExplorerForm.DBManager1Click(Sender: TObject);
 begin

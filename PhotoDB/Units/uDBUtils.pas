@@ -97,6 +97,7 @@ procedure SetFileNameByID(ID: Integer; FileName: string);
 { DB Types }
 
 function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
+function GetMenuInfoRecordByID(ID: Integer): TDBPopupMenuInfoRecord;
 function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
 procedure UpdateDataFromDB(Info: TDBPopupMenuInfo);
 { END DB Types }
@@ -345,7 +346,7 @@ begin
     Exit;
   end;
 
-  EventInfo.name := OldFileName;
+  EventInfo.FileName := OldFileName;
   EventInfo.NewName := NewFileName;
   CallBack(ID, [EventID_Param_Name], EventInfo);
 end;
@@ -436,7 +437,7 @@ begin
                   SetSQL(SetQuery, Sql);
                 end;
                 ExecSQL(SetQuery);
-                EventInfo.name := OldPath;
+                EventInfo.FileName := OldPath;
                 EventInfo.NewName := NewPath;
                 CallBack(0, [EventID_Param_Name], EventInfo);
                 try
@@ -502,15 +503,15 @@ begin
   begin
     case OldRotation of
       DB_IMAGE_ROTATE_0:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_270;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_270;
       DB_IMAGE_ROTATE_90:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_0;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_0;
       DB_IMAGE_ROTATE_180:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_90;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_90;
       DB_IMAGE_ROTATE_270:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_180;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_180;
     end;
-    SetRotate(ID, EventInfo.Rotate);
+    SetRotate(ID, EventInfo.Rotation);
     DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
@@ -523,15 +524,15 @@ begin
   begin
     case OldRotation of
       DB_IMAGE_ROTATE_0:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_90;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_90;
       DB_IMAGE_ROTATE_90:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_180;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_180;
       DB_IMAGE_ROTATE_180:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_270;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_270;
       DB_IMAGE_ROTATE_270:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_0;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_0;
     end;
-    SetRotate(ID, EventInfo.Rotate);
+    SetRotate(ID, EventInfo.Rotation);
     DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
@@ -544,15 +545,15 @@ begin
   begin
     case OldRotation of
       DB_IMAGE_ROTATE_0:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_180;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_180;
       DB_IMAGE_ROTATE_90:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_270;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_270;
       DB_IMAGE_ROTATE_180:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_0;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_0;
       DB_IMAGE_ROTATE_270:
-        EventInfo.Rotate := DB_IMAGE_ROTATE_90;
+        EventInfo.Rotation := DB_IMAGE_ROTATE_90;
     end;
-    SetRotate(ID, EventInfo.Rotate);
+    SetRotate(ID, EventInfo.Rotation);
     DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
@@ -865,7 +866,7 @@ begin
             if (Info.Rotation > DB_IMAGE_ROTATE_0) and (DA.Rotation <> Info.Rotation) then
             begin
               SetRotate(ID, Info.Rotation);
-              EventInfo.Rotate := Info.Rotation;
+              EventInfo.Rotation := Info.Rotation;
               DoDBkernelEvent(Caller, ID, [EventID_Param_Rotate, EventID_No_EXIF], EventInfo);
             end;
 
@@ -1127,7 +1128,7 @@ begin
   end;
 end;
 
-function GetimageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
+function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
   OnlyImTh: Boolean = False): TImageDBRecordAArray;
 var
   K, I, L, Len: Integer;
@@ -1425,7 +1426,7 @@ begin
     begin
       DBname := DB;
       DBKernel.SetDataBase(DB);
-      EventInfo.name := Dbname;
+      EventInfo.FileName := Dbname;
       LastInseredID := 0;
       DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
       Result := True;
@@ -1702,7 +1703,7 @@ var
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-  FQuery := GetQuery;
+  FQuery := GetQuery(True);
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
     SetIntParam(FQuery, 0, ID);
@@ -1715,7 +1716,25 @@ begin
     Result.ListItem := nil;
     Result.IsListItem := False;
     Result.IsPlusMenu := False;
-    FQuery.Close;
+  finally
+    FreeDS(FQuery);
+  end;
+end;
+
+function GetMenuInfoRecordByID(ID: Integer): TDBPopupMenuInfoRecord;
+var
+  FQuery: TDataSet;
+begin
+  Result := nil;
+  FQuery := GetQuery(True);
+  try
+    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
+    SetIntParam(FQuery, 0, ID);
+    FQuery.Open;
+    if FQuery.RecordCount <> 1 then
+      Exit;
+
+    Result := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
   finally
     FreeDS(FQuery);
   end;

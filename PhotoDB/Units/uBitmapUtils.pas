@@ -1038,12 +1038,12 @@ end;
 
 procedure QuickReduceWide(Width, Height : integer; S,D : TBitmap);
 begin
-  if (Width=0) or (Height=0) then
+  if (Width = 0) or (Height = 0) then
     Exit;
   if ((S.Width div Width >= 8) or (S.Height div Height >= 8)) and (S.Width > 2) and (S.Height > 2) then
-    QuickReduce(Width,Height,S,D)
+    QuickReduce(Width,Height, S, D)
   else
-    StretchCool(Width,Height,S,D)
+    StretchCool(Width,Height, S, D)
 end;
 
 procedure DrawColorMaskTo32Bit(Dest, Mask: TBitmap; Color: TColor; X, Y: Integer);

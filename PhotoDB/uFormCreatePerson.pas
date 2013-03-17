@@ -294,7 +294,7 @@ begin
     PersonManager.UpdatePerson(FPerson, FIsImageChanged);
 
     EventValues.ID := FPerson.ID;
-    EventValues.Name := FPerson.Name;
+    EventValues.FileName := FPerson.Name;
     EventValues.NewName := FPerson.Name;
     DBKernel.DoIDEvent(Self, FPerson.ID, [EventID_PersonChanged], EventValues);
 
@@ -317,7 +317,7 @@ begin
       MarkPersonOnPhoto;
 
       EventValues.ID := FPerson.ID;
-      EventValues.Name := FPerson.Name;
+      EventValues.FileName := FPerson.Name;
       EventValues.NewName := FPerson.Name;
       DBKernel.DoIDEvent(Self, FPerson.ID, [EventID_PersonAdded], EventValues);
     end;
@@ -367,13 +367,13 @@ procedure TFormCreatePerson.ChangedDBDataByID(Sender: TObject; ID: Integer;
 begin
   if SetNewIDFileData in Params then
   begin
-    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+    if AnsiLowerCase(Value.FileName) = AnsiLowerCase(FInfo.FileName) then
     begin
       FInfo.ID := Value.ID;
       AddPhoto;
     end;
-
   end;
+
   if EventID_CancelAddingImage in Params then
   begin
     if (AnsiLowerCase(Value.NewName) = AnsiLowerCase(FInfo.FileName)) and (Value.ID > 0) then
@@ -383,7 +383,7 @@ begin
       Exit;
     end;
 
-    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+    if AnsiLowerCase(Value.FileName) = AnsiLowerCase(FInfo.FileName) then
       EnableControls(True);
 
   end;

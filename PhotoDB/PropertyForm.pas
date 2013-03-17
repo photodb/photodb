@@ -1312,14 +1312,14 @@ begin
           if FFilesInfo.HasNonDBInfo and (SetNewIDFileData in Params) then
           begin
             for I := 0 to FFilesInfo.Count - 1 do
-              if AnsiLowerCase(FFilesInfo[I].FileName) = Value.Name then
+              if AnsiLowerCase(FFilesInfo[I].FileName) = Value.FileName then
                 FFilesInfo[I].ID := ID;
             Exit;
           end;
           if FFilesInfo.HasNonDBInfo and (EventID_CancelAddingImage in Params) then
           begin
             for I := 0 to FFilesInfo.Count - 1 do
-              if AnsiLowerCase(FFilesInfo[I].FileName) = Value.Name then
+              if AnsiLowerCase(FFilesInfo[I].FileName) = Value.FileName then
                 FFilesInfo[I].ID := -1;
             Exit;
           end;
@@ -1334,7 +1334,7 @@ begin
         begin
           EventFileName := Value.NewName;
           if Trim(EventFileName) = '' then
-            EventFileName := Value.Name;
+            EventFileName := Value.FileName;
 
           if (AnsiLowerCase(EventFileName) = AnsiLowerCase(FileName)) and FileExistsSafe(EventFileName) then
           begin

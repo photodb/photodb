@@ -72,7 +72,7 @@ procedure TFormAddingImage.ChangedDBDataByID(Sender: TObject; ID: Integer;
 begin
   if SetNewIDFileData in Params then
   begin
-    if AnsiLowerCase(Value.Name) = AnsiLowerCase(FInfo.FileName) then
+    if AnsiLowerCase(Value.FileName) = AnsiLowerCase(FInfo.FileName) then
     begin
       FInfo.ID := Value.ID;
       TmrCheck.Enabled := False;
@@ -91,7 +91,7 @@ begin
       Exit;
     end;
 
-    if AnsiLowerCase(Value.name) = AnsiLowerCase(FInfo.FileName) then
+    if AnsiLowerCase(Value.FileName) = AnsiLowerCase(FInfo.FileName) then
     begin
       TmrCheck.Enabled := False;
       Close;

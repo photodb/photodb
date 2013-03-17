@@ -266,7 +266,7 @@ begin
   if Result then
   begin
     EventValues.ID := Item.PersonID;
-    EventValues.Name := Options.NewName;
+    EventValues.FileName := Options.NewName;
     EventValues.NewName := Options.NewName;
     DBKernel.DoIDEvent(TDBForm(Sender), Item.PersonID, [EventID_PersonChanged], EventValues);
   end;

@@ -332,167 +332,173 @@ begin
 
   MenuGroups := EnCodeGroups(StrGroups);
 
-  if IsStaticFile and not IsFile then
-  begin
-    MI := CreateMenuItem('Find file manually', DB_IC_SEARCH);
-    MI.OnClick := MiFindFileManuallyClick;
-  end;
+  TTranslateManager.Instance.BeginTranslate;
+  try
 
-  MI := CreateMenuItem('Slide Show', DB_IC_SLIDE_SHOW);
-  MI.OnClick := ShowItemPopUpMenu;
-
-  if FE then
-  begin
-    MI := CreateMenuItem('Apply actions', DB_IC_APPLY_ACTION);
-
-    CreateMenuItemEx(MI, 'Select', DB_IC_APPLY_ACTION).OnClick := MiSelectActionsClick;
-    CreateMenuItemEx(MI, '-');
-
-    FActionFiles := GetDirListing(ExtractFilePath(Application.ExeName) + ActionsFolder, '|DBACT|');
-
-    for I := 0 to Length(FActionFiles) - 1 do
-      CreateMenuItemEx(MI, GetFileNameWithoutExt(FActionFiles[I]), DB_IC_APPLY_ACTION, I).OnClick := MiApplyActionsClick;
-  end;
-
-  if ShiftKeyDown and FE then
-  begin
-    MI := CreateMenuItem('Shell', DB_IC_SHELL);
-    MI.OnClick := ShellExecutePopUpMenu;
-  end;
-
-  AddUserMenu(Item, False, -1);
-
-  //links
-
-  if not NoDBInfoNeeded then
-  begin
-    MI := CreateMenuItem('Refresh', DB_IC_REFRESH_THUM);
-    MI.OnClick := RefreshThumItemPopUpMenu;
-  end;
-
-  if not NoDBInfoNeeded and IsRecord then
-  begin
-    MI := CreateMenuItem('Rotate', DB_IC_ROTATED_0);
-
-    for I := 0 to 3 do
-      CreateMenuItemEx(MI, RotateTitles[I], DB_IC_ROTATED_0 + I, I, I = DBItem.Rotation).OnClick := SetRotateItemPopUpMenu;
-
-    MI := CreateMenuItem('Rating', DB_IC_RATING_STAR);
-
-    for I := 0 to 5 do
-      CreateMenuItemEx(MI, IntToStr(I), RatingIcons[I], I, I = DBItem.Rating).OnClick := SetRatingItemPopUpMenu;
-
-    if DBItem.Access = Db_access_none then
+    if IsStaticFile and not IsFile then
     begin
-      MI := CreateMenuItem('Private', DB_IC_PRIVATE);
-      MI.Tag := 0;
-      MI.OnClick := PrivateItemPopUpMenu;
+      MI := CreateMenuItem('Find file manually', DB_IC_SEARCH);
+      MI.OnClick := MiFindFileManuallyClick;
     end;
 
-    if DBItem.Access = Db_access_private then
+    MI := CreateMenuItem('Slide Show', DB_IC_SLIDE_SHOW);
+    MI.OnClick := ShowItemPopUpMenu;
+
+    if FE then
     begin
-      MI := CreateMenuItem('Public', DB_IC_COMMON);
-      MI.Tag := 1;
-      MI.OnClick := PrivateItemPopUpMenu;
+      MI := CreateMenuItem('Apply actions', DB_IC_APPLY_ACTION);
+
+      CreateMenuItemEx(MI, 'Select', DB_IC_APPLY_ACTION).OnClick := MiSelectActionsClick;
+      CreateMenuItemEx(MI, '-');
+
+      FActionFiles := GetDirListing(ExtractFilePath(Application.ExeName) + ActionsFolder, '|DBACT|');
+
+      for I := 0 to Length(FActionFiles) - 1 do
+        CreateMenuItemEx(MI, GetFileNameWithoutExt(FActionFiles[I]), DB_IC_APPLY_ACTION, I).OnClick := MiApplyActionsClick;
     end;
 
-    MI := CreateMenuItem('Date', DB_IC_EDIT_DATE);
-    MI.OnClick := DateItemPopUpMenu;
-
-    MI := CreateMenuItem('Groups', DB_IC_GROUPS);
-
-    for I := 0 to Length(MenuGroups) - 1 do
-      CreateMenuItemEx(MI, MenuGroups[I].GroupName, GetGroupImageInImageList(MenuGroups[I].GroupCode)).OnClick := QuickGroupInfoPopUpMenu;
-
-    CreateMenuItemEx(MI, '-');
-    CreateMenuItemEx(MI, 'Edit groups', DB_IC_GROUPS).OnClick := GroupsPopUpMenu;
-
-  end;
-
-  KeyWords := DBItem.KeyWords.Split([' '], TStringSplitOptions.ExcludeEmpty);
-  if Length(KeyWords) > 0 then
-  begin
-    MI := CreateMenuItem('Keywords', DB_IC_NOTEPAD);
-    for I := 0 to Length(KeyWords) - 1 do
-      CreateMenuItemEx(MI, KeyWords[I], DB_IC_NOTEPAD).OnClick := MiShowKeyWordClick;
-  end;
-
-  if not IsDevicePath(DBItem.FileName) then
-  begin
-    MI := CreateMenuItem('Encrypting', DB_IC_KEY);
-
-    if DBItem.Encrypted then
+    if ShiftKeyDown and FE then
     begin
-      CreateMenuItemEx(MI, 'Enter password', DB_IC_PASSWORD).OnClick := EnterPasswordItemPopUpMenu;
-      CreateMenuItemEx(MI, 'Decrypt', DB_IC_DECRYPTIMAGE).OnClick := DeCryptItemPopUpMenu;
-    end else
-      CreateMenuItemEx(MI, 'Encrypt', DB_IC_CRYPTIMAGE).OnClick := CryptItemPopUpMenu;
+      MI := CreateMenuItem('Shell', DB_IC_SHELL);
+      MI.OnClick := ShellExecutePopUpMenu;
+    end;
 
-    CreateMenuItemEx(MI, '-');
+    AddUserMenu(Item, False, -1);
 
-    CreateMenuItemEx(MI, 'Hide info in image', DB_IC_STENO).OnClick := MiStenoClick;
-    if ExtinMask('|BMP|PNG|JPG|JPEG|', GetExt(DBItem.FileName)) then
-      CreateMenuItemEx(MI, 'Extract info from image', DB_IC_STENO).OnClick := MiDeStenoClick;
+    //links
 
+    if not NoDBInfoNeeded then
+    begin
+      MI := CreateMenuItem('Refresh', DB_IC_REFRESH_THUM);
+      MI.OnClick := RefreshThumItemPopUpMenu;
+    end;
+
+    if not NoDBInfoNeeded and IsRecord then
+    begin
+      MI := CreateMenuItem('Rotate', DB_IC_ROTATED_0);
+
+      for I := 0 to 3 do
+        CreateMenuItemEx(MI, RotateTitles[I], DB_IC_ROTATED_0 + I, I, I = DBItem.Rotation).OnClick := SetRotateItemPopUpMenu;
+
+      MI := CreateMenuItem('Rating', DB_IC_RATING_STAR);
+
+      for I := 0 to 5 do
+        CreateMenuItemEx(MI, IntToStr(I), RatingIcons[I], I, I = DBItem.Rating).OnClick := SetRatingItemPopUpMenu;
+
+      if DBItem.Access = Db_access_none then
+      begin
+        MI := CreateMenuItem('Private', DB_IC_PRIVATE);
+        MI.Tag := 0;
+        MI.OnClick := PrivateItemPopUpMenu;
+      end;
+
+      if DBItem.Access = Db_access_private then
+      begin
+        MI := CreateMenuItem('Public', DB_IC_COMMON);
+        MI.Tag := 1;
+        MI.OnClick := PrivateItemPopUpMenu;
+      end;
+
+      MI := CreateMenuItem('Date', DB_IC_EDIT_DATE);
+      MI.OnClick := DateItemPopUpMenu;
+
+      MI := CreateMenuItem('Groups', DB_IC_GROUPS);
+
+      for I := 0 to Length(MenuGroups) - 1 do
+        CreateMenuItemEx(MI, MenuGroups[I].GroupName, GetGroupImageInImageList(MenuGroups[I].GroupCode)).OnClick := QuickGroupInfoPopUpMenu;
+
+      CreateMenuItemEx(MI, '-');
+      CreateMenuItemEx(MI, 'Edit groups', DB_IC_GROUPS).OnClick := GroupsPopUpMenu;
+
+    end;
+
+    KeyWords := DBItem.KeyWords.Split([' '], TStringSplitOptions.ExcludeEmpty);
+    if Length(KeyWords) > 0 then
+    begin
+      MI := CreateMenuItem('Keywords', DB_IC_NOTEPAD);
+      for I := 0 to Length(KeyWords) - 1 do
+        CreateMenuItemEx(MI, KeyWords[I], DB_IC_NOTEPAD).OnClick := MiShowKeyWordClick;
+    end;
+
+    if not IsDevicePath(DBItem.FileName) then
+    begin
+      MI := CreateMenuItem('Encrypting', DB_IC_KEY);
+
+      if DBItem.Encrypted then
+      begin
+        CreateMenuItemEx(MI, 'Enter password', DB_IC_PASSWORD).OnClick := EnterPasswordItemPopUpMenu;
+        CreateMenuItemEx(MI, 'Decrypt', DB_IC_DECRYPTIMAGE).OnClick := DeCryptItemPopUpMenu;
+      end else
+        CreateMenuItemEx(MI, 'Encrypt', DB_IC_CRYPTIMAGE).OnClick := CryptItemPopUpMenu;
+
+      CreateMenuItemEx(MI, '-');
+
+      CreateMenuItemEx(MI, 'Hide info in image', DB_IC_STENO).OnClick := MiStenoClick;
+      if ExtinMask('|BMP|PNG|JPG|JPEG|', GetExt(DBItem.FileName)) then
+        CreateMenuItemEx(MI, 'Extract info from image', DB_IC_STENO).OnClick := MiDeStenoClick;
+
+    end;
+
+    if not DBItem.Encrypted and IsWallpaper(DBItem.FileName) and IsCurrentFile then
+    begin
+      MI := CreateMenuItem('Set as desktop wallpaper', DB_IC_WALLPAPER);
+      CreateMenuItemEx(MI, 'Stretch', DB_IC_WALLPAPER).OnClick := WallpaperStretchItemPopUpMenu;
+      CreateMenuItemEx(MI, 'Center', DB_IC_WALLPAPER).OnClick := WallpaperCenterItemPopUpMenu;
+      CreateMenuItemEx(MI, 'Tile', DB_IC_WALLPAPER).OnClick := WallpaperTileItemPopUpMenu;
+    end;
+
+    if IsCurrentFile then
+      CreateMenuItem('Image editor', DB_IC_IMEDITOR).OnClick := ImageEditorItemPopUpMenu;
+
+    if IsCurrentFile then
+      CreateMenuItem('Convert image', DB_IC_RESIZE).OnClick := ConvertItemPopUpMenu_;
+
+    if not NoDBInfoNeeded and IsCurrentFile and IsRecord then
+      CreateMenuItem('Update info', DB_IC_REFRESH_ID).OnClick := RefreshIDItemPopUpMenu;
+
+    if IsCurrentFile then
+      CreateMenuItem('Print' , DB_IC_PRINTER).OnClick := PrintItemPopUpMenu;
+
+    if DBItem.Attr = Db_attr_duplicate then
+    begin
+      CreateMenuItem('Show duplicates', DB_IC_DUPLICATE).OnClick := ShowDuplicatesItemPopUpMenu;
+      CreateMenuItem('Delete duplicates', DB_IC_DEL_DUPLICAT).OnClick := DeleteDuplicatesItemPopUpMenu;
+    end;
+
+    if not NoDBInfoNeeded and IsRecord then
+    begin
+      MI := CreateMenuItem('Delete', DB_IC_DELETE_FILE);
+
+      CreateMenuItemEx(MI, 'Delete info from collection', DB_IC_DELETE_FILE).OnClick := DeleteLItemPopUpMenu;
+
+      if (IsFile and FE) then
+        CreateMenuItemEx(MI, 'Delete file', DB_IC_DELETE_FILE).OnClick := DeleteItemPopUpMenu;
+    end;
+
+    if IsFile and FE then
+      CreateMenuItem('Copy', DB_IC_COPY).OnClick := CopyItemPopUpMenu;
+
+    if not IsDevicePath(DBItem.FileName) and Finfo.IsListItem and FE then
+      CreateMenuItem('Rename', DB_IC_RENAME).OnClick := RenameItemPopUpMenu;
+
+    CreateMenuItem('-');
+
+    if FE then
+      CreateMenuItem('Open in Explorer', DB_IC_EXPLORER).OnClick := ExplorerPopUpMenu;
+
+    if not IsDevicePath(DBItem.FileName) and FE then
+    begin
+      if PhotoShelf.PathInShelf(DBItem.FileName) > -1 then
+        CreateMenuItem('Unshelve', DB_IC_SHELF).OnClick := ShelfItemPopUpMenu
+      else
+        CreateMenuItem('Shelve', DB_IC_SHELF).OnClick := ShelfItemPopUpMenu;
+
+    end;
+
+    CreateMenuItem('Properties', DB_IC_PROPERTIES).OnClick := PropertyItemPopUpMenu;
+  finally
+    TTranslateManager.Instance.EndTranslate;
   end;
-
-  if not DBItem.Encrypted and IsWallpaper(DBItem.FileName) and IsCurrentFile then
-  begin
-    MI := CreateMenuItem('Set as desktop wallpaper', DB_IC_WALLPAPER);
-    CreateMenuItemEx(MI, 'Stretch', DB_IC_WALLPAPER).OnClick := WallpaperStretchItemPopUpMenu;
-    CreateMenuItemEx(MI, 'Center', DB_IC_WALLPAPER).OnClick := WallpaperCenterItemPopUpMenu;
-    CreateMenuItemEx(MI, 'Tile', DB_IC_WALLPAPER).OnClick := WallpaperTileItemPopUpMenu;
-  end;
-
-  if IsCurrentFile then
-    CreateMenuItem('Image editor', DB_IC_IMEDITOR).OnClick := ImageEditorItemPopUpMenu;
-
-  if IsCurrentFile then
-    CreateMenuItem('Convert image', DB_IC_RESIZE).OnClick := ConvertItemPopUpMenu_;
-
-  if not NoDBInfoNeeded and IsCurrentFile and IsRecord then
-    CreateMenuItem('Update info', DB_IC_REFRESH_ID).OnClick := RefreshIDItemPopUpMenu;
-
-  if IsCurrentFile then
-    CreateMenuItem('Print' , DB_IC_PRINTER).OnClick := PrintItemPopUpMenu;
-
-  if DBItem.Attr = Db_attr_duplicate then
-  begin
-    CreateMenuItem('Show duplicates', DB_IC_DUPLICATE).OnClick := ShowDuplicatesItemPopUpMenu;
-    CreateMenuItem('Delete duplicates', DB_IC_DEL_DUPLICAT).OnClick := DeleteDuplicatesItemPopUpMenu;
-  end;
-
-  if not NoDBInfoNeeded and IsRecord then
-  begin
-    MI := CreateMenuItem('Delete', DB_IC_DELETE_FILE);
-
-    CreateMenuItemEx(MI, 'Delete info from collection', DB_IC_DELETE_FILE).OnClick := DeleteLItemPopUpMenu;
-
-    if (IsFile and FE) then
-      CreateMenuItemEx(MI, 'Delete file', DB_IC_DELETE_FILE).OnClick := DeleteItemPopUpMenu;
-  end;
-
-  if IsFile and FE then
-    CreateMenuItem('Copy', DB_IC_COPY).OnClick := CopyItemPopUpMenu;
-
-  if not IsDevicePath(DBItem.FileName) and Finfo.IsListItem and FE then
-    CreateMenuItem('Rename', DB_IC_RENAME).OnClick := RenameItemPopUpMenu;
-
-  CreateMenuItem('-');
-
-  if FE then
-    CreateMenuItem('Open in Explorer', DB_IC_EXPLORER).OnClick := ExplorerPopUpMenu;
-
-  if not IsDevicePath(DBItem.FileName) and FE then
-  begin
-    if PhotoShelf.PathInShelf(DBItem.FileName) > -1 then
-      CreateMenuItem('Unshelve', DB_IC_SHELF).OnClick := ShelfItemPopUpMenu
-    else
-      CreateMenuItem('Shelve', DB_IC_SHELF).OnClick := ShelfItemPopUpMenu;
-
-  end;
-
-  CreateMenuItem('Properties', DB_IC_PROPERTIES).OnClick := PropertyItemPopUpMenu;
 end;
    
 procedure TDBPopupMenu.MiSelectActionsClick(Sender: TObject);
@@ -1094,7 +1100,7 @@ begin
   end;
 end;
 
-destructor TDBPopupMenu.destroy;
+destructor TDBPopupMenu.Destroy;
 begin
   FreeList(FUserMenu);
   F(FPopupMenu);
@@ -1623,7 +1629,7 @@ begin
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
     begin
-      EventInfo.Name := FInfo[I].FileName;
+      EventInfo.FileName := FInfo[I].FileName;
 
       if IsInShelf then
       begin
@@ -1636,7 +1642,7 @@ begin
       end;
     end;
 
-  EventInfo.Name := '';
+  EventInfo.FileName := '';
   DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfChanged], EventInfo);
 end;
 
@@ -1705,7 +1711,7 @@ begin
     if FInfo[I].Selected then
     begin
       SetRotate(Finfo[I].ID, NewRotate);
-      EventInfo.Rotate := NewRotate;
+      EventInfo.Rotation := NewRotate;
       DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
     end;
 end;

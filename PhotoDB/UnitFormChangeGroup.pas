@@ -240,7 +240,7 @@ begin
     try
       GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
       EventInfo.Data := GroupItem;
-      EventInfo.Name := FGroup.GroupName;
+      EventInfo.FileName := FGroup.GroupName;
       EventInfo.NewName := GroupItem.GroupName;
       DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
     finally

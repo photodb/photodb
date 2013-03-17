@@ -87,7 +87,7 @@ begin
 
         for I := 0 to AddedItems.Count - 1 do
         begin
-          EventInfo.Name := AddedItems[I];
+          EventInfo.FileName := AddedItems[I];
           DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfItemAdded], EventInfo);
         end;
       end
@@ -157,7 +157,7 @@ begin
 
         for I := 0 to RemovedItems.Count - 1 do
         begin
-          EventInfo.Name := RemovedItems[I];
+          EventInfo.FileName := RemovedItems[I];
           DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfItemRemoved], EventInfo);
         end;
       end

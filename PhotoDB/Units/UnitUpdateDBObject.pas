@@ -300,7 +300,7 @@ begin
   begin
     for I := 0 to FFilesInfo.Count - 1 do
     begin
-      EventInfo.Name := AnsiLowerCase(FFilesInfo[I].FileName);
+      EventInfo.FileName := AnsiLowerCase(FFilesInfo[I].FileName);
       DBKernel.DoIDEvent(Form, 0, [EventID_CancelAddingImage], EventInfo);
     end;
   end;

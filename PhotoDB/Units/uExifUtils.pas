@@ -619,9 +619,9 @@ begin
 
         if [EventID_Param_Rotate, SetNewIDFileData] * Info.Params <> [] then
         begin
-          if not IsTheSameOrientation(ExifData.Orientation, CreateOrientation(Info.Value.Rotate)) then
+          if not IsTheSameOrientation(ExifData.Orientation, CreateOrientation(Info.Value.Rotation)) then
           begin
-            ExifData.Orientation := CreateOrientation(Info.Value.Rotate);
+            ExifData.Orientation := CreateOrientation(Info.Value.Rotation);
             Changed := True;
           end;
         end;

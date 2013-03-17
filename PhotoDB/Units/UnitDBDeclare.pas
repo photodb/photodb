@@ -29,6 +29,17 @@ uses
 const
   BufferSize = 100 * 3 * 4 * 4096;
 
+const
+  LINE_INFO_UNDEFINED = 0;
+  LINE_INFO_OK        = 1;
+  LINE_INFO_ERROR     = 2;
+  LINE_INFO_WARNING   = 3;
+  LINE_INFO_PLUS      = 4;
+  LINE_INFO_PROGRESS  = 5;
+  LINE_INFO_DB        = 6;
+  LINE_INFO_GREETING  = 7;
+  LINE_INFO_INFO      = -1;
+
 type
   PBuffer = ^TBuffer;
   TBuffer = array [1..BufferSize] of Byte;
@@ -47,6 +58,8 @@ type
   TGetAvaliableCryptFileList = function(Sender: TObject): TArInteger of object;
 
 type
+  TDBPopupMenuInfoRecord = class;
+
   TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
     EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
     EventID_Param_KeyWords, EventID_Param_Attr,
@@ -65,41 +78,28 @@ type
   TEventFields = set of TEventField;
 
   TEventValues = record
-    Name: string;
-    NewName: string;
     ID: Integer;
-    Rotate: Integer;
+    FileName: string;
+    NewName: string;
+    Rotation: Integer;
     Rating: Integer;
     Comment: string;
     KeyWords: string;
     Access: Integer;
     Attr: Integer;
     Date: TDateTime;
+    Time: TDateTime;
     IsDate: Boolean;
     IsTime: Boolean;
-    Time: TDateTime;
     Groups: string;
-    JPEGImage: TJpegImage;
-    Encrypted: Boolean;
-    Include: Boolean;
     Links: string;
+    JPEGImage: TJpegImage;
+    IsEncrypted: Boolean;
+    Include: Boolean;
     Data: TObject;
+    procedure ReadFromInfo(Info: TDBPopupMenuInfoRecord);
   end;
 
-  ///////////////CONSTANT SECTION//////////////////////
-
-const
-  LINE_INFO_UNDEFINED = 0;
-  LINE_INFO_OK        = 1;
-  LINE_INFO_ERROR     = 2;
-  LINE_INFO_WARNING   = 3;
-  LINE_INFO_PLUS      = 4;
-  LINE_INFO_PROGRESS  = 5;
-  LINE_INFO_DB        = 6;
-  LINE_INFO_GREETING  = 7;
-  LINE_INFO_INFO      = -1;
-
-type
   TClonableObject = class(TObject)
   public
     function Clone: TClonableObject; virtual; abstract;
@@ -125,7 +125,6 @@ type
     destructor Destroy; override;
   end;
 
-type
   TCryptImageThreadOptions = record
     Files: TArStrings;
     IDs: TArInteger;
@@ -135,7 +134,6 @@ type
     Action: Integer;
   end;
 
-type
   // Структура с информацией об изменении в файловой системе (передается в callback процедуру)
   PInfoCallback = ^TInfoCallback;
 
@@ -152,7 +150,6 @@ type
 
   TNotifyDirectoryChangeW = procedure(Sender: TObject; SID: string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
 
-type
   TImportPlace = class(TObject)
   public
     Path: string;
@@ -165,7 +162,6 @@ type
     procedure Assign(Item: TGeoLocation);
   end;
 
-type
   TDBPopupMenuInfoRecord = class(TPathItem)
   private
     FOriginalFileName: string;
@@ -616,7 +612,6 @@ end;
 
 constructor TDatabaseInfo.Create;
 begin
-
 end;
 
 constructor TDatabaseInfo.Create(Title, Path, Icon, Description: string; Order: Integer = 0);
@@ -626,6 +621,27 @@ begin
   Self.Icon := Icon;
   Self.Description := Description;
   Self.Order := Order;
+end;
+
+{ TEventValues }
+
+procedure TEventValues.ReadFromInfo(Info: TDBPopupMenuInfoRecord);
+begin
+  Self.FileName := AnsiLowerCase(Info.FileName);
+  Self.ID := LastInseredID;
+  Self.Rotation := Info.Rotation;
+  Self.Rating := Info.Rating;
+  Self.Comment := Info.Comment;
+  Self.KeyWords := Info.KeyWords;
+  Self.Access := Info.Access;
+  Self.Attr := Info.Attr;
+  Self.Date := Info.Date;
+  Self.IsDate := Info.IsDate;
+  Self.IsTime := Info.IsTime;
+  Self.Time := TimeOf(Info.Time);
+  Self.Groups := Info.Groups;
+  Self.IsEncrypted := Info.Encrypted;
+  Self.Include := Info.Include;
 end;
 
 end.

@@ -36,26 +36,34 @@ type
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
   end;
 
-  TDateStackYearItem = class(TPathItem)
-  private
+  TCalendarItem = class(TPathItem)
+  protected
     FCount: Integer;
+    function GetOrder: Integer; virtual; abstract;
+  public
+    procedure SetCount(Count: Integer);
+    procedure IntCount;
+    property Order: Integer read GetOrder;
+  end;
+
+  TDateStackYearItem = class(TCalendarItem)
+  private
     function GetYear: Integer;
   protected
     function InternalGetParent: TPathItem; override;
     function InternalCreateNewInstance: TPathItem; override;
     function GetIsDirectory: Boolean; override;
     function GetDisplayName: string; override;
+    function GetOrder: Integer; override;
   public
-    procedure SetCount(Count: Integer);
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
     property Year: Integer read GetYear;
   end;
 
-  TDateStackMonthItem = class(TPathItem)
+  TDateStackMonthItem = class(TCalendarItem)
   private
-    FCount: Integer;
     function GetMonth: Integer;
     function GetYear: Integer;
   protected
@@ -63,8 +71,8 @@ type
     function InternalCreateNewInstance: TPathItem; override;
     function GetIsDirectory: Boolean; override;
     function GetDisplayName: string; override;
+    function GetOrder: Integer; override;
   public
-    procedure SetCount(Count: Integer);
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
@@ -72,9 +80,8 @@ type
     property Year: Integer read GetYear;
   end;
 
-  TDateStackDayItem = class(TPathItem)
+  TDateStackDayItem = class(TCalendarItem)
   private
-    FCount: Integer;
     function GetDay: Integer;
     function GetMonth: Integer;
     function GetYear: Integer;
@@ -84,8 +91,8 @@ type
     function InternalCreateNewInstance: TPathItem; override;
     function GetIsDirectory: Boolean; override;
     function GetDisplayName: string; override;
+    function GetOrder: Integer; override;
   public
-    procedure SetCount(Count: Integer);
     procedure Assign(Item: TPathItem); override;
     function LoadImage(Options, ImageSize: Integer): Boolean; override;
     constructor CreateFromPath(APath: string; Options, ImageSize: Integer); override;
@@ -496,6 +503,11 @@ begin
   Result := True;
 end;
 
+function TDateStackYearItem.GetOrder: Integer;
+begin
+  Result := Year * 10000;
+end;
+
 function TDateStackYearItem.GetYear: Integer;
 var
   S: string;
@@ -542,11 +554,6 @@ begin
   Result := True;
 end;
 
-procedure TDateStackYearItem.SetCount(Count: Integer);
-begin
-  FCount := Count;
-end;
-
 { TDateStackMonthItem }
 
 procedure TDateStackMonthItem.Assign(Item: TPathItem);
@@ -588,6 +595,11 @@ begin
     S := System.Copy(S, P + 1, Length(S) - P);
     Result := StrToInt64Def(S, 0);
   end;
+end;
+
+function TDateStackMonthItem.GetOrder: Integer;
+begin
+  Result := Year + 10000 + Month + 100;
 end;
 
 function TDateStackMonthItem.GetYear: Integer;
@@ -639,11 +651,6 @@ begin
   FindIcon(HInstance, 'MONTHICON', ImageSize, 32, Icon);
   FImage := TPathImage.Create(Icon);
   Result := True;
-end;
-
-procedure TDateStackMonthItem.SetCount(Count: Integer);
-begin
-  FCount := Count;
 end;
 
 { TDateStackDayItem }
@@ -700,6 +707,11 @@ begin
       Result := StrToInt64Def(S, 0);
     end;
   end;
+end;
+
+function TDateStackDayItem.GetOrder: Integer;
+begin
+  Result := Year * 10000 + Month * 100 + Day;
 end;
 
 function TDateStackDayItem.GetYear: Integer;
@@ -770,7 +782,14 @@ begin
   Result := True;
 end;
 
-procedure TDateStackDayItem.SetCount(Count: Integer);
+{ TCalendarItem }
+
+procedure TCalendarItem.IntCount;
+begin
+  Inc(FCount);
+end;
+
+procedure TCalendarItem.SetCount(Count: Integer);
 begin
   FCount := Count;
 end;

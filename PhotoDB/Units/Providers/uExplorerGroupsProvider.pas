@@ -286,7 +286,7 @@ begin
         Result := True;
       end;
 
-      EventInfo.Name := Item.GroupName;
+      EventInfo.FileName := Item.GroupName;
       EventInfo.NewName := Options.NewName;
 
       Item.GroupName := Options.NewName;

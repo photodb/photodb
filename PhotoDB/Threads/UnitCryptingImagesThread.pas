@@ -102,9 +102,9 @@ var
   EventInfo: TEventValues;
 begin
   if FOptions.Action = ACTION_ENCRYPT_IMAGES then
-    EventInfo.Encrypted := CryptResult = CRYPT_RESULT_OK
+    EventInfo.IsEncrypted := CryptResult = CRYPT_RESULT_OK
   else
-    EventInfo.Encrypted := CryptResult <> CRYPT_RESULT_OK;
+    EventInfo.IsEncrypted := CryptResult <> CRYPT_RESULT_OK;
 
   if IntParam <> 0 then
     DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt], EventInfo)

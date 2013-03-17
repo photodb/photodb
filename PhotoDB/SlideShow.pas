@@ -1559,7 +1559,7 @@ begin
   if SetNewIDFileData in Params then
   begin
     for I := 0 to CurrentInfo.Count - 1 do
-      if AnsiLowerCase(CurrentInfo[I].FileName) = AnsiLowerCase(Value.name) then
+      if AnsiLowerCase(CurrentInfo[I].FileName) = AnsiLowerCase(Value.FileName) then
       begin
         CurrentInfo[I].ID := ID;
         CurrentInfo[I].Date := Value.Date;
@@ -1567,7 +1567,7 @@ begin
         CurrentInfo[I].IsDate := True;
         CurrentInfo[I].IsTime := Value.IsTime;
         CurrentInfo[I].Rating := Value.Rating;
-        CurrentInfo[I].Rotation := Value.Rotate;
+        CurrentInfo[I].Rotation := Value.Rotation;
         CurrentInfo[I].Comment := Value.Comment;
         CurrentInfo[I].KeyWords := Value.Comment;
         CurrentInfo[I].Links := Value.Links;
@@ -1575,7 +1575,7 @@ begin
         CurrentInfo[I].IsDate := True;
         CurrentInfo[I].IsTime := Value.IsTime;
         CurrentInfo[I].InfoLoaded := True;
-        CurrentInfo[I].Encrypted := Value.Encrypted;
+        CurrentInfo[I].Encrypted := Value.IsEncrypted;
         CurrentInfo[I].Links := '';
 
         if I = CurrentFileNumber then
@@ -1599,7 +1599,7 @@ begin
           CurrentInfo[I].IsTime := Value.IsTime;
         if EventID_Param_Crypt in Params then
         begin
-          CurrentInfo[I].Encrypted := Value.Encrypted;
+          CurrentInfo[I].Encrypted := Value.IsEncrypted;
           UpdateCrypted;
         end;
         if EventID_Param_Groups in Params then
@@ -1615,10 +1615,10 @@ begin
             DisplayRating := CurrentInfo[I].Rating;
         end;
         if (EventID_Param_Rotate in Params) then
-          CurrentInfo[I].Rotation := Value.Rotate;
+          CurrentInfo[I].Rotation := Value.Rotation;
 
         if EventID_Param_Name in Params then
-          CurrentInfo[I].FileName := Value.name;
+          CurrentInfo[I].FileName := Value.FileName;
         if EventID_Param_KeyWords in Params then
           CurrentInfo[I].KeyWords := Value.KeyWords;
         if EventID_Param_Links in Params then
@@ -1641,7 +1641,7 @@ begin
       for I := 0 to CurrentInfo.Count - 1 do
         if AnsiLowerCase(CurrentInfo[I].FileName) = AnsiLowerCase(Value.NewName) then
         begin
-          CurrentInfo[I].Encrypted := Value.Encrypted;
+          CurrentInfo[I].Encrypted := Value.IsEncrypted;
           UpdateCrypted;
         end;
     end;
@@ -1650,7 +1650,7 @@ begin
   if [EventID_Param_Rotate, EventID_Param_Image, EventID_Param_Name] * Params <> [] then
   begin
     for I := 0 to LockEventRotateFileList.Count - 1 do
-      if AnsiLowerCase(Value.Name) = LockEventRotateFileList[I] then
+      if AnsiLowerCase(Value.FileName) = LockEventRotateFileList[I] then
       begin
         LockEventRotateFileList.Delete(I);
         Exit;
@@ -1659,7 +1659,7 @@ begin
 
   if (EventID_Param_Name in Params) then
   begin
-    if Item.FileName = Value.Name then
+    if Item.FileName = Value.FileName then
     begin
       if Value.NewName <> '' then
         Item.FileName := Value.NewName;
@@ -1685,7 +1685,7 @@ begin
   if Id = Item.ID then
   begin
     if (EventID_Param_Rotate in Params) then
-      Item.Rotation := Value.Rotate;
+      Item.Rotation := Value.Rotation;
     if (EventID_Param_Rotate in Params) or (EventID_Param_Image in Params) then
       LoadImage_(Sender, False, Zoom, False);
   end;
@@ -3973,13 +3973,13 @@ begin
   begin
     PhotoShelf.AddToShelf(Item.FileName);
     EventInfo.ID := 0;
-    EventInfo.Name := Item.FileName;
+    EventInfo.FileName := Item.FileName;
     DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemAdded], EventInfo);
   end else
   begin
     PhotoShelf.RemoveFromShelf(Item.FileName);
     EventInfo.ID := 0;
-    EventInfo.Name := Item.FileName;
+    EventInfo.FileName := Item.FileName;
     DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemRemoved], EventInfo);
   end;
 end;
