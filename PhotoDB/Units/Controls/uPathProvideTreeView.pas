@@ -155,6 +155,9 @@ var
   Data: PData;
 begin
   Result := nil;
+  if Node = nil then
+    Exit(Result);
+
   repeat
     if ( Node.ChildCount > 0 ) and ( Tree.GetFirstChild( Node ) <> nil ) then
     begin
@@ -177,9 +180,6 @@ end;
 function FindInsertPlace(Tree: TCustomVirtualDrawTree; Node: PVirtualNode; PI: TPathItem): PVirtualNode;
 var
   Data: PData;
-  Number,
-  NumberNoInsert,
-  Count: Integer;
 
   function FirstPathItemBiggerThenSecond(Item1, Item2: TPathItem): Boolean;
   begin
@@ -208,16 +208,17 @@ end;
 
 procedure TPathProvideTreeView.AddItemToCalendar(Date: TDateTime);
 var
-  Path: string;
-  Data: PData;
-  Node, InsertPlaceNode: PVirtualNode;
   NeedRepainting: Boolean;
   Calendar: PVirtualNode;
-  ChildData: TData;
   PrevNode: PVirtualNode;
   PI: TPathItem;
 
   function UpdateNode(Path: string): Boolean;
+  var
+    InsertPlaceNode,
+    Node: PVirtualNode;
+    Data: PData;
+    ChildData: TData;
   begin
     Result := False;
     Node := FindPathInTree(Self, GetFirstChild( nil ), AnsiLowerCase(Path));
@@ -261,7 +262,7 @@ begin
     Exit;
 
   PrevNode := Calendar;
-  if ((vsHasChildren in Node.States) and (Node.ChildCount > 0)) or (not (vsHasChildren in Node.States) and (Node.ChildCount = 0)) then
+  if ((vsHasChildren in Calendar.States) and (Calendar.ChildCount > 0)) or (not (vsHasChildren in Calendar.States) and (Calendar.ChildCount = 0)) then
   begin
     if UpdateNode(cDatesPath + '\' + IntToStr(YearOf(Date))) then
     begin

@@ -59,6 +59,7 @@ procedure TExifPatchThread.Execute;
 var
   Info: TExifPatchInfo;
   FileName: string;
+  LastUpdateTime: Cardinal;
 begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
@@ -66,14 +67,21 @@ begin
     ExifPatchManager.RegisterThread;
     try
       Info := ExifPatchManager.ExtractPatchInfo;
-      while Info <> nil do
+      LastUpdateTime := GetTickCount;
+      while (Info <> nil) or (GetTickCount - LastUpdateTime < 10000) do
       begin
-        FileName := Info.Value.FileName;
-        if not FileExistsSafe(FileName) then
-          FileName := uDBUtils.GetFileNameById(Info.ID);
-          
-        UpdateFileExif(FileName, Info);
-        F(Info);
+        if Info <> nil then
+        begin
+          LastUpdateTime := GetTickCount;
+          FileName := Info.Value.FileName;
+          if not FileExistsSafe(FileName) then
+            FileName := uDBUtils.GetFileNameById(Info.ID);
+
+          UpdateFileExif(FileName, Info);
+          F(Info);
+        end;
+
+        Sleep(100);
         Info := ExifPatchManager.ExtractPatchInfo;
       end;
     finally

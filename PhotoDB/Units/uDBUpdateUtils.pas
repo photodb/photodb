@@ -100,6 +100,7 @@ var
   IC: TInsertCommand;
   M: TMemoryStream;
   ExifData: TExifData;
+  FileDate: TDateTime;
 
   procedure HandleError(Error: string);
   begin
@@ -140,6 +141,19 @@ begin
           //if rotation no==isn't set
           if (Info.Rotation and DB_IMAGE_ROTATE_MASK = DB_IMAGE_ROTATE_0) and (Info.Rotation <> DB_IMAGE_ROTATE_FIXED) then
             Info.Rotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+        end else
+        begin
+          FileDate := GetFileDateTime(Info.FileName);
+          if not FileAge(Info.FileName, FileDate) then
+            FileDate := Now;
+
+          if YearOf(Date) < 1900 then
+            FileDate := Now;
+
+          Info.Date := DateOf(FileDate);
+          Info.Time := TimeOf(FileDate);
+          Info.IsDate := True;
+          Info.IsTime := True;
         end;
       except
         on e: Exception do

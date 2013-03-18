@@ -35,6 +35,7 @@ uses
   uGOM,
   uDBTypes,
   uDBUtils,
+  uLogger,
   uDBUpdateUtils,
   uDBPopupMenuInfo,
   uLockedFileNotifications,
@@ -63,6 +64,7 @@ type
     FQuery: TDataSet;
     FThreadID: TGUID;
     FSkipExtensions: string;
+    FCollectionFile: string;
     FAddRawFiles: Boolean;
     function IsDirectoryChangedOnDrive(Directory: string; ItemSizes: TList<Int64>; Items: TList<string>): Boolean;
     procedure AddItemsToDatabase(Items: TList<string>);
@@ -72,7 +74,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create;
+    constructor Create(CollectionFile: string);
     destructor Destroy; override;
   end;
 
@@ -87,6 +89,7 @@ type
   private
     FWatchers: TList<TWachDirectoryClass>;
     FState: TGUID;
+    FCollectionFile: string;
     procedure StartWatch;
     procedure StopWatch;
   public
@@ -98,8 +101,12 @@ type
   end;
 
   TDatabaseTask = class(TObject)
+  protected
+    FCollectionFile: string;
   public
+    constructor Create(CollectionFile: string);
     function IsPrepaired: Boolean; virtual;
+    property CollectionFile: string read FCollectionFile;
   end;
 
   TUpdateTask = class(TDatabaseTask)
@@ -112,10 +119,10 @@ type
     function GetFileName: string;
     procedure NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
   public
-    constructor Create(FileName: string); overload;
+    constructor Create(CollectionFile: string; Data: TDBPopupMenuInfoRecord); overload;
+    constructor Create(CollectionFile: string; FileName: string); overload;
     destructor Destroy; override;
     procedure Execute(Items: TArray<TAddTask>);
-    constructor Create(Data: TDBPopupMenuInfoRecord); overload;
     function IsPrepaired: Boolean; override;
     property FileName: string read GetFileName;
     property Data: TDBPopupMenuInfoRecord read FData;
@@ -278,9 +285,10 @@ begin
   Exit(True);
 end;
 
-constructor TDatabaseDirectoriesUpdater.Create;
+constructor TDatabaseDirectoriesUpdater.Create(CollectionFile: string);
 begin
   inherited Create(nil, False);
+  FCollectionFile := CollectionFile;
   FThreadID := GetGUID;
   DirectoriesScanID := FThreadID;
 
@@ -431,7 +439,7 @@ begin
   AddTasks := TList<TAddTask>.Create;
   try
      for FileName in Items do
-       AddTasks.Add(TAddTask.Create(FileName));
+       AddTasks.Add(TAddTask.Create(FCollectionFile, FileName));
 
      UpdaterStorage.AddRange(TList<TDatabaseTask>(AddTasks));
   finally
@@ -459,7 +467,8 @@ procedure TUserDirectoriesWatcher.Execute;
 begin
   inherited;
   StartWatch;
-  TDatabaseDirectoriesUpdater.Create;
+  FCollectionFile := dbname;
+  TDatabaseDirectoriesUpdater.Create(FCollectionFile);
 end;
 
 procedure TUserDirectoriesWatcher.StartWatch;
@@ -515,7 +524,7 @@ begin
 
     case Info.FAction of
       FILE_ACTION_ADDED:
-        UpdaterStorage.Add(TAddTask.Create(Info.FNewFileName));
+        UpdaterStorage.Add(TAddTask.Create(FCollectionFile, Info.FNewFileName));
       FILE_ACTION_REMOVED,
       FILE_ACTION_RENAMED_NEW_NAME:
     end;
@@ -530,6 +539,11 @@ end;
 
 { TDatabaseTask }
 
+constructor TDatabaseTask.Create(CollectionFile: string);
+begin
+  FCollectionFile := CollectionFile;
+end;
+
 function TDatabaseTask.IsPrepaired: Boolean;
 begin
   Result := True;
@@ -539,23 +553,31 @@ end;
 
 procedure TUpdateTask.Execute;
 begin
-  //currently not implemented
+  try
+    //currently not implemented
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
 end;
 
 { TAddTask }
 
-constructor TAddTask.Create(FileName: string);
+constructor TAddTask.Create(CollectionFile: string; Data: TDBPopupMenuInfoRecord);
 begin
-  FData := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
-  FData.Include := True;
-end;
+  inherited Create(CollectionFile);
 
-constructor TAddTask.Create(Data: TDBPopupMenuInfoRecord);
-begin
   if Data = nil then
     raise Exception.Create('Can''t create task for null task!');
 
   FData := Data.Copy;
+end;
+
+constructor TAddTask.Create(CollectionFile: string; FileName: string);
+begin
+  inherited Create(CollectionFile);
+  FData := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+  FData.Include := True;
 end;
 
 destructor TAddTask.Destroy;
@@ -572,67 +594,72 @@ var
   Info: TDBPopupMenuInfoRecord;
   Res: TImageDBRecordA;
 begin
-
-  Infos := TDBPopupMenuInfo.Create;
   try
-    for I := 0 to Length(Items) - 1 do
-      Infos.Add(Items[I].Data.Copy);
-
-    ResArray := GetImageIDWEx(Infos, False);
+    Infos := TDBPopupMenuInfo.Create;
     try
-      for I := 0 to Length(ResArray) - 1 do
-      begin
-        Res := ResArray[I];
-        Info := Infos[I];
+      for I := 0 to Length(Items) - 1 do
+        Infos.Add(Items[I].Data.Copy);
 
-        if Res.Jpeg = nil then
+      ResArray := GetImageIDWEx(Infos, False);
+      try
+        for I := 0 to Length(ResArray) - 1 do
         begin
-          //failed to load image
-          Continue;
-        end;
+          Res := ResArray[I];
+          Info := Infos[I];
 
-        //decode jpeg in background for fasten drawing in GUI
-        Res.Jpeg.DIBNeeded;
-
-        TThread.Synchronize(nil,
-          procedure
+          if Res.Jpeg = nil then
           begin
-            NotifyAboutFileProcessing(Info, Res);
-          end
-        );
-
-        //new file in collection
-        if Res.Count = 0 then
-        begin
-          TDatabaseUpdateManager.AddFile(Info, Res);
-          Continue;
-        end;
-
-        if Res.Count = 1 then
-        begin
-          //moved file
-          if (StaticPath(Res.FileNames[0]) and not FileExists(Res.FileNames[0])) or (Res.Attr[0] = Db_attr_not_exists) then
-          begin
-            TDatabaseUpdateManager.MergeWithExistedInfo(Res.IDs[0], Info, Res);
+            //failed to load image
             Continue;
           end;
 
-          //the same file
-          if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
+          //decode jpeg in background for fasten drawing in GUI
+          Res.Jpeg.DIBNeeded;
+
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              NotifyAboutFileProcessing(Info, Res);
+            end
+          );
+
+          //new file in collection
+          if Res.Count = 0 then
+          begin
+            TDatabaseUpdateManager.AddFile(Info, Res);
             Continue;
+          end;
+
+          if Res.Count = 1 then
+          begin
+            //moved file
+            if (StaticPath(Res.FileNames[0]) and not FileExists(Res.FileNames[0])) or (Res.Attr[0] = Db_attr_not_exists) then
+            begin
+              TDatabaseUpdateManager.MergeWithExistedInfo(Res.IDs[0], Info, Res);
+              Continue;
+            end;
+
+            //the same file
+            if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
+              Continue;
+          end;
+
+          //add file as diplicate
+          TDatabaseUpdateManager.AddFileAsDuplicate(Info, Res);
         end;
 
-        //add file as diplicate
-        TDatabaseUpdateManager.AddFileAsDuplicate(Info, Res);
+      finally
+        for I := 0 to Length(ResArray) - 1 do
+          if ResArray[I].Jpeg <> nil then
+             ResArray[I].Jpeg.Free;
       end;
-
     finally
-      for I := 0 to Length(ResArray) - 1 do
-        if ResArray[I].Jpeg <> nil then
-           ResArray[I].Jpeg.Free;
+      F(Infos);
     end;
-  finally
-    F(Infos);
+
+  except
+    on e: Exception do
+      EventLog(e);
   end;
 end;
 
@@ -777,7 +804,7 @@ procedure TDatabaseUpdater.Execute;
 var
   Task: TDatabaseTask;
   AddTasks: TArray<TAddTask>;
-  UpdateTasks: TArray<TUpdateTask>;
+  UpdateTask: TUpdateTask;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -800,13 +827,12 @@ begin
     if DBTerminating then
       Break;
 
-    UpdateTasks := UpdaterStorage.Take<TUpdateTask>(1);
+    UpdateTask := UpdaterStorage.TakeOne<TUpdateTask>();
     try
-      if Length(UpdateTasks) > 0 then
-        UpdateTasks[0].Execute;
+      if UpdateTask <> nil then
+        UpdateTask.Execute;
     finally
-      for Task in UpdateTasks do
-        Task.Free;
+      F(Task);
     end;
   end;
 end;
