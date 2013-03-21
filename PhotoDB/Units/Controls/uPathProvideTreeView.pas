@@ -202,7 +202,8 @@ begin
 
     Result := Node;
 
-    Node := Node.NextSibling;
+    if Node <> nil then
+      Node := Node.NextSibling;
   until Node = nil;
 end;
 

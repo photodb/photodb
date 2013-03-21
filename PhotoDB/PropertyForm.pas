@@ -721,7 +721,7 @@ begin
       CollectionMemo.Text := DBkernel.GetDataBaseName;
       OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
-      if YearOf(DataRecord.Date) > 1900 then
+      if YearOf(DataRecord.Date) > cMinEXIFYear then
         DateEdit.DateTime := DataRecord.Date
       else
         DateEdit.DateTime := DateOf(Now);
@@ -1205,7 +1205,7 @@ begin
   IDLabel.Text := L('Not available');
   OwnerMemo.Text := L('Not available');
 
-  if (FFileDate > 0) and (YearOf(FFileDate) > 1900) then
+  if (FFileDate > 0) and (YearOf(FFileDate) > cMinEXIFYear) then
   begin
     DateEdit.DateTime := FFileDate;
     TimeEdit.Time := FFileTime;

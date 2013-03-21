@@ -102,6 +102,8 @@ const
   cMinPreviewWidth = 100;
   cMinListViewWidth = 450;
 
+  cMinEXIFYear = 1900;
+
 const
   DB_VER_1_8 = 1;
   DB_VER_1_9 = 2;

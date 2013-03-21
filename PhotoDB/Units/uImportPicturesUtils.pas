@@ -12,6 +12,7 @@ uses
 
   CCR.Exif,
 
+  uConstants,
   uMemory,
   uExplorerPortableDeviceProvider,
   uRawExif,
@@ -83,7 +84,7 @@ begin
         ExifData := TExifData.Create;
         try
           ExifData.LoadFromGraphic(PI.Path);
-          if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 1900) then
+          if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
             Result := DateOf(ExifData.DateTimeOriginal);
         finally
           F(ExifData);

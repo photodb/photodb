@@ -1048,8 +1048,7 @@ begin
         Exit;
       ItemData := FData[Item.Index];
       SetLength(G, 0);
-      if ShiftKeyDown then
-        CopyFullRecordInfo(Handle, ItemData.ID);
+
       if GetSubItemIndexByPoint(ElvMain, Item, P) = 2 then
       begin
         Words := SpilitWords(ItemData.KeyWords);

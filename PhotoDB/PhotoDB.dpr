@@ -428,7 +428,8 @@ uses
   uDBUpdateUtils in 'Units\uDBUpdateUtils.pas',
   uSiteUtils in 'Units\uSiteUtils.pas',
   uTranslateUtils in 'Units\uTranslateUtils.pas',
-  uDialogUtils in 'Units\uDialogUtils.pas';
+  uDialogUtils in 'Units\uDialogUtils.pas',
+  uFormUpdateStatus in 'uFormUpdateStatus.pas' {FormUpdateStatus};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -580,7 +581,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);

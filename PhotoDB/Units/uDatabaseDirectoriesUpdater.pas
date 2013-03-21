@@ -36,6 +36,8 @@ uses
   uDBTypes,
   uDBUtils,
   uLogger,
+  uCounters,
+  uFormInterfaces,
   uDBUpdateUtils,
   uDBPopupMenuInfo,
   uLockedFileNotifications,
@@ -43,6 +45,38 @@ uses
   uSettings;
 
 type
+  TDatabaseTask = class(TObject)
+  protected
+    FCollectionFile: string;
+    FFileName: string;
+  public
+    function IsPrepaired: Boolean;
+    constructor Create(CollectionFile, FileName: string);
+    property CollectionFile: string read FCollectionFile;
+    property FileName: string read FFileName;
+  end;
+
+  TUpdateTask = class(TDatabaseTask)
+  private
+    FID: Integer;
+  public
+    constructor Create(CollectionFile: string; ID: Integer; FileName: string); overload;
+    procedure Execute;
+    property ID: Integer read FID;
+  end;
+
+  TAddTask = class(TDatabaseTask)
+  private
+    FData: TDBPopupMenuInfoRecord;
+    procedure NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+  public
+    constructor Create(CollectionFile: string; Data: TDBPopupMenuInfoRecord); overload;
+    constructor Create(CollectionFile: string; FileName: string); overload;
+    destructor Destroy; override;
+    procedure Execute(Items: TArray<TAddTask>);
+    property Data: TDBPopupMenuInfoRecord read FData;
+  end;
+
   TDatabaseDirectory = class(TDataObject)
   private
     FPath: string;
@@ -66,8 +100,9 @@ type
     FSkipExtensions: string;
     FCollectionFile: string;
     FAddRawFiles: Boolean;
-    function IsDirectoryChangedOnDrive(Directory: string; ItemSizes: TList<Int64>; Items: TList<string>): Boolean;
+    function IsDirectoryChangedOnDrive(Directory: string; ItemSizes: TList<Int64>; ItemsToAdd: TList<string>; ItemsToUpdate: TList<TUpdateTask>): Boolean;
     procedure AddItemsToDatabase(Items: TList<string>);
+    procedure UpdateItemsInDatabase(Items: TList<TUpdateTask>);
     function GetIsValidThread: Boolean;
     function CanAddFileAutomatically(FileName: string): Boolean;
     property IsValidThread: Boolean read GetIsValidThread;
@@ -100,40 +135,16 @@ type
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
   end;
 
-  TDatabaseTask = class(TObject)
-  protected
-    FCollectionFile: string;
-  public
-    constructor Create(CollectionFile: string);
-    function IsPrepaired: Boolean; virtual;
-    property CollectionFile: string read FCollectionFile;
-  end;
-
-  TUpdateTask = class(TDatabaseTask)
-    procedure Execute;
-  end;
-
-  TAddTask = class(TDatabaseTask)
-  private
-    FData: TDBPopupMenuInfoRecord;
-    function GetFileName: string;
-    procedure NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
-  public
-    constructor Create(CollectionFile: string; Data: TDBPopupMenuInfoRecord); overload;
-    constructor Create(CollectionFile: string; FileName: string); overload;
-    destructor Destroy; override;
-    procedure Execute(Items: TArray<TAddTask>);
-    function IsPrepaired: Boolean; override;
-    property FileName: string read GetFileName;
-    property Data: TDBPopupMenuInfoRecord read FData;
-  end;
-
   TDatabaseTaskPriority = (dtpNormal, dtpHigh);
 
   TUpdaterStorage = class(TObject)
   private
     FSync: TCriticalSection;
+    FTotalItemsCount: Integer;
+    FEstimateRemainingTime: TTime;
     FTasks: TList<TDatabaseTask>;
+    function GetEstimateRemainingTime: TTime;
+    function GetActiveItemsCount: Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -145,15 +156,25 @@ type
     function TakeOne<T: TDatabaseTask>: T;
     procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
     procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
+
+    procedure UpdateRemainingTime(Conter:  TSpeedEstimateCounter);
+    property EstimateRemainingTime: TTime read GetEstimateRemainingTime;
+
+    property TotalItemsCount: Integer  read FTotalItemsCount;
+    property ActiveItemsCount: Integer read GetActiveItemsCount;
   end;
 
   TDatabaseUpdater = class(TDBThread)
+  private
+    FSpeedCounter: TSpeedEstimateCounter;
   protected
     procedure Execute; override;
   public
     constructor Create;
     destructor Destroy; override;
   end;
+
+function UpdaterStorage: TUpdaterStorage;
 
 implementation
 
@@ -228,7 +249,8 @@ begin
     F(Reg);
   end;
 
-  DD := TDatabaseDirectory.Create('D:\dmitry\my pictures\photoes', 'TEST', '', 0);
+  DD := TDatabaseDirectory.Create('d:\dmitry\my pictures\photoes', 'TEST', '', 0);
+  //DD := TDatabaseDirectory.Create('D:\dmitry\my pictures\photoes', 'TEST', '', 0);
   FolderList.Add(DD);
 
   FolderList.Sort(TComparer<TDatabaseDirectory>.Construct(
@@ -309,7 +331,8 @@ var
   FolderList: TList<TDatabaseDirectory>;
   DD: TDatabaseDirectory;
   Directories: TQueue<string>;
-  Items: TList<string>;
+  ItemsToAdd: TList<string>;
+  ItemsToUpdate: TList<TUpdateTask>;
   ItemSizes: TList<Int64>;
   Found: Integer;
   OldMode: Cardinal;
@@ -323,7 +346,8 @@ begin
   try
 
     Directories := TQueue<string>.Create;
-    Items := TList<string>.Create;
+    ItemsToAdd := TList<string>.Create;
+    ItemsToUpdate := TList<TUpdateTask>.Create;
     ItemSizes := TList<Int64>.Create;
     OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
     try
@@ -345,11 +369,11 @@ begin
           Break;
 
         Dir := Directories.Dequeue;
-
         Dir := IncludeTrailingBackslash(Dir);
 
         ItemSizes.Clear;
-        Items.Clear;
+        ItemsToAdd.Clear;
+        FreeList(ItemsToUpdate, False);
         Found := FindFirst(Dir + '*.*', faDirectory, SearchRec);
         try
           while Found = 0 do
@@ -359,7 +383,7 @@ begin
               if (faDirectory and SearchRec.Attr = 0) and IsGraphicFile(SearchRec.Name) and CanAddFileAutomatically(SearchRec.Name) then
               begin
                 ItemSizes.Add(SearchRec.Size);
-                Items.Add(Dir + SearchRec.Name);
+                ItemsToAdd.Add(Dir + SearchRec.Name);
               end;
 
               if faDirectory and SearchRec.Attr <> 0 then
@@ -371,14 +395,20 @@ begin
           FindClose(SearchRec);
         end;
 
-        if IsDirectoryChangedOnDrive(Dir, ItemSizes, Items) and IsValidThread then
-          AddItemsToDatabase(Items);
+        if IsDirectoryChangedOnDrive(Dir, ItemSizes, ItemsToAdd, ItemsToUpdate) and IsValidThread then
+        begin
+          if ItemsToAdd.Count > 0 then
+            AddItemsToDatabase(ItemsToAdd);
+          if ItemsToUpdate.Count > 0 then
+            UpdateItemsInDatabase(ItemsToUpdate);
+        end;
       end;
 
     finally
       SetErrorMode(OldMode);
       F(ItemSizes);
-      F(Items);
+      F(ItemsToAdd);
+      FreeList(ItemsToUpdate);
       F(Directories);
     end;
   finally
@@ -392,7 +422,7 @@ begin
 end;
 
 function TDatabaseDirectoriesUpdater.IsDirectoryChangedOnDrive(
-  Directory: string; ItemSizes: TList<Int64>; Items: TList<string>): Boolean;
+  Directory: string; ItemSizes: TList<Int64>; ItemsToAdd: TList<string>; ItemsToUpdate: TList<TUpdateTask>): Boolean;
 var
   I, J: Integer;
   DA: TDBAdapter;
@@ -410,10 +440,13 @@ begin
         begin
           FileName := AnsiLowerCase(Directory + DA.Name);
 
-          for J := Items.Count - 1 downto 0 do
-            if(AnsiLowerCase(Items[J]) = FileName) and (ItemSizes[J] = DA.FileSize) then
+          for J := ItemsToAdd.Count - 1 downto 0 do
+            if(AnsiLowerCase(ItemsToAdd[J]) = FileName) then
             begin
-              Items.Delete(J);
+              if (ItemSizes[J] <> DA.FileSize) then
+                ItemsToUpdate.Add(TUpdateTask.Create(FCollectionFile, Da.ID, ItemsToAdd[J]));
+
+              ItemsToAdd.Delete(J);
               ItemSizes.Delete(J);
             end;
 
@@ -425,10 +458,17 @@ begin
       end;
     end;
 
-    Exit(Items.Count > 0);
+    Exit((ItemsToAdd.Count > 0) or (ItemsToUpdate.Count > 0));
 
   end else
     Exit(True);
+end;
+
+procedure TDatabaseDirectoriesUpdater.UpdateItemsInDatabase(
+  Items: TList<TUpdateTask>);
+begin
+  UpdaterStorage.AddRange(TList<TDatabaseTask>(Items));
+  Items.Clear;
 end;
 
 procedure TDatabaseDirectoriesUpdater.AddItemsToDatabase(Items: TList<string>);
@@ -527,6 +567,9 @@ begin
         UpdaterStorage.Add(TAddTask.Create(FCollectionFile, Info.FNewFileName));
       FILE_ACTION_REMOVED,
       FILE_ACTION_RENAMED_NEW_NAME:
+        Break;
+      FILE_ACTION_MODIFIED:
+        UpdaterStorage.Add(TUpdateTask.Create(FCollectionFile, 0, Info.FNewFileName));
     end;
   end;
 end;
@@ -539,22 +582,44 @@ end;
 
 { TDatabaseTask }
 
-constructor TDatabaseTask.Create(CollectionFile: string);
+constructor TDatabaseTask.Create(CollectionFile, FileName: string);
 begin
   FCollectionFile := CollectionFile;
+  FFileName := FileName;
 end;
 
 function TDatabaseTask.IsPrepaired: Boolean;
+var
+  hFile: THandle;
 begin
-  Result := True;
+  Result := False;
+
+  //don't allow to write to file and try to open file
+  hFile := CreateFile(PChar(FFileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  try
+    Result := (hFile <> INVALID_HANDLE_VALUE) and (hFile <> 0);
+  finally
+    if Result then
+      CloseHandle(hFile);
+  end;
 end;
 
 { TUpdateTask }
 
+constructor TUpdateTask.Create(CollectionFile: string; ID: Integer; FileName: string);
+begin
+  inherited Create(CollectionFile, FileName);
+  FFileName := FileName;
+  FID := ID;
+end;
+
 procedure TUpdateTask.Execute;
 begin
   try
-    //currently not implemented
+    if FID = 0 then
+      FID := GetIdByFileName(FFileName);
+
+    UpdateImageRecord(nil, FFileName, ID);
   except
     on e: Exception do
       EventLog(e);
@@ -565,17 +630,17 @@ end;
 
 constructor TAddTask.Create(CollectionFile: string; Data: TDBPopupMenuInfoRecord);
 begin
-  inherited Create(CollectionFile);
-
   if Data = nil then
     raise Exception.Create('Can''t create task for null task!');
+
+  inherited Create(CollectionFile, Data.FileName);
 
   FData := Data.Copy;
 end;
 
 constructor TAddTask.Create(CollectionFile: string; FileName: string);
 begin
-  inherited Create(CollectionFile);
+  inherited Create(CollectionFile, FileName);
   FData := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
   FData.Include := True;
 end;
@@ -620,6 +685,7 @@ begin
             procedure
             begin
               NotifyAboutFileProcessing(Info, Res);
+              FormUpdateStatus.ShowForm(True);
             end
           );
 
@@ -663,30 +729,6 @@ begin
   end;
 end;
 
-function TAddTask.GetFileName: string;
-begin
-  if FData = nil then
-    Exit('');
-
-  Result := FData.FileName;
-end;
-
-function TAddTask.IsPrepaired: Boolean;
-var
-  hFile: THandle;
-begin
-  Result := False;
-
-  //don't allow to write to file and try to open file
-  hFile := CreateFile(PChar(FileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-  try
-    Result := (hFile <> INVALID_HANDLE_VALUE) and (hFile <> 0);
-  finally
-    if Result then
-      CloseHandle(hFile);
-  end;
-end;
-
 procedure TAddTask.NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
 var
   EventInfo: TEventValues;
@@ -706,6 +748,8 @@ begin
       FTasks.Add(Task);
     if Priority = dtpHigh then
       FTasks.Insert(0, Task);
+
+    Inc(FTotalItemsCount);
   finally
     FSync.Leave;
   end;
@@ -719,6 +763,8 @@ begin
       FTasks.AddRange(Tasks.ToArray());
     if Priority = dtpHigh then
       FTasks.InsertRange(0, Tasks.ToArray());
+
+    Inc(FTotalItemsCount, Tasks.Count);
   finally
     FSync.Leave;
   end;
@@ -729,23 +775,56 @@ begin
   FSync := TCriticalSection.Create;
   FTasks := TList<TDatabaseTask>.Create;
   TDatabaseUpdater.Create;
+  FEstimateRemainingTime := 0;
+  FTotalItemsCount := 0;
 end;
 
 destructor TUpdaterStorage.Destroy;
 begin
+  FUpdaterStorage.SaveStorage;
   F(FSync);
   FreeList(FTasks);
   inherited;
 end;
 
+function TUpdaterStorage.GetActiveItemsCount: Integer;
+begin
+  FSync.Enter;
+  try
+    Result := FTasks.Count;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TUpdaterStorage.GetEstimateRemainingTime: TTime;
+begin
+  FSync.Enter;
+  try
+    Result := FEstimateRemainingTime;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.UpdateRemainingTime(Conter: TSpeedEstimateCounter);
+begin
+  FSync.Enter;
+  try
+    FEstimateRemainingTime := Conter.GetTimeRemaining(100 * FTasks.Count);
+  finally
+    FSync.Leave;
+  end;
+end;
+
 procedure TUpdaterStorage.RestoreStorage;
 begin
-
+  //not implemented (is it really needed for users?)
 end;
 
 procedure TUpdaterStorage.SaveStorage;
 begin
-
+  //not implemented (is it really needed for users?)
 end;
 
 function TUpdaterStorage.Take<T>(Count: Integer): TArray<T>;
@@ -781,7 +860,7 @@ function TUpdaterStorage.TakeOne<T>: T;
 var
   Tasks: TArray<T>;
 begin
-  Tasks := Take<T>(0);
+  Tasks := Take<T>(1);
   if Length(Tasks) = 0 then
     Exit(nil);
 
@@ -793,10 +872,12 @@ end;
 constructor TDatabaseUpdater.Create;
 begin
   inherited Create(nil, False);
+  FSpeedCounter := TSpeedEstimateCounter.Create(60 * 1000); //60 sec is estimate period
 end;
 
 destructor TDatabaseUpdater.Destroy;
 begin
+  F(FSpeedCounter);
   inherited;
 end;
 
@@ -818,7 +899,12 @@ begin
     AddTasks := UpdaterStorage.Take<TAddTask>(cAddImagesAtOneStep);
     try
       if Length(AddTasks) > 0 then
-       AddTasks[0].Execute(AddTasks);
+      begin
+        AddTasks[0].Execute(AddTasks);
+        FSpeedCounter.AddSpeedInterval(100 * Length(AddTasks));
+
+        UpdaterStorage.UpdateRemainingTime(FSpeedCounter);
+      end;
     finally
       for Task in AddTasks do
         Task.Free;
@@ -830,9 +916,12 @@ begin
     UpdateTask := UpdaterStorage.TakeOne<TUpdateTask>();
     try
       if UpdateTask <> nil then
+      begin
         UpdateTask.Execute;
+        FSpeedCounter.AddSpeedInterval(100 * 1);
+      end;
     finally
-      F(Task);
+      F(UpdateTask);
     end;
   end;
 end;

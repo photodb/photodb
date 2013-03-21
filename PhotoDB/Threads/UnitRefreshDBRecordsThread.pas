@@ -3,17 +3,19 @@ unit UnitRefreshDBRecordsThread;
 interface
 
 uses
-  Classes,
-  uDBPopupMenuInfo,
+  Winapi.ActiveX,
+  System.Classes,
+  System.SysUtils,
+  Vcl.Forms,
+
   UnitDBKernel,
-  Forms,
   UnitPropeccedFilesSupport,
   UnitDBDeclare,
-  SysUtils,
+
   uLogger,
   uMemory,
   uDBUtils,
-  ActiveX,
+  uDBPopupMenuInfo,
   uDBForm,
   uDBThread,
   uConstants;
@@ -49,7 +51,6 @@ type
     procedure SetProgressPositionSynch;
     procedure DoDBkernelEvent;
     procedure DoDBkernelEventRefreshList;
-    procedure OnDBKernelEventProcedure(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure OnDBKernelEventProcedureSunch;
   end;
 
@@ -107,7 +108,7 @@ begin
           Inc(C);
           SetProgressPosition(C);
           try
-            UpdateImageRecordEx(DBEvent_Sender, FInfo[I].FileName, FInfo[I].ID, OnDBKernelEventProcedure);
+            UpdateImageRecord(DBEvent_Sender, FInfo[I].FileName, FInfo[I].ID);
           except
             on E: Exception do
               EventLog(':TRefreshDBRecordsThread::Execute()/UpdateImageRecord throw exception: ' + E.message);
@@ -181,16 +182,6 @@ var
   EventInfo: TEventValues;
 begin
   DBKernel.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Repaint_ImageList], EventInfo);
-end;
-
-procedure TRefreshDBRecordsThread.OnDBKernelEventProcedure(Sender: TDBForm; ID: Integer; Params: TEventFields;
-  Value: TEventValues);
-begin
-  DBEvent_Sender := Sender;
-  DBEvent_ID := ID;
-  DBEvent_Params := Params;
-  DBEvent_Value := Value;
-  SynchronizeEx(OnDBKernelEventProcedureSunch);
 end;
 
 procedure TRefreshDBRecordsThread.OnDBKernelEventProcedureSunch;

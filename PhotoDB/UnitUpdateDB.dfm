@@ -78,8 +78,8 @@ object UpdateDBForm: TUpdateDBForm
     Visible = False
   end
   object ImageHourGlass: TImage
-    Left = 24
-    Top = 40
+    Left = 23
+    Top = 39
     Width = 65
     Height = 57
     Enabled = False

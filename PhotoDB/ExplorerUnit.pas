@@ -4863,7 +4863,7 @@ begin
       FGeoHTMLWindow.execScript
         (FormatEx('ShowImageLocation({0}, {1}, "{2}", "{3}"); GotoLatLng({0}, {1});',
         [DoubleToStringPoint(Lat), DoubleToStringPoint(Lng), FileName,
-        IIF(YearOf(Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', Date), '')]), 'JavaScript');
+        IIF(YearOf(Date) > cMinEXIFYear, FormatDateTime('yyyy.mm.dd HH:MM', Date), '')]), 'JavaScript');
 
       ProgramStatistics.GeoInfoReadUsed;
     end;
@@ -5228,7 +5228,7 @@ begin
     FGeoHTMLWindow.execScript
       (FormatEx('SaveImageInfo("{0}", "{1}");',
       [ExtractFileName(FSelectedInfo.FileName),
-      IIF(YearOf(FSelectedInfo.Date) > 1900, FormatDateTime('yyyy.mm.dd HH:MM', FSelectedInfo.Date + FSelectedInfo.Time), '')]), 'JavaScript');
+      IIF(YearOf(FSelectedInfo.Date) > cMinEXIFYear, FormatDateTime('yyyy.mm.dd HH:MM', FSelectedInfo.Date + FSelectedInfo.Time), '')]), 'JavaScript');
 end;
 
 function TExplorerForm.SaveLocation(Lat, Lng: Double; const FileName: WideString): Shortint;
@@ -6104,7 +6104,6 @@ begin
             SizeInText(DiskSize(Ord(AnsiLowerCase(FSelectedInfo.FileName)[1]) - Ord('a') + 1))]);
           SizeLabel.Visible := True;
           SizeLabel.Top := NewTop + H;
-          NewTop := SizeLabel.BoundsRect.Bottom;
         end else
           SizeLabel.Visible := False;
 
@@ -6122,15 +6121,12 @@ begin
           SizeLabel.Top := NewTop + H;
           SizeLabel.Left := DimensionsLabel.Left;
         end;
-        NewTop := SizeLabel.BoundsRect.Bottom;
       end;
     end else
       SizeLabel.Visible := False;
 
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
     begin
-      NewTop := NewTop + H * 4;
-
       if (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
         AddEncryptMenu
       else
@@ -8780,8 +8776,11 @@ begin
       MI.Caption := Place.Title;     
       if PI.LoadImage(PATH_LOAD_NORMAL or PATH_LOAD_FAST or PATH_LOAD_FOR_IMAGE_LIST, ImLocations.Width) then
       begin
-        PI.Image.AddToImageList(ImLocations);
-        MI.ImageIndex := ImLocations.Count - 1;
+        if PI.Image <> nil then
+        begin
+          PI.Image.AddToImageList(ImLocations);
+          MI.ImageIndex := ImLocations.Count - 1;
+        end;
       end;
       MI.OnClick := UserDefinedPlaceClick;
       MI.Tag := FPlaces.IndexOf(Place);

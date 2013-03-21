@@ -3,21 +3,23 @@ unit UnitMenuDateForm;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ComCtrls,
-  StdCtrls,
-  Menus,
-  ExtCtrls,
-  DateUtils,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.DateUtils,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.ComCtrls,
+  Vcl.StdCtrls,
+  Vcl.Menus,
+  Vcl.ExtCtrls,
+
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+
+  uConstants,
   uDBForm;
 
 type
@@ -88,7 +90,7 @@ end;
 procedure TFormMenuDateEdit.Execute(var Date: TDateTime; var IsDate: Boolean; out Changed: Boolean;
   var Time: TDateTime; var IsTime: Boolean);
 begin
-  if YearOf(Date) > 1900 then
+  if YearOf(Date) > cMinEXIFYear then
     McDate.Date := DateOf(Date)
   else
     McDate.Date := DateOf(Now);

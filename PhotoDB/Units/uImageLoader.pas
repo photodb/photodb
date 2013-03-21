@@ -264,7 +264,7 @@ begin
               if not (ilfDontUpdateInfo in Flags) then
               begin
                 Info.HasExifHeader := True;
-                if (ExifData.DateTime > 0) and (YearOf(ExifData.DateTime) >= 1900) then
+                if (ExifData.DateTime > 0) and (YearOf(ExifData.DateTime) >= cMinEXIFYear) then
                 begin
                   Info.Date := DateOf(ExifData.DateTime);
                   Info.Time := TimeOf(ExifData.DateTime);

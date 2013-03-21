@@ -551,7 +551,7 @@ begin
   try
     Infos.Add(FormatEx('{0} x {1} - {2}', [FItem.Width, FItem.Height, SizeInText(FItem.FileSize)]));
 
-    if YearOf(FItem.Date) > 1900 then
+    if YearOf(FItem.Date) > cMinEXIFYear then
       Infos.Add(FormatDateTime('yyyy.mm.dd HH:MM:SS', FItem.Date + FItem.Time))
     else
     begin

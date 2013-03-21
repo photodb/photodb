@@ -69,7 +69,7 @@ type
   protected
     function GetValue: Variant; override;
   public
-    constructor Create(Name: string; Value: Integer; Action: TParameterAction = paEquals);
+    constructor Create(Name: string; Value: Integer = 0; Action: TParameterAction = paEquals);
   end;
 
   TDateTimeParameter = class(TParameter)
@@ -576,7 +576,7 @@ end;
 
 { TIntegerParameter }
 
-constructor TIntegerParameter.Create(Name: string; Value: Integer; Action: TParameterAction = paEquals);
+constructor TIntegerParameter.Create(Name: string; Value: Integer = 0; Action: TParameterAction = paEquals);
 begin
   inherited Create(Name, Action);
   FValue := Value;

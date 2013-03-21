@@ -121,7 +121,7 @@ begin
   end;
 
   //if date isn't defined yet
-  if not ((YearOf(Date) > 1900) and Info.IsTime and Info.IsDate) then
+  if not ((YearOf(Date) > cMinEXIFYear) and Info.IsTime and Info.IsDate) then
   begin
     ExifData := TExifData.Create;
     try
@@ -147,7 +147,7 @@ begin
           if not FileAge(Info.FileName, FileDate) then
             FileDate := Now;
 
-          if YearOf(Date) < 1900 then
+          if YearOf(Date) < cMinEXIFYear then
             FileDate := Now;
 
           Info.Date := DateOf(FileDate);
@@ -170,7 +170,7 @@ begin
     IC.AddParameter(TStringParameter.Create('Name', ExtractFileName(Info.FileName)));
     IC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(Info.FileName)));
     IC.AddParameter(TIntegerParameter.Create('FileSize', GetFileSize(Info.FileName)));
-    if YearOf(Date) < 1900 then
+    if YearOf(Date) < cMinEXIFYear then
     begin
       IC.AddParameter(TDateTimeParameter.Create('DateToAdd', Now));
       IC.AddParameter(TBooleanParameter.Create('IsDate', True));

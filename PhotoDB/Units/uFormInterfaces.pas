@@ -215,13 +215,19 @@ type
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
   end;
 
-  ILinkItemSelectForm = interface
+  ILinkItemSelectForm = interface(IFormInterface)
     ['{92517237-BEFB-4033-BD56-3974E650E954}']
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
     function GetDataList: TList<TDataObject>;
     function GetEditorData: TDataObject;
     property DataList: TList<TDataObject> read GetDataList;
     property EditorData: TDataObject read GetEditorData;
+  end;
+
+  IFormUpdateStatus = interface(IFormInterface)
+    ['{E8C7C001-0A46-4FAA-AB5B-84E74A996D3E}']
+    procedure ShowForm(Automatically: Boolean);
+    procedure HideForm;
   end;
 
 type
@@ -269,6 +275,7 @@ function SplitCollectionForm: ISplitCollectionForm;
 function CollectionTreeForm: ICollectionTreeForm;
 function SelectLocationForm: ISelectLocationForm;
 function LinkItemSelectForm: ILinkItemSelectForm;
+function FormUpdateStatus: IFormUpdateStatus;
 
 implementation
 
@@ -421,6 +428,11 @@ end;
 function LinkItemSelectForm: ILinkItemSelectForm;
 begin
   Result := FormInterfaces.CreateForm<ILinkItemSelectForm>();
+end;
+
+function FormUpdateStatus: IFormUpdateStatus;
+begin
+  Result := FormInterfaces.GetSingleForm<IFormUpdateStatus>(True);
 end;
 
 { TFormInterfaces }

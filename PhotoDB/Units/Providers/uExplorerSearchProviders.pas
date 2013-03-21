@@ -271,14 +271,14 @@ begin
       ResultList.Add(FormatEx(L('rating less than {0}'), [Parameters.RatingTo]));
     end;
 
-    if (Parameters.DateFrom <= EncodeDate(1900, 1, 1)) and (Parameters.DateTo >= EncodeDate(2100, 1, 1)) then
+    if (Parameters.DateFrom <= EncodeDate(cMinEXIFYear, 1, 1)) and (Parameters.DateTo >= EncodeDate(2100, 1, 1)) then
     begin
       //any rating, skip
-    end else if (Parameters.DateFrom > EncodeDate(1900, 1, 1)) and (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
+    end else if (Parameters.DateFrom > EncodeDate(cMinEXIFYear, 1, 1)) and (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
     begin
       //rating between
       ResultList.Add(FormatEx(L('date between {0} and {1}'), [FormatDateTimeShortDate(Parameters.DateFrom), FormatDateTimeShortDate(Parameters.DateTo)]));
-    end else if (Parameters.DateFrom > EncodeDate(1900, 1, 1)) then
+    end else if (Parameters.DateFrom > EncodeDate(cMinEXIFYear, 1, 1)) then
     begin
       ResultList.Add(FormatEx(L('date more than {0}'), [FormatDateTimeShortDate(Parameters.DateFrom)]));
     end else if (Parameters.DateTo < EncodeDate(2100, 1, 1)) then
@@ -379,7 +379,7 @@ begin
   FGroups := TStringList.Create;
   FPersons := TStringList.Create;
   Text := '';
-  DateFrom := EncodeDate(1900, 1, 1);
+  DateFrom := EncodeDate(cMinEXIFYear, 1, 1);
   DateTo := EncodeDate(2100, 1, 1);
   RatingFrom := 0;
   RatingTo := 5;

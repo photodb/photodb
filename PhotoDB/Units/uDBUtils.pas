@@ -14,6 +14,7 @@ uses
   Data.DB,
 
   Dmitry.CRC32,
+  Dmitry.Graphics.Types,
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
@@ -27,9 +28,9 @@ uses
   UnitLinksSupport,
   ProgressActionUnit,
   RAWImage,
-  Dmitry.Graphics.Types,
   UnitDBCommonGraphics,
 
+  uDBClasses,
   uGraphicUtils,
   uSettings,
   uDBTypes,
@@ -61,16 +62,19 @@ type
 procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
 procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory: string);
 procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
+
 procedure RenameFolderWithDB(CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
   OldFileName, NewFileName: string; Ask: Boolean = True);
 function RenameFileWithDB(CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+
 function GetImageIDW(FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
 function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TImageDBRecordAArray;
 function GetImageIDTh(ImageTh: string): TImageDBRecordA;
 function GetIdByFileName(FileName: string): Integer;
 function GetFileNameById(ID: Integer): string;
+
 procedure SetPrivate(ID: Integer);
 procedure UnSetPrivate(ID: Integer);
 procedure UpdateDeletedDBRecord(ID: Integer; FileName: string);
@@ -78,10 +82,10 @@ procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
 procedure SetRotate(ID, Rotate: Integer);
 procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
+
 procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
-procedure UpdateImageRecordEx(Caller: TDBForm; FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
 function SelectDB(Caller: TDBForm; DB: string): Boolean;
-procedure CopyFullRecordInfo(Handle: THandle; ID: Integer);
+
 procedure ExecuteQuery(SQL: string);
 procedure GetFileListByMask(BeginFile, Mask: string;
   Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
@@ -565,7 +569,7 @@ begin
   FQuery := GetQuery;
   try
     FQuery.Active := False;
-    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
+    SetSQL(FQuery, 'SELECT ID FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
         + ' AND FFileName LIKE :FFileName');
     if FolderView then
       Delete(FileName, 1, Length(ProgramDir));
@@ -727,250 +731,211 @@ begin
 end;
 
 procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
-begin
-  UpdateImageRecordEx(Caller, FileName, ID, nil);
-end;
-
-procedure UpdateImageRecordEx(Caller: TDBForm; FileName: string; ID: Integer; OnDBKernelEvent: TOnDBKernelEventProcedure);
 var
-  Table: TDataSet;
   Res: TImageDBRecordA;
-  Duplicat, IsDate, IsTime, UpdateDateTime: Boolean;
-  I, Attr, Counter: Integer;
+  I, Attribute: Integer;
   EventInfo: TEventValues;
   ExifData: TExifData;
   EF: TEventFields;
-  OldImTh, Path, Folder, _SetSql: string;
-  Crc: Cardinal;
-  DateToAdd, ATime: TDateTime;
-  Ms: TMemoryStream;
+  MS: TMemoryStream;
   Info: TDBPopupMenuInfoRecord;
+
+  UC: TUpdateCommand;
+  SC: TSelectCommand;
   DA: TDBAdapter;
 
-  function Next: Integer;
+  function MapDBFileName(FileName: string): string;
+  var
+    I: Integer;
   begin
-    Result := Counter;
-    Inc(Counter);
+    if FolderView then
+      if not FileExists(FileName) then
+        FileName := ProgramDir + FileName;
+
+    FileName := LongFileNameW(FileName);
+    for I := Length(FileName) - 1 downto 1 do
+    begin
+      if (FileName[I] = '\') and (FileName[I + 1] = '\') then
+        Delete(FileName, I, 1);
+    end;
+
+    Result := FileName;
   end;
 
-  procedure DoDBkernelEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
+  function FileNameToDBPath(FileName: string): string;
   begin
-    if Assigned(OnDBKernelEvent) then
-      OnDBKernelEvent(Sender, ID, Params, Value)
-    else
-    begin
-      if GetCurrentThreadId = MainThreadID then
-        DBKernel.DoIDEvent(Sender, ID, Params, Value);
-    end;
+    Result := AnsiLowerCase(FileName);
+    UnProcessPath(Result);
+    if FolderView and Result.StartsWith(ExtractFilePath(Application.ExeName)) then
+      Delete(Result, 1, ExtractFilePath(Application.ExeName).Length);
   end;
 
 begin
-  if ID = 0 then
-    Exit;
-  if FolderView then
-    if not FileExists(FileName) then
-      FileName := ProgramDir + FileName;
-  if DBReadOnly then
+  if (ID = 0) or DBReadOnly then
     Exit;
 
-  FileName := LongFileNameW(FileName);
-  for I := Length(FileName) - 1 downto 1 do
-  begin
-    if (FileName[I] = '\') and (FileName[I + 1] = '\') then
-      Delete(FileName, I, 1);
-  end;
-  Res := GetimageIDW(FileName, False);
+  FileName := MapDBFileName(FileName);
+
+  Res := GetImageIDW(FileName, False);
   if Res.Jpeg = nil then
     Exit;
 
-  IsDate := False;
-  IsTime := False;
-  DateToAdd := 0;
-  ATime := 0;
-  // ----
-
-  Table := GetQuery;
-  DA := TDBAdapter.Create(Table);
   try
-    SetSQL(Table, 'Select StrTh,Attr,Rating,Rotated,Comment,Keywords from $DB$ where ID = ' + IntToStr(ID));
+    EventInfo.ID := ID;
+    EventInfo.JPEGImage := Res.Jpeg;
+    EventInfo.FileName := FileName;
+    EF := [EventID_FileProcessed];
+
+    SC := TSelectCommand.Create(ImageTable, True);
     try
-      Table.Open;
-      OldImTh := DA.LongImageID;
-      Attr := DA.Attributes;
-      _SetSql := 'FFileName=:FFileName,';
-      _SetSql := _SetSql + 'Name=:Name,';
-      _SetSql := _SetSql + 'StrTh=:StrTh,';
-      _SetSql := _SetSql + 'StrThCrc=:StrThCrc,';
-      _SetSql := _SetSql + 'thum=:thum,';
+      SC.AddParameter(TStringParameter.Create('StrTh'));
+      SC.AddParameter(TIntegerParameter.Create('Attr'));
+      SC.AddParameter(TIntegerParameter.Create('Rating'));
+      SC.AddParameter(TIntegerParameter.Create('Rotated'));
+      SC.AddParameter(TStringParameter.Create('Comment'));
+      SC.AddParameter(TStringParameter.Create('Keywords'));
+      SC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
-      _SetSql := _SetSql + Format('Width=%d,', [Res.ImageWidth]);
-      _SetSql := _SetSql + Format('Height=%d,', [Res.ImageHeight]);
-      _SetSql := _SetSql + Format('FileSize=%d,', [GetFileSizeByName(ProcessPath(FileName))]);
-
-      if not FolderView then
+      if SC.Execute > 0 then
       begin
-        Folder := ExtractFileDir(FileName);
-        UnProcessPath(Folder);
-        Folder := ExcludeTrailingBackslash(Folder);
-        CalcStringCRC32(AnsiLowerCase(Folder), Crc);
-      end else
-      begin
-        Folder := ExtractFileDir(FileName);
-        UnProcessPath(Folder);
-        Delete(Folder, 1, Length(ProgramDir));
-        Folder := ExcludeTrailingBackslash(Folder);
-        CalcStringCRC32(AnsiLowerCase(Folder), Crc);
-        Folder := IncludeTrailingBackslash(Folder);
-      end;
-      _SetSql := _SetSql + Format('FolderCRC=%d,', [Crc]);
-
-      UpdateDateTime := False;
-      ExifData := TExifData.Create;
-      try
-        ExifData.LoadFromGraphic(FileName);
-        if Settings.ReadBool('Options', 'FixDateAndTime', True) then
-        begin
-          if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > 2000) then
-          begin
-            UpdateDateTime := True;
-            DateToAdd := DateOf(ExifData.DateTimeOriginal);
-            ATime := TimeOf(ExifData.DateTimeOriginal);
-            IsDate := True;
-            IsTime := True;
-            EventInfo.Date := DateOf(ExifData.DateTimeOriginal);
-            EventInfo.Time := TimeOf(ExifData.DateTimeOriginal);
-            EventInfo.IsDate := True;
-            EventInfo.IsTime := True;
-            EF := [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
-            DoDBkernelEvent(Caller, ID, EF, EventInfo);
-            _SetSql := _SetSql + 'DateToAdd=:DateToAdd,';
-            _SetSql := _SetSql + 'aTime=:aTime,';
-            _SetSql := _SetSql + 'IsDate=:IsDate,';
-            _SetSql := _SetSql + 'IsTime=:IsTime,';
-          end;
-        end;
-        if Settings.Exif.ReadInfoFromExif then
-        begin
-          Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
-          try
-            UpdateImageRecordFromExif(Info);
-            if IsRAWImageFile(Info.FileName) then
-              Info.Rotation := Info.Rotation * 10;
-            if (Info.Rating > 0) and (DA.Rating <> Info.Rating) then
-            begin
-              SetRating(ID, Info.Rating);
-              EventInfo.Rating := Info.Rating;
-              DoDBkernelEvent(Caller, ID, [EventID_Param_Rating, EventID_No_EXIF], EventInfo);
-            end;
-
-            if (Info.Rotation > DB_IMAGE_ROTATE_0) and (DA.Rotation <> Info.Rotation) then
-            begin
-              SetRotate(ID, Info.Rotation);
-              EventInfo.Rotation := Info.Rotation;
-              DoDBkernelEvent(Caller, ID, [EventID_Param_Rotate, EventID_No_EXIF], EventInfo);
-            end;
-
-            if (Info.Comment <> '') and (DA.Comment <> Info.Comment) then
-            begin
-              SetComment(ID, Info.Comment);
-              EventInfo.Comment := Info.Comment;
-              DoDBkernelEvent(Caller, ID, [EventID_Param_Comment, EventID_No_EXIF], EventInfo);
-            end;
-
-            if (Info.Keywords <> '') and (DA.Keywords <> Info.Keywords) then
-            begin
-              EventInfo.Keywords := Info.Keywords;
-              DoDBkernelEvent(Caller, ID, [EventID_Param_KeyWords, EventID_No_EXIF], EventInfo);
-              SetKeywords(ID, Info.Keywords);
-            end;
-          finally
-            F(Info);
-          end;
-        end;
-      except
-        on E: Exception do
-          EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
-      end;
-      F(ExifData);
-
-      if Attr = Db_attr_duplicate then
-      begin
-        Duplicat := False;
-        for I := 0 to Res.Count - 1 do
-          if Res.IDs[I] <> ID then
-            if Res.Attr[I] <> Db_attr_not_exists then
-            begin
-              Duplicat := True;
-              Break;
-            end;
-        if not Duplicat then
-        begin
-          _SetSql := _SetSql + Format('Attr=%d,', [Db_attr_norm]);
-          EventInfo.Attr := Db_attr_norm;
-          DoDBkernelEvent(Caller, ID, [EventID_Param_Attr], EventInfo);
-        end;
-      end;
-
-      if Attr = Db_attr_not_exists then
-      begin
-        _SetSql := _SetSql + Format('Attr=%d,', [Db_attr_norm]);
-        EventInfo.Attr := Db_attr_norm;
-        DoDBkernelEvent(Caller, ID, [EventID_Param_Attr], EventInfo);
-      end;
-
-      Table.Close;
-
-      if _SetSql[Length(_SetSql)] = ',' then
-        _SetSql := Copy(_SetSql, 1, Length(_SetSql) - 1);
-      SetSQL(Table, 'Update $DB$ Set ' + _SetSql + ' where ID = ' + IntToStr(ID));
-      if FolderView then
-        Path := Folder + ExtractFilename(AnsiLowerCase(FileName))
-      else
-        Path := AnsiLowerCase(FileName);
-      UnProcessPath(Path);
-
-      SetStrParam(Table, Next, Path);
-
-      SetStrParam(Table, Next, ExtractFileName(FileName));
-      SetStrParam(Table, Next, Res.ImTh);
-      SetIntParam(Table, Next, Integer(StringCRC(Res.ImTh)));
-      // if crypted file not password entered
-      if Res.IsEncrypted or (Res.Password <> '') then
-      begin
-        MS := TMemoryStream.Create;
+        MS := nil;
+        DA := TDBAdapter.Create(SC.DS);
+        UC := TUpdateCommand.Create(ImageTable);
         try
-          EncryptGraphicImage(Res.Jpeg, Res.Password, MS);
-          LoadParamFromStream(Table, Next, MS, FtBlob);
-        finally
-          MS.Free;
-        end;
-      end
-      else
-        AssignParam(Table, Next, Res.Jpeg);
+          UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
-      if UpdateDateTime then
-      begin
-        SetDateParam(Table, 'DateToAdd', DateToAdd);
-        Next;
-        SetDateParam(Table, 'aTime', ATime);
-        Next;
-        SetBoolParam(Table, Next, IsDate);
-        SetBoolParam(Table, Next, IsTime);
+          if Res.IsEncrypted or (Res.Password <> '') then
+          begin
+            MS := TMemoryStream.Create;
+            EncryptGraphicImage(Res.Jpeg, Res.Password, MS);
+            UC.AddParameter(TStreamParameter.Create('Thum', MS));
+          end else
+            UC.AddParameter(TPersistentParameter.Create('Thum', Res.Jpeg));
+
+          UC.AddParameter(TStringParameter.Create('FFileName', FileNameToDBPath(FileName)));
+          UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(FileName)));
+          UC.AddParameter(TStringParameter.Create('StrTh', Res.ImTh));
+          UC.AddParameter(TIntegerParameter.Create('StrThCrc', Integer(StringCRC(Res.ImTh))));
+
+          UC.AddParameter(TIntegerParameter.Create('Width', Res.ImageWidth));
+          UC.AddParameter(TIntegerParameter.Create('Height', Res.ImageHeight));
+          UC.AddParameter(TIntegerParameter.Create('FileSize', GetFileSizeByName(FileName)));
+          UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(FileName, True)));
+
+          ExifData := TExifData.Create;
+          try
+            ExifData.LoadFromGraphic(FileName);
+            if Settings.ReadBool('Options', 'FixDateAndTime', True) then
+            begin
+              if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
+              begin
+                EventInfo.Date := DateOf(ExifData.DateTimeOriginal);
+                EventInfo.Time := TimeOf(ExifData.DateTimeOriginal);
+                EventInfo.IsDate := True;
+                EventInfo.IsTime := True;
+
+                EF := EF + [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
+
+                UC.AddParameter(TDateTimeParameter.Create('DateToAdd', EventInfo.Date));
+                UC.AddParameter(TDateTimeParameter.Create('ATime', EventInfo.Time));
+                UC.AddParameter(TBooleanParameter.Create('IsDate', EventInfo.IsDate));
+                UC.AddParameter(TBooleanParameter.Create('IsTime', EventInfo.IsTime));
+              end;
+            end;
+            if Settings.Exif.ReadInfoFromExif then
+            begin
+              Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+              try
+                UpdateImageRecordFromExif(Info);
+
+                if (Info.Rating > 0) and (DA.Rating <> Info.Rating) then
+                begin
+                  UC.AddParameter(TIntegerParameter.Create('Rating', Info.Rating));
+
+                  EF := EF + [EventID_Param_Rating];
+                  EventInfo.Rating := Info.Rating;
+                end;
+
+                if (Info.Rotation > DB_IMAGE_ROTATE_0) and (DA.Rotation <> Info.Rotation) then
+                begin
+                  UC.AddParameter(TIntegerParameter.Create('Rotated', Info.Rotation));
+
+                  EF := EF + [EventID_Param_Rotate];
+                  EventInfo.Rotation := Info.Rotation;
+                end;
+
+                if (Info.Comment <> '') and (DA.Comment <> Info.Comment) then
+                begin
+                  UC.AddParameter(TStringParameter.Create('Comment', Info.Comment));
+
+                  EF := EF + [EventID_Param_Comment];
+                  EventInfo.Comment := Info.Comment;
+                end;
+
+                if (Info.Keywords <> '') and (DA.Keywords <> Info.Keywords) then
+                begin
+                  UC.AddParameter(TStringParameter.Create('KeyWords', Info.Keywords));
+
+                  EF := EF + [EventID_Param_KeyWords];
+                  EventInfo.KeyWords := Info.KeyWords;
+                end;
+              finally
+                F(Info);
+              end;
+            end;
+          except
+            on E: Exception do
+              EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
+          end;
+          F(ExifData);
+
+          Attribute := Db_attr_norm;
+          if Res.Count > 1 then
+          begin
+            for I := 0 to Res.Count - 1 do
+              if (Res.IDs[I] <> ID) and (Res.Attr[I] <> Db_attr_not_exists) then
+              begin
+                Attribute := Db_attr_duplicate;
+                Break;
+              end;
+          end;
+
+          UC.AddParameter(TIntegerParameter.Create('Attr', Attribute));
+
+          EF := EF + [EventID_Param_Attr];
+          EventInfo.Attr := Attribute;
+
+          UC.Execute;
+
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              if Caller = nil then
+                Caller := TDBForm(Application.MainForm);
+
+              DBKernel.DoIDEvent(Caller, ID, EF, EventInfo);
+            end
+          );
+          UpdateImageThInLinks(DA.LongImageID, Res.ImTh);
+
+        finally
+          F(UC);
+          F(DA);
+          F(MS);
+        end;
       end;
-      ExecSQL(Table);
-    except
-      on E: Exception do
-        EventLog(':UpdateImageRecordEx()/ExecSQL throw exception: ' + E.message);
+
+    finally
+      F(SC);
     end;
-    Res.Jpeg.Free;
+
   finally
-    F(DA);
-    FreeDS(Table);
+    Res.Jpeg.Free;
+    Res.Jpeg := nil;
   end;
-  UpdateImageThInLinks(OldImTh, Res.ImTh);
 end;
 
-function GetimageIDTh(ImageTh: string): TImageDBRecordA;
+function GetImageIDTh(ImageTh: string): TImageDBRecordA;
 var
   FQuery: TDataSet;
   I: Integer;
@@ -1662,35 +1627,6 @@ begin
   end;
   if (Info.Count = 0) and not ByDirectory then
     Info.Add(TDBPopupMenuInfoRecord.CreateFromFile(BeginFile));
-end;
-
-procedure CopyFullRecordInfo(Handle : THandle; ID: Integer);
-var
-  DS: TDataSet;
-  I: Integer;
-  S: string;
-begin
-  if not DBInDebug then
-    Exit;
-  DS := GetQuery;
-  try
-    SetSQL(DS, 'SELECT * FROM $DB$ WHERE id = ' + IntToStr(ID));
-    DS.Open;
-    S := '';
-    for I := 0 to DS.Fields.Count - 1 do
-    begin
-      // if DS.FieldDefList[i].Name<>'StrTh' then
-      begin
-        if DS.Fields[I].DisplayText <> '(MEMO)' then
-          S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].DisplayText + #13
-        else
-          S := S + DS.FieldDefList[I].name + ' = ' + DS.Fields[I].AsString + #13;
-      end;
-    end;
-    MessageBoxDB(Handle, S, TA('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION);
-  finally
-    FreeDS(DS);
-  end;
 end;
 
 ///////////////////////////////////////////////////////////////////////
