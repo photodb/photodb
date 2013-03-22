@@ -530,6 +530,14 @@ procedure TFormManager.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: T
 var
   UpdateInfoParams: TEventFields;
 begin
+  if Params * [EventID_Param_DB_Changed] <> [] then
+  begin
+    Settings.ClearCache;
+    UpdaterStorage.CleanUpDatabase(dbname);
+    if FDirectoryWatcher <> nil then
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
+  end;
+
   if ID <= 0 then
     Exit;
 
@@ -545,6 +553,7 @@ begin
 
   if UpdateInfoParams * Params <> [] then
     ExifPatchManager.AddPatchInfo(ID, Params, Value);
+
 end;
 
 procedure TFormManager.CheckSampleDB;

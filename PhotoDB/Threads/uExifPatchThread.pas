@@ -14,6 +14,7 @@ uses
   SyncObjs,
   ActiveX,
   uDBUtils,
+  uRuntime,
   uConstants;
 
 type
@@ -81,7 +82,10 @@ begin
           F(Info);
         end;
 
-        Sleep(100);
+        if DBTerminating then
+          Break;
+
+        Sleep(50);
         Info := ExifPatchManager.ExtractPatchInfo;
       end;
     finally

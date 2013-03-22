@@ -89,12 +89,6 @@ begin
   end;
 end;
 
-class procedure TDatabaseUpdateManager.AddFileAsDuplicate(
-  Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
-begin
-  //TODO:
-end;
-
 class function TDatabaseUpdateManager.AddNewImageRecord(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
   IC: TInsertCommand;
@@ -326,6 +320,12 @@ begin
   finally
     F(UC);
   end;
+end;
+
+class procedure TDatabaseUpdateManager.AddFileAsDuplicate(
+  Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+begin
+  //TODO:
 end;
 
 class procedure TDatabaseUpdateManager.NotifyFileAdded(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);

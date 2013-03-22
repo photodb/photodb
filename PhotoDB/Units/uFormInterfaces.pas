@@ -207,6 +207,7 @@ type
   TAddActionProcedure = reference to procedure(Actions: array of string; ProcessActionLink: TProcessActionLinkProcedure);
 
   ILinkEditor = interface
+    procedure SetForm(Form: ILinkItemSelectForm);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
@@ -220,6 +221,7 @@ type
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
     function GetDataList: TList<TDataObject>;
     function GetEditorData: TDataObject;
+    procedure ApplyChanges;
     property DataList: TList<TDataObject> read GetDataList;
     property EditorData: TDataObject read GetEditorData;
   end;

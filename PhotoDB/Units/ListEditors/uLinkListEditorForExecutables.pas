@@ -6,6 +6,7 @@ uses
   Generics.Collections,
   Winapi.Windows,
   System.SysUtils,
+  System.Classes,
   Vcl.Controls,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
@@ -39,10 +40,13 @@ type
 
   TLinkListEditorForExecutables = class(TInterfacedObject, ILinkEditor)
   private
+    FForm: ILinkItemSelectForm;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
+    procedure SetForm(Form: ILinkItemSelectForm);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
@@ -126,6 +130,7 @@ begin
     WedCaption.Top := 8;
     WedCaption.Left := 35;
     WedCaption.Width := 200;
+    WedCaption.OnKeyDown := FormKeyDown;
   end;
 
   if WlIcon = nil then
@@ -174,6 +179,7 @@ begin
     WedParameters.Top := 62;
     WedParameters.Left := 35;
     WedParameters.Width := 200;
+    WedParameters.OnKeyDown := FormKeyDown;
   end;
 
   if LbParameters = nil then
@@ -245,6 +251,13 @@ begin
   );
 end;
 
+procedure TLinkListEditorForExecutables.FormKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    FForm.ApplyChanges;
+end;
+
 procedure TLinkListEditorForExecutables.LoadIconForLink(Link: TWebLink; Path, Icon: string);
 var
   Ico: HIcon;
@@ -314,6 +327,11 @@ begin
     WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_EXEC_ICON);
     LoadIconForLink(WlIcon, EI.Path, EI.Icon);
   end;
+end;
+
+procedure TLinkListEditorForExecutables.SetForm(Form: ILinkItemSelectForm);
+begin
+  FForm := Form;
 end;
 
 procedure TLinkListEditorForExecutables.UpdateItemFromEditor(

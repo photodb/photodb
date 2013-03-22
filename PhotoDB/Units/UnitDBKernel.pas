@@ -771,7 +771,7 @@ var
   Reg: TBDRegistry;
   List: TStrings;
   I: Integer;
-  Icon, FileName: string;
+  Icon, FileName, Description: string;
 begin
   FreeList(FDBs, False);
 
@@ -789,7 +789,8 @@ begin
         begin
           Icon := Reg.ReadString('Icon');
           FileName := Reg.ReadString('FileName');
-          FDBs.Add(TDatabaseInfo.Create(List[I], FileName, Icon, '', Reg.ReadInteger('Order')));
+          Description := Reg.ReadString('Description');
+          FDBs.Add(TDatabaseInfo.Create(List[I], FileName, Icon, Description, Reg.ReadInteger('Order')));
         end;
       end;
     finally
@@ -813,6 +814,7 @@ var
   List: TStrings;
   I: Integer;
   DB: TDatabaseInfo;
+  Settings: TImageDBOptions;
 begin
   List := TStringList.Create;
   try
@@ -829,7 +831,17 @@ begin
         Reg.OpenKey(RegRoot + 'dbs\' + DB.Title, True);
         Reg.WriteString('FileName', DB.Path);
         Reg.WriteString('Icon', DB.Icon);
+        Reg.WriteString('Description', DB.Description);
         Reg.WriteInteger('Order', FDBs.IndexOf(DB));
+
+        Settings := CommonDBSupport.GetImageSettingsFromTable(DB.Path);
+        try
+          Settings.Name := DB.Title;
+          Settings.Description := DB.Description;
+          CommonDBSupport.UpdateImageSettings(DB.Path, Settings);
+        finally
+          F(Settings);
+        end;
       end;
 
     finally

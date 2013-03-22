@@ -26,6 +26,7 @@ uses
   UnitDBDeclare,
 
   uConstants,
+  uRuntime,
   uMemory,
   uDBForm,
   uFormInterfaces,
@@ -63,6 +64,7 @@ type
     FHiddenByUser: Boolean;
     procedure ChangedDBDataByID(Sender: TObject; ID: integer; Params: TEventFields; Value: TEventValues);
     procedure UpdateInfo;
+    procedure ReadFormPosition;
   public
     { Public declarations }
     procedure ShowForm(Automatically: Boolean);
@@ -143,12 +145,6 @@ begin
   FHiddenByUser := False;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
 
-  SwpWindow.Key := RegRoot + 'CollectionUpdateForm';
-  if not SwpWindow.SetPosition(False) then
-  begin
-    Top := Monitor.WorkareaRect.BottomRight.Y - Height;
-    Left := Monitor.WorkareaRect.BottomRight.X - Width;
-  end;
 end;
 
 procedure TFormUpdateStatus.FormDestroy(Sender: TObject);
@@ -173,13 +169,27 @@ begin
   end;
 end;
 
+procedure TFormUpdateStatus.ReadFormPosition;
+begin
+  SwpWindow.Key := RegRoot + 'CollectionUpdateForm';
+  if not SwpWindow.SetPosition(False) then
+  begin
+    Top := Monitor.WorkareaRect.BottomRight.Y - Height;
+    Left := Monitor.WorkareaRect.BottomRight.X - Width;
+  end;
+end;
+
 procedure TFormUpdateStatus.ShowForm(Automatically: Boolean);
 begin
   if FHiddenByUser and Automatically then
     Exit;
 
   if not Visible then
+  begin
+    ShowWindow(Handle, SW_SHOWNOACTIVATE);
     Visible := True;
+    ReadFormPosition;
+  end;
 
   TmrHide.Enabled := False;
   TmrShow.Enabled := True;
@@ -194,7 +204,7 @@ begin
   if (BlendValue <= 0) then
   begin
     BlendValue := 0;
-    Close;
+    Hide;
     TmrHide.Enabled := False;
   end;
   AlphaBlendValue := BlendValue;
@@ -231,6 +241,15 @@ begin
     PercentComplete :=100 *  PrbMain.Position / PrbMain.MaxValue;
 
   PrbMain.Text := FormatEx('{0}, {1:0.#%}', [TimeIntervalInString(UpdaterStorage.EstimateRemainingTime), PercentComplete]);
+
+  LsLoading.Visible := UserDirectoryUpdaterCount > 0;
+  if LsLoading.Visible then
+    PrbMain.Width := LsLoading.Left - PrbMain.Left - 3
+  else
+    PrbMain.Width := ClientWidth - 3 * 2;
+
+  if UpdaterStorage.ActiveItemsCount = 0 then
+    HideForm;
 end;
 
 initialization

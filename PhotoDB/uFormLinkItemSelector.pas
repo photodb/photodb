@@ -113,6 +113,7 @@ type
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
     function GetDataList: TList<TDataObject>;
     function GetEditorData: TDataObject;
+    procedure ApplyChanges;
   end;
 
 var
@@ -214,6 +215,24 @@ begin
   end;
 end;
 
+procedure TFormLinkItemSelector.ApplyChanges;
+var
+  Data: TDataObject;
+  Elements: TListElements;
+begin
+  Data := FData[FEditIndex];
+  FEditor.UpdateItemFromEditor(Self, Data, PnEditorPanel);
+  Elements := TListElements.Create;
+  try
+    Elements.Add(leWebLink, FLinks[FEditIndex]);
+    Elements.Add(leInfoLabel, FLabels[FEditIndex]);
+    FEditor.CreateNewItem(Self, Data, '', Elements);
+  finally
+    F(Elements);
+  end;
+  SwitchToListMode;
+end;
+
 procedure TFormLinkItemSelector.BtnCloseClick(Sender: TObject);
 begin
   Close;
@@ -223,7 +242,7 @@ end;
 procedure TFormLinkItemSelector.BtnSaveClick(Sender: TObject);
 begin
   if FIsEditMode then
-    WlApplyChangesClick(Sender);
+    ApplyChanges;
 
   if FEditor.OnApply(Self) then
   begin
@@ -330,6 +349,7 @@ end;
 procedure TFormLinkItemSelector.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
+  FEditor.SetForm(nil);
   Action := caHide;
 end;
 
@@ -377,7 +397,12 @@ procedure TFormLinkItemSelector.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if Key = VK_ESCAPE then
-    Close;
+  begin
+    if FIsEditMode then
+      WlCancelChangesClick(Sender)
+    else
+      Close;
+  end;
 end;
 
 function TFormLinkItemSelector.GetDataList: TList<TDataObject>;
@@ -710,6 +735,7 @@ begin
   PnEditorPanel.Tag := NativeInt(FEditData);
   PnEditorPanel.HandleNeeded;
   PnEditorPanel.AutoSize := True;
+  FEditor.SetForm(Self);
   FEditor.CreateEditorForItem(Self, FData[FEditIndex], PnEditorPanel);
   PnEditorPanel.Left := 8;
   PnEditorPanel.Top := PaddingTop + LinkHeight + LinksDy;
@@ -783,21 +809,8 @@ begin
 end;
 
 procedure TFormLinkItemSelector.WlApplyChangesClick(Sender: TObject);
-var
-  Data: TDataObject;
-  Elements: TListElements;
 begin
-  Data := FData[FEditIndex];
-  FEditor.UpdateItemFromEditor(Self, Data, PnEditorPanel);
-  Elements := TListElements.Create;
-  try
-    Elements.Add(leWebLink, FLinks[FEditIndex]);
-    Elements.Add(leInfoLabel, FLabels[FEditIndex]);
-    FEditor.CreateNewItem(Self, Data, '', Elements);
-  finally
-    F(Elements);
-  end;
-  SwitchToListMode;
+  ApplyChanges;
 end;
 
 procedure TFormLinkItemSelector.WlCancelChangesClick(Sender: TObject);

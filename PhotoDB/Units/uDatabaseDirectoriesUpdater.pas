@@ -13,9 +13,11 @@ uses
   System.Math,
   Vcl.Forms,
   Data.DB,
+  Xml.Xmldom,
 
   Dmitry.CRC32,
   Dmitry.Utils.System,
+  Dmitry.Utils.Files,
 
   CommonDBSupport,
   UnitINI,
@@ -38,6 +40,7 @@ uses
   uLogger,
   uCounters,
   uFormInterfaces,
+  uConfiguration,
   uDBUpdateUtils,
   uDBPopupMenuInfo,
   uLockedFileNotifications,
@@ -157,6 +160,8 @@ type
     procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
     procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 
+    procedure CleanUpDatabase(NewCollectionFileName: string);
+
     procedure UpdateRemainingTime(Conter:  TSpeedEstimateCounter);
     property EstimateRemainingTime: TTime read GetEstimateRemainingTime;
 
@@ -195,6 +200,11 @@ begin
   end;
 
   Result := FUpdaterStorage;
+end;
+
+function DatabaseFolderPersistaseFileName(CollectionPath: string): string;
+begin
+  Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.cache';
 end;
 
 procedure FillDatabaseDirectories(FolderList: TList<TDatabaseDirectory>);
@@ -259,6 +269,87 @@ begin
        Result := L.SortOrder - R.SortOrder;
      end
   ));
+end;
+
+procedure LoadDirectoriesState(FileName: string; DirectoryCache: TDictionary<string, Int64>);
+var
+  I: Integer;
+  Doc: IDOMDocument;
+  DocumentElement: IDOMElement;
+  DirectoriesList: IDOMNodeList;
+  DirectoryNode: IDOMNode;
+  PathNode, SizeNode: IDOMNode;
+begin
+  Doc := GetDOM.createDocument('', '', nil);
+  try
+    (Doc as IDOMPersist).load(FileName);
+    DocumentElement := Doc.documentElement;
+    if DocumentElement <> nil then
+    begin
+
+      DirectoriesList := DocumentElement.childNodes;
+      if DirectoriesList <> nil then
+      begin
+        for I := 0 to DirectoriesList.length - 1 do
+        begin
+          DirectoryNode := DirectoriesList.item[I];
+
+          PathNode := DirectoryNode.attributes.getNamedItem('Path');
+          SizeNode := DirectoryNode.attributes.getNamedItem('Size');
+
+          if (PathNode <> nil) and (SizeNode <> nil) then
+            DirectoryCache.AddOrSetValue(PathNode.nodeValue, StrToIntDef(SizeNode.nodeValue, 0));
+        end;
+      end;
+    end;
+  except
+    on e: Exception do
+     EventLog(e);
+  end;
+end;
+
+procedure SaveDirectoriesState(FileName: string; DirectoryCache: TDictionary<string, Int64>);
+var
+  Doc: IDOMDocument;
+  DocumentElement: IDOMElement;
+  DirectoryNode: IDOMNode;
+  Pair: TPair<string, Int64>;
+
+  procedure AddProperty(Name: string; Value: string);
+  var
+    Attr: IDOMAttr;
+  begin
+    Attr := Doc.createAttribute(Name);
+    Attr.value := Value;
+    DirectoryNode.attributes.setNamedItem(Attr);
+  end;
+
+begin
+  Doc := GetDOM.createDocument('', '', nil);
+  try
+
+    DocumentElement := Doc.createElement('directories');
+    Doc.documentElement := DocumentElement;
+
+    DirectoryNode := DocumentElement;
+
+    for Pair in DirectoryCache do
+    begin
+      DirectoryNode := Doc.createElement('directory');
+
+      AddProperty('Path', Pair.Key);
+      AddProperty('Size', IntToStr(Pair.Value));
+
+      Doc.documentElement.appendChild(DirectoryNode);
+    end;
+
+    CreateDirA(ExtractFileDir(FileName));
+    (Doc as IDOMPersist).save(FileName);
+
+  except
+    on e: Exception do
+     EventLog(e);
+  end;
 end;
 
 { TDatabaseDirectory }
@@ -334,14 +425,18 @@ var
   ItemsToAdd: TList<string>;
   ItemsToUpdate: TList<TUpdateTask>;
   ItemSizes: TList<Int64>;
+  TotalDirectorySize: Int64;
   Found: Integer;
   OldMode: Cardinal;
   SearchRec: TSearchRec;
-  Dir: string;
+  ScanInformationFileName,
+  Dir, DirectoryPath: string;
+  SavedDirectoriesStructure: TDictionary<string, Int64>;
 begin
   inherited;
   FreeOnTerminate := True;
 
+  Inc(UserDirectoryUpdaterCount);
   CoInitializeEx(nil, COM_MODE);
   try
 
@@ -349,8 +444,11 @@ begin
     ItemsToAdd := TList<string>.Create;
     ItemsToUpdate := TList<TUpdateTask>.Create;
     ItemSizes := TList<Int64>.Create;
+    SavedDirectoriesStructure := TDictionary<string, Int64>.Create;
     OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
     try
+      ScanInformationFileName := DatabaseFolderPersistaseFileName(FCollectionFile);
+      LoadDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
 
       //list of directories to scan
       FolderList := TList<TDatabaseDirectory>.Create;
@@ -371,6 +469,7 @@ begin
         Dir := Directories.Dequeue;
         Dir := IncludeTrailingBackslash(Dir);
 
+        TotalDirectorySize := 0;
         ItemSizes.Clear;
         ItemsToAdd.Clear;
         FreeList(ItemsToUpdate, False);
@@ -384,6 +483,7 @@ begin
               begin
                 ItemSizes.Add(SearchRec.Size);
                 ItemsToAdd.Add(Dir + SearchRec.Name);
+                Inc(TotalDirectorySize, SearchRec.Size);
               end;
 
               if faDirectory and SearchRec.Attr <> 0 then
@@ -395,24 +495,36 @@ begin
           FindClose(SearchRec);
         end;
 
+        DirectoryPath := AnsiLowerCase(Dir);
+        if SavedDirectoriesStructure.ContainsKey(DirectoryPath) then
+        begin
+          //directory is unchanged
+          if TotalDirectorySize = SavedDirectoriesStructure[DirectoryPath] then
+            Continue;
+        end;
+
         if IsDirectoryChangedOnDrive(Dir, ItemSizes, ItemsToAdd, ItemsToUpdate) and IsValidThread then
         begin
           if ItemsToAdd.Count > 0 then
             AddItemsToDatabase(ItemsToAdd);
           if ItemsToUpdate.Count > 0 then
             UpdateItemsInDatabase(ItemsToUpdate);
-        end;
+        end else
+          SavedDirectoriesStructure.AddOrSetValue(DirectoryPath, TotalDirectorySize);
       end;
 
+      SaveDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
     finally
       SetErrorMode(OldMode);
       F(ItemSizes);
       F(ItemsToAdd);
       FreeList(ItemsToUpdate);
+      F(SavedDirectoriesStructure);
       F(Directories);
     end;
   finally
     CoUninitialize;
+    Dec(UserDirectoryUpdaterCount);
   end;
 end;
 
@@ -683,9 +795,12 @@ begin
 
           TThread.Synchronize(nil,
             procedure
+            var
+              Form: IFormUpdateStatus;
             begin
+              Form := FormUpdateStatus;
               NotifyAboutFileProcessing(Info, Res);
-              FormUpdateStatus.ShowForm(True);
+              Form.ShowForm(True);
             end
           );
 
@@ -765,6 +880,24 @@ begin
       FTasks.InsertRange(0, Tasks.ToArray());
 
     Inc(FTotalItemsCount, Tasks.Count);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.CleanUpDatabase(NewCollectionFileName: string);
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := FTasks.Count - 1 downto 0 do
+      if FTasks[I].FCollectionFile <> NewCollectionFileName then
+      begin
+        FTasks[I].Free;
+        FTasks.Delete(I);
+        Dec(FTotalItemsCount);
+      end;
   finally
     FSync.Leave;
   end;

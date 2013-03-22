@@ -13,6 +13,7 @@ uses
   Vcl.ExtCtrls,
   Vcl.Forms,
 
+  Dmitry.Utils.System,
   Dmitry.Utils.Files,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WebLink,
@@ -38,13 +39,16 @@ type
   private
     FOwner: TDBForm;
     FDeletedCollections: TStrings;
+    FForm: ILinkItemSelectForm;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
     procedure OnAdvancedOptionsClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
     constructor Create(Owner: TDBForm);
     destructor Destroy; override;
+    procedure SetForm(Form: ILinkItemSelectForm);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
@@ -108,6 +112,7 @@ begin
     WedCaption.Top := 8;
     WedCaption.Left := 35;
     WedCaption.Width := 200;
+    WedCaption.OnKeyDown := FormKeyDown;
   end;
 
   if WlIcon = nil then
@@ -156,6 +161,7 @@ begin
     WedDescription.Top := 62;
     WedDescription.Left := 35;
     WedDescription.Width := 200;
+    WedDescription.OnKeyDown := FormKeyDown;
   end;
 
   if LbDescription = nil then
@@ -237,6 +243,7 @@ var
     DialogResult: Integer;
     OpenDialog: DBOpenDialog;
     FileName: string;
+    Settings: TImageDBOptions;
   begin
     OpenDialog := DBOpenDialog.Create;
     try
@@ -260,8 +267,14 @@ var
           end;
 
         if DBKernel.TestDB(FileName) then
-          Data := TDatabaseInfo.Create(GetFileNameWithoutExt(OpenDialog.FileName), OpenDialog.FileName, Application.ExeName + ',0', '');
-
+        begin
+          Settings := CommonDBSupport.GetImageSettingsFromTable(FileName);
+          try
+            Data := TDatabaseInfo.Create(IIF(Length(Trim(Settings.Name)) > 0, Trim(Settings.Name), GetFileNameWithoutExt(OpenDialog.FileName)), OpenDialog.FileName, Application.ExeName + ',0', Trim(Settings.Description));
+          finally
+            F(Settings);
+          end;
+        end;
       end;
     finally
       F(OpenDialog);
@@ -296,6 +309,7 @@ end;
 
 destructor TLinkListEditorDatabases.Destroy;
 begin
+  FForm := nil;
   F(FDeletedCollections);
   inherited;
 end;
@@ -319,6 +333,13 @@ begin
       end;
     end
   );
+end;
+
+procedure TLinkListEditorDatabases.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+    FForm.ApplyChanges;
 end;
 
 procedure TLinkListEditorDatabases.LoadIconForLink(Link: TWebLink; Path, Icon: string);
@@ -426,6 +447,11 @@ begin
     WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_DB_ICON);
     LoadIconForLink(WlIcon, DI.Path, DI.Icon);
   end;
+end;
+
+procedure TLinkListEditorDatabases.SetForm(Form: ILinkItemSelectForm);
+begin
+  FForm := Form;
 end;
 
 procedure TLinkListEditorDatabases.UpdateItemFromEditor(

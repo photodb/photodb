@@ -25,6 +25,7 @@ var
   ProgramVersionString: string = '';
   BlockClosingOfWindows: Boolean = False;
   FExtImagesInImageList: Integer = 0;
+  UserDirectoryUpdaterCount: Integer = 0;
 
 var
   ProcessorCount: Integer = 0;
