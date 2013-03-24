@@ -3,6 +3,7 @@ unit uDBUpdateUtils;
 interface
 
 uses
+  Generics.Collections,
   Winapi.Windows,
   System.SysUtils,
   System.Classes,
@@ -30,13 +31,15 @@ uses
   uGroupTypes,
   uDBTypes,
   uDBUtils,
+  uStringUtils,
   uShellIntegration,
   uLogger,
   uDBForm,
   uTranslate,
   uSettings,
   uExifUtils,
-  uDBClasses;
+  uDBClasses,
+  uDBPopupMenuInfo;
 
 type
   TDatabaseUpdateManager = class
@@ -46,8 +49,8 @@ type
     class procedure CleanUp;
     class procedure NotifyFileAdded(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
   public
-    class procedure AddFile(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
-    class procedure AddFileAsDuplicate(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+    class function AddFile(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+    class function AddFileAsDuplicate(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
     class function MergeWithExistedInfo(ID: Integer; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
     class function AddNewImageRecord(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
     class procedure ProcessGroups(Info: TDBPopupMenuInfoRecord; ExifGroups: string);
@@ -58,10 +61,11 @@ implementation
 uses
   UnitGroupsReplace;
 
-class procedure TDatabaseUpdateManager.AddFile(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+class function TDatabaseUpdateManager.AddFile(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
   Groups, ExifGroups: string;
 begin
+  Result := False;
   try
     Info.FileName := AnsiLowerCase(Info.FileName);
 
@@ -78,6 +82,7 @@ begin
 
     if AddNewImageRecord(Info, Res) then
     begin
+      Result := True;
       Res.Jpeg.DIBNeeded;
       NotifyFileAdded(Info, Res);
     end else
@@ -322,10 +327,107 @@ begin
   end;
 end;
 
-class procedure TDatabaseUpdateManager.AddFileAsDuplicate(
-  Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+class function TDatabaseUpdateManager.AddFileAsDuplicate(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+var
+  I: Integer;
+  Infos: TDBPopupMenuInfo;
+  ItemsToDelete: TStringList;
+  ItemsDuplicates: TStringList;
+  DC: TDeleteCommand;
+  UC: TUpdateCommand;
+
+  procedure AddInfo(Info: TDBPopupMenuInfoRecord; InfoToAdd: TDBPopupMenuInfoRecord);
+  var
+    Groups, KeyWords, Links: string;
+  begin
+   if InfoToAdd.Comment <> '' then
+    begin
+      if Info.Comment <> '' then
+        Info.Comment := Info.Comment + sLineBreak + InfoToAdd.Comment
+      else
+        Info.Comment := InfoToAdd.Comment;
+    end;
+
+    if (Info.Rating = 0) and (InfoToAdd.Rating <> 0) then
+      Info.Rating := InfoToAdd.Rating;
+
+    if ((Info.Rotation = DB_IMAGE_ROTATE_0) or (Info.Rotation = DB_IMAGE_ROTATE_UNKNOWN)) and (InfoToAdd.Rotation <> DB_IMAGE_ROTATE_0) and (InfoToAdd.Rotation <> DB_IMAGE_ROTATE_UNKNOWN) then
+      Info.Rotation := InfoToAdd.Rotation;
+
+    if InfoToAdd.Groups <> '' then
+    begin
+      Groups := Info.Groups;
+      AddGroupsToGroups(Groups, InfoToAdd.Groups);
+      Info.Groups := Groups;
+    end;
+
+    if InfoToAdd.KeyWords <> '' then
+    begin
+      KeyWords := Info.KeyWords;
+      AddWordsA(InfoToAdd.KeyWords, KeyWords);
+      Info.KeyWords := KeyWords;
+    end;
+
+    if Info.Links <> '' then
+    begin
+      Links := Info.Links;
+      ReplaceLinks('', InfoToAdd.Links, Links);
+      Info.Links := Links;
+    end;
+  end;
+
 begin
-  //TODO:
+  Result := False;
+  Infos := TDBPopupMenuInfo.Create;
+  ItemsToDelete := TStringList.Create;
+  ItemsDuplicates := TStringList.Create;
+  try
+    for I := 0 to Res.Count - 1 do
+      Infos.Add(uDBUtils.GetMenuInfoRecordByID(Res.IDs[0]));
+
+    for I := 0 to Infos.Count - 1 do
+    begin
+      if not FileExistsSafe(Infos[I].FileName) then
+      begin
+        AddInfo(Info, Infos[I]);
+        ItemsToDelete.Add(IntToStr(Infos[I].ID));
+      end else
+        ItemsDuplicates.Add(IntToStr(Infos[I].ID));
+    end;
+
+    Info.Attr := Db_attr_duplicate;
+    if not AddFile(Info, Res) then
+      Exit;
+
+    //delete old not existed files
+    if ItemsToDelete.Count > 0 then
+    begin
+      DC := TDeleteCommand.Create(ImageTable);
+      try
+        DC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('[ID] in ({0})', [ItemsToDelete.Join(',')])));
+        DC.Execute;
+      finally
+        F(DC);
+      end;
+    end;
+
+    //all these files - duplicates
+    if ItemsDuplicates.Count > 0 then
+    begin
+      UC := TUpdateCommand.Create(ImageTable);
+      try
+        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_duplicate));
+        UC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('[ID] in ({0})', [ItemsDuplicates.Join(',')])));
+        UC.Execute;
+      finally
+        F(UC);
+      end;
+    end;
+  finally
+    F(ItemsDuplicates);
+    F(ItemsToDelete);
+    F(Infos);
+  end;
 end;
 
 class procedure TDatabaseUpdateManager.NotifyFileAdded(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);

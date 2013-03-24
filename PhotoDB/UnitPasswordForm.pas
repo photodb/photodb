@@ -34,6 +34,7 @@ uses
   uShellIntegration,
   uSettings,
   uMemory,
+  uDatabaseDirectoriesUpdater,
   uFormInterfaces;
 
 type
@@ -255,6 +256,10 @@ begin
       DBKernel.AddTemporaryPasswordInSession(Password);
     if CbSavePassPermanent.Checked then
       DBKernel.SavePassToINIDirectory(Password);
+
+    if CbSavePassToSession.Checked or CbSavePassPermanent.Checked then
+      RecheckDirectoryOnDrive(ExtractFilePath(FFileName));
+
     Close;
   end else
     MessageBoxDB(Handle, L('Password is invalid!'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);

@@ -100,12 +100,18 @@ implementation
 
 procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
 begin
+  if MenuRecord = nil then
+    Exit;
+
   FData.Add(MenuRecord);
 end;
 
 procedure TDBPopupMenuInfo.Insert(Index: Integer;
   MenuRecord: TDBPopupMenuInfoRecord);
 begin
+  if MenuRecord = nil then
+    Exit;
+
   FData.Insert(Index, MenuRecord);
 end;
 

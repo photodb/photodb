@@ -102,6 +102,7 @@ type
     FThreadID: TGUID;
     FSkipExtensions: string;
     FCollectionFile: string;
+    FRescanDirectory: string;
     FAddRawFiles: Boolean;
     function IsDirectoryChangedOnDrive(Directory: string; ItemSizes: TList<Int64>; ItemsToAdd: TList<string>; ItemsToUpdate: TList<TUpdateTask>): Boolean;
     procedure AddItemsToDatabase(Items: TList<string>);
@@ -112,7 +113,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CollectionFile: string);
+    constructor Create(CollectionFile: string; RescanDirectory: string = '');
     destructor Destroy; override;
   end;
 
@@ -146,14 +147,16 @@ type
     FTotalItemsCount: Integer;
     FEstimateRemainingTime: TTime;
     FTasks: TList<TDatabaseTask>;
+    FErrorFileList: TStringList;
+    FCollectionFileName: string;
     function GetEstimateRemainingTime: TTime;
     function GetActiveItemsCount: Integer;
   public
-    constructor Create;
+    constructor Create(CollectionFileName: string);
     destructor Destroy; override;
 
     procedure SaveStorage;
-    procedure RestoreStorage;
+    procedure RestoreStorage(CollectionFileName: string);
 
     function Take<T: TDatabaseTask>(Count: Integer): TArray<T>;
     function TakeOne<T: TDatabaseTask>: T;
@@ -161,6 +164,10 @@ type
     procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 
     procedure CleanUpDatabase(NewCollectionFileName: string);
+
+    procedure AddFileWithErrors(FileName: string);
+    procedure RemoveFileWithErrors(FileName: string);
+    procedure RemoveFilesWithErrors(Files: TList<string>; FileSizes: TList<Int64>);
 
     procedure UpdateRemainingTime(Conter:  TSpeedEstimateCounter);
     property EstimateRemainingTime: TTime read GetEstimateRemainingTime;
@@ -180,6 +187,7 @@ type
   end;
 
 function UpdaterStorage: TUpdaterStorage;
+procedure RecheckDirectoryOnDrive(DirectoryPath: string);
 
 implementation
 
@@ -195,8 +203,8 @@ function UpdaterStorage: TUpdaterStorage;
 begin
   if FUpdaterStorage = nil then
   begin
-    FUpdaterStorage := TUpdaterStorage.Create;
-    FUpdaterStorage.RestoreStorage;
+    FUpdaterStorage := TUpdaterStorage.Create(dbname);
+    FUpdaterStorage.RestoreStorage(dbname);
   end;
 
   Result := FUpdaterStorage;
@@ -205,6 +213,11 @@ end;
 function DatabaseFolderPersistaseFileName(CollectionPath: string): string;
 begin
   Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.cache';
+end;
+
+function DatabaseErrorsPersistaseFileName(CollectionPath: string): string;
+begin
+  Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.errors.cache';
 end;
 
 procedure FillDatabaseDirectories(FolderList: TList<TDatabaseDirectory>);
@@ -298,7 +311,7 @@ begin
           SizeNode := DirectoryNode.attributes.getNamedItem('Size');
 
           if (PathNode <> nil) and (SizeNode <> nil) then
-            DirectoryCache.AddOrSetValue(PathNode.nodeValue, StrToIntDef(SizeNode.nodeValue, 0));
+            DirectoryCache.AddOrSetValue(PathNode.nodeValue, StrToInt64Def(SizeNode.nodeValue, 0));
         end;
       end;
     end;
@@ -352,6 +365,12 @@ begin
   end;
 end;
 
+procedure RecheckDirectoryOnDrive(DirectoryPath: string);
+begin
+  //TODO: check if file is inside collection
+  TDatabaseDirectoriesUpdater.Create(dbname, DirectoryPath);
+end;
+
 { TDatabaseDirectory }
 
 procedure TDatabaseDirectory.Assign(Source: TDataObject);
@@ -398,12 +417,13 @@ begin
   Exit(True);
 end;
 
-constructor TDatabaseDirectoriesUpdater.Create(CollectionFile: string);
+constructor TDatabaseDirectoriesUpdater.Create(CollectionFile: string; RescanDirectory: string = '');
 begin
   inherited Create(nil, False);
   FCollectionFile := CollectionFile;
   FThreadID := GetGUID;
   DirectoriesScanID := FThreadID;
+  FRescanDirectory := RescanDirectory;
 
   FSkipExtensions := AnsiLowerCase(Settings.ReadString('Updater', 'SkipExtensions'));
   FAddRawFiles := Settings.ReadBool('Updater', 'AddRawFiles', False);
@@ -430,8 +450,9 @@ var
   OldMode: Cardinal;
   SearchRec: TSearchRec;
   ScanInformationFileName,
-  Dir, DirectoryPath: string;
+  FileName, Dir, DirectoryPath: string;
   SavedDirectoriesStructure: TDictionary<string, Int64>;
+  IsRescanMode: Boolean;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -439,6 +460,7 @@ begin
   Inc(UserDirectoryUpdaterCount);
   CoInitializeEx(nil, COM_MODE);
   try
+    IsRescanMode := FRescanDirectory <> '';
 
     Directories := TQueue<string>.Create;
     ItemsToAdd := TList<string>.Create;
@@ -447,19 +469,23 @@ begin
     SavedDirectoriesStructure := TDictionary<string, Int64>.Create;
     OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
     try
-      ScanInformationFileName := DatabaseFolderPersistaseFileName(FCollectionFile);
-      LoadDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
+      if not IsRescanMode then
+      begin
+        ScanInformationFileName := DatabaseFolderPersistaseFileName(FCollectionFile);
+        LoadDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
 
-      //list of directories to scan
-      FolderList := TList<TDatabaseDirectory>.Create;
-      try
-        FillDatabaseDirectories(FolderList);
-        for DD in FolderList do
-          Directories.Enqueue(DD.Path);
+        //list of directories to scan
+        FolderList := TList<TDatabaseDirectory>.Create;
+        try
+          FillDatabaseDirectories(FolderList);
+          for DD in FolderList do
+            Directories.Enqueue(DD.Path);
 
-      finally
-        FreeList(FolderList);
-      end;
+        finally
+          FreeList(FolderList);
+        end;
+      end else
+        Directories.Enqueue(FRescanDirectory);
 
       while Directories.Count > 0 do
       begin
@@ -481,9 +507,11 @@ begin
             begin
               if (faDirectory and SearchRec.Attr = 0) and IsGraphicFile(SearchRec.Name) and CanAddFileAutomatically(SearchRec.Name) then
               begin
-                ItemSizes.Add(SearchRec.Size);
-                ItemsToAdd.Add(Dir + SearchRec.Name);
+                FileName := Dir + SearchRec.Name;
                 Inc(TotalDirectorySize, SearchRec.Size);
+
+                ItemsToAdd.Add(FileName);
+                ItemSizes.Add(SearchRec.Size);
               end;
 
               if faDirectory and SearchRec.Attr <> 0 then
@@ -496,14 +524,21 @@ begin
         end;
 
         DirectoryPath := AnsiLowerCase(Dir);
-        if SavedDirectoriesStructure.ContainsKey(DirectoryPath) then
+
+        if not IsRescanMode then
         begin
-          //directory is unchanged
-          if TotalDirectorySize = SavedDirectoriesStructure[DirectoryPath] then
-            Continue;
+          if SavedDirectoriesStructure.ContainsKey(DirectoryPath) then
+          begin
+            //directory is unchanged
+            if TotalDirectorySize = SavedDirectoriesStructure[DirectoryPath] then
+              Continue;
+          end;
         end;
 
-        if IsDirectoryChangedOnDrive(Dir, ItemSizes, ItemsToAdd, ItemsToUpdate) and IsValidThread then
+        if not IsRescanMode then
+          UpdaterStorage.RemoveFilesWithErrors(ItemsToAdd, ItemSizes);
+
+        if (ItemsToAdd.Count > 0) and IsDirectoryChangedOnDrive(Dir, ItemSizes, ItemsToAdd, ItemsToUpdate) and IsValidThread then
         begin
           if ItemsToAdd.Count > 0 then
             AddItemsToDatabase(ItemsToAdd);
@@ -513,7 +548,8 @@ begin
           SavedDirectoriesStructure.AddOrSetValue(DirectoryPath, TotalDirectorySize);
       end;
 
-      SaveDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
+      if not IsRescanMode then
+        SaveDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
     finally
       SetErrorMode(OldMode);
       F(ItemSizes);
@@ -540,6 +576,9 @@ var
   DA: TDBAdapter;
   FileName: string;
 begin
+  if ItemsToAdd.Count = 0 then
+    Exit(False);
+
   SetSQL(FQuery, 'Select ID, FileSize, Name FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(Directory, False)));
   if TryOpenCDS(FQuery) then
   begin
@@ -731,7 +770,9 @@ begin
     if FID = 0 then
       FID := GetIdByFileName(FFileName);
 
-    UpdateImageRecord(nil, FFileName, ID);
+    if not UpdateImageRecord(nil, FFileName, ID) then
+      UpdaterStorage.AddFileWithErrors(FFileName);
+
   except
     on e: Exception do
       EventLog(e);
@@ -787,6 +828,7 @@ begin
           if Res.Jpeg = nil then
           begin
             //failed to load image
+            UpdaterStorage.AddFileWithErrors(Info.FileName);
             Continue;
           end;
 
@@ -804,11 +846,12 @@ begin
             end
           );
 
+          UpdaterStorage.RemoveFileWithErrors(Info.FileName);
+
           //new file in collection
           if Res.Count = 0 then
           begin
             TDatabaseUpdateManager.AddFile(Info, Res);
-            Continue;
           end;
 
           if Res.Count = 1 then
@@ -820,12 +863,22 @@ begin
               Continue;
             end;
 
-            //the same file
-            if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
+            //the same file was deleted
+            if (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName)) and (Res.Attr[0] = Db_attr_not_exists) then
+            begin
+              uDBUtils.SetAttr(Info.ID, Db_attr_norm);
               Continue;
+            end;
+
+            //the same file, skip
+            if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
+            begin
+              uDBUtils.UpdateDBItemPathInfo(Res.IDs[0], Info.FileName);
+              Continue;
+            end;
           end;
 
-          //add file as diplicate
+          //add file as duplicate
           TDatabaseUpdateManager.AddFileAsDuplicate(Info, Res);
         end;
 
@@ -870,6 +923,49 @@ begin
   end;
 end;
 
+procedure TUpdaterStorage.AddFileWithErrors(FileName: string);
+begin
+  FSync.Enter;
+  try
+    FileName := AnsiLowerCase(FileName);
+    if FErrorFileList.IndexOf(FileName) = -1 then
+      FErrorFileList.Add(AnsiLowerCase(FileName));
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.RemoveFilesWithErrors(Files: TList<string>; FileSizes: TList<Int64>);
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := Files.Count - 1 downto 0 do
+      if FErrorFileList.IndexOf(AnsiLowerCase(Files[I])) > -1 then
+      begin
+        Files.Delete(I);
+        FileSizes.Delete(I);
+      end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.RemoveFileWithErrors(FileName: string);
+var
+  Index: Integer;
+begin
+  FSync.Enter;
+  try
+    FileName := AnsiLowerCase(FileName);
+    if FErrorFileList.Find(FileName, Index) then
+      FErrorFileList.Delete(Index);
+  finally
+    FSync.Leave;
+  end;
+end;
+
 procedure TUpdaterStorage.AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 begin
   FSync.Enter;
@@ -903,20 +999,23 @@ begin
   end;
 end;
 
-constructor TUpdaterStorage.Create;
+constructor TUpdaterStorage.Create(CollectionFileName: string);
 begin
+  FCollectionFileName := CollectionFileName;
   FSync := TCriticalSection.Create;
   FTasks := TList<TDatabaseTask>.Create;
   TDatabaseUpdater.Create;
   FEstimateRemainingTime := 0;
   FTotalItemsCount := 0;
+  FErrorFileList := TStringList.Create;
 end;
 
 destructor TUpdaterStorage.Destroy;
 begin
-  FUpdaterStorage.SaveStorage;
+  SaveStorage;
   F(FSync);
   FreeList(FTasks);
+  F(FErrorFileList);
   inherited;
 end;
 
@@ -950,32 +1049,69 @@ begin
   end;
 end;
 
-procedure TUpdaterStorage.RestoreStorage;
+procedure TUpdaterStorage.RestoreStorage(CollectionFileName: string);
+var
+  ErrorsFileName: string;
 begin
-  //not implemented (is it really needed for users?)
+  FSync.Enter;
+  try
+    FCollectionFileName := CollectionFileName;
+    ErrorsFileName := DatabaseErrorsPersistaseFileName(FCollectionFileName);
+    try
+      FErrorFileList.LoadFromFile(ErrorsFileName);
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
+    FErrorFileList.Sort;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 procedure TUpdaterStorage.SaveStorage;
+var
+  ErrorsFileName: string;
 begin
-  //not implemented (is it really needed for users?)
+  FSync.Enter;
+  try
+    ErrorsFileName := DatabaseErrorsPersistaseFileName(FCollectionFileName);
+    FErrorFileList.SaveToFile(ErrorsFileName);
+    FErrorFileList.Clear;
+  finally
+    FSync.Leave;
+  end;
 end;
 
 function TUpdaterStorage.Take<T>(Count: Integer): TArray<T>;
 var
   I: Integer;
+  PI: PInteger;
   FItems: TList<T>;
 begin
   FSync.Enter;
   try
     FItems := TList<T>.Create;
     try
+      PI := @I;
       for I := 0 to FTasks.Count - 1 do
+      begin
+        if not FileExistsSafe(FTasks[I].FileName) then
+        begin
+          FTasks[I].Free;
+          FTasks.Delete(I);
+
+          Dec(PI^);
+          Continue;
+        end;
+
         if (FTasks[I] is T) and FTasks[I].IsPrepaired then
         begin
           FItems.Add(FTasks[I]);
           if FItems.Count = Count then
             Break;
         end;
+      end;
 
       for I := 0 to FItems.Count - 1 do
         FTasks.Remove(FItems[I]);

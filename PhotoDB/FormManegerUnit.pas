@@ -534,6 +534,8 @@ begin
   begin
     Settings.ClearCache;
     UpdaterStorage.CleanUpDatabase(dbname);
+    UpdaterStorage.SaveStorage;
+    UpdaterStorage.RestoreStorage(dbname);
     if FDirectoryWatcher <> nil then
       (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
   end;
@@ -553,7 +555,6 @@ begin
 
   if UpdateInfoParams * Params <> [] then
     ExifPatchManager.AddPatchInfo(ID, Params, Value);
-
 end;
 
 procedure TFormManager.CheckSampleDB;
@@ -585,6 +586,13 @@ begin
     end;
 
     Inc(FCheckCount);
+
+    if (FCheckCount = 5) and not FolderView then
+    begin
+      FDirectoryWatcher := TUserDirectoriesWatcher.Create;
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
+    end;
+
     if (FCheckCount = 10) then // after 1sec. set normal priority
     begin
       SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
@@ -619,12 +627,6 @@ begin
     begin
       if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
         CleanUpThread.Create(Self, False);
-    end;
-
-    if (FCheckCount = {4}5) and not FolderView then
-    begin
-      FDirectoryWatcher := TUserDirectoriesWatcher.Create;
-      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
     end;
 
     if (FCheckCount = 50) and not FolderView then // after 4 sec.

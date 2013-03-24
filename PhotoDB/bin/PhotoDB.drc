@@ -2382,6 +2382,7 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\SPIN.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImageEditor\ExEffectFormUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImageEditor\TextToolRes.res */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitGroupReplace.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitPasswordForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditorFullScreenForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Units\UnitActionsForm.dfm */
@@ -2392,7 +2393,6 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PropertyForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitMenuDateForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\replaceform.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitGroupReplace.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitHistoryForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitUpdateDB.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormPersonSuggest.dfm */

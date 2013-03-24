@@ -79,11 +79,12 @@ procedure SetPrivate(ID: Integer);
 procedure UnSetPrivate(ID: Integer);
 procedure UpdateDeletedDBRecord(ID: Integer; FileName: string);
 procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
+procedure UpdateDBItemPathInfo(ID: Integer; FileName: string);
 procedure SetRotate(ID, Rotate: Integer);
 procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
 
-procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
+function UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer): Boolean;
 function SelectDB(Caller: TDBForm; DB: string): Boolean;
 
 procedure ExecuteQuery(SQL: string);
@@ -676,6 +677,26 @@ begin
       + '", Attr=' + Inttostr(Db_access_none) + MDBstr + ' WHERE (ID=' + Inttostr(ID) + ')');
 end;
 
+procedure UpdateDBItemPathInfo(ID: Integer; FileName: string);
+var
+  UC: TUpdateCommand;
+begin
+  UC := TUpdateCommand.Create(ImageTable);
+  try
+   UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+
+   UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(FileName, True)));
+   UC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(FileName)));
+   UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(FileName)));
+
+   UC.Execute;
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
+  F(UC);
+end;
+
 procedure UpdateDeletedDBRecord(ID: Integer; Filename: string);
 var
   FQuery: TDataSet;
@@ -730,7 +751,7 @@ begin
   end;
 end;
 
-procedure UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer);
+function UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer): Boolean;
 var
   Res: TImageDBRecordA;
   I, Attribute: Integer;
@@ -771,6 +792,7 @@ var
   end;
 
 begin
+  Result := False;
   if (ID = 0) or DBReadOnly then
     Exit;
 
@@ -781,6 +803,7 @@ begin
     Exit;
 
   try
+    EF := [];
     EventInfo.ID := ID;
     EventInfo.JPEGImage := Res.Jpeg;
     EventInfo.FileName := FileName;
@@ -906,6 +929,7 @@ begin
           EventInfo.Attr := Attribute;
 
           UC.Execute;
+          Result := True;
 
           TThread.Synchronize(nil,
             procedure
