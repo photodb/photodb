@@ -502,7 +502,6 @@ type
     MiCheckUpdates: TMenuItem;
     PmOptions: TPopupActionBar;
     MiUpdater: TMenuItem;
-    MiManageDB: TMenuItem;
     MiCDActionsSeparator: TMenuItem;
     MiCDExport: TMenuItem;
     MiCDMapping: TMenuItem;
@@ -595,7 +594,6 @@ type
     procedure PasteClick(Sender: TObject);
     procedure ImPreviewDblClick(Sender: TObject);
     procedure Options1Click(Sender: TObject);
-    procedure DBManager1Click(Sender: TObject);
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
@@ -803,7 +801,6 @@ type
     procedure MiCheckUpdatesClick(Sender: TObject);
     procedure MiUpdaterClick(Sender: TObject);
     procedure PmHelpPopup(Sender: TObject);
-    procedure MiManageDBClick(Sender: TObject);
     procedure MiCDMappingClick(Sender: TObject);
     procedure MiCDExportClick(Sender: TObject);
     procedure TbDatabaseClick(Sender: TObject);
@@ -1513,7 +1510,6 @@ begin
   MiCheckUpdates.Caption := L('Check for updates');
 
   MiUpdater.Caption := L('Show updater');
-  MiManageDB.Caption := L('Collection Manager');
 
   MiCDExport.Caption := L('Export images to CD');
   MiCDMapping.Caption := L('CD mapping');
@@ -1530,7 +1526,6 @@ begin
   MiCheckUpdates.ImageIndex := DB_IC_UPDATING;
 
   MiUpdater.ImageIndex := DB_IC_BOX;
-  MiManageDB.ImageIndex := DB_IC_ADMINTOOLS;
 
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
@@ -5655,11 +5650,6 @@ begin
   BtnSaveInfo.Enabled := True;
 end;
 
-procedure TExplorerForm.MiManageDBClick(Sender: TObject);
-begin
-  CollectionManagerForm.Show;
-end;
-
 procedure TExplorerForm.LockItems;
 begin
   GlobalLock := True;
@@ -5737,7 +5727,6 @@ end;
 procedure TExplorerForm.PmOptionsPopup(Sender: TObject);
 begin
   MiUpdater.Visible := not FolderView;
-  MiManageDB.Visible := not FolderView;
   MiCDExport.Visible := not FolderView;
 
   MiCollections.Visible := DBKernel.DBs.Count <= 1;
@@ -6472,12 +6461,6 @@ end;
 procedure TExplorerForm.Options1Click(Sender: TObject);
 begin
   OptionsForm.Show;
-end;
-
-
-procedure TExplorerForm.DBManager1Click(Sender: TObject);
-begin
-  CollectionManagerForm.Show;
 end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);

@@ -8,81 +8,68 @@
   resources were bound to the produced executable.
 */
 
-#define Data_DBXCommonResStrs_SDBXErrNoData 64368
-#define Data_DBXCommonResStrs_SDBXErrVendorError 64369
-#define Data_DBXCommonResStrs_SDBXErrUnrecognizedCommandType 64370
-#define Data_DBXCommonResStrs_SDBXErrSchemaNameUnspecified 64371
-#define Data_DBXCommonResStrs_SDBXErrDatabaseUnspecified 64372
-#define Data_DBXCommonResStrs_SDBXErrLibraryNameUnspecified 64373
-#define Data_DBXCommonResStrs_SDBXErrGetDriverFuncUnspecified 64374
-#define Data_DBXCommonResStrs_SDBXErrVendorLibUnspecified 64375
-#define Data_DBXCommonResStrs_SUTF8InvalidHeaderByte 64376
-#define Data_DBXCommonResStrs_SUTF8UnexpectedByte 64377
-#define Data_DBXCommonResStrs_SUTF8Start 64378
-#define Data_DBXCommonResStrs_SDBXErrInvalidLength 64384
-#define Data_DBXCommonResStrs_SDBXErrInvalidIsolationLevel 64385
-#define Data_DBXCommonResStrs_SDBXErrInvalidTransactionId 64386
-#define Data_DBXCommonResStrs_SDBXErrDuplicateTransactionId 64387
-#define Data_DBXCommonResStrs_SDBXErrDriverRestricted 64388
-#define Data_DBXCommonResStrs_SDBXErrTransactionActive 64389
-#define Data_DBXCommonResStrs_SDBXErrMultipleTransactionNotEnabled 64390
-#define Data_DBXCommonResStrs_SDBXErrConnectionFailed 64391
-#define Data_DBXCommonResStrs_SDBXErrDriverInitFailed 64392
-#define Data_DBXCommonResStrs_SDBXErrOptimisticLockFailed 64393
-#define Data_DBXCommonResStrs_SDBXErrInvalidReference 64394
-#define Data_DBXCommonResStrs_SDBXErrNoTable 64395
-#define Data_DBXCommonResStrs_SDBXErrMissingParameterMarker 64396
-#define Data_DBXCommonResStrs_SDBXErrNotImplemented 64397
-#define Data_DBXCommonResStrs_SDBXErrDriverIncompatible 64398
-#define Data_DBXCommonResStrs_SDBXErrInvalidArgument 64399
-#define Data_DBXCommonResStrs_SNoStatementToExecute 64400
-#define Data_DBXCommonResStrs_SUnexpectedDataType 64401
-#define Data_DBXCommonResStrs_SDBXErrNone 64402
-#define Data_DBXCommonResStrs_SDBXErrWarning 64403
-#define Data_DBXCommonResStrs_SDBXErrNoMemory 64404
-#define Data_DBXCommonResStrs_SDBXErrUnsupportedFieldType 64405
-#define Data_DBXCommonResStrs_SDBXErrInvalidHandle 64406
-#define Data_DBXCommonResStrs_SDBXErrNotSupported 64407
-#define Data_DBXCommonResStrs_SDBXErrInvalidTime 64408
-#define Data_DBXCommonResStrs_SDBXErrInvalidType 64409
-#define Data_DBXCommonResStrs_SDBXErrInvalidOrdinal 64410
-#define Data_DBXCommonResStrs_SDBXErrInvalidParameter 64411
-#define Data_DBXCommonResStrs_SDBXErrEOF 64412
-#define Data_DBXCommonResStrs_SDBXErrParameterNotSet 64413
-#define Data_DBXCommonResStrs_SDBXErrInvalidUserOrPassword 64414
-#define Data_DBXCommonResStrs_SDBXErrInvalidPrecision 64415
-#define Vcl_VDBConsts_SApplyUpdates 64416
-#define Vcl_VDBConsts_SCancelUpdates 64417
-#define Vcl_VDBConsts_SRemoteLogin 64418
-#define Data_DBXCommonResStrs_SBadVariantType 64419
-#define Data_DBXCommonResStrs_SInvalidTransaction 64420
-#define Data_DBXCommonResStrs_SNotImplemented 64421
-#define Data_DBXCommonResStrs_SReaderNew 64422
-#define Data_DBXCommonResStrs_SReaderClosed 64423
-#define Data_DBXCommonResStrs_SReadOnlyType 64424
-#define Data_DBXCommonResStrs_SInvalidOrdinal 64425
-#define Data_DBXCommonResStrs_SDefaultErrorMessage 64426
-#define Data_DBXCommonResStrs_SErrorCode 64427
-#define Data_DBXCommonResStrs_SAlreadyPrepared 64428
-#define Data_DBXCommonResStrs_SInvalidTypeAccess 64429
-#define Data_DBXCommonResStrs_SConnectionClosed 64430
-#define Data_DBXCommonResStrs_SJSONByteStream 64431
+#define Data_DBXCommonResStrs_SDBXErrNotImplemented 64384
+#define Data_DBXCommonResStrs_SDBXErrDriverIncompatible 64385
+#define Data_DBXCommonResStrs_SDBXErrInvalidArgument 64386
+#define Data_DBXCommonResStrs_SDBXErrNoData 64387
+#define Data_DBXCommonResStrs_SDBXErrVendorError 64388
+#define Data_DBXCommonResStrs_SDBXErrUnrecognizedCommandType 64389
+#define Data_DBXCommonResStrs_SDBXErrSchemaNameUnspecified 64390
+#define Data_DBXCommonResStrs_SDBXErrDatabaseUnspecified 64391
+#define Data_DBXCommonResStrs_SDBXErrLibraryNameUnspecified 64392
+#define Data_DBXCommonResStrs_SDBXErrGetDriverFuncUnspecified 64393
+#define Data_DBXCommonResStrs_SDBXErrVendorLibUnspecified 64394
+#define Data_DBXCommonResStrs_SUTF8InvalidHeaderByte 64395
+#define Data_DBXCommonResStrs_SUTF8UnexpectedByte 64396
+#define Data_DBXCommonResStrs_SUTF8Start 64397
+#define Data_DBXCommonResStrs_SDBXErrParameterNotSet 64400
+#define Data_DBXCommonResStrs_SDBXErrInvalidUserOrPassword 64401
+#define Data_DBXCommonResStrs_SDBXErrInvalidPrecision 64402
+#define Data_DBXCommonResStrs_SDBXErrInvalidLength 64403
+#define Data_DBXCommonResStrs_SDBXErrInvalidIsolationLevel 64404
+#define Data_DBXCommonResStrs_SDBXErrInvalidTransactionId 64405
+#define Data_DBXCommonResStrs_SDBXErrDuplicateTransactionId 64406
+#define Data_DBXCommonResStrs_SDBXErrDriverRestricted 64407
+#define Data_DBXCommonResStrs_SDBXErrTransactionActive 64408
+#define Data_DBXCommonResStrs_SDBXErrMultipleTransactionNotEnabled 64409
+#define Data_DBXCommonResStrs_SDBXErrConnectionFailed 64410
+#define Data_DBXCommonResStrs_SDBXErrDriverInitFailed 64411
+#define Data_DBXCommonResStrs_SDBXErrOptimisticLockFailed 64412
+#define Data_DBXCommonResStrs_SDBXErrInvalidReference 64413
+#define Data_DBXCommonResStrs_SDBXErrNoTable 64414
+#define Data_DBXCommonResStrs_SDBXErrMissingParameterMarker 64415
+#define Data_DBXCommonResStrs_SInvalidTypeAccess 64416
+#define Data_DBXCommonResStrs_SConnectionClosed 64417
+#define Data_DBXCommonResStrs_SJSONByteStream 64418
+#define Data_DBXCommonResStrs_SNoStatementToExecute 64419
+#define Data_DBXCommonResStrs_SUnexpectedDataType 64420
+#define Data_DBXCommonResStrs_SDBXErrNone 64421
+#define Data_DBXCommonResStrs_SDBXErrWarning 64422
+#define Data_DBXCommonResStrs_SDBXErrNoMemory 64423
+#define Data_DBXCommonResStrs_SDBXErrUnsupportedFieldType 64424
+#define Data_DBXCommonResStrs_SDBXErrInvalidHandle 64425
+#define Data_DBXCommonResStrs_SDBXErrNotSupported 64426
+#define Data_DBXCommonResStrs_SDBXErrInvalidTime 64427
+#define Data_DBXCommonResStrs_SDBXErrInvalidType 64428
+#define Data_DBXCommonResStrs_SDBXErrInvalidOrdinal 64429
+#define Data_DBXCommonResStrs_SDBXErrInvalidParameter 64430
+#define Data_DBXCommonResStrs_SDBXErrEOF 64431
 #define IdResourceStringsProtocols_RSMFDInvalidTransfer 64432
 #define IdResourceStringsProtocols_RSMFDInvalidEncoding 64433
 #define IdResourceStringsProtocols_RSURINoProto 64434
 #define IdResourceStringsProtocols_RSURINoHost 64435
 #define IdResourceStringsProtocols_RSUnsupportedOperation 64436
 #define IdResourceStringsProtocols_RSHeaderEncodeError 64437
-#define Vcl_VDBConsts_SFirstRecord 64438
-#define Vcl_VDBConsts_SPriorRecord 64439
-#define Vcl_VDBConsts_SNextRecord 64440
-#define Vcl_VDBConsts_SLastRecord 64441
-#define Vcl_VDBConsts_SInsertRecord 64442
-#define Vcl_VDBConsts_SDeleteRecord 64443
-#define Vcl_VDBConsts_SEditRecord 64444
-#define Vcl_VDBConsts_SPostEdit 64445
-#define Vcl_VDBConsts_SCancelEdit 64446
-#define Vcl_VDBConsts_SRefreshRecord 64447
+#define Data_DBXCommonResStrs_SBadVariantType 64438
+#define Data_DBXCommonResStrs_SInvalidTransaction 64439
+#define Data_DBXCommonResStrs_SNotImplemented 64440
+#define Data_DBXCommonResStrs_SReaderNew 64441
+#define Data_DBXCommonResStrs_SReaderClosed 64442
+#define Data_DBXCommonResStrs_SReadOnlyType 64443
+#define Data_DBXCommonResStrs_SInvalidOrdinal 64444
+#define Data_DBXCommonResStrs_SDefaultErrorMessage 64445
+#define Data_DBXCommonResStrs_SErrorCode 64446
+#define Data_DBXCommonResStrs_SAlreadyPrepared 64447
 #define IdResourceStringsProtocols_RSOSSLCouldNotLoadSSLLibrary 64448
 #define IdResourceStringsProtocols_RSOSSLStatusString 64449
 #define IdResourceStringsProtocols_RSOSSLAlert 64450
@@ -1173,6 +1160,9 @@
 #define System_SysConst_SInvalidOp 65535
 STRINGTABLE
 BEGIN
+	Data_DBXCommonResStrs_SDBXErrNotImplemented,	L"Not implemented"
+	Data_DBXCommonResStrs_SDBXErrDriverIncompatible,	L"Driver incompatible"
+	Data_DBXCommonResStrs_SDBXErrInvalidArgument,	L"Invalid argument"
 	Data_DBXCommonResStrs_SDBXErrNoData,	L"No data"
 	Data_DBXCommonResStrs_SDBXErrVendorError,	L"Vendor error"
 	Data_DBXCommonResStrs_SDBXErrUnrecognizedCommandType,	L"Unrecognized command type."
@@ -1184,6 +1174,9 @@ BEGIN
 	Data_DBXCommonResStrs_SUTF8InvalidHeaderByte,	L"UTF8: Type cannot be determined out of header byte at position %s"
 	Data_DBXCommonResStrs_SUTF8UnexpectedByte,	L"UTF8: An unexpected continuation byte in %s-byte UTF8 in position %s"
 	Data_DBXCommonResStrs_SUTF8Start,	L"UTF8: A start byte not followed by enough continuation bytes in position %s"
+	Data_DBXCommonResStrs_SDBXErrParameterNotSet,	L"Parameter not set"
+	Data_DBXCommonResStrs_SDBXErrInvalidUserOrPassword,	L"Invalid username or password"
+	Data_DBXCommonResStrs_SDBXErrInvalidPrecision,	L"Invalid precision"
 	Data_DBXCommonResStrs_SDBXErrInvalidLength,	L"Invalid length"
 	Data_DBXCommonResStrs_SDBXErrInvalidIsolationLevel,	L"Invalid isolation level"
 	Data_DBXCommonResStrs_SDBXErrInvalidTransactionId,	L"Invalid transaction id"
@@ -1197,9 +1190,9 @@ BEGIN
 	Data_DBXCommonResStrs_SDBXErrInvalidReference,	L"Invalid reference"
 	Data_DBXCommonResStrs_SDBXErrNoTable,	L"No table"
 	Data_DBXCommonResStrs_SDBXErrMissingParameterMarker,	L"Missing parameter marker"
-	Data_DBXCommonResStrs_SDBXErrNotImplemented,	L"Not implemented"
-	Data_DBXCommonResStrs_SDBXErrDriverIncompatible,	L"Driver incompatible"
-	Data_DBXCommonResStrs_SDBXErrInvalidArgument,	L"Invalid argument"
+	Data_DBXCommonResStrs_SInvalidTypeAccess,	L"%s value type cannot be accessed as %s value type"
+	Data_DBXCommonResStrs_SConnectionClosed,	L"Operation failed.  Connection was closed"
+	Data_DBXCommonResStrs_SJSONByteStream,	L"JSON byte stream cannot be parsed correctly into a JSON value"
 	Data_DBXCommonResStrs_SNoStatementToExecute,	L"No statement to execute"
 	Data_DBXCommonResStrs_SUnexpectedDataType,	L"Unexpected data type %s"
 	Data_DBXCommonResStrs_SDBXErrNone,	L"None"
@@ -1213,12 +1206,12 @@ BEGIN
 	Data_DBXCommonResStrs_SDBXErrInvalidOrdinal,	L"Invalid ordinal"
 	Data_DBXCommonResStrs_SDBXErrInvalidParameter,	L"Invalid parameter"
 	Data_DBXCommonResStrs_SDBXErrEOF,	L"No more rows"
-	Data_DBXCommonResStrs_SDBXErrParameterNotSet,	L"Parameter not set"
-	Data_DBXCommonResStrs_SDBXErrInvalidUserOrPassword,	L"Invalid username or password"
-	Data_DBXCommonResStrs_SDBXErrInvalidPrecision,	L"Invalid precision"
-	Vcl_VDBConsts_SApplyUpdates,	L"Apply updates"
-	Vcl_VDBConsts_SCancelUpdates,	L"Cancel updates"
-	Vcl_VDBConsts_SRemoteLogin,	L"Remote Login"
+	IdResourceStringsProtocols_RSMFDInvalidTransfer,	L"Unsupported transfer type. You can assign only an empty string or one of the following values: 7bit, 8bit, binary, quoted-printable, base64."
+	IdResourceStringsProtocols_RSMFDInvalidEncoding,	L"Unsupported encoding. You can assign only one of the following values: Q, B, 8."
+	IdResourceStringsProtocols_RSURINoProto,	L"Protocol field is empty"
+	IdResourceStringsProtocols_RSURINoHost,	L"Host field is empty"
+	IdResourceStringsProtocols_RSUnsupportedOperation,	L"Unsupported operation."
+	IdResourceStringsProtocols_RSHeaderEncodeError,	L"Could not encode header data using charset \"%s\""
 	Data_DBXCommonResStrs_SBadVariantType,	L"Unsupported variant type: %s"
 	Data_DBXCommonResStrs_SInvalidTransaction,	L"Invalid transaction Object"
 	Data_DBXCommonResStrs_SNotImplemented,	L"Feature not implemented"
@@ -1229,25 +1222,6 @@ BEGIN
 	Data_DBXCommonResStrs_SDefaultErrorMessage,	L"DBX Error:  %s"
 	Data_DBXCommonResStrs_SErrorCode,	L"Error Code:  "
 	Data_DBXCommonResStrs_SAlreadyPrepared,	L"Command can only be prepared once"
-	Data_DBXCommonResStrs_SInvalidTypeAccess,	L"%s value type cannot be accessed as %s value type"
-	Data_DBXCommonResStrs_SConnectionClosed,	L"Operation failed.  Connection was closed"
-	Data_DBXCommonResStrs_SJSONByteStream,	L"JSON byte stream cannot be parsed correctly into a JSON value"
-	IdResourceStringsProtocols_RSMFDInvalidTransfer,	L"Unsupported transfer type. You can assign only an empty string or one of the following values: 7bit, 8bit, binary, quoted-printable, base64."
-	IdResourceStringsProtocols_RSMFDInvalidEncoding,	L"Unsupported encoding. You can assign only one of the following values: Q, B, 8."
-	IdResourceStringsProtocols_RSURINoProto,	L"Protocol field is empty"
-	IdResourceStringsProtocols_RSURINoHost,	L"Host field is empty"
-	IdResourceStringsProtocols_RSUnsupportedOperation,	L"Unsupported operation."
-	IdResourceStringsProtocols_RSHeaderEncodeError,	L"Could not encode header data using charset \"%s\""
-	Vcl_VDBConsts_SFirstRecord,	L"First record"
-	Vcl_VDBConsts_SPriorRecord,	L"Prior record"
-	Vcl_VDBConsts_SNextRecord,	L"Next record"
-	Vcl_VDBConsts_SLastRecord,	L"Last record"
-	Vcl_VDBConsts_SInsertRecord,	L"Insert record"
-	Vcl_VDBConsts_SDeleteRecord,	L"Delete record"
-	Vcl_VDBConsts_SEditRecord,	L"Edit record"
-	Vcl_VDBConsts_SPostEdit,	L"Post edit"
-	Vcl_VDBConsts_SCancelEdit,	L"Cancel edit"
-	Vcl_VDBConsts_SRefreshRecord,	L"Refresh data"
 	IdResourceStringsProtocols_RSOSSLCouldNotLoadSSLLibrary,	L"Could not load SSL library."
 	IdResourceStringsProtocols_RSOSSLStatusString,	L"SSL status: \"%s\""
 	IdResourceStringsProtocols_RSOSSLAlert,	L"%s Alert"
@@ -2398,7 +2372,6 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Convertation\uFrmConvertationLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitImHint.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Convertation\uFrmConvertationSettings.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\CMDUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Convertation\uFrmConvertationProgress.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitConvertDBForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFileRenamerForm.dfm */
@@ -2423,13 +2396,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uActivation.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Options.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uAbout.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBCtrls.res */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBGrids.res */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormManagerHint.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitChangeDBPath.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ManagerDBUnit.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\CMDUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditGroupsForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitNewGroupForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitQuickGroupInfo.dfm */
@@ -2440,6 +2407,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormCDExport.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormCDMapper.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitStringPromtForm.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormManagerHint.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Steganography\uFrmCreateJPEGSteno.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Steganography\uFrmCreatePNGSteno.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Steganography\uFrmSteganographyLanding.dfm */

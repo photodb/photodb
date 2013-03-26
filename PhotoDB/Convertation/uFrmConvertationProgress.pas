@@ -82,7 +82,7 @@ implementation
 {$R *.dfm}
 
 uses
-  UnitConvertDBForm, ConvertDBThreadUnit, UnitRecreatingThInTable;
+  UnitConvertDBForm, ConvertDBThreadUnit;
 
 procedure TFrmConvertationProgress.LoadIconList;
 var
@@ -267,10 +267,10 @@ end;
 
 procedure TFrmConvertationProgress.OnConvertingStructureEnd(Sender: TObject;
   NewFileName: string; Result: Boolean);
-var
-  Options: TRecreatingThInTableOptions;
+{var
+  Options: TRecreatingThInTableOptions;       }
 begin
-  if Result then
+  {if Result then
   begin
     Options.OwnerForm := Manager.Owner;
     Options.WriteLineProc := WriteLine;
@@ -282,7 +282,7 @@ begin
     Options.GetAvaliableCryptFileList := PasswordKeeper.GetAvaliableCryptFileList;
     Options.OnProgress := ProgressCallBack;
     RecreatingThInTable.Create(Options);
-  end else
+  end else         }
     DoFormExit(Self);
 end;
 

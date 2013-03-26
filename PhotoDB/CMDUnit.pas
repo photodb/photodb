@@ -72,9 +72,6 @@ type
   public
     { Public declarations }
     procedure PackPhotoTable;
-    procedure ShowBadLinks;
-    procedure RecreateImThInPhotoTable;
-    procedure OptimizeDuplicates;
     procedure OnEnd(Sender: TObject);
     procedure LoadLanguage;
     procedure RestoreTable(FileName: string);
@@ -93,12 +90,9 @@ var
 implementation
 
 uses
-  UnitRecreatingThInTable,
   UnitPackingTable,
   UnitRestoreTableThread,
-  UnitThreadShowBadLinks,
-  UnitBackUpTableInCMD,
-  UnitOptimizeDublicatesThread;
+  UnitBackUpTableInCMD;
 
 {$R *.dfm}
 
@@ -198,38 +192,6 @@ begin
   end;
 end;
 
-procedure TCMDForm.RecreateImThInPhotoTable;
-var
-  Options: TRecreatingThInTableOptions;
-begin
-  PasswordKeeper := TPasswordKeeper.Create;
-
-  WriteLnLine(Self, L('Collection'), LINE_INFO_INFO);
-  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
-  SetWideIndex;
-  WriteLnLine(Self, L('Updating...'), LINE_INFO_INFO);
-  WriteLnLine(Self, L('Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl + B)'), LINE_INFO_OK);
-
-  TopRecords := 2;
-
-  Timer1.Enabled := False;
-  Options.OwnerForm := Self;
-  Options.WriteLineProc := WriteLine;
-  Options.WriteLnLineProc := WriteLnLine;
-  Options.OnEndProcedure := OnEnd;
-  Options.FileName := DBName;
-  Options.GetFilesWithoutPassProc := PasswordKeeper.GetActiveFiles;
-  Options.AddCryptFileToListProc := PasswordKeeper.AddCryptFileToListProc;
-  Options.GetAvaliableCryptFileList := PasswordKeeper.GetAvaliableCryptFileList;
-  Options.OnProgress := ProgressCallBack;
-  FProgressEnabled := True;
-  RecreatingThInTable.Create(Options);
-  Working := True;
-  Recreating := True;
-  CMDForm.ShowModal;
-  F(PasswordKeeper);
-end;
-
 procedure TCMDForm.RestoreTable(FileName : String);
 var
   Options: TRestoreThreadOptions;
@@ -268,34 +230,6 @@ begin
       Msg.message := 0;
 end;
 
-procedure TCMDForm.ShowBadLinks;
-var
-  Options: TShowBadLinksThreadOptions;
-begin
-  WriteLnLine(Self, L('Will be searched for invalid references in the collection:'), LINE_INFO_INFO);
-  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
-  SetWideIndex;
-  WriteLnLine(Self, L('Search is executing'), LINE_INFO_INFO);
-  WriteLnLine(Self, L('Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)'), LINE_INFO_OK);
-  TopRecords := 2;
-
-  Timer1.Enabled := False;
-
-  Options.OwnerForm := Self;
-  Options.WriteLineProc := WriteLine;
-  Options.WriteLnLineProc := WriteLnLine;
-  Options.OnEnd := OnEnd;
-  Options.FileName := DBName;
-  Options.OnProgress := ProgressCallBack;
-  FProgressEnabled := True;
-
-  TThreadShowBadLinks.Create(Options);
-  Working := True;
-  Recreating := True;
-  CMDForm.ShowModal;
-  TextToClipboard(InfoListBox.Items.Text);
-end;
-
 procedure TCMDForm.BackUpTable;
 var
   Options: TBackUpTableThreadOptions;
@@ -318,33 +252,6 @@ begin
   Working := True;
   Recreating := True;
   CMDForm.ShowModal;
-end;
-
-procedure TCMDForm.OptimizeDuplicates;
-var
-  Options: TOptimizeDuplicatesThreadOptions;
-begin
-  WriteLnLine(Self, L('Optimization duplicates ... (Press Ctrl + B to break the process)'), LINE_INFO_INFO);
-  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
-  SetWideIndex;
-  WriteLnLine(Self, L('Performing scanning the collection'), LINE_INFO_INFO);
-  WriteLnLine(Self, L('Performing scanning the collection, please wait...'), LINE_INFO_OK);
-  TopRecords := 2;
-
-  Options.OwnerForm := Self;
-  Options.WriteLineProc := WriteLine;
-  Options.WriteLnLineProc := WriteLnLine;
-  Options.OnEnd := OnEnd;
-  Options.FileName := DBName;
-  Options.OnProgress := ProgressCallBack;
-  FProgressEnabled := True;
-
-  Timer1.Enabled := False;
-  TThreadOptimizeDublicates.Create(Options);
-  Working := True;
-  Recreating := True;
-  CMDForm.ShowModal;
-  TextToClipboard(InfoListBox.Items.Text);
 end;
 
 procedure TCMDForm.WriteLine(Sender: TObject; Line: string; Info: Integer);

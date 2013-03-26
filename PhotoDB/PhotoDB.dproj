@@ -164,9 +164,6 @@
         <DCCReference Include="FormManegerUnit.pas">
             <Form>FormManager</Form>
         </DCCReference>
-        <DCCReference Include="ManagerDBUnit.pas">
-            <Form>ManagerDB</Form>
-        </DCCReference>
         <DCCReference Include="CMDUnit.pas">
             <Form>CMDForm</Form>
         </DCCReference>
@@ -230,9 +227,6 @@
         <DCCReference Include="UnitEditorFullScreenForm.pas">
             <Form>EditorFullScreenForm</Form>
         </DCCReference>
-        <DCCReference Include="UnitChangeDBPath.pas">
-            <Form>FormChangeDBPath</Form>
-        </DCCReference>
         <DCCReference Include="UnitFormCDExport.pas">
             <Form>FormCDExport</Form>
         </DCCReference>
@@ -277,16 +271,12 @@
         <DCCReference Include="Threads\UnitPackingTable.pas"/>
         <DCCReference Include="Threads\UnitExplorerThumbnailCreatorThread.pas"/>
         <DCCReference Include="Threads\UnitSaveQueryThread.pas"/>
-        <DCCReference Include="Threads\UnitRecreatingThInTable.pas"/>
         <DCCReference Include="Threads\UnitDirectXSlideShowCreator.pas"/>
         <DCCReference Include="Threads\UnitViewerThread.pas"/>
         <DCCReference Include="Threads\UnitInternetUpdate.pas"/>
         <DCCReference Include="Threads\UnitRestoreTableThread.pas"/>
         <DCCReference Include="Threads\UnitWindowsCopyFilesThread.pas"/>
-        <DCCReference Include="Threads\UnitThreadShowBadLinks.pas"/>
         <DCCReference Include="Threads\UnitBackUpTableInCMD.pas"/>
-        <DCCReference Include="Threads\UnitOpenQueryThread.pas"/>
-        <DCCReference Include="Threads\UnitOptimizeDublicatesThread.pas"/>
         <DCCReference Include="Threads\ConvertDBThreadUnit.pas"/>
         <DCCReference Include="Threads\UnitPropertyLoadImageThread.pas"/>
         <DCCReference Include="Threads\UnitPropertyLoadGistogrammThread.pas"/>
@@ -378,7 +368,6 @@
         <DCCReference Include="External\Formats\FreeImage\FreeUtils.pas"/>
         <DCCReference Include="Units\uDBDrawing.pas"/>
         <DCCReference Include="Units\uList64.pas"/>
-        <DCCReference Include="Threads\uThreadLoadingManagerDB.pas"/>
         <DCCReference Include="Units\uW7TaskBar.pas"/>
         <DCCReference Include="Units\uDBHint.pas"/>
         <DCCReference Include="Units\uMath.pas"/>

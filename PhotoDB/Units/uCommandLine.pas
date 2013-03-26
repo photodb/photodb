@@ -8,7 +8,6 @@ uses
 
   Dmitry.Utils.Files,
 
-  UnitConvertDBForm,
   CMDUnit,
   GraphicCrypt,
   UnitCrypting,
@@ -34,15 +33,6 @@ implementation
 class procedure TCommandLine.ProcessServiceCommands;
 begin
   if not FolderView and not DBTerminating then
-    if GetParamStrDBBool('/CONVERT') or Settings.ReadBool('StartUp', 'ConvertDB', False) then
-    begin
-      CloseSplashWindow;
-      EventLog('Converting...');
-      Settings.WriteBool('StartUp', 'ConvertDB', False);
-      ConvertDB(dbname);
-    end;
-
-  if not FolderView and not DBTerminating then
     if GetParamStrDBBool('/PACKTABLE') or Settings.ReadBool('StartUp', 'Pack', False) then
     begin
       CloseSplashWindow;
@@ -61,39 +51,6 @@ begin
       Settings.WriteBool('StartUp', 'BackUp', False);
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.BackUpTable;
-      R(CMDForm);
-    end;
-
-  if not FolderView and not DBTerminating then
-    if GetParamStrDBBool('/RECREATETHTABLE') or Settings.ReadBool('StartUp', 'RecreateIDEx', False) then
-    begin
-      CloseSplashWindow;
-      EventLog('Recreating thumbs in Table...');
-      Settings.WriteBool('StartUp', 'RecreateIDEx', False);
-      Application.CreateForm(TCMDForm, CMDForm);
-      CMDForm.RecreateImThInPhotoTable;
-      R(CMDForm);
-    end;
-
-  if not FolderView and not DBTerminating then
-    if GetParamStrDBBool('/SHOWBADLINKS') or Settings.ReadBool('StartUp', 'ScanBadLinks', False) then
-    begin
-      CloseSplashWindow;
-      EventLog('Show Bad Links in table...');
-      Settings.WriteBool('StartUp', 'ScanBadLinks', False);
-      Application.CreateForm(TCMDForm, CMDForm);
-      CMDForm.ShowBadLinks;
-      R(CMDForm);
-    end;
-
-  if not FolderView and not DBTerminating then
-    if GetParamStrDBBool('/OPTIMIZE_DUPLICTES') or Settings.ReadBool('StartUp', 'OptimizeDuplicates', False) then
-    begin
-      CloseSplashWindow;
-      EventLog('Optimizingduplicates in table...');
-      Settings.WriteBool('StartUp', 'OptimizeDuplicates', False);
-      Application.CreateForm(TCMDForm, CMDForm);
-      CMDForm.OptimizeDuplicates;
       R(CMDForm);
     end;
 

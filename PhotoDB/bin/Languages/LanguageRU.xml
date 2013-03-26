@@ -477,65 +477,6 @@
 	<translate name="Edit collections" value="Редактировать список коллекций" />
 	<translate name="Edit collections" value="Редактировать список коллекций" />
   </scope>
-  <scope name="DBManager">
-	<translate name="Set" value="Установить" />
-	<translate name="Delete" value="Удалить" />
-	<translate name="where" value="где" />
-	<translate name="Pack table" value="Упаковать базу" />
-	<translate name="Backup collection" value="Резервная копия" />
-	<translate name="Optimize duplicates" value="Оптимизировать дубликаты" />
-	<translate name="No date" value="Без даты" />
-	<translate name="Set date" value="Установить дату" />
-	<translate name="Edit groups" value="Редактировать группы" />
-	<translate name="Groups manager" value="Управление группами" />
-	<translate name="Go to record ID" value="Перейти к записи с ID" />
-	<translate name="Collection Manager" value="Менеджер БД" />
-	<translate name="Backups" value="Резервные копии" />
-	<translate name="Restore collection" value="Восстановить базу" />
-	<translate name="Refresh" value="Обновить" />
-	<translate name="No time" value="Времени нет" />
-	<translate name="Set time" value="Установить время" />
-	<translate name="Rename" value="Переименовать" />
-	<translate name="Recreate cache" value="Обновить кэш базы" />
-	<translate name="Scan for bad links" value="Поиск неверных ссылок" />
-	<translate name="Edit" value="Редактировать" />
-	<translate name="Select collection" value="Выбрать базу" />
-	<translate name="Convert collection" value="Конвертировать базу" />
-	<translate name="Change path in collection" value="Изменить путь в базе" />
-	<translate name="ID" value="ID" />
-	<translate name="File name" value="Имя файла" />
-	<translate name="Keywords" value="Ключевые слова" />
-	<translate name="Comment" value="Комментарий" />
-	<translate name="Rating" value="Рейтинг" />
-	<translate name="Rotate" value="Поворот" />
-	<translate name="Access" value="Доступ" />
-	<translate name="Groups" value="Группы" />
-	<translate name="Date" value="Дата" />
-	<translate name="Time" value="Время" />
-	<translate name="Size" value="Размер" />
-	<translate name="Show file in explorer" value="Показать файл в проводнике" />
-	<translate name="Do you really want to delete this copy of database (%s)?" value="Вы действительно хотите удалить эту копию базы данных (%s)?" />
-	<translate name="New name" value="Новое имя" />
-	<translate name="Please, enter a new name" value="Пожалуйста, ведите новое имя" />
-	<translate name="File with that name already exists! Select a different file name." value="Файл с таким именем уже существует! Выберите другое имя файла" />
-	<translate name="No date" value="Дата не установлена" />
-	<translate name="No time" value="Время не установлено" />
-	<translate name="Edit groups" value="Редактировать группы" />
-	<translate name="Do you really want to pack the table? Packing will begin the next startup..." value="Вы действительно хотите упаковать таблицу? Упаковка начнётся при следующем запуске программы..." />
-	<translate name="Do you really want to export the table?" value="Вы действительно хотите экспортировать таблицу?" />
-	<translate name="Do you really want to restore this copy of the database (%s)? The current database will be moved to this store. Restart the application to begin the recovery process" value="Вы действительно хотите восстановить эту копию БД (%s)? Текущая БД будет перемещена в данное хранилище. Перезапустите приложение, чтобы начать процесс восстановления" />
-	<translate name="Do you really want to rebuild the IDEx in the table? Processing begins on the next startup." value="Вы действительно хотите переформировать IDEx в таблице? Восстановление начнётся при следующем запуске." />
-	<translate name="Do you really want to scan the table on the broken links? Processing will begin when the next launch." value="Вы действительно хотите сканировать таблицу на недействительные ссылки? Обработка начнётся при следующем запуске." />
-	<translate name="Do you really want to create a backup?" value="Вы действительно хотите создать резервную копию?" />
-	<translate name="Restoring will begin when the next launch!" value="Восстановление начнётся при следующем запуске программы!" />
-	<translate name="Please, enter a new name for collection" value="Пожалуйста, ведите новое имя для базы" />
-	<translate name="File not found!" value="Файл не найден!" />
-	<translate name="Do you really want to delete this database (%s)?" value="Вы действительно хотите удалить эту БД (%s)?" />
-	<translate name="Do you really want to convert your database? Conversion will start program restart." value="Вы действительно хотите преобразовать вашу базу данных? Преобразование начнётся после перезапуска программы." />
-	<translate name="Do you really want to optimize the duplicates in a table? Optimization starts at the next startup..." value="Вы действительно хотите оптимизировать дубликаты в таблице? Оптимизация начнётся при следующем запуске программы..." />
-	<translate name="This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?" value="Данная БД не может быть использована без конвертирования, т.е. она создана для работы со старыми версиями программы. Запустить мастер конвертации баз?" />
-	<translate name="Invalid or missing file $nl$&quot;%s&quot;! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version" value="Неверный или несуществующий файл $nl$&quot;%s&quot;! $nl$Проверьте наличие файла или попробуйте добавить его через менеджер БД - возможно, файл был создан в предыдущей версии программы и необходимо его сконвертировать в текущую версию"/>
-  </scope>
   <scope name="PropertiesForm">
 	<translate name="Properties" value="Свойства" />
 	<translate name="Different files" value="Различные файлы" />
@@ -1747,36 +1688,17 @@
 	<translate name="Please wait until the program completes the operation..." value="Подождите пока, программа выполнит операцию..."/>
 	<translate name="Collection" value="База"/>
 	<translate name="Updating..." value="Обновление..."/>
-	<translate name="Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl B)" value="Начало обновления таблицы. Это долгое действие, пожалуйста, подождите... (чтобы прервать действие, нажмите Ctrl+B)"/>
 	<translate name="Restoring collection:" value="Восстановление БД:"/>
 	<translate name="Restoring" value="Восстановление"/>
 	<translate name="Starting restoring of collection. Please wait..." value="Начало обновления таблицы. Пожалуйста, подождите..."/>
-	<translate name="Will be searched for invalid references in the collection:" value="Будет произведён поиск недействительных ссылок по БД:"/>
 	<translate name="Search is executing" value="Выполняется поиск"/>
-	<translate name="Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)" value="Выполняется поиск, пожалуйста, подождите... $nl$(по завершению лог будет скопирован в буфер обмена)"/>
 	<translate name="Backing up the collection" value="Резервное копирование базы"/>
 	<translate name="Performing:" value="Выполняется:"/>
-	<translate name="Optimization duplicates ... (Press Ctrl B to break the process)" value="Оптимизация дубликатов... (Ctrl+B для прекращения)"/>
 	<translate name="Performing scanning the collection" value="Выполняется сканирование БД"/>
 	<translate name="Performing scanning the collection, please wait..." value="Выполняется сканирование БД, пожалуйста, подождите..."/>
 	<translate name="Packing collection files..." value="Упаковка файлов БД..."/>
 	<translate name="Packing completed..." value="Упаковка завершилась..."/>
-	<translate name="Packing is completed..." value="Упаковка закончена..."/>
-	<translate name="The action was interrupted on item %s from %s [%s]" value="Действие было прервано на записи %s из %s [%s]"/>
-	<translate name="Unable to get information about the file &quot;%s&quot; because: &quot;%s&quot;" value="Не удалось получить информацию у файла &quot;%s&quot; по причине: %s"/>
-	<translate name="Updated information about file &quot;%s&quot;" value="Обновлена информация у файла &quot;%s&quot;"/>
-	<translate name="Updating item %s from %s [%s]" value="Обновление записи %s из %s [%s]"/>
-	<translate name="Update previews in collection..." value="Обновление предпросмотров в базе..."/>
-	<translate name="Failed to update item: %s" value="Ошибка обновления записи: %s"/>
-	<translate name="Update item %s from %s [%s] is canceled (CD\DVD files are updated from disk management window)" value="Обновление записи %s из %s [%s] отменено (CD\DVD файлы обновляются из окна управлениями дисками)"/>
-	<translate name="Update item %s from %s [%s] postponed (encrypted)" value="Обновление записи %s из %s [%s] отложено (зашифрована)"/>
-	<translate name="For item %s from %s [%s] removed the preview (the file is encrypted, and the record - no)" value="Для записи %s из %s [%s] удалён предпросмотр (файл зашифрован, а запись - нет)"/>
-	<translate name="Incorrect link in item #%d [%s]. Link &quot;%s&quot; has type &quot;%s&quot;" value="Неверная ссылка в записи #%d [%s]. Ссылка &quot;%s&quot; типа &quot;%s&quot;"/>
-	<translate name="Current item: %s from %s [%s]" value="Текущая запись: %s из %s [%s]"/>
-	<translate name="Record #%d [%s] is updated" value="Обновлена запись #%d [%s]"/>
-	<translate name="Info is merged" value="Файл объединён"/>
-	<translate name="Item %d not found by ID -&gt; advanced search" value="Запись %d не найдена по ключу -&gt; расширенный поиск"/>
-	<translate name="Item %d not found! [%s]" value="Запись %d не найдена! [%s]"/>
+	<translate name="Packing is completed..." value="Упаковка закончена..."/>>
 	<translate name="Error! Unable to create backup for current collection: %s!" value="Ошибка! Не удалось сделать резервную копию текущей БД: %s!"/>
 	<translate name="Unable to restore collection (%s)! The current collection may be corrupted or missing! After starting try to restore the file &quot;%s&quot; which is a backup of your collection. Error: %s" value="Не удалось восстановить БД (%s)! Текущая БД может быть повреждена или отсутствовать! После запуска попробуйте восстановить файл &quot;%s&quot; в котором находится резервная копия вашей БД. Возникла ошибка: %s"/>
   </scope>

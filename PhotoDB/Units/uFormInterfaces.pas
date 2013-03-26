@@ -159,10 +159,6 @@ type
     procedure Execute(var Groups: string; var KeyWords: string; CanNew: Boolean = True); overload;
   end;
 
-  ICollectionManagerForm = interface(IFormInterface)
-    ['{CE0DC6A2-4445-4E72-B3EA-7155C97508A7}']
-  end;
-
   ICollectionAddItemForm = interface(IFormInterface)
     ['{29D8DB10-F2B2-4E1C-ABDA-BCAF9CAC5FDC}']
     procedure Execute(Info: TDBPopupMenuInfoRecord);
@@ -252,7 +248,6 @@ function ShareLinkForm: IShareLinkForm;
 function GroupsSelectForm: IGroupsSelectForm;
 function GroupInfoForm: IGroupInfoForm;
 function GroupCreateForm: IGroupCreateForm;
-function CollectionManagerForm: ICollectionManagerForm;
 function CollectionAddItemForm: ICollectionAddItemForm;
 function CDExportForm: ICDExportForm;
 function CDMapperForm: ICDMapperForm;
@@ -361,11 +356,6 @@ end;
 function GroupCreateForm: IGroupCreateForm;
 begin
   Result := FormInterfaces.CreateForm<IGroupCreateForm>();
-end;
-
-function CollectionManagerForm: ICollectionManagerForm;
-begin
-  Result := FormInterfaces.GetSingleForm<ICollectionManagerForm>(True);
 end;
 
 function CollectionAddItemForm: ICollectionAddItemForm;
