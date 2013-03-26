@@ -333,19 +333,6 @@ begin
   Result := ModalResult = mrOk;
 end;
 
-procedure EnableComposited(WinControl: TWinControl);
-var
-  i: Integer;
-  NewExStyle: DWORD;
-begin
-  NewExStyle := GetWindowLong(WinControl.Handle, GWL_EXSTYLE) or WS_EX_COMPOSITED;
-  SetWindowLong(WinControl.Handle, GWL_EXSTYLE, NewExStyle);
-
-  for i := 0 to WinControl.ControlCount-1 do
-    if WinControl.Controls[i] is TWinControl then
-      EnableComposited(TWinControl(WinControl.Controls[i]));
-end;
-
 procedure TFormLinkItemSelector.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
@@ -787,6 +774,8 @@ begin
     MoveControlTo(FLinks[I], PaddingTop, adHor);
 
     Left := PaddingTop + FLinks[I].Width + PaddingTop;
+    FLabels[I].Width := ClientWidth - PaddingTop - FLinks[I].Width - PaddingTop * 2;
+
     MoveControlToIndex(FLabels[I], FLabels[I].Tag);
     MoveControlTo(FLabels[I], Left, adHor);
   end;

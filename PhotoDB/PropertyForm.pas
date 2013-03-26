@@ -47,7 +47,6 @@ uses
   GraphicCrypt,
   UnitLinksSupport,
   CommonDBSupport,
-  UnitUpdateDBObject,
   RAWImage,
 
   DropTarget,
@@ -97,6 +96,7 @@ uses
   uDBInfoEditorUtils,
   uEXIFDisplayControl,
   uProgramStatInfo,
+  uDatabaseDirectoriesUpdater,
   uFormInterfaces;
 
 type
@@ -1029,7 +1029,8 @@ begin
         FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
         try
           FillDataRecordWithUserInfo(FileInfo, UserInput);
-          UpdaterDB.AddFileEx(FileInfo, True, True);
+
+          UpdaterStorage.AddFile(FileInfo);
         finally
           F(FileInfo);
         end;

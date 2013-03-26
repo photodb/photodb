@@ -163,6 +163,12 @@ type
     procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
     procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 
+    procedure AddFile(Info: TDBPopupMenuInfoRecord; Priority: TDatabaseTaskPriority = dtpHigh); overload;
+    procedure AddFile(FileName: string; Priority: TDatabaseTaskPriority = dtpHigh); overload;
+    procedure AddDirectory(DirectoryPath: string);
+
+    function HasFile(FileName: string): Boolean;
+
     procedure CleanUpDatabase(NewCollectionFileName: string);
 
     procedure AddFileWithErrors(FileName: string);
@@ -923,6 +929,28 @@ begin
   end;
 end;
 
+procedure TUpdaterStorage.AddDirectory(DirectoryPath: string);
+begin
+  //TODO:
+end;
+
+procedure TUpdaterStorage.AddFile(Info: TDBPopupMenuInfoRecord; Priority: TDatabaseTaskPriority);
+begin
+  Add(TAddTask.Create(dbname, Info), Priority);
+end;
+
+procedure TUpdaterStorage.AddFile(FileName: string; Priority: TDatabaseTaskPriority);
+var
+  Info: TDBPopupMenuInfoRecord;
+begin
+  Info := TDBPopupMenuInfoRecord.Create;
+  try
+    AddFile(Info, Priority);
+  finally
+    F(Info);
+  end;
+end;
+
 procedure TUpdaterStorage.AddFileWithErrors(FileName: string);
 begin
   FSync.Enter;
@@ -1034,6 +1062,25 @@ begin
   FSync.Enter;
   try
     Result := FEstimateRemainingTime;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TUpdaterStorage.HasFile(FileName: string): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+
+  FSync.Enter;
+  try
+    FileName := AnsiLowerCase(FileName);
+
+    for I := 0 to FTasks.Count - 1 do
+      if AnsiLowerCase(FTasks[I].FileName) = FileName then
+        Exit(True);
+
   finally
     FSync.Leave;
   end;

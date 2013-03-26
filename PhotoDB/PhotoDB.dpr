@@ -36,7 +36,6 @@ uses
   unitimhint in 'unitimhint.pas' {ImHint},
   SlideShowFullScreen in 'SlideShowFullScreen.pas' {FullScreenView},
   uActivation in 'uActivation.pas' {ActivateForm},
-  UnitUpdateDB in 'UnitUpdateDB.pas' {UpdateDBForm},
   uAbout in 'uAbout.pas' {AboutForm},
   FormManegerUnit in 'FormManegerUnit.pas' {FormManager},
   ManagerDBUnit in 'ManagerDBUnit.pas' {ManagerDB},
@@ -72,7 +71,6 @@ uses
   UnitFormCDMapper in 'UnitFormCDMapper.pas' {FormCDMapper},
   UnitFormCDMapInfo in 'UnitFormCDMapInfo.pas' {FormCDMapInfo},
   SelectGroupForm in 'SelectGroupForm.pas' {FormSelectGroup},
-  UnitHistoryForm in 'UnitHistoryForm.pas' {FormHistory},
   UnitStringPromtForm in 'UnitStringPromtForm.pas' {FormStringPromt},
   UnitEditLinkForm in 'UnitEditLinkForm.pas' {FormEditLink},
   UnitSelectFontForm in 'UnitSelectFontForm.pas' {FormSelectFont},
@@ -91,7 +89,6 @@ uses
   UnitCmpDB in 'Threads\UnitCmpDB.pas',
   ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
   UnitPackingTable in 'Threads\UnitPackingTable.pas',
-  UnitUpdateDBThread in 'Threads\UnitUpdateDBThread.pas',
   UnitExportThread in 'Threads\UnitExportThread.pas',
   UnitExplorerThumbnailCreatorThread in 'Threads\UnitExplorerThumbnailCreatorThread.pas',
   UnitSaveQueryThread in 'Threads\UnitSaveQueryThread.pas',
@@ -164,7 +161,6 @@ uses
   UnitGroupsTools in 'Units\UnitGroupsTools.pas',
   UnitSQLOptimizing in 'Units\UnitSQLOptimizing.pas',
   CommonDBSupport in 'Units\CommonDBSupport.pas',
-  UnitUpdateDBObject in 'Units\UnitUpdateDBObject.pas',
   acWorkRes in 'Units\acWorkRes.pas',
   UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
   UnitINI in 'Units\UnitINI.pas',
@@ -281,8 +277,6 @@ uses
   uFrmCreateJPEGSteno in 'Steganography\uFrmCreateJPEGSteno.pas' {FrmCreateJPEGSteno: TFrame},
   uStenoLoadImageThread in 'Threads\uStenoLoadImageThread.pas',
   uFrmImportImagesLanding in 'ImportImages\uFrmImportImagesLanding.pas' {FrmImportImagesLanding: TFrame},
-  uFrmImportImagesOptions in 'ImportImages\uFrmImportImagesOptions.pas' {FrmImportImagesOptions: TFrame},
-  uFrmImportImagesProgress in 'ImportImages\uFrmImportImagesProgress.pas' {FrmImportImagesProgress: TFrame},
   uIME in 'Units\uIME.pas',
   uExifUtils in 'Units\uExifUtils.pas',
   uExifPatchThread in 'Threads\uExifPatchThread.pas',
@@ -581,7 +575,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     TW.I.Start('SetSplashProgress 70');
     SetSplashProgress(70);
@@ -610,6 +604,8 @@ begin
       RegisterVideoFiles;
       StopApplication;
     end;
+
+   // MigrateToVersion002(dbname);
 
     if not FolderView and not DBTerminating and GetParamStrDBBool('/uninstall') then
     begin
@@ -688,18 +684,6 @@ begin
     end;
 
     s1 := AnsiDequotedStr(GetParamStrDBValue('/Add'), '"');
-
-    if (s1 <> '') and FileExistsEx(s1) then
-    begin
-      RegisterMainForm(UpdaterDB.Form);
-      UpdaterDB.AddFile(s1);
-    end;
-
-    if (s1 <> '') and DirectoryExists(s1) then
-    begin
-      RegisterMainForm(UpdaterDB.Form);
-      UpdaterDB.AddDirectory(s1);
-    end;
 
     if GetParamStrDBBool('/installExt') then
     begin

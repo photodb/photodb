@@ -41,6 +41,7 @@ uses
   UnitDBCommonGraphics,
   uImageLoader,
   uFaceDetectionThread,
+  uDatabaseDirectoriesUpdater,
   uPortableDeviceUtils;
 
 type
@@ -86,14 +87,13 @@ type
 implementation
 
 uses
-  UnitSizeResizerForm,
-  UnitUpdateDBObject;
+  UnitSizeResizerForm;
 
 { TImageConvertThread }
 
 procedure TImageConvertThread.AddInfoToCollection;
 begin
-  UpdaterDB.AddFileEx(FDataParam, True, True);
+  UpdaterStorage.AddFile(FDataParam);
 end;
 
 procedure TImageConvertThread.AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect;

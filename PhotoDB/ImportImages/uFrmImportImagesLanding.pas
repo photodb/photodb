@@ -10,24 +10,25 @@ uses
   Graphics,
   Controls,
   Forms,
-  uFrameWizardBase,
   StdCtrls,
   ComCtrls,
   ImgList,
   Menus,
-  UnitDBDeclare,
-  UnitDBKernel,
-  uConstants,
-  UnitDBCommonGraphics,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
 
   Dmitry.Utils.Files,
 
+  UnitDBDeclare,
+  UnitDBKernel,
+  UnitDBCommonGraphics,
+  UnitDBFileDialogs,
+
+  uConstants,
   uShellIntegration,
   uShellUtils,
-  UnitDBFileDialogs,
-  uRuntime,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup;
+  uFrameWizardBase,
+  uRuntime;
 
 type
   TFrmImportImagesLanding = class(TFrameWizardBase)

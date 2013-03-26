@@ -15,12 +15,12 @@ uses
   UnitSQLOptimizing,
   ProgressActionUnit,
   UnitDBKernel,
-  UnitUpdateDBObject,
 
   uConstants,
   uMemory,
   uMemoryEx,
   uDBPopupMenuInfo,
+  uDatabaseDirectoriesUpdater,
   uDBForm,
   uGroupTypes,
   uDBClasses;
@@ -362,7 +362,8 @@ begin
           FileInfo := FFilesInfo[I].Copy;
           try
             FillDataRecordWithUserInfo(FileInfo, UserInput);
-            UpdaterDB.AddFileEx(FileInfo, True, True);
+
+            UpdaterStorage.AddFile(FileInfo);
           finally
             F(FileInfo);
           end;

@@ -406,8 +406,6 @@ begin
       FTestTable.FieldByName('Rating').AsInteger;
       FTestTable.FieldByName('Attr').AsInteger;
       FTestTable.FieldByName('Access').AsInteger;
-      FTestTable.FieldByName('Owner').AsString;
-      FTestTable.FieldByName('Collection').AsString;
       FTestTable.FieldByName('FileSize').AsInteger;
       FTestTable.FieldByName('Width').AsInteger;
       FTestTable.FieldByName('Height').AsInteger;

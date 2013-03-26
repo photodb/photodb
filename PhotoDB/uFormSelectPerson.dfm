@@ -157,8 +157,6 @@ object FormFindPerson: TFormFindPerson
     Text = 'Close form and create new person'
     OnClick = WlCreatePersonClick
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False

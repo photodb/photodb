@@ -161,9 +161,6 @@
         <DCCReference Include="uActivation.pas">
             <Form>ActivateForm</Form>
         </DCCReference>
-        <DCCReference Include="UnitUpdateDB.pas">
-            <Form>UpdateDBForm</Form>
-        </DCCReference>
         <DCCReference Include="uAbout.pas">
             <Form>AboutForm</Form>
         </DCCReference>
@@ -269,9 +266,6 @@
         <DCCReference Include="SelectGroupForm.pas">
             <Form>FormSelectGroup</Form>
         </DCCReference>
-        <DCCReference Include="UnitHistoryForm.pas">
-            <Form>FormHistory</Form>
-        </DCCReference>
         <DCCReference Include="UnitStringPromtForm.pas">
             <Form>FormStringPromt</Form>
         </DCCReference>
@@ -316,7 +310,6 @@
         <DCCReference Include="Threads\UnitCmpDB.pas"/>
         <DCCReference Include="Threads\ExplorerThreadUnit.pas"/>
         <DCCReference Include="Threads\UnitPackingTable.pas"/>
-        <DCCReference Include="Threads\UnitUpdateDBThread.pas"/>
         <DCCReference Include="Threads\UnitExportThread.pas"/>
         <DCCReference Include="Threads\UnitExplorerThumbnailCreatorThread.pas"/>
         <DCCReference Include="Threads\UnitSaveQueryThread.pas"/>
@@ -389,7 +382,6 @@
         <DCCReference Include="Units\UnitGroupsTools.pas"/>
         <DCCReference Include="Units\UnitSQLOptimizing.pas"/>
         <DCCReference Include="Units\CommonDBSupport.pas"/>
-        <DCCReference Include="Units\UnitUpdateDBObject.pas"/>
         <DCCReference Include="Units\acWorkRes.pas"/>
         <DCCReference Include="Units\UnitPropeccedFilesSupport.pas"/>
         <DCCReference Include="Units\UnitINI.pas"/>
@@ -561,14 +553,6 @@
         <DCCReference Include="Threads\uStenoLoadImageThread.pas"/>
         <DCCReference Include="ImportImages\uFrmImportImagesLanding.pas">
             <Form>FrmImportImagesLanding</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="ImportImages\uFrmImportImagesOptions.pas">
-            <Form>FrmImportImagesOptions</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="ImportImages\uFrmImportImagesProgress.pas">
-            <Form>FrmImportImagesProgress</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Units\uIME.pas"/>

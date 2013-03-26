@@ -185,8 +185,6 @@ begin
 
     IC.AddParameter(TStringParameter.Create('StrTh', Res.ImTh));
     IC.AddParameter(TStringParameter.Create('KeyWords', Info.KeyWords));
-    IC.AddParameter(TStringParameter.Create('Owner', GetWindowsUserName));
-    IC.AddParameter(TStringParameter.Create('Collection', 'DB'));
     IC.AddParameter(TIntegerParameter.Create('Access', Info.Access));
     IC.AddParameter(TIntegerParameter.Create('Width', Res.ImageWidth));
     IC.AddParameter(TIntegerParameter.Create('Height', Res.ImageHeight));

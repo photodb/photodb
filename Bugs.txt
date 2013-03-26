@@ -5,12 +5,11 @@ Features ready:
   [F] Folder list in bottom menu;
 
 Bugs:
-[F] Explorer preview zoom? (icons could be hidden)
 - Dll could be attached to some process (install update)
 http://answers.microsoft.com/ru-ru/windows/forum/windows_7-system/%D0%BA%D0%B0%D0%BA/132df38c-5efa-4880-a957-094b96dbcccf
 - Shelf slide show button enabling;
-- Update window position of cursor, size;
-- Update automatically?
+- InternetUpdate window position of cursor, size;
+- InternetUpdate automatically?
 - Portable persons;
 - Persons to EXIF (using XML string);
 [F] Import set password;
@@ -19,29 +18,28 @@ http://answers.microsoft.com/ru-ru/windows/forum/windows_7-system/%D0%BA%D0%B0%D
 -> Command line encrypt/steno;
 - Change database check update thread;
 - Links list popup menu;
-- Viewcounter for images;
-- Change executable list translate;
-- Edit database description foeld position aafter rename;
 - Encrypted images after enter password - add to database from all user directories;
+[F] Explorer preview zoom? (icons could be hidden)
+[CR] DB -> Collection in RU
+[F] Update info in bottom => remove update form;
+[B] Hint color
+[B] DB indexes and nullable fields review
+[U] Actions fix
+  Review DB;
 
 - Site
- + Free activation form on the site
- + Site search
+ Free activation form on the site
+ Site search
 
 Possible CRs:
+- Viewcounter for images;
 [F] Prevew pane for Video, non-image files;
 
 [F] Add new styles;
-
 [F] Player russian (in registry);
 [F] XP dll injection update?;
 [CR] Private group -> Hidden group;
-[CR] DB -> Collection in RU
-[F] Update info in bottom => remove update form;
 [F] DB Search - count indicator;
-[B] Hint color
-- adding process icc?
 - Explorer shift button fix?
 
 TODO:
-  Review DB;

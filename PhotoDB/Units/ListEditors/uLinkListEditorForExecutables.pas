@@ -45,6 +45,7 @@ type
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    function L(StringToTranslate: string): string;
   public
     procedure SetForm(Form: ILinkItemSelectForm);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
@@ -151,7 +152,7 @@ begin
     WlChangeLocation.Parent := Editor;
     WlChangeLocation.Tag := CHANGE_EXEC_CHANGE_PATH;
     WlChangeLocation.Height := 26;
-    WlChangeLocation.Text := 'Change executable';
+    WlChangeLocation.Text := L('Change application');
     WlChangeLocation.RefreshBuffer(True);
     WlChangeLocation.Top := 8 + WedCaption.Height div 2 - WlChangeLocation.Height div 2;
     WlChangeLocation.Left := 240;
@@ -187,7 +188,7 @@ begin
     LbParameters := TLabel.Create(Editor);
     LbParameters.Parent := Editor;
     LbParameters.Tag := CHANGE_PEXEC_PARAMS_LABEL;
-    LbParameters.Caption := 'Parameters';
+    LbParameters.Caption := L('Parameters');
     LbParameters.Left := WedParameters.AfterRight(5);
     LbParameters.Top := WedParameters.Top + WedParameters.Height div 2 - LbParameters.Height div 2;
   end;
@@ -216,7 +217,7 @@ begin
 
     OpenDialog := DBOpenDialog.Create;
     try
-      OpenDialog.Filter := ('Programs (*.exe)|*.exe|All Files (*.*)|*.*');
+      OpenDialog.Filter := L('Applications (*.exe)|*.exe|All Files (*.*)|*.*');
       OpenDialog.FilterIndex := 1;
       if OpenDialog.Execute then
         Data := TExecutableInfo.Create(ExtractFileName(OpenDialog.FileName), OpenDialog.FileName, OpenDialog.FileName + ',0', '%1', True, Sender.DataList.Count);
@@ -256,6 +257,11 @@ procedure TLinkListEditorForExecutables.FormKeyDown(Sender: TObject;
 begin
   if Key = VK_RETURN then
     FForm.ApplyChanges;
+end;
+
+function TLinkListEditorForExecutables.L(StringToTranslate: string): string;
+begin
+  Result := TA(StringToTranslate, 'DBMenu');
 end;
 
 procedure TLinkListEditorForExecutables.LoadIconForLink(Link: TWebLink; Path, Icon: string);

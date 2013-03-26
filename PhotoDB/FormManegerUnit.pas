@@ -125,7 +125,6 @@ uses
   UnitConvertDBForm,
   UnitImportingImagesForm,
   UnitSelectDB,
-  UnitUpdateDBObject,
   uExifPatchThread;
 
 {$R *.dfm}
@@ -435,9 +434,6 @@ begin
     FDirectoryWatcher := nil;
   end;
 
-  // stop updating process, queue will be saved in registry
-  UpdaterObjectSaveWork;
-
   for I := FMainForms.Count - 1 downto 0 do
     if not TForm(FMainForms[I]).Visible then
     begin
@@ -639,8 +635,6 @@ begin
         if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
           ImportImages(Dbname);
       end;
-
-      TUpdaterDB.CheckSavedWork;
     end;
 
     if (FCheckCount = 100) and not FolderView then // after 10 sec. check for updates

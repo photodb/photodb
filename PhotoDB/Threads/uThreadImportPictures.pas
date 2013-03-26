@@ -31,7 +31,8 @@ uses
   uAssociations,
   uImportPicturesUtils,
   uSettings,
-  uDBThread;
+  uDBThread,
+  uDatabaseDirectoriesUpdater;
 
 type
   TFileOperationTask = class
@@ -126,7 +127,6 @@ type
 implementation
 
 uses
-  UnitUpdateDBObject,
   uManagerExplorer;
 
 { TFileOperationTask }
@@ -674,6 +674,7 @@ begin
               end;
             end;
 
+            //TODO: check if fils in collection directory - they will be added automatically
             if FOptions.AddToCollection then
             begin
               for I := 0 to FileOperations.Count - 1 do
@@ -683,7 +684,7 @@ begin
                 if FO.IsDirectory then
                   Continue;
 
-                UpdaterDB.AddFile(FO.Destination.Path);
+                UpdaterStorage.AddFile(FO.Destination.Path);
               end;
             end;
 

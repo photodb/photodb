@@ -52,7 +52,6 @@ uses
   ShellContextMenu,
   GIFImage,
   Effects,
-  UnitUpdateDBObject,
   UnitDBDeclare,
   ExplorerTypes,
 
@@ -77,6 +76,7 @@ uses
   uDBUtils,
   uRuntime,
   uViewerTypes,
+  uDatabaseDirectoriesUpdater,
   uSettings,
   uAssociations,
   uExifUtils,
@@ -2528,7 +2528,7 @@ end;
 
 procedure TViewer.Onlythisfile1Click(Sender: TObject);
 begin
-  UpdaterDB.AddFile(Item.FileName)
+  UpdaterStorage.AddFile(Item);
 end;
 
 procedure TViewer.AddHiddenInfo1Click(Sender: TObject);
@@ -2538,7 +2538,7 @@ end;
 
 procedure TViewer.AllFolder1Click(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(ExtractFileDir(Item.FileName))
+  UpdaterStorage.AddDirectory(ExtractFileDir(Item.FileName));
 end;
 
 procedure TViewer.ApplyStyle;
@@ -3951,7 +3951,8 @@ begin
       FileInfo.FileName := Item.FileName;
       FileInfo.Rating := NewRating;
       FileInfo.Include := True;
-      UpdaterDB.AddFileEx(FileInfo, True, True);
+
+      UpdaterStorage.AddFile(FileInfo);
     finally
       F(FileInfo);
     end;

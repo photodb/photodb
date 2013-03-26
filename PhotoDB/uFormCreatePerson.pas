@@ -174,8 +174,8 @@ function EditPerson(PersonID: Integer; NewAvatar: TBitmap = nil): Boolean;
 implementation
 
 uses
-  UnitUpdateDBObject,
   ImEditor,
+  uDatabaseDirectoriesUpdater,
   uFormPersonSuggest;
 
 {$R *.dfm}
@@ -340,7 +340,8 @@ begin
         FileInfo.FileName := FInfo.FileName;
         FileInfo.Include := True;
         FileInfo.Groups := FRelatedGroups;
-        UpdaterDB.AddFileEx(FileInfo, True, True);
+
+        UpdaterStorage.AddFile(FileInfo);
         Exit;
       finally
         F(FileInfo);

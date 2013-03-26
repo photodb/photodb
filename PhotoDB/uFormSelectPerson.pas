@@ -92,9 +92,6 @@ const
 
 implementation
 
-uses
-  UnitUpdateDBObject;
-
 {$R *.dfm}
 
 function TFormFindPerson.GetFormID: string;

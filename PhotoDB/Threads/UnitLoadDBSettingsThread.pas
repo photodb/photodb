@@ -3,8 +3,19 @@ unit UnitLoadDBSettingsThread;
 interface
 
 uses
-  Windows, Classes, DB, UnitDBKernel, CommonDBSupport, ActiveX, uDBThread,
-  SysUtils, uTime, uLogger, uConstants;
+  Windows,
+  ActiveX,
+  SysUtils,
+  Classes,
+  DB,
+
+  UnitDBKernel,
+  CommonDBSupport,
+
+  uDBThread,
+  uTime,
+  uLogger,
+  uConstants;
 
 type
   TLoadDBSettingsThread = class(TDBThread)

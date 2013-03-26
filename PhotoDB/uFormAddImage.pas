@@ -25,6 +25,7 @@ uses
   uBitmapUtils,
   uThemesUtils,
   uDBForm,
+  uDatabaseDirectoriesUpdater,
   uFormInterfaces;
 
 type
@@ -54,9 +55,6 @@ type
   end;
 
 implementation
-
-uses
-  UnitUpdateDBObject;
 
 {$R *.dfm}
 
@@ -132,7 +130,7 @@ procedure TFormAddingImage.Execute(Info: TDBPopupMenuInfoRecord);
 begin
   FInfo := Info;
   FInfo.Include := True;
-  UpdaterDB.AddFileEx(FInfo, True, True);
+  UpdaterStorage.AddFile(FInfo);
   DrawForm;
   TmrCheck.Enabled := True;
   ShowModal;
@@ -173,7 +171,7 @@ procedure TFormAddingImage.TmrCheckTimer(Sender: TObject);
 begin
   if FInfo = nil then
     Exit;
-  if not UpdaterDB.HasFile(FInfo.FileName) then
+  if not UpdaterStorage.HasFile(FInfo.FileName) then
     Close;
 end;
 

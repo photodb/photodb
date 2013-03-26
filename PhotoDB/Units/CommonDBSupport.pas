@@ -238,6 +238,9 @@ function GroupsTableFileNameW(FileName: string): string;
 procedure NotifyOleException(E: Exception);
 function GetProviderConnectionString(ProviderName: string): string;
 
+//MIGRATION
+procedure MigrateToVersion002(TableName: string);
+
 implementation
 
 var
@@ -573,12 +576,14 @@ end;
 
 function GetConnectionString(ConnectionString: string; Dbname: string; ReadOnly: Boolean): string;
 begin
+  //Share Exclusive
   Result := StringReplace(ConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
   Result := Format(Result, [Dbname]);
 end;
 
 function GetConnectionString(Dbname: string; ReadOnly: Boolean): string;
 begin
+  //Share Exclusive
   Result := StringReplace(ConnectionString, '%MODE%', IIF(ReadOnly, 'Read', 'Share Deny None'), [rfReplaceAll, rfIgnoreCase]);
   Result := Format(Result, [Dbname]);
 end;
@@ -754,10 +759,21 @@ begin
   Result := True;
   FQuery := GetQuery(TableName);
   try
-    SQL := 'CREATE TABLE Groups ( ' + 'ID Autoincrement , ' + 'GroupCode Memo , ' + 'GroupName Memo , ' +
-      'GroupComment Memo , ' + 'GroupDate Date , ' + 'Groupfaces Memo , ' + 'GroupAccess INTEGER , ' +
-      'GroupImage LONGBINARY, ' + 'GroupKW Memo , ' + 'RelatedGroups Memo , ' + 'IncludeInQuickList Logical , ' +
+
+    SQL := 'CREATE TABLE Groups ( ' +
+      'ID Autoincrement , ' +
+      'GroupCode Memo , ' +
+      'GroupName Memo , ' +
+      'GroupComment Memo , ' +
+      'GroupDate Date , ' +
+      'Groupfaces Memo , ' +
+      'GroupAccess INTEGER , ' +
+      'GroupImage LONGBINARY, ' +
+      'GroupKW Memo , ' +
+      'RelatedGroups Memo , ' +
+      'IncludeInQuickList Logical , ' +
       'GroupAddKW Logical)';
+
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);
@@ -980,7 +996,7 @@ begin
   end;
 end;
 
-function ADOCreateImageTable(TableName: string) : boolean;
+function ADOCreateImageTable(TableName: string): Boolean;
 var
   SQL: string;
   FQuery: TDataSet;
@@ -997,12 +1013,34 @@ begin
   end;
   FQuery := GetQuery(TableName, GetDBType(TableName));
   try
-    SQL := 'CREATE TABLE ImageTable (' + 'ID Autoincrement,' + 'Name Character(255),' + 'FFileName Memo,' +
-      'Comment Memo,' + 'IsDate Logical,' + 'DateToAdd Date ,' + 'Owner  Character(255),' + 'Rating INTEGER ,' +
-      'Thum  LONGBINARY,' + 'FileSize INTEGER ,' + 'KeyWords Memo,' + 'Groups Memo,' + 'StrTh Character(100),' +
-      'StrThCrc INTEGER , ' + 'Attr INTEGER,' + 'Collection  Character(255),' + 'Access INTEGER ,' + 'Width INTEGER ,' +
-      'Height INTEGER ,' + 'Colors INTEGER ,' + 'Include Logical,' + 'Links Memo,' + 'aTime TIME,' + 'IsTime Logical,' +
-      'FolderCRC INTEGER,' + 'Rotated INTEGER )';
+    SQL := 'CREATE TABLE ImageTable (' +
+      'ID Autoincrement,' +
+      'Name Character(255),' +
+      'FFileName Memo,' +
+      'Comment Memo,' +
+      'IsDate Logical,' +
+      'DateToAdd Date ,' +
+      'Owner  Character(255),' +
+      'Rating INTEGER ,' +
+      'Thum  LONGBINARY,' +
+      'FileSize INTEGER ,' +
+      'KeyWords Memo,' +
+      'Groups Memo,' +
+      'StrTh Character(100),' +
+      'StrThCrc INTEGER , ' +
+      'Attr INTEGER,' +
+      'Collection  Character(255),' +
+      'Access INTEGER ,' +
+      'Width INTEGER ,' +
+      'Height INTEGER ,' +
+      'Colors INTEGER ,' +
+      'Include Logical,' +
+      'Links Memo,' +
+      'aTime TIME,' +
+      'IsTime Logical,' +
+      'FolderCRC INTEGER,' +
+      'Rotated INTEGER )';
+
     SetSQL(FQuery, SQL);
     try
       ExecSQL(FQuery);
@@ -1023,7 +1061,7 @@ begin
     SQL := 'CREATE INDEX aID ON ImageTable(ID)';
     SetSQL(FQuery, SQL);
     ExecSQL(FQuery);
-    // DROP INDEX <Index name>;
+
     SQL := 'CREATE INDEX aFolderCRC ON ImageTable(FolderCRC)';
     SetSQL(FQuery, SQL);
     ExecSQL(FQuery);
@@ -1037,7 +1075,76 @@ begin
   end;
 end;
 
-procedure TryRemoveConnection(dbname : string; Delete : boolean = false);
+procedure MigrateToVersion002(TableName: string);
+var
+  FQuery: TDataSet;
+
+  procedure Exec(SQL: string);
+  begin
+    try
+      SetSQL(FQuery, SQL);
+      ExecSQL(FQuery);
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
+  end;
+
+  procedure AlterColumn(ColumnDefinition: string);
+  begin
+    Exec('ALTER TABLE ImageTable ALTER COLUMN ' + ColumnDefinition);
+  end;
+
+  procedure DropColumn(ColumnName: string);
+  begin
+    Exec('ALTER TABLE ImageTable DROP COLUMN ' + ColumnName);
+  end;
+
+begin
+  FQuery := GetQuery(TableName, GetDBType(TableName));
+  try
+    Exec('DROP INDEX aID ON ImageTable');
+    Exec('DROP INDEX aFolderCRC ON ImageTable');
+    Exec('DROP INDEX aStrThCrc ON ImageTable');
+
+    AlterColumn('ID Autoincrement NOT NULL');
+    AlterColumn('Name Character(255) NOT NULL');
+    AlterColumn('FFileName Memo NOT NULL');
+    AlterColumn('Comment Memo NOT NULL');
+    AlterColumn('IsDate Logical NOT NULL');
+    AlterColumn('DateToAdd Date NOT NULL');
+    AlterColumn('Rating INTEGER NOT NULL');
+    AlterColumn('Thum LONGBINARY NOT NULL');
+    AlterColumn('FileSize INTEGER NOT NULL');
+    AlterColumn('KeyWords Memo NOT NULL');
+    AlterColumn('Groups Memo NOT NULL');
+    AlterColumn('StrTh Character(100) NOT NULL');
+    AlterColumn('StrThCrc INTEGER NOT NULL');
+    AlterColumn('Attr INTEGER NOT NULL');
+    AlterColumn('Access INTEGER NOT NULL');
+    AlterColumn('Width INTEGER NOT NULL');
+    AlterColumn('Height INTEGER NOT NULL');
+    AlterColumn('Include Logical NOT NULL');
+    AlterColumn('Links Memo NOT NULL');
+    AlterColumn('aTime TIME NOT NULL');
+    AlterColumn('IsTime Logical NOT NULL');
+    AlterColumn('FolderCRC INTEGER NOT NULL');
+    AlterColumn('Rotated INTEGER NOT NULL');
+
+    DropColumn('Owner');
+    DropColumn('Collection');
+    DropColumn('Colors');
+
+    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID) WITH PRIMARY DISALLOW NULL');
+    Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL');
+    Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL');
+
+  finally
+    FreeDS(FQuery);
+  end;
+end;
+
+procedure TryRemoveConnection(dbname: string; Delete: Boolean = false);
 var
   I: Integer;
 begin

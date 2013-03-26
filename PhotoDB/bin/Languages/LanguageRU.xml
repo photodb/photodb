@@ -450,7 +450,7 @@
 	<translate name="Update avatar" value="Обновить аватар" />
 	<translate name="No persons on the photo" value="На фото нет отмеченных персон" />
 	<translate name="Select person" value="Отметить персону" />
-	<translate name="Middle mouse button or shift + selection using mouse" value="Средняя кнопка мыши или shift + выделение мышкой" />	
+	<translate name="Middle mouse button or shift selection using mouse" value="Средняя кнопка мыши или shift выделение мышкой" />	
 	<translate name="File processing could be failed. Please try internal video player or current programm isn't suported! Internal details: {0}" value="Обнаружены ошибки во время обработки файла, попробуйте использовать встроенный плеер. Возможно, программа, которую Вы используете, не поддерживается. Детали ошибки: {0}" />
 	<translate name="Generate link" value="Создать ссылку" />
 	<translate name="Help" value="Справка" />
@@ -478,6 +478,7 @@
 	<translate name="Do you want to delete files below for deleted collections?" value="Вы хотите удалить файлы удалённых коллекций?" />
 	<translate name="Change advanced options for this collection" value="Изменить расширенные настройки" />
 	<translate name="Edit" value="Редактировать" />
+	<translate name="Edit collections" value="Редактировать список коллекций" />
 	<translate name="Edit collections" value="Редактировать список коллекций" />
   </scope>
   <scope name="DBManager">
@@ -807,7 +808,10 @@
 	<translate name="Unshelve" value="Отложить (отмена)" />
 	<translate name="Open with" value="Открыть в" />
 	<translate name="Add application" value="Добавить приложение" />
-	<translate name="List of applications" value="Список приложений" />	
+	<translate name="List of applications" value="Список приложений" />
+	<translate name="Change application" value="Изменить приложение" />
+	<translate name="Parameters" value="Параметры" />
+	<translate name="Applications (*.exe)|*.exe|All Files (*.*)|*.*" value="Приложения (*.exe)|*.exe|Все файлы (*.*)|*.*" />	
   </scope>
   <scope name="Viewer">
 	<translate name="Stop timer" value="Остановить таймер" />
@@ -1877,7 +1881,7 @@
 	<translate name="Please wait until the program completes the operation..." value="Подождите пока, программа выполнит операцию..."/>
 	<translate name="Collection" value="База"/>
 	<translate name="Updating..." value="Обновление..."/>
-	<translate name="Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl + B)" value="Начало обновления таблицы. Это долгое действие, пожалуйста, подождите... (чтобы прервать действие, нажмите Ctrl+B)"/>
+	<translate name="Starting with collection update. This is a long action, please - please wait ... (to abort the action, press Ctrl B)" value="Начало обновления таблицы. Это долгое действие, пожалуйста, подождите... (чтобы прервать действие, нажмите Ctrl+B)"/>
 	<translate name="Restoring collection:" value="Восстановление БД:"/>
 	<translate name="Restoring" value="Восстановление"/>
 	<translate name="Starting restoring of collection. Please wait..." value="Начало обновления таблицы. Пожалуйста, подождите..."/>
@@ -1886,7 +1890,7 @@
 	<translate name="Performing search, please wait ... $nl$(on completion of the log will be copied to the clipboard)" value="Выполняется поиск, пожалуйста, подождите... $nl$(по завершению лог будет скопирован в буфер обмена)"/>
 	<translate name="Backing up the collection" value="Резервное копирование базы"/>
 	<translate name="Performing:" value="Выполняется:"/>
-	<translate name="Optimization duplicates ... (Press Ctrl + B to break the process)" value="Оптимизация дубликатов... (Ctrl+B для прекращения)"/>
+	<translate name="Optimization duplicates ... (Press Ctrl B to break the process)" value="Оптимизация дубликатов... (Ctrl+B для прекращения)"/>
 	<translate name="Performing scanning the collection" value="Выполняется сканирование БД"/>
 	<translate name="Performing scanning the collection, please wait..." value="Выполняется сканирование БД, пожалуйста, подождите..."/>
 	<translate name="Packing collection files..." value="Упаковка файлов БД..."/>

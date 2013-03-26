@@ -16,8 +16,6 @@ uses
   Vcl.ComCtrls,
   Vcl.Imaging.pngimage,
 
-  UnitUpdateDBObject,
-
   Dmitry.Controls.Base,
   Dmitry.Controls.DmProgress,
   Dmitry.Controls.LoadingSign,
@@ -73,9 +71,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uFrmImportImagesLanding,
-  uFrmImportImagesOptions,
-  uFrmImportImagesProgress;
+  uFrmImportImagesLanding;
 
 procedure ImportImages(FileName: string);
 var
@@ -102,8 +98,6 @@ begin
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;
   FWizard.AddStep(TFrmImportImagesLanding);
-  FWizard.AddStep(TFrmImportImagesOptions);
-  FWizard.AddStep(TFrmImportImagesProgress);
   FWizard.Start(Self, 124, 8);
   LoadLanguage;
 end;

@@ -41,6 +41,8 @@ uses
   Vcl.XPActnCtrls,
   Data.DB,
 
+  VirtualTrees,
+
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
   Dmitry.Utils.ShellIcons,
@@ -65,9 +67,12 @@ uses
   DragDrop,
   DropTarget,
 
+  MPCommonUtilities,
+  MPCommonObjects,
+  EasyListview,
+
   PrintMainForm,
   ExplorerTypes,
-  uExplorerFolderImages,
   DBCMenu,
   UnitDBKernel,
   UnitINI,
@@ -79,13 +84,11 @@ uses
   UnitCDMappingSupport,
   ShellContextMenu,
   CommonDBSupport,
-  EasyListview,
-  MPCommonUtilities,
-  MPCommonObjects,
   UnitRefreshDBRecordsThread,
   UnitCryptingImagesThread,
-  wfsU,
 
+  wfsU,
+  uExplorerFolderImages,
   uShellIntegration,
   uDBCustomThread,
   uGroupTypes,
@@ -159,7 +162,7 @@ uses
   uInterfaces,
   uInternetUtils,
 
-  VirtualTrees,
+  uDatabaseDirectoriesUpdater,
   uPathProvideTreeView,
   uDBInfoEditorUtils,
   uFormInterfaces,
@@ -1163,8 +1166,7 @@ uses
   UnitListOfKeywords,
   ExplorerThreadUnit,
   UnitHintCeator,
-  UnitExplorerThumbnailCreatorThread,
-  UnitUpdateDBObject;
+  UnitExplorerThumbnailCreatorThread;
 
 {$R *.dfm}
 
@@ -2167,18 +2169,18 @@ begin
         Index := ItemIndexToMenuIndex(I);
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
         begin
-          UpdaterDB.AddDirectory(FFilesInfo[Index].FileName);
+          UpdaterStorage.AddDirectory(FFilesInfo[Index].FileName);
           Continue;
         end;
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
         begin
-          UpdaterDB.AddFile(FFilesInfo[Index].FileName);
+          UpdaterStorage.AddFile(FFilesInfo[Index].FileName);
           Continue;
         end;
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
           if ID_OK = MessageBoxDB(Handle, L('Do you really want to add full drive with subfolders?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
           begin
-            UpdaterDB.AddDirectory(FFilesInfo[Index].FileName);
+            UpdaterStorage.AddDirectory(FFilesInfo[Index].FileName);
             Continue;
           end;
       end;
@@ -2189,7 +2191,7 @@ begin
     or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)
     or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
     if SelCount = 0 then
-      UpdaterDB.AddDirectory(GetCurrentPath);
+      UpdaterStorage.AddDirectory(GetCurrentPath);
 end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
@@ -3360,7 +3362,7 @@ end;
 
 procedure TExplorerForm.Addfolder1Click(Sender: TObject);
 begin
-  UpdaterDB.AddDirectory(GetCurrentPath)
+  UpdaterStorage.AddDirectory(GetCurrentPath)
 end;
 
 procedure TExplorerForm.Refresh1Click(Sender: TObject);
@@ -3917,7 +3919,12 @@ end;
 
 procedure TExplorerForm.ShowUpdater1Click(Sender: TObject);
 begin
-  UpdaterDB.ShowWindowNow;
+  //TODO: UpdaterDB.ShowWindowNow;
+end;
+
+procedure TExplorerForm.MiUpdaterClick(Sender: TObject);
+begin
+  //TODO: UpdaterDB.ShowWindowNow;
 end;
 
 procedure TExplorerForm.FormDeactivate(Sender: TObject);
@@ -7473,11 +7480,6 @@ begin
   TreeView.RefreshPathItem(TreeView.PopupItem);
 end;
 
-procedure TExplorerForm.MiUpdaterClick(Sender: TObject);
-begin
-  UpdaterDB.ShowWindowNow;
-end;
-
 procedure TExplorerForm.SetNewPathW(WPath: TExplorerPath; Explorer: Boolean);
 var
   OldDir, S, Path, FileMask: string;
@@ -10283,7 +10285,8 @@ begin
       FileInfo.FileName := FFilesInfo[-RatingPopupMenu.Tag].FileName;
       FileInfo.Rating := (Sender as TMenuItem).Tag;
       FileInfo.Include := True;
-      UpdaterDB.AddFileEx(FileInfo, True, True);
+
+      UpdaterStorage.AddFile(FileInfo);
     finally
       F(FileInfo);
     end;
