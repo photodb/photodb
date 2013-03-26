@@ -489,7 +489,6 @@
 	<translate name="Export collection" value="Экспортировать базу" />
 	<translate name="Import collection" value="Импортировать базу" />
 	<translate name="Backup collection" value="Резервная копия" />
-	<translate name="Cleaning" value="Очистка" />
 	<translate name="Optimize duplicates" value="Оптимизировать дубликаты" />
 	<translate name="No date" value="Без даты" />
 	<translate name="Set date" value="Установить дату" />
@@ -531,7 +530,6 @@
 	<translate name="Do you really want to pack the table? Packing will begin the next startup..." value="Вы действительно хотите упаковать таблицу? Упаковка начнётся при следующем запуске программы..." />
 	<translate name="Do you really want to export the table?" value="Вы действительно хотите экспортировать таблицу?" />
 	<translate name="Do you really want to restore this copy of the database (%s)? The current database will be moved to this store. Restart the application to begin the recovery process" value="Вы действительно хотите восстановить эту копию БД (%s)? Текущая БД будет перемещена в данное хранилище. Перезапустите приложение, чтобы начать процесс восстановления" />
-	<translate name="Do you really want to import a table?" value="Вы действительно хотите импортировать таблицу?" />
 	<translate name="Do you really want to rebuild the IDEx in the table? Processing begins on the next startup." value="Вы действительно хотите переформировать IDEx в таблице? Восстановление начнётся при следующем запуске." />
 	<translate name="Do you really want to scan the table on the broken links? Processing will begin when the next launch." value="Вы действительно хотите сканировать таблицу на недействительные ссылки? Обработка начнётся при следующем запуске." />
 	<translate name="Do you really want to create a backup?" value="Вы действительно хотите создать резервную копию?" />
@@ -1501,63 +1499,6 @@
 	<translate name="The program is registered to" value="Зарегистрировано на"/>
 	<translate name="Standalone database created using &quot;%s&quot;. In this program many features are disabled and these features are available in the full version." value="Автономная база данных созданная с помощью &quot;%s&quot;. В этой программе отключены многие функции, доступные в полной версии."/>
   </scope>
-  <scope name="SelectDB">
-	<translate name="Icon preview" value="Предпросмотр"/>
-	<translate name="Description" value="Описание"/>
-	<translate name="Database file marked as &quot;Read only&quot;! Please, reset this attribute and try again!" value="Файл базы данных имеет атрибут &quot;Только чтение&quot;! Снимите атрибут и попробуйте снова"/>
-	<translate name="Back" value="Назад"/>
-	<translate name="Next" value="Далее"/>
-	<translate name="Finish" value="Финиш"/>
-	<translate name="Collection &quot;%s&quot; successfully created!" value="База &quot;%s&quot; успешно создана"/>
-	<translate name="Panel preview size" value="Панель"/>
-	<translate name="Preview" value="Предпросмотр"/>
-	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>
-	<translate name="Sets the compression quality of images stored in the database. Takes the value 1-100" value="Устанавливает качество сжатия изображений, хранимых в базе. Принимает значение 1-100"/>
-	<translate name="JPEG quality" value="JPEG качество"/>
-	<translate name="Collection image size" value="Изображения в БД"/>
-	<translate name="Default thumbnail size in database" value="Размер предпросмотров по умолчанию для хранения в базе"/>
-	<translate name="Display name" value="Отображаемое имя"/>
-	<translate name="PhotoDB Files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
-	<translate name="Select file" value="Выбрать файл"/>
-	<translate name="Choose\create\edit collection wizard" value="Диалог выбора\создания\редактирования БД"/>
-	<translate name="Choose an action from the list and click &quot;Next&quot; button" value="Выберите нужное действие из списка и нажмите на кнопку &quot;Далее&quot;" />
-	<translate name="Use as default collection" value="Использовать БД по умолчанию"/>
-	<translate name="File name" value="Имя файла"/>
-	<translate name="Select name for new collection" value="Введите имя для новой базы"/>
-	<translate name="Select collection" value="Выбрать базу"/>
-	<translate name="Options" value="Настройки"/>
-	<translate name="Choose an icon" value="Выбрать иконку"/>
-	<translate name="Choose file for new collection" value="Выберите файл для новой базы"/>
-	<translate name="File name and location" value="Название и месторасположение файлов"/>
-	<translate name="New collection" value="Новая база"/>
-	<translate name="Collection type" value="Тип БД"/>
-	<translate name="Value" value="Значение"/>
-	<translate name="Select an file" value="Выбрать файл"/>
-	<translate name="Select an action" value="Выберите действие"/>
-	<translate name="Short collection description" value="Описание базы"/>
-	<translate name="Add standard groups" value="Добавить стандартные группы"/>
-	<translate name="Select collection from list" value="Выбрать БД из списка"/>
-	<translate name="No file" value="Файл не выбран"/>
-	<translate name="File isn't selected! Please, select an file and try again." value="Не выбран файл базы данных! Выберите файл и попробуйте снова."/>
-	<translate name="Image size: %s" value="Размер изображения: %s"/>
-	<translate name="Create new collection" value="Создание нового файла Базы Данных"/>
-	<translate name="Select existing collection from hard disk" value="Использовать существующий файл на жёстком диске"/>
-	<translate name="Use other registered collection" value="Использовать зарегистрированную базу"/>
-	<translate name="Create standard collection*" value="Создать стандартную базу*"/>
-	<translate name="My collection" value="Моя коллекция"/>
-	<translate name="The size of the new database (approximately for 10,000 records): %s" value="Размер новой базы (ориентировочно для 10000 записей) = %s"/>
-	<translate name="Invalid or missing file $nl$&quot;%s&quot;! $nl$Check for a file or try to add it through the database manager - perhaps the file was created in an earlier version of the program and must be converted to the current version" value="Неверный или несуществующий файл $nl$&quot;%s&quot;! $nl$Проверьте наличие файла или попробуйте добавить его через менеджер БД - возможно, файл был создан в предыдущей версии программы и необходимо его сконвертировать в текущую версию"/>
-	<translate name="The new collection will be created with the following settings:" value="Новая база будет создана со следующими настройками:"/>
-	<translate name="Collection name: &quot;%s&quot;" value="Имя базы: &quot;%s&quot;"/>
-	<translate name="Path to collection: &quot;%s&quot;" value="Путь к базе: &quot;%s&quot;"/>
-	<translate name="Path to icon: &quot;%s&quot;" value="Путь к иконке: &quot;%s&quot;"/>
-	<translate name="Size of collection previews: %dpx" value="Размер изображений в базе: %dpx"/>
-	<translate name="Quality of images: %dpx" value="Качество изображений: %dpx"/>
-	<translate name="Preview size: %dpx" value="Предпросмотр: %dpx"/>
-	<translate name="Small preview size: %dpx" value="Изображения в панели: %dpx"/>
-	<translate name="Change the size and quality of previews" value="Изменение размеров предпросмотров и качества"/>
-	<translate name="There is no registered collection!" value="Нет зарегистрированных баз!"/>
-  </scope>
   <scope name="ConvertDB">
 	<translate name="Previous" value="Назад"/>
 	<translate name="Next" value="Далее"/>
@@ -1780,20 +1721,6 @@
 	<translate name="[no records]" value="[нет записей]"/>
 	<translate name="Initialization" value="Инициализация"/>
   </scope>
-  <scope name="DBCleaning">
-	<translate name="Save" value="Сохранить"/>
-	<translate name="Stop" value="Остановить"/>
-	<translate name="Start" value="Начать"/>
-	<translate name="Cleaning" value="Очистка"/>
-	<translate name="Delete not valid items" value="Удалять ненужные записи"/>
-	<translate name="Check for duplicates" value="Проверять дубликаты"/>
-	<translate name="Mark deleted files" value="Помечать удалённые файлы"/>
-	<translate name="Update date from EXIF" value="Обновлять дату из EXIF"/>
-	<translate name="Allow auto cleaning" value="Позволить автоочистку"/>
-	<translate name="Allow fast cleaning" value="Позволить быструю очистку"/>
-	<translate name="Cleaning... [%s]" value="Очистка... [%s]"/>
-	<translate name="Cleaning is stopped" value="Очистка остановлена"/>
-  </scope>
   <scope name="SaveCollection">
 	<translate name="Abort" value="Прервать" />
 	<translate name="Saving in progress..." value="Сохранение выполняется..." />
@@ -1845,34 +1772,12 @@
 	<translate name="Photo Database files (*.photodb)|*.photodb" value="Файлы Photo Database (*.photodb)|*.photodb"/>
   </scope>
   <scope name="ActionProgress">
-  	<translate name="Current action" value="Текущее действие"/>
-  	<translate name="Please wait while the program performs the current operation and updates the collection." value="Пожалуйста, подождите, пока программа выполнит текущую операцию и обновит базу данных."/>
+	<translate name="Current action" value="Текущее действие"/>
+	<translate name="Please wait while the program performs the current operation and updates the collection." value="Пожалуйста, подождите, пока программа выполнит текущую операцию и обновит базу данных."/>
 	<translate name="Do you really want to abort the operation?" value="Вы действительно хотите прервать выполнение текущей операции?"/>
 	<translate name="Tasks" value="Задачи"/>
 	<translate name="Action is performed" value="Выполняется действие"/>
 	</scope>
-  <scope name="ReplaceDBItem">
-	<translate name="Width" value="Ширина"/>
-	<translate name="Height" value="Высота"/>
-	<translate name="Size" value="Размер"/>
-	<translate name="Delete" value="Удалить"/>
-	<translate name="Path" value="Размещение"/>
-	<translate name="Add" value="Добавить"/>
-	<translate name="Name" value="Имя"/>
-	<translate name="ID" value="ID"/>
-	<translate name="Rating" value="Оценка"/>
-	<translate name="Please select necessary action" value="Выберите необходимое действие"/>	
-	<translate name="Information from file" value="Информация по файлу"/>
-	<translate name="Do this action for all conflicts" value="Применить ко всем конфликтам"/>
-	<translate name="Replace" value="Заменить"/>
-	<translate name="Skip" value="Пропустить"/>
-	<translate name="Replace and delete duplicates" value="Заменить и удалить дубликаты"/>
-	<translate name="Delete file" value="Удалить файл"/>
-	<translate name="Information from collection" value="Текущая информация по БД"/>
-	<translate name="Do you really want to delete this file?" value="Вы действительно хотите удалить этот файл?"/>
-	<translate name="%dpx." value="%dпк."/>
-	<translate name="Do you really want to delete this information from the collection?" value="Вы действительно хотите удалить эту информацию из БД?"/>
-  </scope>
   <scope name="CMD">
 	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
 	<translate name="Welcome to %s!" value="Добро пожаловать в %s!"/>

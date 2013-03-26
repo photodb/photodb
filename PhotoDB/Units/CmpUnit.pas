@@ -9,28 +9,6 @@ uses
   uMemory;
 
 type
-  TCompOptions = record
-    AddNewRecords: Boolean;
-    AddRecordsWithoutFiles: Boolean;
-    AddRating: Boolean;
-    AddRotate: Boolean;
-    AddPrivate: Boolean;
-    AddKeyWords: Boolean;
-    AddGroups: Boolean;
-    AddNilComment: Boolean;
-    AddComment: Boolean;
-    AddNamedComment: Boolean;
-    AddDate: Boolean;
-    AddLinks: Boolean;
-    IgnoreWords: Boolean;
-    IgWords: string;
-    Autor: string;
-    WordsToReplace: array [1 .. 4] of string;
-    WordsReplace: array [1 .. 4] of string;
-    UseScanningByFileName: Boolean;
-  end;
-
-type
   TSpilitOptions = record
     UpDown: Boolean;
   end;

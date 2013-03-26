@@ -73,9 +73,7 @@ implementation
 
 uses
   UnitConvertDBForm,
-  UnitSelectDB,
-  UnitHintCeator,
-  uFrmSelectDBCreationSummary;
+  UnitHintCeator;
 
 {$R *.dfm}
 
@@ -180,8 +178,6 @@ end;
 function TFrmConvertationSettings.InitNextStep: Boolean;
 begin
   Result := inherited;
-  if Manager.Owner is TFormSelectDB then
-    Manager.AddStep(TFrmSelectDBCreationSummary);
 end;
 
 procedure TFrmConvertationSettings.LoadLanguage;

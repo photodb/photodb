@@ -6,7 +6,7 @@ object FormManageGroups: TFormManageGroups
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSizeToolWin
   Caption = 'Manage Groups'
-  ClientHeight = 386
+  ClientHeight = 406
   ClientWidth = 597
   Color = clBtnFace
   DoubleBuffered = True
@@ -16,7 +16,6 @@ object FormManageGroups: TFormManageGroups
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  Menu = MmMain
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
@@ -30,7 +29,7 @@ object FormManageGroups: TFormManageGroups
     Left = 0
     Top = 42
     Width = 597
-    Height = 344
+    Height = 364
     Align = alClient
     BorderStyle = bsNone
     Columns = <
@@ -52,6 +51,7 @@ object FormManageGroups: TFormManageGroups
     OnContextPopup = ImageContextPopup
     OnCustomDrawItem = LvMainCustomDrawItem
     OnDblClick = LvMainDblClick
+    ExplicitHeight = 344
   end
   object CoolBar1: TCoolBar
     Left = 0
@@ -73,7 +73,7 @@ object FormManageGroups: TFormManageGroups
       Height = 38
       AutoSize = True
       ButtonHeight = 38
-      ButtonWidth = 80
+      ButtonWidth = 75
       Caption = 'ToolBar1'
       Images = ToolBarImageList
       List = True
@@ -128,22 +128,6 @@ object FormManageGroups: TFormManageGroups
         ImageIndex = 2
         OnClick = TbDeleteClick
       end
-      object ToolButton7: TToolButton
-        Left = 290
-        Top = 0
-        Width = 8
-        Caption = 'ToolButton7'
-        ImageIndex = 3
-        Style = tbsSeparator
-      end
-      object TbOptions: TToolButton
-        Left = 298
-        Top = 0
-        AutoSize = True
-        Caption = 'Options'
-        ImageIndex = 3
-        OnClick = SelectFont1Click
-      end
     end
   end
   object ImlGroups: TImageList
@@ -153,50 +137,11 @@ object FormManageGroups: TFormManageGroups
     Left = 64
     Top = 176
   end
-  object MmMain: TMainMenu
-    Left = 64
-    Top = 224
-    object File1: TMenuItem
-      Caption = 'File'
-      object Exit1: TMenuItem
-        Caption = 'Exit'
-        OnClick = Exit1Click
-      end
-    end
-    object Actions1: TMenuItem
-      Caption = 'Actions'
-      object AddGroup1: TMenuItem
-        Caption = 'Add Group'
-        OnClick = MenuActionAddGroup
-      end
-      object N1: TMenuItem
-        Caption = '-'
-      end
-      object ShowAll1: TMenuItem
-        Caption = 'Show All'
-        OnClick = ShowAll1Click
-      end
-      object N2: TMenuItem
-        Caption = '-'
-      end
-      object SelectFont1: TMenuItem
-        Caption = 'Select Font'
-        OnClick = SelectFont1Click
-      end
-    end
-    object Help1: TMenuItem
-      Caption = 'Help'
-      object Contents1: TMenuItem
-        Caption = 'Contents'
-        OnClick = Contents1Click
-      end
-    end
-  end
   object ToolBarImageList: TImageList
     ColorDepth = cd32Bit
     Height = 32
     Width = 32
     Left = 64
-    Top = 272
+    Top = 232
   end
 end

@@ -2402,13 +2402,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormSelectPerson.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Wizards\uFrameWizardBase.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Convertation\uFrmConvertationLanding.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBNewPathAndIcon.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBExistedFile.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBFromList.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBLanding.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitSelectDB.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitImHint.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SelectDB\uFrmSelectDBCreationSummary.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Convertation\uFrmConvertationSettings.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\CMDUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Convertation\uFrmConvertationProgress.dfm */
@@ -2420,11 +2414,6 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormInternetUpdating.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitListOfKeyWords.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ExplorerUnit.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBCtrls.res */
-/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBGrids.res */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitDBCleaning.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ImportImages\uFrmImportImagesLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitImportingImagesForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FormManegerUnit.dfm */
@@ -2440,17 +2429,16 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Activation\uFrameActivationLanding.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uActivation.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Options.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\replaceform.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uAbout.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBLogDlg.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Vcl.DBPWDlg.dfm */
+/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBCtrls.res */
+/* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\DBGrids.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitFormManagerHint.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ExportUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitCompareProgress.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitCompareDataBases.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitChangeDBPath.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ManagerDBUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitEditGroupsForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitNewGroupForm.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitSelectFontForm.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitManageGroups.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitQuickGroupInfo.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitCryptImageForm.dfm */

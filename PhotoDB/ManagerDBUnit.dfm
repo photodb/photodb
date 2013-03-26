@@ -28,26 +28,26 @@ object ManagerDB: TManagerDB
       Left = 1
       Top = 1
       Width = 888
-      Height = 216
+      Height = 168
       Align = alTop
       TabOrder = 0
       object Label7: TLabel
-        Left = 656
-        Top = 4
+        Left = 256
+        Top = 8
         Width = 77
         Height = 13
         Caption = 'GoToRecord ID:'
       end
       object Label11: TLabel
-        Left = 656
-        Top = 45
+        Left = 448
+        Top = 4
         Width = 44
         Height = 13
         Caption = 'BackUps:'
       end
       object RecordNumberEdit: TEdit
-        Left = 656
-        Top = 19
+        Left = 256
+        Top = 23
         Width = 177
         Height = 21
         TabOrder = 0
@@ -55,8 +55,8 @@ object ManagerDB: TManagerDB
         OnChange = RecordNumberEditChange
       end
       object LbBackups: TListBox
-        Left = 656
-        Top = 64
+        Left = 448
+        Top = 23
         Width = 177
         Height = 137
         Style = lbOwnerDrawFixed
@@ -83,45 +83,9 @@ object ManagerDB: TManagerDB
         StretchImage = True
         CanClick = True
       end
-      object ExportTableLink: TWebLink
-        Left = 8
-        Top = 28
-        Width = 82
-        Height = 16
-        Cursor = crHandPoint
-        Text = 'Export Table'
-        OnClick = ExportTableLinkClick
-        ImageIndex = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-      end
-      object ImportTableLink: TWebLink
-        Left = 8
-        Top = 48
-        Width = 82
-        Height = 16
-        Cursor = crHandPoint
-        Text = 'Import Table'
-        OnClick = ImportTableLinkClick
-        ImageIndex = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-      end
       object RecreateIDExLink: TWebLink
         Left = 8
-        Top = 68
+        Top = 30
         Width = 91
         Height = 16
         Cursor = crHandPoint
@@ -139,7 +103,7 @@ object ManagerDB: TManagerDB
       end
       object ScanforBadLinksLink: TWebLink
         Left = 8
-        Top = 88
+        Top = 52
         Width = 108
         Height = 16
         Cursor = crHandPoint
@@ -157,7 +121,7 @@ object ManagerDB: TManagerDB
       end
       object BackUpDBLink: TWebLink
         Left = 8
-        Top = 108
+        Top = 74
         Width = 72
         Height = 16
         Cursor = crHandPoint
@@ -173,27 +137,9 @@ object ManagerDB: TManagerDB
         StretchImage = True
         CanClick = True
       end
-      object CleaningLink: TWebLink
-        Left = 8
-        Top = 128
-        Width = 62
-        Height = 16
-        Cursor = crHandPoint
-        Text = 'Cleaning'
-        OnClick = CleaningLinkClick
-        ImageIndex = 0
-        UseEnterColor = False
-        EnterColor = clBlack
-        EnterBould = False
-        TopIconIncrement = 0
-        UseSpecIconSize = True
-        HightliteImage = False
-        StretchImage = True
-        CanClick = True
-      end
       object DuplicatesLink: TWebLink
         Left = 8
-        Top = 168
+        Top = 118
         Width = 122
         Height = 16
         Cursor = crHandPoint
@@ -211,7 +157,7 @@ object ManagerDB: TManagerDB
       end
       object ConvertLink: TWebLink
         Left = 8
-        Top = 148
+        Top = 96
         Width = 76
         Height = 16
         Cursor = crHandPoint
@@ -229,7 +175,7 @@ object ManagerDB: TManagerDB
       end
       object ChangePathLink: TWebLink
         Left = 8
-        Top = 188
+        Top = 140
         Width = 206
         Height = 16
         Cursor = crHandPoint
@@ -248,9 +194,9 @@ object ManagerDB: TManagerDB
     end
     object ElvMain: TListView
       Left = 1
-      Top = 217
+      Top = 169
       Width = 888
-      Height = 398
+      Height = 446
       Align = alClient
       Columns = <
         item
@@ -326,6 +272,8 @@ object ManagerDB: TManagerDB
       OnMouseMove = ElvMainMouseMove
       OnResize = ElvMainResize
       OnSelectItem = ElvMainSelectItem
+      ExplicitTop = 217
+      ExplicitHeight = 398
     end
     object dblData: TDBLoading
       Left = 397
@@ -410,8 +358,8 @@ object ManagerDB: TManagerDB
     Top = 288
   end
   object PmRestoreDB: TPopupActionBar
-    Left = 722
-    Top = 129
+    Left = 682
+    Top = 41
     object Restore1: TMenuItem
       Caption = 'Restore'
       OnClick = Restore1Click

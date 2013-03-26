@@ -128,12 +128,9 @@ type
     PopupMenuDate: TPopupActionBar;
     PopupMenuFile: TPopupActionBar;
     PackTabelLink: TWebLink;
-    ExportTableLink: TWebLink;
-    ImportTableLink: TWebLink;
     RecreateIDExLink: TWebLink;
     ScanforBadLinksLink: TWebLink;
     BackUpDBLink: TWebLink;
-    CleaningLink: TWebLink;
     DuplicatesLink: TWebLink;
     ConvertLink: TWebLink;
     ChangePathLink: TWebLink;
@@ -162,12 +159,9 @@ type
     procedure EditGroupsMenuClick(Sender: TObject);
     procedure ElvMainMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure PackTabelLinkClick(Sender: TObject);
-    procedure ExportTableLinkClick(Sender: TObject);
-    procedure ImportTableLinkClick(Sender: TObject);
     procedure RecreateIDExLinkClick(Sender: TObject);
     procedure ScanforBadLinksLinkClick(Sender: TObject);
     procedure BackUpDBLinkClick(Sender: TObject);
-    procedure CleaningLinkClick(Sender: TObject);
     procedure ElvMainContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure RecordNumberEditChange(Sender: TObject);
     procedure DuplicatesLinkClick(Sender: TObject);
@@ -219,9 +213,6 @@ implementation
 
 uses
   uManagerExplorer,
-  ExportUnit,
-  UnitDBCleaning,
-  UnitCompareDataBases,
   UnitPasswordForm,
   ProgressActionUnit,
   UnitMenuDateForm,
@@ -276,12 +267,9 @@ begin
 
   SI := -1;
   PackTabelLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
-  ExportTableLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SAVE_AS_TABLE + 1]);
-  ImportTableLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1]);
   RecreateIDExLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_REFRESH_ID + 1]);
   ScanforBadLinksLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SEARCH + 1]);
   BackUpDBLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_BACKUP + 1]);
-  CleaningLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_COMMON + 1]);
   DuplicatesLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DUPLICATE + 1]);
   ConvertLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_CONVERT + 1]);
   ChangePathLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
@@ -416,10 +404,7 @@ begin
   try
     Caption:= L('Collection Manager');
     PackTabelLink.Text:= L('Pack table');
-    ExportTableLink.Text:= L('Export collection');
-    ImportTableLink.Text:= L('Import collection');
     BackUpDBLink.Text:= L('Backup collection');
-    CleaningLink.Text:= L('Cleaning');
     DuplicatesLink.Text:= L('Optimize duplicates');
     DateExists1.Caption:= L('No date');
     DateExists2.Caption:= L('Set date');
@@ -1441,31 +1426,6 @@ begin
     Settings.WriteBool('StartUp', 'Pack', True);
 end;
 
-procedure TManagerDB.ExportTableLinkClick(Sender: TObject);
-var
-  ExportForm: TExportForm;
-begin
-  if ID_OK = MessageBoxDB(Handle, L('Do you really want to export the table?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
-  begin
-    Application.CreateForm(TExportForm, ExportForm);
-    try
-      ExportForm.Execute;
-    finally
-      R(ExportForm);
-    end;
-  end;
-end;
-
-procedure TManagerDB.ImportTableLinkClick(Sender: TObject);
-begin
-  if ID_OK = MessageBoxDB(Handle, L('Do you really want to import a table?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
-  begin
-    if ImportDataBaseForm = nil then
-      Application.CreateForm(TImportDataBaseForm, ImportDataBaseForm);
-    ImportDataBaseForm.Execute;
-  end;
-end;
-
 procedure TManagerDB.RecreateIDExLinkClick(Sender: TObject);
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to rebuild the IDEx in the table? Processing begins on the next startup.'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
@@ -1486,13 +1446,6 @@ begin
   Settings.WriteBool('StartUp', 'BackUp', True);
   MessageBoxDB(Handle, L('Restoring will begin when the next launch!'), L('Information'), TD_BUTTON_OK,
     TD_ICON_INFORMATION);
-end;
-
-procedure TManagerDB.CleaningLinkClick(Sender: TObject);
-begin
-  if DBCleaningForm = nil then
-    Application.CreateForm(TDBCleaningForm, DBCleaningForm);
-  DBCleaningForm.Show;
 end;
 
 procedure TManagerDB.ElvMainContextPopup(Sender: TObject;

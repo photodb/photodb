@@ -50,17 +50,6 @@ type
   TFormManageGroups = class(TDBForm, IGroupsManagerForm)
     LvMain: TNoVSBListView1;
     ImlGroups: TImageList;
-    MmMain: TMainMenu;
-    File1: TMenuItem;
-    Exit1: TMenuItem;
-    Help1: TMenuItem;
-    Contents1: TMenuItem;
-    Actions1: TMenuItem;
-    AddGroup1: TMenuItem;
-    ShowAll1: TMenuItem;
-    N1: TMenuItem;
-    N2: TMenuItem;
-    SelectFont1: TMenuItem;
     CoolBar1: TCoolBar;
     ToolBar1: TToolBar;
     TbAdd: TToolButton;
@@ -70,8 +59,6 @@ type
     TbExit: TToolButton;
     ToolButton6: TToolButton;
     ToolBarImageList: TImageList;
-    ToolButton7: TToolButton;
-    TbOptions: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ImageContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     Procedure ChangeGroup(Sender: TObject);
@@ -85,9 +72,6 @@ type
     procedure FormShow(Sender: TObject);
     procedure LvMainDblClick(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
-    procedure Contents1Click(Sender: TObject);
-    procedure ShowAll1Click(Sender: TObject);
-    procedure SelectFont1Click(Sender: TObject);
     procedure TbExitClick(Sender: TObject);
     procedure TbEditClick(Sender: TObject);
     procedure TbDeleteClick(Sender: TObject);
@@ -120,8 +104,7 @@ implementation
 
 uses
   UnitFormChangeGroup,
-  uManagerExplorer,
-  UnitSelectFontForm;
+  uManagerExplorer;
 
 {$R *.dfm}
 
@@ -157,21 +140,13 @@ begin
   LvMain.DoubleBuffered := True;
   Width := Min(650, Round(Screen.Width / 1.3));
   FBitmapImageList := TBitmapImageList.Create;
-  MmMain.Images := DBKernel.ImageList;
-  Exit1.ImageIndex := DB_IC_EXIT;
-  Contents1.ImageIndex := DB_IC_HELP;
-  AddGroup1.ImageIndex := DB_IC_NEW_SHELL;
-  ShowAll1.ImageIndex := DB_IC_EXPLORER_PANEL;
-  SelectFont1.ImageIndex := DB_IC_OPTIONS;
+
   LoadLanguage;
-  ShowAll1.Checked := Settings.ReadBool('GroupsManager', 'ShowAllGroups', True);
-  if ShowAll1.Checked then
-    ShowAll1.ImageIndex := -1;
+
   LoadToolBarIcons;
   ImagePopupMenu := nil;
   if DBReadOnly then
   begin
-    AddGroup1.Enabled := False;
     TbAdd.Enabled := False;
     TbEdit.Enabled := False;
     TbDelete.Enabled := False;
@@ -273,10 +248,7 @@ var
   GI: TGroupItem;
   Items: TPathItemCollection;
 begin
-  if (Sender is TmenuItem) then
-    Index := (Sender as TMenuItem).Owner.Tag
-  else
-    Index := (Sender as TComponent).Tag;
+  Index := (Sender as TComponent).Tag;
 
   FSaving := True;
   try
@@ -499,15 +471,6 @@ begin
     TbAdd.Caption := L('Create group');
     TbEdit.Caption := L('Edit');
     TbDelete.Caption := L('Delete');
-    TbOptions.Caption := L('Options');
-    Help1.Caption := L('Help');
-    Contents1.Caption := L('Content');
-    Actions1.Caption := L('Actions');
-    File1.Caption := L('File');
-    Exit1.Caption := L('Exit');
-    ShowAll1.Caption := L('All groups');
-    SelectFont1.Caption := L('Select font');
-    AddGroup1.Caption := L('Create group');
   finally
     EndTranslate;
   end;
@@ -516,34 +479,6 @@ end;
 procedure TFormManageGroups.Exit1Click(Sender: TObject);
 begin
   Close;
-end;
-
-procedure TFormManageGroups.Contents1Click(Sender: TObject);
-begin
-  DoHelp;
-end;
-
-procedure TFormManageGroups.ShowAll1Click(Sender: TObject);
-begin
-  ShowAll1.Checked := not ShowAll1.Checked;
-  if ShowAll1.Checked then
-    ShowAll1.ImageIndex := -1
-  else
-    ShowAll1.ImageIndex := DB_IC_EXPLORER_PANEL;
-  Settings.WriteBool('GroupsManager', 'ShowAllGroups', ShowAll1.Checked);
-  LoadGroups;
-end;
-
-procedure TFormManageGroups.SelectFont1Click(Sender: TObject);
-var
-  Fn, NewFont: string;
-begin
-  Fn := Settings.ReadString('GroupsManager', 'FontName');
-  if Fn = '' then
-    Fn := 'Tahoma';
-  if SelectFont(Fn, NewFont) then
-    Settings.WriteString('GroupsManager', 'FontName', NewFont);
-  LvMain.Refresh;
 end;
 
 procedure TFormManageGroups.LoadToolBarIcons;
@@ -571,13 +506,11 @@ begin
   AddIcon('GROUP_ADD');
   AddIcon('GROUP_EDIT');
   AddIcon('GROUP_DELETE');
-  AddIcon('GROUP_OPTIONS');
 
   TbExit.ImageIndex := 0;
   TbAdd.ImageIndex := 1;
   TbEdit.ImageIndex := 2;
   TbDelete.ImageIndex := 3;
-  TbOptions.ImageIndex := 4;
 end;
 
 procedure TFormManageGroups.TbExitClick(Sender: TObject);
@@ -596,7 +529,8 @@ procedure TFormManageGroups.TbDeleteClick(Sender: TObject);
 begin
   if LvMain.Selected = nil then
     Exit;
-  MmMain.Tag := LvMain.Selected.index;
+
+  TbDelete.Tag := LvMain.Selected.index;
   DeleteGroup(Sender);
 end;
 

@@ -149,9 +149,6 @@
         <DCCReference Include="Options.pas">
             <Form>OptionsForm</Form>
         </DCCReference>
-        <DCCReference Include="replaceform.pas">
-            <Form>DBReplaceForm</Form>
-        </DCCReference>
         <DCCReference Include="unitimhint.pas">
             <Form>ImHint</Form>
         </DCCReference>
@@ -172,18 +169,6 @@
         </DCCReference>
         <DCCReference Include="CMDUnit.pas">
             <Form>CMDForm</Form>
-        </DCCReference>
-        <DCCReference Include="ExportUnit.pas">
-            <Form>ExportForm</Form>
-        </DCCReference>
-        <DCCReference Include="UnitDBCleaning.pas">
-            <Form>DBCleaningForm</Form>
-        </DCCReference>
-        <DCCReference Include="UnitCompareProgress.pas">
-            <Form>ImportProgressForm</Form>
-        </DCCReference>
-        <DCCReference Include="UnitCompareDataBases.pas">
-            <Form>ImportDataBaseForm</Form>
         </DCCReference>
         <DCCReference Include="UnitEditGroupsForm.pas">
             <Form>EditGroupsForm</Form>
@@ -251,9 +236,6 @@
         <DCCReference Include="UnitChangeDBPath.pas">
             <Form>FormChangeDBPath</Form>
         </DCCReference>
-        <DCCReference Include="UnitSelectDB.pas">
-            <Form>FormSelectDB</Form>
-        </DCCReference>
         <DCCReference Include="UnitFormCDExport.pas">
             <Form>FormCDExport</Form>
         </DCCReference>
@@ -271,9 +253,6 @@
         </DCCReference>
         <DCCReference Include="UnitEditLinkForm.pas">
             <Form>FormEditLink</Form>
-        </DCCReference>
-        <DCCReference Include="UnitSelectFontForm.pas">
-            <Form>FormSelectFont</Form>
         </DCCReference>
         <DCCReference Include="UnitListOfKeyWords.pas">
             <Form>FormListOfKeyWords</Form>
@@ -305,12 +284,9 @@
         <DCCReference Include="UnitBigImagesSize.pas">
             <Form>BigImagesSizeForm</Form>
         </DCCReference>
-        <DCCReference Include="Threads\UnitCleanUpThread.pas"/>
         <DCCReference Include="Threads\UnitHintCeator.pas"/>
-        <DCCReference Include="Threads\UnitCmpDB.pas"/>
         <DCCReference Include="Threads\ExplorerThreadUnit.pas"/>
         <DCCReference Include="Threads\UnitPackingTable.pas"/>
-        <DCCReference Include="Threads\UnitExportThread.pas"/>
         <DCCReference Include="Threads\UnitExplorerThumbnailCreatorThread.pas"/>
         <DCCReference Include="Threads\UnitSaveQueryThread.pas"/>
         <DCCReference Include="Threads\UnitRecreatingThInTable.pas"/>
@@ -507,26 +483,6 @@
         </DCCReference>
         <DCCReference Include="Convertation\uFrmConvertationProgress.pas">
             <Form>FrmConvertationProgress</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="SelectDB\uFrmSelectDBLanding.pas">
-            <Form>FrmSelectDBLanding</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="SelectDB\uFrmSelectDBNewPathAndIcon.pas">
-            <Form>FrmSelectDBNewPathAndIcon</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="SelectDB\uFrmSelectDBFromList.pas">
-            <Form>FrmSelectDBFromList</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="SelectDB\uFrmSelectDBExistedFile.pas">
-            <Form>FrmSelectDBExistedFile</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="SelectDB\uFrmSelectDBCreationSummary.pas">
-            <Form>FrmSelectDBCreationSummary</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Units\uInterfaces.pas"/>

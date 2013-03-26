@@ -119,12 +119,10 @@ procedure UnRegisterMainForm(Value: TForm);
 implementation
 
 uses
-  UnitCleanUpThread,
   uManagerExplorer,
   UnitInternetUpdate,
   UnitConvertDBForm,
   UnitImportingImagesForm,
-  UnitSelectDB,
   uExifPatchThread;
 
 {$R *.dfm}
@@ -619,11 +617,6 @@ begin
       end;
     end;
     {$ENDIF}
-    if (FCheckCount = 40) and not FolderView then // after 4 sec.
-    begin
-      if Settings.ReadBool('Options', 'AllowAutoCleaning', False) then
-        CleanUpThread.Create(Self, False);
-    end;
 
     if (FCheckCount = 50) and not FolderView then // after 4 sec.
     begin
@@ -719,26 +712,6 @@ begin
         CloseSplashWindow;
 
         CheckSampleDB;
-
-        if not FileExistsSafe(Dbname) then
-        begin
-          DBFile := DoChooseDBFile(SELECT_DB_OPTION_GET_DB_OR_EXISTS);
-          try
-            if DBKernel.TestDB(DBFile.Path) then
-              DBKernel.AddDB(DBFile.Title, DBFile.Path, DBFile.Icon);
-            DBKernel.SetDataBase(DBFile.Path);
-
-            DBVersion := DBKernel.TestDBEx(Dbname, True);
-            if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
-            begin
-              DBTerminating := True;
-              Exit;
-            end;
-
-          finally
-            F(DBFile);
-          end;
-        end;
       end;
 
       TW.I.Start('FM -> check valid db version');
