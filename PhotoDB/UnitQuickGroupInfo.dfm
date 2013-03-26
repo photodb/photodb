@@ -303,10 +303,6 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
       Caption = 'Search For Group'
       OnClick = SearchForGroup1Click
     end
-    object Manager1: TMenuItem
-      Caption = 'Manager'
-      OnClick = Manager1Click
-    end
   end
   object GroupsImageList: TImageList
     ColorDepth = cd32Bit

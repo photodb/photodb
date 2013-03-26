@@ -140,11 +140,6 @@ type
     procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
   end;
 
-  IGroupsManagerForm =  interface(IFormInterface)
-    ['{DD99ABFD-68C0-4757-88A8-D0F4BD558653}']
-    procedure Execute;
-  end;
-
   IGroupCreateForm = interface(IFormInterface)
     ['{9F17471D-49EC-42B4-95B4-D09526D4B0AE}']
     procedure CreateGroup;
@@ -180,16 +175,6 @@ type
 
   ICDMapperForm = interface(IFormInterface)
     ['{B45F759D-40DD-4BA5-BA24-950389A5CB3A}']
-    procedure Execute;
-  end;
-
-  ISplitCollectionForm = interface(IFormInterface)
-    ['{D21B87CE-8B72-4A09-B124-C4CB5A199EC4}']
-    procedure Execute;
-  end;
-
-  ICollectionTreeForm = interface(IFormInterface)
-    ['{953A80A5-B6E2-47F8-BC40-333E9E1FD263}']
     procedure Execute;
   end;
 
@@ -268,13 +253,9 @@ function GroupsSelectForm: IGroupsSelectForm;
 function GroupInfoForm: IGroupInfoForm;
 function GroupCreateForm: IGroupCreateForm;
 function CollectionManagerForm: ICollectionManagerForm;
-function GroupsManagerForm: IGroupsManagerForm;
-function CurrentGroupsManagerForm: IGroupsManagerForm;
 function CollectionAddItemForm: ICollectionAddItemForm;
 function CDExportForm: ICDExportForm;
 function CDMapperForm: ICDMapperForm;
-function SplitCollectionForm: ISplitCollectionForm;
-function CollectionTreeForm: ICollectionTreeForm;
 function SelectLocationForm: ISelectLocationForm;
 function LinkItemSelectForm: ILinkItemSelectForm;
 function FormUpdateStatus: IFormUpdateStatus;
@@ -387,16 +368,6 @@ begin
   Result := FormInterfaces.GetSingleForm<ICollectionManagerForm>(True);
 end;
 
-function GroupsManagerForm: IGroupsManagerForm;
-begin
-  Result := FormInterfaces.GetSingleForm<IGroupsManagerForm>(True);
-end;
-
-function CurrentGroupsManagerForm: IGroupsManagerForm;
-begin
-  Result := FormInterfaces.GetSingleForm<IGroupsManagerForm>(False);
-end;
-
 function CollectionAddItemForm: ICollectionAddItemForm;
 begin
   Result := FormInterfaces.CreateForm<ICollectionAddItemForm>();
@@ -410,16 +381,6 @@ end;
 function CDMapperForm: ICDMapperForm;
 begin
   Result := FormInterfaces.GetSingleForm<ICDMapperForm>(True);
-end;
-
-function SplitCollectionForm: ISplitCollectionForm;
-begin
-  Result := FormInterfaces.GetSingleForm<ISplitCollectionForm>(True);
-end;
-
-function CollectionTreeForm: ICollectionTreeForm;
-begin
-  Result := FormInterfaces.GetSingleForm<ICollectionTreeForm>(True);
 end;
 
 function SelectLocationForm: ISelectLocationForm;

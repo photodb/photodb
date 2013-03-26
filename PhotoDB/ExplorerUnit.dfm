@@ -79,13 +79,9 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
-          Top = 599
+          Top = 591
           Width = 132
           Height = 21
           Align = alBottom
@@ -120,10 +116,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -347,15 +339,11 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
           Width = 132
-          Height = 620
+          Height = 612
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
@@ -371,10 +359,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -386,7 +370,6 @@ object ExplorerForm: TExplorerForm
           ParentBackground = False
           ParentCtl3D = False
           TabOrder = 0
-          ExplicitHeight = 620
           DesignSize = (
             132
             612)
@@ -1230,7 +1213,7 @@ object ExplorerForm: TExplorerForm
         Width = 21
         Height = 21
         ImageNormal.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1321,7 +1304,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00EFC6
           B500D24F1A00}
         ImageEnter.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1412,7 +1395,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF7F500E8AA
           9300CC3B0500}
         ImageClick.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1503,7 +1486,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF6F400ECBA
           A700CC3B0500}
         ImageDisabled.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1800,10 +1783,6 @@ object ExplorerForm: TExplorerForm
           Caption = 'TsMediaPreview'
           ImageIndex = 1
           OnResize = TsMediaPreviewResize
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnRightPreview: TPanel
             Left = 0
             Top = 0
@@ -1969,13 +1948,9 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
-            Top = 546
+            Top = 538
             Width = 348
             Height = 35
             Align = alBottom
@@ -2111,7 +2086,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.917620173610000000
+      Date = 41177.952715879630000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3179,14 +3154,6 @@ object ExplorerForm: TExplorerForm
     OnPopup = PmOptionsPopup
     Left = 448
     Top = 528
-    object MiListOfKeywords: TMenuItem
-      Caption = 'MiListOfKeywords'
-      OnClick = MiListOfKeywordsClick
-    end
-    object MiTreeView: TMenuItem
-      Caption = 'MiTreeView'
-      OnClick = MiTreeViewClick
-    end
     object MiUpdater: TMenuItem
       Caption = 'MiUpdater'
       OnClick = MiUpdaterClick
@@ -3194,14 +3161,6 @@ object ExplorerForm: TExplorerForm
     object MiManageDB: TMenuItem
       Caption = 'MiManageDB'
       OnClick = MiManageDBClick
-    end
-    object MiEditGroups: TMenuItem
-      Caption = 'MiEditGroups'
-      OnClick = MiEditGroupsClick
-    end
-    object MiSplitDB: TMenuItem
-      Caption = 'MiSplitDB'
-      OnClick = MiSplitDBClick
     end
     object MiCDActionsSeparator: TMenuItem
       Caption = '-'
@@ -3232,41 +3191,6 @@ object ExplorerForm: TExplorerForm
     OnPopup = PmOptionsPopup
     Left = 448
     Top = 576
-    object MenuItem1: TMenuItem
-      Caption = 'MiListOfKeywords'
-      OnClick = MiListOfKeywordsClick
-    end
-    object MenuItem5: TMenuItem
-      Caption = 'MiTreeView'
-      OnClick = MiTreeViewClick
-    end
-    object MenuItem7: TMenuItem
-      Caption = 'MiUpdater'
-      OnClick = MiUpdaterClick
-    end
-    object MenuItem8: TMenuItem
-      Caption = 'MiManageDB'
-      OnClick = MiManageDBClick
-    end
-    object MenuItem9: TMenuItem
-      Caption = 'MiEditGroups'
-      OnClick = MiEditGroupsClick
-    end
-    object MenuItem10: TMenuItem
-      Caption = 'MiSplitDB'
-      OnClick = MiSplitDBClick
-    end
-    object MenuItem11: TMenuItem
-      Caption = '-'
-    end
-    object MenuItem12: TMenuItem
-      Caption = 'MiCDExport'
-      OnClick = MiCDExportClick
-    end
-    object MenuItem13: TMenuItem
-      Caption = 'MiCDMapping'
-      OnClick = MiCDMappingClick
-    end
   end
   object PmLocations: TPopupActionBar
     Images = ImLocations

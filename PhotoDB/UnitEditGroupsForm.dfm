@@ -256,7 +256,6 @@ object EditGroupsForm: TEditGroupsForm
       FFBFA891FFCC31BA4F8AD23AF9BFB369744DC61E9F7B45F8DFF6F80A8003BD80
       037D7C05C0815EC0813EBE02E0402FE0401F5F0170A01770A08FFF076DC8B25C
       099938400000000049454E44AE426082}
-    OnDblClick = GroupManeger1Click
   end
   object Label2: TLabel
     Tag = 2
@@ -333,7 +332,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 75
     Height = 25
     Caption = 'Cancel'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = BtnCancelClick
   end
   object BtnOk: TButton
@@ -342,26 +341,17 @@ object EditGroupsForm: TEditGroupsForm
     Width = 75
     Height = 25
     Caption = 'Ok'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = BtnOkClick
   end
   object BtnCreateGroup: TButton
-    Left = 154
+    Left = 8
     Top = 432
     Width = 97
     Height = 25
     Caption = 'New Group'
-    TabOrder = 7
-    OnClick = BtnCreateGroupClick
-  end
-  object BtnManager: TButton
-    Left = 9
-    Top = 432
-    Width = 139
-    Height = 25
-    Caption = 'Manager'
     TabOrder = 6
-    OnClick = GroupManeger1Click
+    OnClick = BtnCreateGroupClick
   end
   object LstSelectedGroups: TListBox
     Left = 256
@@ -438,7 +428,7 @@ object EditGroupsForm: TEditGroupsForm
     Width = 188
     Height = 21
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 10
+    TabOrder = 9
     OnChange = WedGroupsFilterChange
     WatermarkText = 'Filter groups'
   end
@@ -467,7 +457,6 @@ object EditGroupsForm: TEditGroupsForm
     end
     object GroupManeger1: TMenuItem
       Caption = 'Group Maneger'
-      OnClick = GroupManeger1Click
     end
     object SearchForGroup1: TMenuItem
       Caption = 'Search For Group'
@@ -483,7 +472,6 @@ object EditGroupsForm: TEditGroupsForm
     Top = 48
     object GroupManeger2: TMenuItem
       Caption = 'Group Maneger'
-      OnClick = GroupManeger1Click
     end
   end
   object PmClear: TPopupActionBar

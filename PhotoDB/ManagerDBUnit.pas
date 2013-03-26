@@ -141,7 +141,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure GroupsManager1Click(Sender: TObject);
     procedure LbBackupsDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure LbBackupsContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -391,11 +390,6 @@ end;
 procedure TManagerDB.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
-end;
-
-procedure TManagerDB.GroupsManager1Click(Sender: TObject);
-begin
-  GroupsManagerForm.Execute;
 end;
 
 procedure TManagerDB.LoadLanguage;

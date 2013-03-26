@@ -57,7 +57,6 @@ type
     CreateGroup1: TMenuItem;
     ChangeGroup1: TMenuItem;
     GroupManeger1: TMenuItem;
-    BtnManager: TButton;
     PmGroupsManager: TPopupActionBar;
     GroupManeger2: TMenuItem;
     QuickInfo1: TMenuItem;
@@ -88,7 +87,6 @@ type
     procedure LstSelectedGroupsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure ChangeGroup1Click(Sender: TObject);
-    procedure GroupManeger1Click(Sender: TObject);
     procedure CreateGroup1Click(Sender: TObject);
     procedure RecreateGroupsList;
     procedure PmGroupPopup(Sender: TObject);
@@ -159,10 +157,8 @@ var
   I: Integer;
 begin
   if not CanNew then
-  begin
     BtnCreateGroup.Enabled := False;
-    BtnManager.Enabled := False;
-  end;
+
   FResult := False;
   FNewKeyWords := KeyWords;
   FOldGroups := CopyGroups(Groups);
@@ -350,11 +346,6 @@ begin
   Result := 'EditGroupsList';
 end;
 
-procedure TEditGroupsForm.GroupManeger1Click(Sender: TObject);
-begin
-  GroupsManagerForm.Execute;
-end;
-
 procedure TEditGroupsForm.InterfaceDestroyed;
 begin
   inherited;
@@ -509,7 +500,6 @@ begin
   BeginTranslate;
   try
     Caption := L('Edit groups');
-    BtnManager.Caption := L('Groups manager');
     BtnCreateGroup.Caption := L('Create group');
     BtnCancel.Caption := L('Cancel');
     BtnOk.Caption := L('Ok');

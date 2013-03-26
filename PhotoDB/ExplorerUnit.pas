@@ -501,26 +501,13 @@ type
     MiAuthorEmail: TMenuItem;
     MiCheckUpdates: TMenuItem;
     PmOptions: TPopupActionBar;
-    MiTreeView: TMenuItem;
     MiUpdater: TMenuItem;
     MiManageDB: TMenuItem;
-    MiEditGroups: TMenuItem;
-    MiSplitDB: TMenuItem;
     MiCDActionsSeparator: TMenuItem;
     MiCDExport: TMenuItem;
     MiCDMapping: TMenuItem;
-    MiListOfKeywords: TMenuItem;
     ImDBList: TImageList;
     PmDBList: TPopupActionBar;
-    MenuItem1: TMenuItem;
-    MenuItem5: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem8: TMenuItem;
-    MenuItem9: TMenuItem;
-    MenuItem10: TMenuItem;
-    MenuItem11: TMenuItem;
-    MenuItem12: TMenuItem;
-    MenuItem13: TMenuItem;
     TbDatabase: TToolButton;
     PmLocations: TPopupActionBar;
     TbSort: TToolButton;
@@ -814,13 +801,9 @@ type
     procedure MiHomePageClick(Sender: TObject);
     procedure MiAuthorEmailClick(Sender: TObject);
     procedure MiCheckUpdatesClick(Sender: TObject);
-    procedure MiListOfKeywordsClick(Sender: TObject);
-    procedure MiTreeViewClick(Sender: TObject);
     procedure MiUpdaterClick(Sender: TObject);
     procedure PmHelpPopup(Sender: TObject);
     procedure MiManageDBClick(Sender: TObject);
-    procedure MiEditGroupsClick(Sender: TObject);
-    procedure MiSplitDBClick(Sender: TObject);
     procedure MiCDMappingClick(Sender: TObject);
     procedure MiCDExportClick(Sender: TObject);
     procedure TbDatabaseClick(Sender: TObject);
@@ -1132,7 +1115,6 @@ type
     function ReplaceBitmap(Bitmap: TBitmap; FileGUID: TGUID; Include: Boolean; Big: Boolean = False): Boolean;
     function ReplaceIcon(Icon: TIcon; FileGUID: TGUID; Include: Boolean): Boolean;
     function SetFileIsEncrypted(FileGUID: TGUID; IsEncrypted: Boolean): Boolean;
-    function AddItemW(Caption : string; FileGUID: TGUID) : TEasyItem;
     function AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1): TEasyItem;
     procedure SetOldPath(Path: string); override;
     procedure NavigateToFile(FileName: string); override;
@@ -1163,7 +1145,6 @@ uses
   uOperationProgress,
 
   UnitInternetUpdate,
-  UnitListOfKeywords,
   ExplorerThreadUnit,
   UnitHintCeator,
   UnitExplorerThumbnailCreatorThread;
@@ -1531,12 +1512,8 @@ begin
   MiAuthorEmail.Caption := L('Email author');
   MiCheckUpdates.Caption := L('Check for updates');
 
-  MiListOfKeywords.Caption := L('List of keywords');
-  MiTreeView.Caption := L('Show collection tree');
   MiUpdater.Caption := L('Show updater');
   MiManageDB.Caption := L('Collection Manager');
-  MiEditGroups.Caption := L('Manage groups');
-  MiSplitDB.Caption := L('Split collection');
 
   MiCDExport.Caption := L('Export images to CD');
   MiCDMapping.Caption := L('CD mapping');
@@ -1552,12 +1529,8 @@ begin
   MiAuthorEmail.ImageIndex := DB_IC_E_MAIL;
   MiCheckUpdates.ImageIndex := DB_IC_UPDATING;
 
-  MiListOfKeywords.ImageIndex := DB_IC_SEARCH;
-  MiTreeView.ImageIndex := DB_IC_TREE;
   MiUpdater.ImageIndex := DB_IC_BOX;
   MiManageDB.ImageIndex := DB_IC_ADMINTOOLS;
-  MiEditGroups.ImageIndex := DB_IC_GROUPS;
-  MiSplitDB.ImageIndex := DB_IC_SPLIT;
 
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
@@ -4111,7 +4084,7 @@ end;
 
 function TExplorerForm.AddItem(FileGUID: TGUID; LockItems: Boolean = True; Sort: Integer = -1): TEasyItem;
 var
-  I, Index, Count: Integer;
+  I, Index, Count, DetailsCount: Integer;
   Data: TLVDataObject;
   FI: TExplorerFileInfo;
 
@@ -4198,6 +4171,22 @@ begin
         end;
       end;
 
+      if FI.FileType = EXPLORER_ITEM_GROUP then
+      begin
+        DetailsCount := 1;
+        Result.Details[1] := 1;
+        Result.Details[2] := 2;
+        if FI.Comment <> '' then
+        begin
+          Result.Captions[DetailsCount] := FI.Comment;
+          Inc(DetailsCount);
+        end;
+        if FI.KeyWords <> '' then
+          Result.Captions[DetailsCount] := FI.KeyWords;
+        Result.DetailCount := 3;
+      end else
+        Result.DetailCount := 1;
+
       if not Data.Include then
         Result.BorderColor := GetListItemBorderColor(Data);
 
@@ -4225,33 +4214,6 @@ begin
       Break;
     end;
   end;
-end;
-
-function TExplorerForm.AddItemW(Caption: string; FileGUID: TGUID): TEasyItem;
-var
-  I: Integer;
-  Data: TLVDataObject;
-begin
-  Result := nil;
-  for I := 0 to FFilesInfo.Count - 1 do
-    if IsEqualGUID(FFilesInfo[I].SID, FileGUID) then
-    begin
-      LockDrawIcon := True;
-      Data := TLVDataObject.Create;
-      Data.Include := True;
-      Result := ElvMain.Items.Add(Data);
-      if not Data.Include then
-        Result.BorderColor := GetListItemBorderColor(Data);
-      Result.Tag := FFilesInfo[I].FileType;
-      Result.ImageIndex := FFilesInfo[I].ImageIndex;
-      Result.Caption := Caption;
-      MakeItemVisibleByFilter(Result, '');
-
-      LockDrawIcon := False;
-      if ElvMain.Groups[0].Visible then
-        AddItemToUpdate(Result);
-      Break;
-    end;
 end;
 
 procedure TExplorerForm.ListView1KeyPress(Sender: TObject; var Key: Char);
@@ -5593,11 +5555,6 @@ begin
   PePath.Edit;
 end;
 
-procedure TExplorerForm.MiEditGroupsClick(Sender: TObject);
-begin
-  GroupsManagerForm.Execute;
-end;
-
 procedure TExplorerForm.MiShelfClick(Sender: TObject);
 var
   I, Index: Integer;
@@ -5632,11 +5589,6 @@ begin
       F(FileList);
     end;
   end;
-end;
-
-procedure TExplorerForm.MiSplitDBClick(Sender: TObject);
-begin
-  SplitCollectionForm.Execute;
 end;
 
 procedure TExplorerForm.MiESShowHiddenClick(Sender: TObject);
@@ -5701,11 +5653,6 @@ begin
   InitEditGroups;
 
   BtnSaveInfo.Enabled := True;
-end;
-
-procedure TExplorerForm.MiListOfKeywordsClick(Sender: TObject);
-begin
-  GetListOfKeyWords;
 end;
 
 procedure TExplorerForm.MiManageDBClick(Sender: TObject);
@@ -7460,11 +7407,6 @@ begin
     TLoadPathList.Create(Self, FHistory.GetForwardHistory, TPopupActionBar(Sender));
 end;
 
-procedure TExplorerForm.MiTreeViewClick(Sender: TObject);
-begin
-  CollectionTreeForm.Execute;
-end;
-
 procedure TExplorerForm.MiTreeViewOpenInNewWindowClick(Sender: TObject);
 var
   Explorer: TCustomExplorerForm;
@@ -7593,6 +7535,8 @@ begin
     PePath.SetPathEx(TGroupsItem, Path);
     Caption := PePath.CurrentPathEx.DisplayName;
     ThreadType := THREAD_TYPE_GROUPS;
+    ListView := LV_TILE;
+    Tile2.Checked := True;
   end;
   if WPath.PType = EXPLORER_ITEM_SHELF then
   begin
@@ -10615,6 +10559,14 @@ var
 begin
   if GlobalLock then
     Exit;
+
+  if Position > 0 then
+  begin
+    ACanvas.Font.Color := StyleServices.GetStyleFontColor(sfListItemTextDisabled);
+    ACanvas.Font.Style := [];
+    Exit;
+  end;
+
   Include := True;
   if not((Item.Data = nil) or (Item.ImageIndex < 0)) then
   begin

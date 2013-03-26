@@ -45,7 +45,6 @@ type
     DateEdit: TEdit;
     AccessEdit: TEdit;
     PmGroupOptions: TPopupActionBar;
-    Manager1: TMenuItem;
     EditGroup1: TMenuItem;
     CommentLabel: TLabel;
     DateLabel: TLabel;
@@ -63,7 +62,6 @@ type
     procedure BtnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure EditGroup1Click(Sender: TObject);
-    procedure Manager1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure SearchForGroup1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -207,19 +205,6 @@ begin
   Close;
 end;
 
-procedure TFormQuickGroupInfo.Manager1Click(Sender: TObject);
-begin
-  Hide;
-  if CurrentGroupsManagerForm <> nil then
-  begin
-    Close;
-    Exit;
-  end;
-  Application.ProcessMessages;
-  GroupsManagerForm.Execute;
-  Close;
-end;
-
 procedure TFormQuickGroupInfo.FormShow(Sender: TObject);
 begin
   BtnOk.SetFocus;
@@ -258,7 +243,6 @@ begin
     AccessLabel.Caption := L('Attributes');
     BtnOk.Caption := L('Ok');
     EditGroup1.Caption := L('Edit group');
-    Manager1.Caption := L('Groups manager');
     SearchForGroup1.Caption := L('Search for group photos');
     CbAddKeywords.Caption := L('Auto add keywords');
     KeyWordsLabel.Caption := L('Keywords for group') + ':';

@@ -163,7 +163,6 @@ type
     property UpdateDB: Boolean read FUpdateDB write FUpdateDB;
     property ProcHelpAfterUpdate: TNotifyEvent read FProcHelpAfterUpdate write FProcHelpAfterUpdate;
     property NewFileItem: Boolean read FNewFileItem write FNewFileItem;
-    //property FileInfo: TExplorerFileInfo read FFileInfo write SetFileInfo;
     property FileName: string read GetFileName;
     property ID: Integer read GetID;
     property SID: TGUID read GetSID;

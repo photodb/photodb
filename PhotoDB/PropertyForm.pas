@@ -160,7 +160,6 @@ type
     MenuItem2: TMenuItem;
     CreateGroup1: TMenuItem;
     ChangeGroup1: TMenuItem;
-    GroupManeger1: TMenuItem;
     SearchForGroup1: TMenuItem;
     QuickInfo1: TMenuItem;
     PmClear: TPopupActionBar;
@@ -217,7 +216,6 @@ type
     CbShowAllGroups: TCheckBox;
     CbRemoveKeywordsForGroups: TCheckBox;
     BtnNewGroup: TButton;
-    BtnManageGroups: TButton;
     RgGistogrammChannel: TRadioGroup;
     DgGistogramm: TDmGradient;
     GistogrammImage: TImage;
@@ -249,7 +247,6 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure ComboBox1_KeyPress(Sender: TObject; var Key: Char);
     procedure FormShow(Sender: TObject);
-    procedure GroupsManager1Click(Sender: TObject);
     procedure RatingEditMouseDown(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure Ratingnotsets1Click(Sender: TObject);
@@ -277,7 +274,6 @@ type
     procedure OpenFolder1Click(Sender: TObject);
     procedure Up1Click(Sender: TObject);
     procedure Down1Click(Sender: TObject);
-    procedure BtnManageGroupsClick(Sender: TObject);
     procedure BtnNewGroupClick(Sender: TObject);
     procedure LstAvaliableGroupsDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
     procedure lstCurrentGroupsDblClick(Sender: TObject);
@@ -290,7 +286,6 @@ type
     function aGetGroupByCode(GroupCode: String) : integer;
     procedure CreateGroup1Click(Sender: TObject);
     procedure ChangeGroup1Click(Sender: TObject);
-    procedure GroupManeger1Click(Sender: TObject);
     procedure SearchForGroup1Click(Sender: TObject);
     procedure QuickInfo1Click(Sender: TObject);
     procedure PopupMenuGroupsPopup(Sender: TObject);
@@ -1270,7 +1265,6 @@ begin
   LstAvaliableGroups.Enabled := Value;
   CbInclude.Enabled := Value;
   LinksScrollBox.Enabled := Value;
-  BtnManageGroups.Enabled := Value;
 end;
 
 procedure TPropertiesForm.EndAdding(Sender: TObject);
@@ -1656,11 +1650,6 @@ begin
   BtDone.SetFocus;
 end;
 
-procedure TPropertiesForm.GroupsManager1Click(Sender: TObject);
-begin
-  GroupsManagerForm.Execute;
-end;
-
 procedure TPropertiesForm.RatingEditMouseDown(Sender: TObject);
 begin
   if RatingEdit.Islayered then
@@ -1808,7 +1797,6 @@ begin
   Down1.Caption := L('Move down');
   Change1.Caption := L('Change');
   Delete1.Caption := L('Delete');
-  BtnManageGroups.Caption := L('Manage');
   BtnNewGroup.Caption := L('Create group');
   LbAvaliableGroups.Caption := L('Available groups') + ':';
   LbCurrentGroups.Caption := L('Selected groups') + ':';
@@ -1816,7 +1804,6 @@ begin
   MenuItem1.Caption := L('Delete');
   CreateGroup1.Caption := L('Create group');
   ChangeGroup1.Caption := L('Change group');
-  GroupManeger1.Caption := L('Group manager');
   QuickInfo1.Caption := L('Info');
   SearchForGroup1.Caption := L('Search group photos');
   CbShowAllGroups.Caption := L('Show all groups');
@@ -2323,11 +2310,6 @@ begin
   ReadLinks;
 end;
 
-procedure TPropertiesForm.BtnManageGroupsClick(Sender: TObject);
-begin
-  GroupsManagerForm.Execute;
-end;
-
 procedure TPropertiesForm.BtnNewGroupClick(Sender: TObject);
 begin
   GroupCreateForm.CreateGroup;
@@ -2715,11 +2697,6 @@ begin
   Result := 0;
   if FFilesInfo.Count > 0 then
     Result := FFilesInfo[0].ID;
-end;
-
-procedure TPropertiesForm.GroupManeger1Click(Sender: TObject);
-begin
-  GroupsManagerForm.Execute;
 end;
 
 procedure TPropertiesForm.SearchForGroup1Click(Sender: TObject);

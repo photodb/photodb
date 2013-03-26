@@ -324,7 +324,6 @@ object ManagerDB: TManagerDB
     end
     object GroupsManager1: TMenuItem
       Caption = 'Groups Manager'
-      OnClick = GroupsManager1Click
     end
   end
   object PopupMenu4: TPopupActionBar

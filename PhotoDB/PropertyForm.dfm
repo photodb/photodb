@@ -180,7 +180,7 @@ object PropertiesForm: TPropertiesForm
     Top = 118
     Width = 298
     Height = 372
-    ActivePage = TsGeneral
+    ActivePage = TsGroups
     Anchors = [akLeft, akTop, akRight, akBottom]
     DoubleBuffered = True
     MultiLine = True
@@ -189,10 +189,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -540,10 +536,6 @@ object PropertiesForm: TPropertiesForm
       Caption = 'Groups'
       ImageIndex = 1
       OnResize = TsGroupsResize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -763,7 +755,6 @@ object PropertiesForm: TPropertiesForm
           FFBFA891FFCC31BA4F8AD23AF9BFB369744DC61E9F7B45F8DFF6F80A8003BD80
           037D7C05C0815EC0813EBE02E0402FE0401F5F0170A01770A08FFF076DC8B25C
           099938400000000049454E44AE426082}
-        OnDblClick = GroupManeger1Click
       end
       object LbGroupsEditInfo: TLabel
         Left = 74
@@ -917,23 +908,13 @@ object PropertiesForm: TPropertiesForm
         TabOrder = 6
         OnClick = BtnNewGroupClick
       end
-      object BtnManageGroups: TButton
-        Left = 108
-        Top = 314
-        Width = 89
-        Height = 25
-        Anchors = [akLeft, akBottom]
-        Caption = 'Manager'
-        TabOrder = 7
-        OnClick = BtnManageGroupsClick
-      end
       object WedGroupsFilter: TWatermarkedEdit
         Left = 25
         Top = 92
         Width = 85
         Height = 21
         Anchors = [akLeft, akTop, akRight]
-        TabOrder = 8
+        TabOrder = 7
         OnChange = WedGroupsFilterChange
         WatermarkText = 'Filter groups'
       end
@@ -941,10 +922,6 @@ object PropertiesForm: TPropertiesForm
     object TsEXIF: TTabSheet
       Caption = 'EXIF'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -965,10 +942,6 @@ object PropertiesForm: TPropertiesForm
     object TsGistogramm: TTabSheet
       Caption = 'Gistogramm'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1024,10 +997,6 @@ object PropertiesForm: TPropertiesForm
     object TsAdditional: TTabSheet
       Caption = 'Additional'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -1277,10 +1246,6 @@ object PropertiesForm: TPropertiesForm
     object ChangeGroup1: TMenuItem
       Caption = 'Change Group'
       OnClick = ChangeGroup1Click
-    end
-    object GroupManeger1: TMenuItem
-      Caption = 'Group Maneger'
-      OnClick = GroupManeger1Click
     end
     object SearchForGroup1: TMenuItem
       Caption = 'Search For Group'
