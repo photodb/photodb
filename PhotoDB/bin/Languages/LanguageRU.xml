@@ -475,7 +475,7 @@
 	<translate name="Change advanced options for this collection" value="Изменить расширенные настройки" />
 	<translate name="Edit" value="Редактировать" />
 	<translate name="Edit collections" value="Редактировать список коллекций" />
-	<translate name="Edit collections" value="Редактировать список коллекций" />
+	<translate name="Open image location" value="Открыть папку с файлом" />
   </scope>
   <scope name="PropertiesForm">
 	<translate name="Properties" value="Свойства" />

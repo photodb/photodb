@@ -946,6 +946,8 @@ type
     procedure AddDefaultPlaces(Places: TList<TLinkInfo>);
     procedure EditPlacesListClick(Sender: TObject);
     procedure UserDefinedPlaceClick(Sender: TObject);
+    procedure OpenImageLocationClick(Sender: TObject);
+
     procedure DoSelectItem;
     procedure LoadIcons;
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
@@ -1007,12 +1009,13 @@ type
 
     procedure SetResizePreviewMode;
     procedure SetResizeListViewMode;
-    property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
     procedure TreeViewSelectCurrentPath;
     procedure TreeViewReloadTree;
     procedure LoadDBList;
     procedure ChangeDBClick(Sender: TObject);
     procedure PmShareAdditionalTasksEnterMenuLoop(Sender: TObject);
+
+    property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
   protected
     procedure ZoomIn;
     procedure ZoomOut;
@@ -3804,6 +3807,38 @@ begin
   end;
 end;
 
+procedure TExplorerForm.OpenImageLocationClick(Sender: TObject);
+var
+  Item: TEasyItem;
+  FilePath, Directory: string;
+  FI: TExplorerFileInfo;
+  P: TPathItem;
+begin
+  Item := ListView1Selected;
+  if Item = nil then
+    Exit;
+
+  FilePath := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
+  Directory := ExtractFileDir(FilePath);
+
+  P := PathProviderManager.CreatePathItem(Directory);
+  try
+    if P = nil then
+      Exit;
+
+    FI := TExplorerFileInfo.CreateFromPathItem(P);
+    try
+      SetOldPath(FilePath);
+      SetNewPathW(ExplorerPath(FI.FileName, FI.FileType), False);
+    finally
+      F(FI);
+    end;
+
+  finally
+    F(P);
+  end;
+end;
+
 procedure TExplorerForm.OpenInNewWindow1Click(Sender: TObject);
 var
   Explorer: TCustomExplorerForm;
@@ -5720,8 +5755,56 @@ begin
 end;
 
 procedure TExplorerForm.PmLocationsPopup(Sender: TObject);
+var
+  Item: TEasyItem;
+  FilePath, Directory: string;
+  P: TPathItem;
+  CanOpenOriginalDirectory: Boolean;
+  MI: TMenuItem;
 begin
   ReadPlaces;
+
+  CanOpenOriginalDirectory := (SelCount = 1)
+    and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
+        EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
+        EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF])
+    and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
+        EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
+        EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,
+        EXPLORER_ITEM_DEVICE_FILE]);
+
+  Item := ListView1Selected;
+  if (Item <> nil) and CanOpenOriginalDirectory then
+  begin
+    FilePath := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
+    Directory := ExtractFileDir(FilePath);
+
+    P := PathProviderManager.CreatePathItem(Directory);
+    try
+      if P = nil then
+        Exit;
+
+      MI := TMenuItem.Create(PmLocations);
+      MI.Caption := '-';
+      PmLocations.Items.Add(MI);
+
+      MI := TMenuItem.Create(PmLocations);
+      MI.Caption := L('Open image location');
+      MI.OnClick := OpenImageLocationClick;
+
+      if P.LoadImage(PATH_LOAD_NORMAL or PATH_LOAD_FAST or PATH_LOAD_FOR_IMAGE_LIST, ImLocations.Width) and (P.Image <> nil) then
+      begin
+        P.Image.AddToImageList(ImLocations);
+        MI.ImageIndex := ImLocations.Count - 1;
+      end else
+        ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
+
+      PmLocations.Items.Add(MI);
+
+    finally
+      F(P);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.PmOptionsPopup(Sender: TObject);
@@ -6122,7 +6205,8 @@ begin
     if (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or
       (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) or
-      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) then
+      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or
+      (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON) or (FSelectedInfo.FileType = EXPLORER_ITEM_SHELF) then
       TbbPlay.Enabled := True
     else
       TbbPlay.Enabled := False;
@@ -6649,7 +6733,7 @@ begin
   begin
     PmItemPopup.Tag := ItemIndexToMenuIndex(ListView1Selected.index);
     SlideShow1Click(Sender)
-  end else if (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) and (SelCount = 0) then
+  end else if (FSelectedInfo.FileType in [EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_SHELF]) and (SelCount = 0) then
   begin
     Info := GetCurrentPopUpMenuInfo(nil);
     try
@@ -11010,49 +11094,11 @@ end;
 
 procedure TExplorerForm.TbbOpenDirectoryClick(Sender: TObject);
 var
-  Item: TEasyItem;
-  FilePath, Directory: string;
-  P: TPathItem;
-  FI: TExplorerFileInfo;
   APoint: TPoint;
-  CanOpenOriginalDirectory: BOolean;
 begin
-  CanOpenOriginalDirectory := (SelCount = 1)
-    and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
-        EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
-        EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF])
-    and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
-        EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
-        EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,
-        EXPLORER_ITEM_DEVICE_FILE]);
-
-  Item := ListView1Selected;
-  if (Item <> nil) and CanOpenOriginalDirectory then
-  begin
-    FilePath := FFilesInfo[ItemIndexToMenuIndex(Item.Index)].FileName;
-    Directory := ExtractFileDir(FilePath);
-
-    P := PathProviderManager.CreatePathItem(Directory);
-    try
-      if P = nil then
-        Exit;
-
-      FI := TExplorerFileInfo.CreateFromPathItem(P);
-      try
-        SetOldPath(FilePath);
-        SetNewPathW(ExplorerPath(FI.FileName, FI.FileType), False);
-      finally
-        F(FI);
-      end;
-    finally
-      F(P);
-    end;
-  end else
-  begin
-    APoint := Point(TbbOpenDirectory.Left, TbbOpenDirectory.Top + TbbOpenDirectory.Height);
-    APoint := ToolBarBottom.ClientToScreen(APoint);
-    PmLocations.DoPopupEx(APoint.X, APoint.Y);
-  end;
+  APoint := Point(TbbOpenDirectory.Left, TbbOpenDirectory.Top + TbbOpenDirectory.Height);
+  APoint := ToolBarBottom.ClientToScreen(APoint);
+  PmLocations.DoPopupEx(APoint.X, APoint.Y);
 end;
 
 procedure TExplorerForm.TbDatabaseClick(Sender: TObject);
