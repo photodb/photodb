@@ -38,7 +38,6 @@ object FormLinkItemSelector: TFormLinkItemSelector
     ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
-    ExplicitTop = 0
     DesignSize = (
       430
       157)
@@ -162,14 +161,13 @@ object FormLinkItemSelector: TFormLinkItemSelector
     FullRepaint = False
     ParentBackground = False
     TabOrder = 6
-    ExplicitLeft = 8
   end
   object ImPlaces: TImageList
     ColorDepth = cd32Bit
     Left = 56
     Top = 8
     Bitmap = {
-      494C010105009400940010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C0101050094009C0010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000800000008000000000000000

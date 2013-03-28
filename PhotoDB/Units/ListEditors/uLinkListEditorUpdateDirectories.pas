@@ -52,6 +52,9 @@ type
 
 implementation
 
+uses
+  uFormLinkItemSelector;
+
 const
   CHANGE_DIRECTORY_ICON        = 1;
   CHANGE_DIRECTORY_EDIT        = 2;
@@ -147,7 +150,7 @@ begin
     PI := nil;
     try
       if SelectLocationForm.Execute(L('Select a directory'), '', PI, False) then
-        Data := TDatabaseDirectory.Create(PI.DisplayName, PI.Path, 0);
+        Data := TDatabaseDirectory.Create(PI.Path, PI.DisplayName, 0);
     finally
       F(PI);
     end;
@@ -260,8 +263,7 @@ var
   TopPanel: TPanel;
   Image: TImage;
   LbInfo: TLabel;
-  Jng: TPngImage;
-  B: TBitmap;
+  Png: TPngImage;
 begin
   FForm := Form;
 
@@ -272,24 +274,15 @@ begin
     Image := TImage.Create(TopPanel);
     Image.Parent := TopPanel;
 
-    Jng := TPngImage.Create;// GetCollectionSyncImage;
+    Png := GetCollectionSyncImage;
     try
-      B := TBitmap.Create;
-      try
-        Jng.LoadFromFile('D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\Resources\COLLECTION_SYNC.pNG');
-        AssignPNG(B, Jng);
-        B.AlphaFormat := afDefined;
-        B.IgnorePalette := True;
-        Image.Picture.Graphic := B;
-      finally
-        F(B);
-      end;
+      Image.Picture.Graphic := Png;
       Image.Top := 8;
       Image.Left := 8;
-      Image.Width := Jng.Width;
-      Image.Height := Jng.Height;
+      Image.Width := Png.Width;
+      Image.Height := Png.Height;
     finally
-      F(Jng);
+      F(Png);
     end;
 
     LbInfo := TLabel.Create(TopPanel);

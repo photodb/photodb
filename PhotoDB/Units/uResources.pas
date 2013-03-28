@@ -30,7 +30,7 @@ function GetBigPatternImage: TJpegImage;
 function GetFilmStripImage: TPNGImage;
 function GetPathSeparatorImage: TBitmap;
 function GetNoHistogramImage: TPNGImage;
-function GetCollectionSyncImage: TJngImage;
+function GetCollectionSyncImage: TPngImage;
 
 {$R MAIN.res}
 {$R Logo.res}
@@ -161,9 +161,9 @@ begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('NO_HISTOGRAM');
 end;
 
-function GetCollectionSyncImage: TJngImage;
+function GetCollectionSyncImage: TPngImage;
 begin
-  Result := TResourceUtils.LoadGraphicFromRES<TJngImage>('COLLECTION_SYNC');
+  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('COLLECTION_SYNC');
 end;
 
 end.

@@ -14,10 +14,8 @@ cd photodb/resources
 REM JNG FILES - BEGIN
 "%JNG%" logo.PNG logo.JNG
 "%JNG%" loading.PNG loading.JNG
-"%JNG%" COLLECTION_SYNC.PNG COLLECTION_SYNC.JNG
 "%BRCC32%" logo.rc
 "%BRCC32%" Loading.rc
-"%BRCC32%" CollectionSync.rc
 REM JNG FILES - END
 
 "%BRCC32%" slideshow_load.rc
@@ -36,6 +34,7 @@ REM JNG FILES - END
 "%BRCC32%" SharePictures.rc
 "%BRCC32%" NoHistogram.rc
 "%BRCC32%" Import.rc
+"%BRCC32%" CollectionSync.rc
 
 cd ..
 cd ..

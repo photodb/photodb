@@ -43,6 +43,8 @@ uses
   uConfiguration,
   uDBUpdateUtils,
   uDBPopupMenuInfo,
+  uShellUtils,
+  uTranslate,
   uLockedFileNotifications,
   uCDMappingTypes,
   uSettings;
@@ -192,12 +194,14 @@ type
 
 function UpdaterStorage: TUpdaterStorage;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
-procedure FillDatabaseDirectories(FolderList: TList<TDatabaseDirectory>);
+procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
+procedure SaveDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
 
 implementation
 
 const
   cAddImagesAtOneStep = 4;
+  UpdaterDirectoriesFormat = '\Updater\Databases\{0}';
 
 var
   DirectoriesScanID: TGUID = '{00000000-0000-0000-0000-000000000000}';
@@ -225,10 +229,7 @@ begin
   Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.errors.cache';
 end;
 
-procedure FillDatabaseDirectories(FolderList: TList<TDatabaseDirectory>);
-const
-  UpdaterDirectoriesFormat = '\Updater\Databases\{0}';
-
+procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
 var
   Reg: TBDRegistry;
   DBPrefix, FName, FPath, FIcon: string;
@@ -241,7 +242,7 @@ begin
 
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    DBPrefix := ExtractFileName(dbname) + IntToStr(StringCRC(dbname));
+    DBPrefix := ExtractFileName(CollectionFile) + IntToStr(StringCRC(CollectionFile));
 
     Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]), True);
     S := TStringList.Create;
@@ -251,7 +252,7 @@ begin
       for I := 0 to S.Count - 1 do
       begin
         Reg.CloseKey;
-        Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]) + S[I], True);
+        Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]) + '\' + S[I], True);
 
         FName := '';
         FPath := '';
@@ -264,7 +265,7 @@ begin
 
         if (S[I] <> '') and (FPath <> '') then
         begin
-          DD := TDatabaseDirectory.Create(S[I], FPath, SortOrder);
+          DD := TDatabaseDirectory.Create(FPath, S[I], SortOrder);
           FolderList.Add(DD);
         end;
       end;
@@ -275,9 +276,12 @@ begin
     F(Reg);
   end;
 
-  DD := TDatabaseDirectory.Create('d:\dmitry\my pictures\photoes', 'TEST', 0);
-  //DD := TDatabaseDirectory.Create('D:\dmitry\my pictures\photoes', 'TEST', '', 0);
-  FolderList.Add(DD);
+  if FolderList.Count = 0 then
+  begin
+    DD := TDatabaseDirectory.Create(GetMyPicturesPath, TA('My Pictures', 'Explorer'), 0);
+    FolderList.Add(DD);
+  end;
+
 
   FolderList.Sort(TComparer<TDatabaseDirectory>.Construct(
      function (const L, R: TDatabaseDirectory): Integer
@@ -285,6 +289,41 @@ begin
        Result := L.SortOrder - R.SortOrder;
      end
   ));
+end;
+
+procedure SaveDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
+var
+  Folder: TDatabaseDirectory;
+  Reg: TBDRegistry;
+  DBPrefix: string;
+  S: TStrings;
+  I: Integer;
+begin
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    DBPrefix := ExtractFileName(CollectionFile) + IntToStr(StringCRC(CollectionFile));
+
+    Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]), True);
+    S := TStringList.Create;
+    try
+      Reg.GetKeyNames(S);
+      for I := 0 to S.Count - 1 do
+        Reg.DeleteKey(S[I]);
+
+      for Folder in FolderList do
+      begin
+        Reg.CloseKey;
+        Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]) + '\' + Folder.Name, True);
+
+        Reg.WriteString('Path', Folder.Path);
+        Reg.WriteInteger('SortOrder', Folder.SortOrder);
+      end;
+    finally
+      F(S);
+    end;
+  finally
+    F(Reg);
+  end;
 end;
 
 procedure LoadDirectoriesState(FileName: string; DirectoryCache: TDictionary<string, Int64>);
@@ -478,7 +517,7 @@ begin
         //list of directories to scan
         FolderList := TList<TDatabaseDirectory>.Create;
         try
-          FillDatabaseDirectories(FolderList);
+          ReadDatabaseDirectories(FolderList, FCollectionFile);
           for DD in FolderList do
             Directories.Enqueue(DD.Path);
 
@@ -675,7 +714,7 @@ begin
   //list of directories to watch
   FolderList := TList<TDatabaseDirectory>.Create;
   try
-    FillDatabaseDirectories(FolderList);
+    ReadDatabaseDirectories(FolderList, FCollectionFile);
     for DD in FolderList do
     begin
       Watch := TWachDirectoryClass.Create;

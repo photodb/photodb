@@ -61,7 +61,7 @@ type
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
   end;
 
-procedure UpdateCurrentCollectionDirectories;
+procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 
 implementation
 
@@ -78,7 +78,7 @@ const
   CHANGE_DB_UPDATE_OPTIONS  = 7;
   CHANGE_DB_PREVIEW_OPTIONS = 7;
 
-procedure UpdateCurrentCollectionDirectories;
+procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 var
   Data: TList<TDataObject>;
   Editor: ILinkEditor;
@@ -87,10 +87,10 @@ begin
   try
     Data := TList<TDataObject>.Create;
     try
-      FillDatabaseDirectories(TList<TDatabaseDirectory>(Data));
+      ReadDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
 
       if LinkItemSelectForm.Execute(480, TA('Directories synchronization with collection', 'CollectionSettings'), Data, Editor) then
-        //SaveDatabaseDirectories(TList<TDatabaseDirectory>(Data));
+        SaveDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
 
     finally
       FreeList(Data);
@@ -404,8 +404,14 @@ begin
 end;
 
 procedure TLinkListEditorDatabases.OnUpdateOptionsClick(Sender: TObject);
+var
+  DI: TDatabaseInfo;
+  Editor: TPanel;
 begin
-  UpdateCurrentCollectionDirectories;
+  Editor := TPanel(TControl(Sender).Parent);
+  DI := TDatabaseInfo(Editor.Tag);
+
+  UpdateCurrentCollectionDirectories(DI.Path);
 end;
 
 procedure TLinkListEditorDatabases.OnPreviewOptionsClick(Sender: TObject);
