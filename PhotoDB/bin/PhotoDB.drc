@@ -2327,6 +2327,7 @@ END
 /* Resources\NoHistogram.res */
 /* Resources\SampleDB.res */
 /* Resources\Import.res */
+/* Resources\CollectionSync.res */
 /* ..\DBIcons\icons.res */
 /* ..\DBIcons\db_icons.res */
 /* ..\DBIcons\ZoomRc.res */

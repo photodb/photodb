@@ -74,7 +74,6 @@ type
     procedure PackPhotoTable;
     procedure OnEnd(Sender: TObject);
     procedure LoadLanguage;
-    procedure RestoreTable(FileName: string);
     procedure BackUpTable;
     procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
     procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
@@ -91,7 +90,6 @@ implementation
 
 uses
   UnitPackingTable,
-  UnitRestoreTableThread,
   UnitBackUpTableInCMD;
 
 {$R *.dfm}
@@ -190,29 +188,6 @@ begin
   finally
     EndTranslate;
   end;
-end;
-
-procedure TCMDForm.RestoreTable(FileName : String);
-var
-  Options: TRestoreThreadOptions;
-begin
-
-  WriteLnLine(Self, L('Restoring collection:'), LINE_INFO_INFO);
-  WriteLnLine(Self, '[' + FileName + ']', LINE_INFO_DB);
-  WriteLnLine(Self, L('Restoring'), LINE_INFO_INFO);
-  WriteLnLine(Self, L('Starting restoring of collection. Please wait...'), LINE_INFO_OK);
-  SetWideIndex;
-
-  Timer1.Enabled := True;
-  Options.OwnerForm := Self;
-  Options.WriteLineProc := WriteLine;
-  Options.OnEnd := OnEnd;
-  Options.FileName := FileName;
-
-  ThreadRestoreTable.Create(Options);
-  Working := True;
-  Recreating := True;
-  CMDForm.ShowModal;
 end;
 
 procedure TCMDForm.ApplicationEvents1Message(var Msg: tagMSG;

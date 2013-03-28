@@ -31,8 +31,11 @@ uses
   uDBUtils,
   uVclHelpers,
   uIconUtils,
+  uTranslate,
   uShellIntegration,
-  uFormInterfaces;
+  uFormInterfaces,
+  uDatabaseDirectoriesUpdater,
+  uLinkListEditorUpdateDirectories;
 
 type
   TLinkListEditorDatabases = class(TInterfacedObject, ILinkEditor)
@@ -43,7 +46,8 @@ type
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
-    procedure OnAdvancedOptionsClick(Sender: TObject);
+    procedure OnPreviewOptionsClick(Sender: TObject);
+    procedure OnUpdateOptionsClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
     constructor Create(Owner: TDBForm);
@@ -57,6 +61,8 @@ type
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
   end;
 
+procedure UpdateCurrentCollectionDirectories;
+
 implementation
 
 uses
@@ -69,7 +75,30 @@ const
   CHANGE_DB_PATH            = 4;
   CHANGE_DB_DESC_EDIT       = 5;
   CHANGE_DB_DESC_LABEL      = 6;
-  CHANGE_DB_CAHNGE_OPTIONS  = 7;
+  CHANGE_DB_UPDATE_OPTIONS  = 7;
+  CHANGE_DB_PREVIEW_OPTIONS = 7;
+
+procedure UpdateCurrentCollectionDirectories;
+var
+  Data: TList<TDataObject>;
+  Editor: ILinkEditor;
+begin
+  Editor := TLinkListEditorUpdateDirectories.Create();
+  try
+    Data := TList<TDataObject>.Create;
+    try
+      FillDatabaseDirectories(TList<TDatabaseDirectory>(Data));
+
+      if LinkItemSelectForm.Execute(480, TA('Directories synchronization with collection', 'CollectionSettings'), Data, Editor) then
+        //SaveDatabaseDirectories(TList<TDatabaseDirectory>(Data));
+
+    finally
+      FreeList(Data);
+    end;
+  finally
+    Editor := nil;
+  end;
+end;
 
 { TLinkListEditorDatabases }
 
@@ -85,7 +114,7 @@ var
   DI: TDatabaseInfo;
   WlIcon: TWebLink;
   WlChangeLocation,
-  WLChangeOptions: TWebLink;
+  WLUpdateOptions, WlPreviewOptions: TWebLink;
   WedCaption,
   WedDescription: TWatermarkedEdit;
   LbInfo,
@@ -102,18 +131,8 @@ begin
   WedDescription :=  Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_DESC_EDIT);
   LbDescription :=  Editor.FindChildByTag<TLabel>(CHANGE_DB_DESC_LABEL);
 
-  WLChangeOptions := Editor.FindChildByTag<TWebLink>(CHANGE_DB_CAHNGE_OPTIONS);
-
-  if WedCaption = nil then
-  begin
-    WedCaption := TWatermarkedEdit.Create(Editor);
-    WedCaption.Parent := Editor;
-    WedCaption.Tag := CHANGE_DB_CAPTION_EDIT;
-    WedCaption.Top := 8;
-    WedCaption.Left := 35;
-    WedCaption.Width := 200;
-    WedCaption.OnKeyDown := FormKeyDown;
-  end;
+  WLUpdateOptions := Editor.FindChildByTag<TWebLink>(CHANGE_DB_UPDATE_OPTIONS);
+  WlPreviewOptions := Editor.FindChildByTag<TWebLink>(CHANGE_DB_PREVIEW_OPTIONS);
 
   if WlIcon = nil then
   begin
@@ -123,8 +142,31 @@ begin
     WlIcon.Width := 16;
     WlIcon.Height := 16;
     WlIcon.Left := 8;
-    WlIcon.Top := 8 + WedCaption.Height div 2 - WlIcon.Height div 2;
+    WlIcon.Top := 8;
     WlIcon.OnClick := OnPlaceIconClick;
+  end;
+
+  if LbInfo = nil then
+  begin
+    LbInfo := TLabel.Create(Editor);
+    LbInfo.Parent := Editor;
+    LbInfo.Tag := CHANGE_DB_PATH;
+    LbInfo.Left := 35;
+    LbInfo.Top := 8;
+    LbInfo.Width := 350;
+    LbInfo.AutoSize := False;
+    LbInfo.EllipsisPosition := epPathEllipsis;
+  end;
+
+  if WedCaption = nil then
+  begin
+    WedCaption := TWatermarkedEdit.Create(Editor);
+    WedCaption.Parent := Editor;
+    WedCaption.Tag := CHANGE_DB_CAPTION_EDIT;
+    WedCaption.Top := LbInfo.Top + LbInfo.Height + 5;
+    WedCaption.Left := 35;
+    WedCaption.Width := 200;
+    WedCaption.OnKeyDown := FormKeyDown;
   end;
 
   if WlChangeLocation = nil then
@@ -135,22 +177,10 @@ begin
     WlChangeLocation.Height := 26;
     WlChangeLocation.Text := FOwner.L('Change file');
     WlChangeLocation.RefreshBuffer(True);
-    WlChangeLocation.Top := 8 + WedCaption.Height div 2 - WlChangeLocation.Height div 2;
+    WlChangeLocation.Top := WedCaption.Top + WedCaption.Height div 2 - WlChangeLocation.Height div 2;
     WlChangeLocation.Left := 240;
     WlChangeLocation.LoadFromResource('NAVIGATE');
     WlChangeLocation.OnClick := OnChangePlaceClick;
-  end;
-
-  if LbInfo = nil then
-  begin
-    LbInfo := TLabel.Create(Editor);
-    LbInfo.Parent := Editor;
-    LbInfo.Tag := CHANGE_DB_PATH;
-    LbInfo.Left := 35;
-    LbInfo.Top := 35;
-    LbInfo.Width := 350;
-    LbInfo.AutoSize := False;
-    LbInfo.EllipsisPosition := epPathEllipsis;
   end;
 
   if WedDescription = nil then
@@ -158,7 +188,7 @@ begin
     WedDescription := TWatermarkedEdit.Create(Editor);
     WedDescription.Parent := Editor;
     WedDescription.Tag := CHANGE_DB_DESC_EDIT;
-    WedDescription.Top := 62;
+    WedDescription.Top := WedCaption.Top + WedCaption.Height + 5;;
     WedDescription.Left := 35;
     WedDescription.Width := 200;
     WedDescription.OnKeyDown := FormKeyDown;
@@ -174,20 +204,36 @@ begin
     LbDescription.Top := WedDescription.Top + WedDescription.Height div 2 - LbDescription.Height div 2;
   end;
 
-  if WLChangeOptions = nil then
+  if WLUpdateOptions = nil then
   begin
-    WLChangeOptions := TWebLink.Create(Editor);
-    WLChangeOptions.Parent := Editor;
-    WLChangeOptions.Tag := CHANGE_DB_CAHNGE_OPTIONS;
-    WLChangeOptions.Height := 26;
-    WLChangeOptions.Text := FOwner.L('Change advanced options for this collection');
-    WLChangeOptions.Top := WedDescription.Top + WedDescription.Height + 8;
-    WLChangeOptions.Left := 35;
-    WLChangeOptions.IconWidth := 0;
-    WLChangeOptions.IconHeight := 0;
-    WLChangeOptions.RefreshBuffer(True);
-    WLChangeOptions.OnClick := OnAdvancedOptionsClick;
+    WLUpdateOptions := TWebLink.Create(Editor);
+    WLUpdateOptions.Parent := Editor;
+    WLUpdateOptions.Tag := CHANGE_DB_UPDATE_OPTIONS;
+    WLUpdateOptions.Height := 26;
+    WLUpdateOptions.Text := FOwner.L('Change synchronization settings');
+    WLUpdateOptions.Top := WedDescription.Top + WedDescription.Height + 8;
+    WLUpdateOptions.Left := 35;
+    WLUpdateOptions.IconWidth := 0;
+    WLUpdateOptions.IconHeight := 0;
+    WLUpdateOptions.RefreshBuffer(True);
+    WLUpdateOptions.OnClick := OnUpdateOptionsClick;
   end;
+
+  if WlPreviewOptions = nil then
+  begin
+    WlPreviewOptions := TWebLink.Create(Editor);
+    WlPreviewOptions.Parent := Editor;
+    WlPreviewOptions.Tag := CHANGE_DB_UPDATE_OPTIONS;
+    WlPreviewOptions.Height := 26;
+    WlPreviewOptions.Text := FOwner.L('Change preview options');
+    WlPreviewOptions.Top := WLUpdateOptions.Top + WLUpdateOptions.Height + 8;
+    WlPreviewOptions.Left := 35;
+    WlPreviewOptions.IconWidth := 0;
+    WlPreviewOptions.IconHeight := 0;
+    WlPreviewOptions.RefreshBuffer(True);
+    WlPreviewOptions.OnClick := OnPreviewOptionsClick;
+  end;
+
   Icon := ExtractSmallIconByPath(DI.Icon);
   try
     WlIcon.LoadFromHIcon(Icon);
@@ -357,7 +403,12 @@ begin
   end;
 end;
 
-procedure TLinkListEditorDatabases.OnAdvancedOptionsClick(Sender: TObject);
+procedure TLinkListEditorDatabases.OnUpdateOptionsClick(Sender: TObject);
+begin
+  UpdateCurrentCollectionDirectories;
+end;
+
+procedure TLinkListEditorDatabases.OnPreviewOptionsClick(Sender: TObject);
 var
   DI: TDatabaseInfo;
   Editor: TPanel;
@@ -384,7 +435,7 @@ begin
 
   if ID_YES = DialogResult then
     for FileName in FDeletedCollections do
-      DeleteFile(FileName);
+      SilentDeleteFile(Screen.ActiveFormHandle, FileName, True);
 
   Exit(True);
 end;

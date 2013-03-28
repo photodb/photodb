@@ -47,7 +47,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
     constructor Create(Owner: TDBForm; CurrentPath: string);
-    procedure SetForm(Form: ILinkItemSelectForm);
+    procedure SetForm(Form: ILinkItemSelectForm); virtual;
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
     procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
     procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
@@ -182,7 +182,7 @@ begin
     try
       if Verb = 'Add' then
       begin
-        if SelectLocationForm.Execute(FOwner.L('Select a directory'), '', PI) then
+        if SelectLocationForm.Execute(FOwner.L('Select a directory'), '', PI, True) then
           Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
       end else
       begin
@@ -303,7 +303,7 @@ begin
 
   PI := nil;
   try
-    if SelectLocationForm.Execute('Select a directory', LI.Path, PI) then
+    if SelectLocationForm.Execute('Select a directory', LI.Path, PI, True) then
     begin
       LbInfo := Editor.FindChildByTag<TLabel>(CHANGE_PLACE_INFO);
       LbInfo.Caption := PI.Path;

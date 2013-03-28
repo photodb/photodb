@@ -19,17 +19,17 @@ uses
   Vcl.ExtCtrls,
   Vcl.AppEvnts,
 
+  Dmitry.Controls.Base,
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WatermarkedEdit,
+
+  UnitDBDeclare,
+
   uMemory,
   uDBForm,
   uFormInterfaces,
   uGraphicUtils,
-  uVCLHelpers,
-
-  UnitDBDeclare,
-
-  Dmitry.Controls.Base,
-  Dmitry.Controls.WebLink,
-  Dmitry.Controls.WatermarkedEdit;
+  uVCLHelpers;
 
 type
   TAniDirection = (adVert, adHor);
@@ -56,7 +56,9 @@ type
     WlApplyChanges: TWebLink;
     WlCancelChanges: TWebLink;
     WlRemove: TWebLink;
-    BvSeparator: TBevel;
+    BvActionSeparator: TBevel;
+    PnTop: TPanel;
+    BvEditSeparator: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormDestroy(Sender: TObject);
@@ -113,6 +115,7 @@ type
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
     function GetDataList: TList<TDataObject>;
     function GetEditorData: TDataObject;
+    function GetTopPanel: TPanel;
     procedure ApplyChanges;
   end;
 
@@ -318,6 +321,13 @@ begin
 
   FData := Data;
 
+  FEditor.SetForm(Self);
+  if PnTop.ControlCount = 0 then
+  begin
+    PnTop.Height := 0;
+    PnTop.Hide;
+  end;
+
   WlApplyChanges.RefreshBuffer(True);
   WlCancelChanges.RefreshBuffer(True);
   WlRemove.RefreshBuffer(True);
@@ -410,6 +420,11 @@ end;
 function TFormLinkItemSelector.GetFormID: string;
 begin
   Result := 'LinkListEditor';
+end;
+
+function TFormLinkItemSelector.GetTopPanel: TPanel;
+begin
+  Result := PnTop;
 end;
 
 procedure TFormLinkItemSelector.InterfaceDestroyed;
@@ -508,7 +523,7 @@ begin
         WL := TWebLink.Create(Self);
         WL.Parent := PnMain;
         WL.Left := LinkLeft;
-        WL.Top := BvSeparator.Top + PaddingTop;
+        WL.Top := BvActionSeparator.Top + PaddingTop;
         WL.Anchors := [akLeft, akBottom];
         WL.Text := 'Add new';
         WL.OnClick := WlAddElementsClick;
@@ -553,10 +568,14 @@ begin
     AnimationInfo.Direction := Direction;
     AnimationInfo.Options := Options;
 
+    AnimationInfo.EndPosition := Position;
     if Control is TForm then
     begin
       if AnimationInfo.Direction = adVert then
+      begin
+        AnimationInfo.EndPosition := Position + PnTop.Height;
         AnimationInfo.StartPosition := Control.ClientHeight;
+      end;
       if AnimationInfo.Direction = adHor then
         AnimationInfo.StartPosition := Control.ClientWidth;
     end else
@@ -566,7 +585,6 @@ begin
       if AnimationInfo.Direction = adHor then
         AnimationInfo.StartPosition := Control.Left;
     end;
-    AnimationInfo.EndPosition := Position;
     AnimationInfo.TillTime := IncMilliSecond(Now, AnimationDurationMs);
     FAnimations.Add(AnimationInfo);
 
@@ -576,7 +594,7 @@ begin
     if Control is TForm then
     begin
       if Direction = adVert then
-        Control.ClientHeight := Position;
+        Control.ClientHeight := Position + PnTop.Height;
       if Direction = adHor then
         Control.ClientWidth := Position;
     end else
@@ -722,12 +740,15 @@ begin
   PnEditorPanel.Tag := NativeInt(FEditData);
   PnEditorPanel.HandleNeeded;
   PnEditorPanel.AutoSize := True;
-  FEditor.SetForm(Self);
   FEditor.CreateEditorForItem(Self, FData[FEditIndex], PnEditorPanel);
   PnEditorPanel.Left := 8;
   PnEditorPanel.Top := PaddingTop + LinkHeight + LinksDy;
 
-  ToWidth := PnEditorPanel.Left + PnEditorPanel.Width + PaddingTop * 2;
+  if PnTop.Visible then
+    ToWidth := ClientWidth
+  else
+    ToWidth := PnEditorPanel.Left + PnEditorPanel.Width + PaddingTop * 2;
+
   ToHeight := PnEditorPanel.Top + PnEditorPanel.Height + PaddingTop + WlApplyChanges.Height + PaddingTop + BtnClose.Height + PaddingTop;
   MoveControlTo(Self, ToWidth, adHor);
   MoveControlTo(Self, ToHeight, adVert);
@@ -740,21 +761,22 @@ begin
   for I := 0 to FLabels.Count - 1 do
     MoveControlTo(FLabels[I], ToWidth, adHor);
 
-  MoveControlTo(BvSeparator, ToWidth, adHor);
+  MoveControlTo(BvActionSeparator, ToWidth, adHor);
 
   for WL in FActionLinks do
     MoveControlTo(WL, ToHeight, adVert);
 
-  MoveControlTo(WlApplyChanges, ToHeight - BtnSave.Height - WlApplyChanges.Height - PaddingTop * 2, adVert);
-  MoveControlTo(WlCancelChanges, ToHeight - BtnSave.Height - WlCancelChanges.Height - PaddingTop * 2, adVert);
-  MoveControlTo(WlRemove, ToHeight - BtnSave.Height - WlRemove.Height - PaddingTop * 2, adVert);
+  MoveControlTo(BvEditSeparator, PnEditorPanel.Height - BvEditSeparator.Height, adVert);
+  MoveControlTo(WlApplyChanges,  ToHeight + PnTop.Height - BtnSave.Height - WlApplyChanges.Height  - PaddingTop * 2, adVert);
+  MoveControlTo(WlCancelChanges, ToHeight + PnTop.Height - BtnSave.Height - WlCancelChanges.Height - PaddingTop * 2, adVert);
+  MoveControlTo(WlRemove,        ToHeight + PnTop.Height - BtnSave.Height - WlRemove.Height        - PaddingTop * 2, adVert);
 
   PnEditorPanel.Show;
 end;
 
 procedure TFormLinkItemSelector.SwitchToListMode;
 var
-  I: Integer;
+  I, ActionsTop: Integer;
   ToWidth, ToHeight, Left: Integer;
   WL: TWebLink;
 begin
@@ -779,7 +801,11 @@ begin
     MoveControlToIndex(FLabels[I], FLabels[I].Tag);
     MoveControlTo(FLabels[I], Left, adHor);
   end;
-  MoveControlTo(BvSeparator, PaddingTop, adHor);
+
+  ActionsTop := (ToHeight - ClientHeight) + BtnClose.Top - FActionLinks[0].Height - PaddingTop + 2;
+
+  MoveControlTo(BvActionSeparator, PaddingTop, adHor);
+  MoveControlTo(BvActionSeparator, ActionsTop - 3, adVert);
 
   Left := PaddingTop;
   for WL in FActionLinks do
@@ -788,13 +814,14 @@ begin
     MoveControlTo(WL, Left, adHor);
     Left := Left + WL.Width + PaddingTop;
   end;
-  for WL in FActionLinks do
-    MoveControlTo(WL, (ToHeight - ClientHeight) + BtnClose.Top - WL.Height - PaddingTop + 2, adVert);
 
+  for WL in FActionLinks do
+    MoveControlTo(WL, ActionsTop, adVert);
+
+  MoveControlTo(BvEditSeparator, ToHeight, adVert);
   MoveControlTo(WlApplyChanges, ToHeight, adVert);
   MoveControlTo(WlCancelChanges, ToHeight, adVert);
   MoveControlTo(WlRemove, ToHeight, adVert);
-
 end;
 
 procedure TFormLinkItemSelector.WlApplyChangesClick(Sender: TObject);

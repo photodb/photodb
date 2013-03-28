@@ -61,6 +61,7 @@ type
     FImageList: TBitmapImageList;
     FBlockMouseMove: Boolean;
     FPopupItem: TPathItem;
+    FOnlyFileSystem: Boolean;
     procedure LoadBitmaps;
     procedure StartControl;
     procedure InternalSelectNode(Node: PVirtualNode);
@@ -91,6 +92,7 @@ type
     property OnGetPopupMenu;
     property OnKeyAction;
     property PopupItem: TPathItem read FPopupItem;
+    property OnlyFileSystem: Boolean read FOnlyFileSystem write FOnlyFileSystem default False;
   end;
 
 {$R TreeView.res}
@@ -300,6 +302,7 @@ constructor TPathProvideTreeView.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  FOnlyFileSystem := False;
   FPopupItem := nil;
   FOnSelectPathItem := nil;
   FStartPathItem := nil;
@@ -711,6 +714,7 @@ begin
     var
       Home: THomeItem;
       Roots: TPathItemCollection;
+      Options: Integer;
     begin
       CoInitialize(nil);
       try
@@ -718,7 +722,11 @@ begin
         try
           Roots := TPathItemCollection.Create;
           try
-            Home.Provider.FillChildList(Thread, Home, Roots, PATH_LOAD_DIRECTORIES_ONLY or PATH_LOAD_FOR_IMAGE_LIST or PATH_LOAD_CHECK_CHILDREN, 16, 2,
+            Options := PATH_LOAD_DIRECTORIES_ONLY or PATH_LOAD_FOR_IMAGE_LIST or PATH_LOAD_CHECK_CHILDREN;
+            if FOnlyFileSystem then
+              Options := Options or PATH_LOAD_ONLY_FILE_SYSTEM;
+
+            Home.Provider.FillChildList(Thread, Home, Roots, Options, 16, 2,
               procedure(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean)
               begin
                 TThread.Synchronize(nil,
@@ -800,6 +808,7 @@ begin
       Info: TLoadChildsInfo;
       ParentItem: TPathItem;
       IsFirstItem: Boolean;
+      Options: Integer;
     begin
       CoInitialize(nil);
       try
@@ -812,7 +821,12 @@ begin
             //copy item because this item could be freed on form close
             ParentItem := Info.Data.Data.Copy;
             try
-              ParentItem.Provider.FillChildList(Thread, ParentItem, Roots, PATH_LOAD_DIRECTORIES_ONLY or PATH_LOAD_FOR_IMAGE_LIST or PATH_LOAD_CHECK_CHILDREN, 16, 10,
+
+              Options := PATH_LOAD_DIRECTORIES_ONLY or PATH_LOAD_FOR_IMAGE_LIST or PATH_LOAD_CHECK_CHILDREN;
+              if FOnlyFileSystem then
+                Options := Options or PATH_LOAD_ONLY_FILE_SYSTEM;
+
+              ParentItem.Provider.FillChildList(Thread, ParentItem, Roots, Options, 16, 10,
                 procedure(Sender: TObject; Item: TPathItem; CurrentItems: TPathItemCollection; var Break: Boolean)
                 begin
                   Thread.Synchronize(nil,

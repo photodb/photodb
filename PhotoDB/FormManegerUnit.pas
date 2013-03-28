@@ -210,7 +210,6 @@ begin
 
   if AnsiUpperCase(ParamStr1) <> '/EXPLORER' then
   begin
-    TW.I.Start('CheckFileExistsWithMessageEx - ParamStr1');
     if IsFile(ParamStr1) and IsGraphicFile(ParamStr1) then
     begin
       TW.I.Start('RUN TViewer');
@@ -685,18 +684,13 @@ begin
   FLockCleaning := True;
   try
 
-    try
-      TW.I.Start('FM -> InitializeDolphinDB');
-      if FolderView then
-      begin
-        Dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
+    TW.I.Start('FM -> InitializeDolphinDB');
+    if FolderView then
+    begin
+      dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
 
-        if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
-          Dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
-      end;
-    except
-      on E: Exception do
-        EventLog(':TFormManager::FormCreate() throw exception: ' + E.message);
+      if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
+        dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
     end;
 
     TW.I.Start('FM -> SetTimer');

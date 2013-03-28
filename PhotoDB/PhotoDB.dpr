@@ -79,7 +79,6 @@ uses
   UnitDirectXSlideShowCreator in 'Threads\UnitDirectXSlideShowCreator.pas',
   UnitViewerThread in 'Threads\UnitViewerThread.pas',
   UnitInternetUpdate in 'Threads\UnitInternetUpdate.pas',
-  UnitRestoreTableThread in 'Threads\UnitRestoreTableThread.pas',
   UnitWindowsCopyFilesThread in 'Threads\UnitWindowsCopyFilesThread.pas',
   UnitBackUpTableInCMD in 'Threads\UnitBackUpTableInCMD.pas',
   ConvertDBThreadUnit in 'Threads\ConvertDBThreadUnit.pas',
@@ -87,7 +86,6 @@ uses
   UnitPropertyLoadGistogrammThread in 'Threads\UnitPropertyLoadGistogrammThread.pas',
   UnitRefreshDBRecordsThread in 'Threads\UnitRefreshDBRecordsThread.pas',
   UnitCryptingImagesThread in 'Threads\UnitCryptingImagesThread.pas',
-  UnitFileExistsThread in 'Threads\UnitFileExistsThread.pas',
   UnitSlideShowUpdateInfoThread in 'Threads\UnitSlideShowUpdateInfoThread.pas',
   UnitCDExportThread in 'Threads\UnitCDExportThread.pas',
   GraphicEx in 'External\Formats\GraphicEx\GraphicEx.pas',
@@ -397,7 +395,8 @@ uses
   uSiteUtils in 'Units\uSiteUtils.pas',
   uTranslateUtils in 'Units\uTranslateUtils.pas',
   uDialogUtils in 'Units\uDialogUtils.pas',
-  uFormUpdateStatus in 'uFormUpdateStatus.pas' {FormUpdateStatus};
+  uFormUpdateStatus in 'uFormUpdateStatus.pas' {FormUpdateStatus},
+  uLinkListEditorUpdateDirectories in 'Units\ListEditors\uLinkListEditorUpdateDirectories.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

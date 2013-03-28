@@ -84,15 +84,13 @@ type
   private
     FPath: string;
     FName: string;
-    FIcon: string;
     FSortOrder: Integer;
   public
-    constructor Create(Path, Name, Icon: string; SortOrder: Integer);
+    constructor Create(Path, Name: string; SortOrder: Integer);
     function Clone: TDataObject; override;
     procedure Assign(Source: TDataObject); override;
     property Path: string read FPath write FPath;
     property Name: string read FName write FName;
-    property Icon: string read FIcon write FIcon;
     property SortOrder: Integer read FSortOrder write FSortOrder;
   end;
 
@@ -194,6 +192,7 @@ type
 
 function UpdaterStorage: TUpdaterStorage;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
+procedure FillDatabaseDirectories(FolderList: TList<TDatabaseDirectory>);
 
 implementation
 
@@ -260,14 +259,12 @@ begin
         SortOrder := 0;
         if Reg.ValueExists('Path') then
           FPath := Reg.ReadString('Path');
-        if Reg.ValueExists('Icon') then
-          FIcon := Reg.ReadString('Icon');
         if Reg.ValueExists('SortOrder') then
           SortOrder := Reg.ReadInteger('SortOrder');
 
         if (S[I] <> '') and (FPath <> '') then
         begin
-          DD := TDatabaseDirectory.Create(S[I], FPath, FIcon, SortOrder);
+          DD := TDatabaseDirectory.Create(S[I], FPath, SortOrder);
           FolderList.Add(DD);
         end;
       end;
@@ -278,7 +275,7 @@ begin
     F(Reg);
   end;
 
-  DD := TDatabaseDirectory.Create('d:\dmitry\my pictures\photoes', 'TEST', '', 0);
+  DD := TDatabaseDirectory.Create('d:\dmitry\my pictures\photoes', 'TEST', 0);
   //DD := TDatabaseDirectory.Create('D:\dmitry\my pictures\photoes', 'TEST', '', 0);
   FolderList.Add(DD);
 
@@ -386,20 +383,18 @@ begin
   DD := Source as TDatabaseDirectory;
   Self.Path := DD.Path;
   Self.Name := DD.Name;
-  Self.Icon := DD.Icon;
   Self.SortOrder := DD.SortOrder;
 end;
 
 function TDatabaseDirectory.Clone: TDataObject;
 begin
-  Result := TDatabaseDirectory.Create(Path, Name, Icon, SortOrder);
+  Result := TDatabaseDirectory.Create(Path, Name, SortOrder);
 end;
 
-constructor TDatabaseDirectory.Create(Path, Name, Icon: string; SortOrder: Integer);
+constructor TDatabaseDirectory.Create(Path, Name: string; SortOrder: Integer);
 begin
   Self.Path := Path;
   Self.Name := Name;
-  Self.Icon := Icon;
   Self.SortOrder := SortOrder;
 end;
   

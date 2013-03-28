@@ -144,7 +144,6 @@ begin
   FCurrentFileName := '';
   FHiddenByUser := False;
   DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
-
 end;
 
 procedure TFormUpdateStatus.FormDestroy(Sender: TObject);

@@ -3,13 +3,16 @@ unit uResources;
 interface
 
 uses
-  Windows,
+  Winapi.Windows,
   Generics.Collections,
-  SysUtils,
-  Classes,
-  Graphics,
-  JPEG,
-  pngImage,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Imaging.JPEG,
+  Vcl.Imaging.pngImage,
+
+  Dmitry.Imaging.JngImage,
+
   uMemory;
 
 type
@@ -18,15 +21,16 @@ type
   end;
 
 function GetFolderPicture: TPNGImage;
-function GetLogoPicture: TPNGImage;
+function GetLogoPicture: TJngImage;
 function GetExplorerBackground: TPNGImage;
-function GetLoadingImage: TPNGImage;
+function GetLoadingImage: TJngImage;
 function GetActivationImage: TPNGImage;
 function GetPrinterPatternImage: TJpegImage;
 function GetBigPatternImage: TJpegImage;
 function GetFilmStripImage: TPNGImage;
 function GetPathSeparatorImage: TBitmap;
 function GetNoHistogramImage: TPNGImage;
+function GetCollectionSyncImage: TJngImage;
 
 {$R MAIN.res}
 {$R Logo.res}
@@ -42,6 +46,7 @@ function GetNoHistogramImage: TPNGImage;
 {$R NoHistogram.res}
 {$R SampleDB.res}
 {$R Import.res}
+{$R CollectionSync.res}
 
 //Icons
 {$R icons.res}
@@ -116,14 +121,14 @@ begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('EXPLORERBACKGROUND');
 end;
 
-function GetLoadingImage: TPNGImage;
+function GetLoadingImage: TJngImage;
 begin
-  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('LOADING');
+  Result := TResourceUtils.LoadGraphicFromRES<TJngImage>('LOADING');
 end;
 
-function GetLogoPicture: TPNGImage;
+function GetLogoPicture: TJngImage;
 begin
-  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('LOGO');
+  Result := TResourceUtils.LoadGraphicFromRES<TJngImage>('LOGO');
 end;
 
 function GetActivationImage: TPNGImage;
@@ -154,6 +159,11 @@ end;
 function GetNoHistogramImage: TPNGImage;
 begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('NO_HISTOGRAM');
+end;
+
+function GetCollectionSyncImage: TJngImage;
+begin
+  Result := TResourceUtils.LoadGraphicFromRES<TJngImage>('COLLECTION_SYNC');
 end;
 
 end.

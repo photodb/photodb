@@ -45,7 +45,7 @@ type
     function GetFormID: string; override;
   public
     { Public declarations }
-    function Execute(Title, StartPath: string; out PathItem: TPathItem): Boolean;
+    function Execute(Title, StartPath: string; out PathItem: TPathItem; AllowVirtualItems: Boolean): Boolean;
   end;
 
 implementation
@@ -67,12 +67,20 @@ begin
 end;
 
 function TFormSelectLocation.Execute(Title, StartPath: string;
-  out PathItem: TPathItem): Boolean;
+  out PathItem: TPathItem; AllowVirtualItems: Boolean): Boolean;
 var
   StartItem: TPathItem;
 begin
   PathItem := nil;
 
+  FShellTreeView := TPathProvideTreeView.Create(Self);
+  FShellTreeView.Parent := PnExplorer;
+  FShellTreeView.Align := AlClient;
+  FShellTreeView.OnlyFileSystem := True;
+  FShellTreeView.LoadHomeDirectory(Self);
+  FShellTreeView.OnSelectPathItem := PathTreeViewChange;
+
+  PePath.OnlyFileSystem := True;
   StartItem := PathProviderManager.CreatePathItem(StartPath);
   try
     if StartItem <> nil then
@@ -103,12 +111,6 @@ end;
 
 procedure TFormSelectLocation.FormCreate(Sender: TObject);
 begin
-  FShellTreeView := TPathProvideTreeView.Create(Self);
-  FShellTreeView.Parent := PnExplorer;
-  FShellTreeView.Align := AlClient;
-  FShellTreeView.LoadHomeDirectory(Self);
-  FShellTreeView.OnSelectPathItem := PathTreeViewChange;
-
   BtnCancel.Caption := L('Cancel');
   BtnOk.Caption := L('Ok');
 end;

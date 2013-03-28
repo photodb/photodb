@@ -53,17 +53,6 @@ begin
       CMDForm.BackUpTable;
       R(CMDForm);
     end;
-
-  if not FolderView and not DBTerminating then
-    if Settings.ReadBool('StartUp', 'Restore', False) then
-    begin
-      CloseSplashWindow;
-      Settings.WriteBool('StartUp', 'Restore', False);
-      EventLog('Restoring Table...' + Settings.ReadString('StartUp', 'RestoreFile'));
-      Application.CreateForm(TCMDForm, CMDForm);
-      CMDForm.RestoreTable(Settings.ReadString('StartUp', 'RestoreFile'));
-      R(CMDForm);
-    end;
 end;
 
 class procedure TCommandLine.ProcessUserCommandLine;

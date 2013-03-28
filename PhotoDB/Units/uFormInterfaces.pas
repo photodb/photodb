@@ -176,7 +176,7 @@ type
 
   ISelectLocationForm = interface(IFormInterface)
     ['{B3298299-4966-42ED-93F4-98C5790D1675}']
-    function Execute(Title, StartPath: string; out PathItem: TPathItem): Boolean;
+    function Execute(Title, StartPath: string; out PathItem: TPathItem; AllowVirtualItems: Boolean): Boolean;
   end;
 
   TListElementType = (leWebLink, leInfoLabel);
@@ -202,9 +202,11 @@ type
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
     function GetDataList: TList<TDataObject>;
     function GetEditorData: TDataObject;
+    function GetTopPanel: TPanel;
     procedure ApplyChanges;
     property DataList: TList<TDataObject> read GetDataList;
     property EditorData: TDataObject read GetEditorData;
+    property TopPanel: TPanel read GetTopPanel;
   end;
 
   IFormUpdateStatus = interface(IFormInterface)

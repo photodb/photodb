@@ -3,15 +3,18 @@ unit uSplashThread;
 interface
 
 uses
-   Classes,
-   Windows,
-   Messages,
-   Graphics,
+   System.Classes,
+   Winapi.Windows,
+   Winapi.Messages,
+   Vcl.Graphics,
+   Vcl.Imaging.pngimage,
+
+   Dmitry.Imaging.JngImage,
+
    uTime,
    uPngUtils,
    uResources,
    uMemory,
-   pngimage,
    uFormUtils,
    uAppUtils,
    uRuntime,
@@ -23,7 +26,7 @@ type
     procedure Execute; override;
   end;
 
-procedure SetSplashProgress(ProgressValue : Byte);
+procedure SetSplashProgress(ProgressValue: Byte);
 procedure CloseSplashWindow;
 
 implementation
@@ -49,7 +52,7 @@ begin
     SplashThread.Terminate;
 end;
 
-procedure SetSplashProgress(ProgressValue : Byte);
+procedure SetSplashProgress(ProgressValue: Byte);
 begin
   hSplashProgress := ProgressValue;
 end;
@@ -59,10 +62,9 @@ begin
   RenderForm(hSplashWnd, LoadingImage, 220, False);
 end;
 
-function SplashWindowProc(hWnd : HWND; uMsg : UINT; wParam : WPARAM;
-                    lParam : LPARAM) : LRESULT; stdcall;
+function SplashWindowProc(hWnd: HWND; uMsg: UINT; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
 var
-  PNGLogo: TPNGImage;
+  JngLogo: TJngImage;
 begin
   case uMsg of
     WM_DESTROY:
@@ -74,14 +76,14 @@ begin
       end;
     WM_CREATE:
       begin
-        PNGLogo := GetLoadingImage;
+        JngLogo := GetLoadingImage;
         try
           LoadingImage := TBitmap.Create;
           LoadingImage.PixelFormat := pf32bit;
           LoadingImage.AlphaFormat := afDefined;
-          AssignPNG(LoadingImage, PNGLogo);
+          AssignBitmap(LoadingImage, JngLogo);
         finally
-          F(PNGLogo);
+          F(JngLogo);
         end;
       end;
     WM_PAINT:
@@ -91,6 +93,7 @@ begin
     WM_LBUTTONDOWN:
       begin
         MouseCaptured := True;
+        SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
       end;
     WM_LBUTTONUP:
       begin

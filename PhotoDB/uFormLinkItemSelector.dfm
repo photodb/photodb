@@ -27,7 +27,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
   TextHeight = 18
   object PnMain: TPanel
     Left = 0
-    Top = 0
+    Top = 10
     Width = 430
     Height = 157
     Align = alTop
@@ -38,10 +38,11 @@ object FormLinkItemSelector: TFormLinkItemSelector
     ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
+    ExplicitTop = 0
     DesignSize = (
       430
       157)
-    object BvSeparator: TBevel
+    object BvActionSeparator: TBevel
       Left = 8
       Top = 126
       Width = 414
@@ -59,6 +60,16 @@ object FormLinkItemSelector: TFormLinkItemSelector
       ParentBackground = False
       ParentDoubleBuffered = False
       TabOrder = 0
+      DesignSize = (
+        169
+        50)
+      object BvEditSeparator: TBevel
+        Left = 0
+        Top = 45
+        Width = 165
+        Height = 2
+        Anchors = [akLeft, akTop, akRight]
+      end
     end
   end
   object BtnClose: TButton
@@ -141,12 +152,24 @@ object FormLinkItemSelector: TFormLinkItemSelector
     StretchImage = True
     CanClick = True
   end
+  object PnTop: TPanel
+    Left = 0
+    Top = 0
+    Width = 430
+    Height = 10
+    Align = alTop
+    BevelOuter = bvNone
+    FullRepaint = False
+    ParentBackground = False
+    TabOrder = 6
+    ExplicitLeft = 8
+  end
   object ImPlaces: TImageList
     ColorDepth = cd32Bit
     Left = 56
     Top = 8
     Bitmap = {
-      494C010105004C00780010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010105009400940010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000800000008000000000000000

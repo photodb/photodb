@@ -5,6 +5,7 @@ interface
 uses
   Windows,
   Messages,
+  ShellApi,
   SysUtils,
   Classes,
   Graphics,
@@ -20,6 +21,7 @@ uses
   ComCtrls,
 
   Dmitry.Utils.System,
+  Dmitry.Imaging.JngImage,
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
   Dmitry.Controls.LoadingSign,
@@ -32,7 +34,6 @@ uses
   uDBForm,
   UnitInternetUpdate,
   uInternetUtils,
-  ShellApi,
   uMobileUtils,
   uFormInterfaces;
 
@@ -94,7 +95,7 @@ end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 var
-  Logo: TPngImage;
+  Logo: TJngImage;
 begin
   LoadLanguage;
   LnkGoToWebSite.LoadImage;
