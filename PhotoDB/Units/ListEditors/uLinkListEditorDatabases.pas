@@ -87,7 +87,7 @@ begin
   try
     Data := TList<TDataObject>.Create;
     try
-      ReadDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
+      ReadDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile, True);
 
       if LinkItemSelectForm.Execute(480, TA('Directories synchronization with collection', 'CollectionSettings'), Data, Editor) then
         SaveDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);

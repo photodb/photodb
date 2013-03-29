@@ -194,7 +194,7 @@ type
 
 function UpdaterStorage: TUpdaterStorage;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
-procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
+procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string; AddDefaultPlaces: Boolean);
 procedure SaveDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
 
 implementation
@@ -229,7 +229,7 @@ begin
   Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.errors.cache';
 end;
 
-procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
+procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string; AddDefaultPlaces: Boolean);
 var
   Reg: TBDRegistry;
   DBPrefix, FName, FPath, FIcon: string;
@@ -276,7 +276,7 @@ begin
     F(Reg);
   end;
 
-  if FolderList.Count = 0 then
+  if (FolderList.Count = 0) and AddDefaultPlaces then
   begin
     DD := TDatabaseDirectory.Create(GetMyPicturesPath, TA('My Pictures', 'Explorer'), 0);
     FolderList.Add(DD);
@@ -517,7 +517,7 @@ begin
         //list of directories to scan
         FolderList := TList<TDatabaseDirectory>.Create;
         try
-          ReadDatabaseDirectories(FolderList, FCollectionFile);
+          ReadDatabaseDirectories(FolderList, FCollectionFile, False);
           for DD in FolderList do
             Directories.Enqueue(DD.Path);
 
@@ -714,7 +714,7 @@ begin
   //list of directories to watch
   FolderList := TList<TDatabaseDirectory>.Create;
   try
-    ReadDatabaseDirectories(FolderList, FCollectionFile);
+    ReadDatabaseDirectories(FolderList, FCollectionFile, False);
     for DD in FolderList do
     begin
       Watch := TWachDirectoryClass.Create;

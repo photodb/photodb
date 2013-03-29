@@ -3,8 +3,9 @@ unit UnitLoadCRCCheckThread;
 interface
 
 uses
-  Windows,
-  Classes,
+  Winapi.Windows,
+  System.Classes,
+  Vcl.Forms,
 
   UnitDBCommon,
 
@@ -13,6 +14,7 @@ uses
   uRuntime,
   uSplashThread,
   uShellIntegration,
+  uVCLHelpers,
   uConstants;
 
 type
@@ -47,7 +49,7 @@ begin
     if not Assigned(ValidateProc) or not ValidateProc(PChar(ParamStr(0))) then
     begin
       CloseSplashWindow;
-      MessageBoxDB(GetActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!', 'System'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+      MessageBoxDB(Screen.ActiveFormHandle, L('Application is damaged! Possible it is infected by a virus!', 'System'), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
       DBTerminating := True;
     end;
     {$ENDIF}

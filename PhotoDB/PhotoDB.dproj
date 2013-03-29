@@ -251,14 +251,8 @@
         <DCCReference Include="Printer\PrinterProgress.pas">
             <Form>FormPrinterProgress</Form>
         </DCCReference>
-        <DCCReference Include="UnitFormManagerHint.pas">
-            <Form>FormManagerHint</Form>
-        </DCCReference>
         <DCCReference Include="Units\UnitActionsForm.pas">
             <Form>ActionsForm</Form>
-        </DCCReference>
-        <DCCReference Include="UnitImportingImagesForm.pas">
-            <Form>FormImportingImages</Form>
         </DCCReference>
         <DCCReference Include="UnitConvertDBForm.pas">
             <Form>FormConvertingDB</Form>
@@ -448,10 +442,6 @@
         <DCCReference Include="Units\uCryptUtils.pas"/>
         <DCCReference Include="Units\uResourceUtils.pas"/>
         <DCCReference Include="Units\uMobileUtils.pas"/>
-        <DCCReference Include="Convertation\uFrmConvertationLanding.pas">
-            <Form>FrmConvertationLanding</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="Convertation\uFrmConvertationSettings.pas">
             <Form>FrmConvertationSettings</Form>
             <DesignClass>TFrame</DesignClass>
@@ -482,10 +472,6 @@
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Threads\uStenoLoadImageThread.pas"/>
-        <DCCReference Include="ImportImages\uFrmImportImagesLanding.pas">
-            <Form>FrmImportImagesLanding</Form>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="Units\uIME.pas"/>
         <DCCReference Include="Units\uExifUtils.pas"/>
         <DCCReference Include="Threads\uExifPatchThread.pas"/>

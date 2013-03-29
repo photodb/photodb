@@ -49,6 +49,7 @@ uses
   uActivationUtils,
   {$ENDIF}
   uProgramStatInfo,
+  uLinkListEditorDatabases,
   uDatabaseDirectoriesUpdater,
   uFormInterfaces;
 
@@ -122,7 +123,6 @@ uses
   uManagerExplorer,
   UnitInternetUpdate,
   UnitConvertDBForm,
-  UnitImportingImagesForm,
   uExifPatchThread;
 
 {$R *.dfm}
@@ -625,7 +625,7 @@ begin
       begin
         Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
         if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
-          ImportImages(Dbname);
+          UpdateCurrentCollectionDirectories(Dbname);
       end;
     end;
 
@@ -673,7 +673,6 @@ end;
 
 procedure TFormManager.Load;
 var
-  DBFile: TDatabaseInfo;
   DBVersion: Integer;
   StringDBCheckKey: string;
 

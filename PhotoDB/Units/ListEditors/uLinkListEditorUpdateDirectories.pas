@@ -21,7 +21,7 @@ uses
   UnitDBDeclare,
 
   uMemory,
-  uDBForm,       uPNGUtils,
+  uDBForm,
   uVCLHelpers,
   uTranslate,
   uFormInterfaces,

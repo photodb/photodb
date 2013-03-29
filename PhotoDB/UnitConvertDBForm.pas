@@ -78,7 +78,6 @@ implementation
 
 uses
   UnitDBKernel,
-  uFrmConvertationLanding,
   uFrmConvertationSettings,
   uFrmConvertationProgress;
 
@@ -107,7 +106,6 @@ begin
 
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;
-  FWizard.AddStep(TFrmConvertationLanding);
   FWizard.AddStep(TFrmConvertationSettings);
   FWizard.AddStep(TFrmConvertationProgress);
   FWizard.Start(Self, 120, 8);
