@@ -7,15 +7,19 @@ uses
   Windows,
   Math,
   SysUtils,
+
   FreeImage, 
   FreeBitmap,
+  GraphicCrypt,
+
+  Dmitry.Utils.System,
+
   uFreeImageIO,
   uMemory,
   uExifUtils,
-  Dmitry.Utils.System,
   uFIRational,
   uTranslate,
-  GraphicCrypt;
+  uSessionPasswords;
 
 type
   TRAWExifRecord = class(TObject)
@@ -1165,7 +1169,7 @@ begin
     begin
       Stream := TMemoryStream.Create;
       try
-        Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+        Password := SessionPasswords.FindForFile(FileName);
         if Password <> '' then
         begin
           if DecryptFileToStream(FileName, Password, Stream) then

@@ -129,8 +129,6 @@ object CryptImageForm: TCryptImageForm
     Cursor = crHandPoint
     Text = 'BlowFish - 56'
     ImageIndex = 0
-    IconWidth = 16
-    IconHeight = 16
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False

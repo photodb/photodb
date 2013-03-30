@@ -11,11 +11,11 @@ uses
   Dmitry.CRC32,
 
   UnitDBDeclare,
-  UnitDBKernel,
 
   uDBBaseTypes,
   uMemory,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords;
 
 type
   TPasswordKeeper = class(TObject)
@@ -254,7 +254,7 @@ begin
       Password := RequestPasswordForm.ForManyFiles(FileList, PasswordCRC, Skip);
       if Password <> '' then
       begin
-        DBKernel.AddTemporaryPasswordInSession(Password);
+        SessionPasswords.AddForSession(Password);
 
         // moving from password list to OKpassword list FILES
         FileOkList := PasswordOKForRecords(Password);

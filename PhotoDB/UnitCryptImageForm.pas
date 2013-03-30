@@ -24,10 +24,10 @@ uses
   DECCipher,
 
   GraphicCrypt,
-  UnitDBKernel,
   UnitDBDeclare,
 
   uFormInterfaces,
+  uSessionPasswords,
   uConstants,
   uDBForm,
   uShellIntegration,
@@ -93,7 +93,7 @@ var
   ItemSelected: TArBoolean;
   Password: string;
 begin
-  Password := DBKernel.FindPasswordForCryptImageFile(Info[Info.Position].FileName);
+  Password := SessionPasswords.FindForFile(Info[Info.Position].FileName);
   if Password = '' then
     if FileExistsSafe(Info[Info.Position].FileName) then
       Password := RequestPasswordForm.ForImage(Info[Info.Position].FileName);
@@ -198,9 +198,9 @@ begin
 
   Password := EdPassword.Text;
   if CbSavePasswordForSession.Checked then
-    DBKernel.AddTemporaryPasswordInSession(Password);
+    SessionPasswords.AddForSession(Password);
   if CbSavePasswordPermanent.Checked then
-    DBKernel.SavePassToINIDirectory(Password);
+    SessionPasswords.SaveInSettings(Password);
   Close;
 end;
 

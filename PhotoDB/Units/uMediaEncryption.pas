@@ -3,10 +3,11 @@ unit uMediaEncryption;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  Registry,
+  Winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  System.Win.Registry,
+
   uConstants,
   uTransparentEncryption,
   uFormInterfaces,
@@ -16,7 +17,7 @@ uses
   uTranslate,
   uShellIntegration,
   uAssociations,
-  UnitDBKernel;
+  uSessionPasswords;
 
 type
   TMachineType = (mtUnknown, mt32Bit, mt64Bit, mtOther);
@@ -64,7 +65,7 @@ begin
 
   if ValidEnryptFileEx(FileName) then
   begin
-    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    Password := SessionPasswords.FindForFile(FileName);
 
     if (Password = '') then
       Password := RequestPasswordForm.ForImage(FileName);

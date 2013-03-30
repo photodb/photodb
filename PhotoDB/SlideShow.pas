@@ -94,7 +94,9 @@ uses
   uAnimationHelper,
   uImageZoomHelper,
   uPhotoShelf,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords,
+  uCollectionEvents;
 
 type
   TViewer = class(TViewerForm, IViewerForm, IImageSource, IFaceResultForm, ICurrentImageSource)
@@ -588,7 +590,7 @@ begin
   AddHiddenInfo1.ImageIndex := DB_IC_STENO;
   ExtractHiddenInfo1.ImageIndex := DB_IC_DESTENO;
 
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
   TW.I.Start('LoadLanguage');
   LoadLanguage;
 
@@ -1004,7 +1006,7 @@ begin
   FCurrentPage := 0;
   if SlideShowNow then
     if Item.Encrypted or ValidCryptGraphicFile(Item.FileName)  then
-      if DBKernel.FindPasswordForCryptImageFile(Item.FileName) = '' then
+      if SessionPasswords.FindForFile(Item.FileName) = '' then
         Exit;
   if not SlideShowNow then
     LoadImage_(Sender, False, Zoom, False)
@@ -1062,7 +1064,7 @@ end;
 procedure TViewer.FormDestroy(Sender: TObject);
 begin
   UnRegisterMainForm(Self);
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
 
   FSID := GetGUID;
   FForwardThreadSID := GetGUID;
@@ -3815,14 +3817,14 @@ begin
     if CurrentInfo.Count = 0 then
     begin
       Close;
-      DBKernel.DoIDEvent(Self, DeleteID, [EventID_Param_Delete], EventInfo);
+      CollectionEvents.DoIDEvent(Self, DeleteID, [EventID_Param_Delete], EventInfo);
       Exit;
     end;
     if CurrentFileNumber > CurrentInfo.Count - 1 then
       CurrentFileNumber := CurrentInfo.Count - 1;
 
     if Item.ID <> 0 then
-      DBKernel.DoIDEvent(Self, DeleteID, [EventID_Param_Delete], EventInfo);
+      CollectionEvents.DoIDEvent(Self, DeleteID, [EventID_Param_Delete], EventInfo);
     if CurrentInfo.Count < 2 then
     begin
       TbBack.Enabled := False;
@@ -3943,7 +3945,7 @@ begin
   begin
     SetRating(Item.ID, NewRating);
     EventInfo.Rating := NewRating;
-    DBKernel.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
+    CollectionEvents.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
   end else
   begin
     FileInfo := TDBPopupMenuInfoRecord.Create;
@@ -3975,13 +3977,13 @@ begin
     PhotoShelf.AddToShelf(Item.FileName);
     EventInfo.ID := 0;
     EventInfo.FileName := Item.FileName;
-    DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemAdded], EventInfo);
+    CollectionEvents.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemAdded], EventInfo);
   end else
   begin
     PhotoShelf.RemoveFromShelf(Item.FileName);
     EventInfo.ID := 0;
     EventInfo.FileName := Item.FileName;
-    DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemRemoved], EventInfo);
+    CollectionEvents.DoIDEvent(Self, 0, [EventID_ShelfChanged, EventID_ShelfItemRemoved], EventInfo);
   end;
 end;
 

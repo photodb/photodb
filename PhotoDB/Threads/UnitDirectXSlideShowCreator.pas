@@ -15,7 +15,6 @@ uses
 
   RAWImage,
   GraphicCrypt,
-  UnitDBKernel,
 
   uGraphicUtils,
   uMemory,
@@ -27,7 +26,8 @@ uses
   uBitmapUtils,
   uAnimatedJPEG,
   uProgramStatInfo,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uSessionPasswords;
 
 type
   TDirectXSlideShowCreator = class(TDirectXSlideShowCreatorCustomThread)
@@ -142,7 +142,7 @@ begin
   try
     if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
     begin
-      FilePassword := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+      FilePassword := SessionPasswords.FindForFile(FInfo.FileName);
       if FilePassword = '' then
         Exit;
     end;

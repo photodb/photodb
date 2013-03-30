@@ -15,7 +15,6 @@ uses
   UnitGroupsWork,
   uBitmapUtils,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -24,6 +23,7 @@ uses
   uShellIntegration,
   uDBForm,
   uFormInterfaces,
+  uCollectionEvents,
   uTranslate,
   uStringUtils,
   uJpegUtils;
@@ -148,11 +148,11 @@ begin
         begin
           UnitGroupsTools.DeleteGroup(Group);
           MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
-          DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
+          CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
           Result := True;
           Exit;
         end;
-        DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
+        CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
       end;
   finally
     FreeGroup(Group);
@@ -291,7 +291,7 @@ begin
 
       Item.GroupName := Options.NewName;
       EventInfo.Data := Item;
-      DBKernel.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
+      CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
 
     end;
   finally

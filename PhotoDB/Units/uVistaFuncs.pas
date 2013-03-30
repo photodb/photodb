@@ -31,8 +31,6 @@ procedure ExtendGlass(const AHandle: THandle; const AMargins: TRect);
 function CompositingEnabled: Boolean;
 function TaskDialog(Handle: THandle; AContent, ATitle, ADescription: string; Buttons, Icon: Integer): Integer;
 procedure SetVistaTreeView(const AHandle: THandle);
-function TaskDialogEx(Handle: THandle; AContent, ATitle, ADescription: string; Buttons, Icon: Integer;
-  NoVista: Boolean): Integer;
 
 function DoTaskMessageDlgPosHelpEx(const Instruction, Msg: string; DlgType: TMsgDlgType;
   Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer;
@@ -75,8 +73,8 @@ end;
 
 procedure AllowDragAndDrop;
 var
-  User32Handle : THandle;
-  ChangeWindowMessageFilter : TChangeWindowMessageFilter;
+  User32Handle: THandle;
+  ChangeWindowMessageFilter: TChangeWindowMessageFilter;
 
 const
    MSGFLT_ALLOW = 1;
@@ -476,8 +474,8 @@ begin
   Result := MessageDlgPosHelpEx(Msg, DlgType, Buttons, HelpCtx, -1, -1, '');
 end;
 
-function TaskDialogEx(Handle: THandle; AContent, ATitle, ADescription: string;
-  Buttons, Icon: Integer; NoVista: Boolean): Integer;
+function TaskDialog(Handle: THandle; AContent, ATitle, ADescription: string;
+  Buttons, Icon: Integer): Integer;
 var
   VerInfo: TOSVersioninfo;
   DLLHandle: THandle;
@@ -495,7 +493,7 @@ begin
   VerInfo.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
   GetVersionEx(verinfo);
 
-  if (verinfo.dwMajorVersion >= 6) and not NoVista and not TStyleManager.IsCustomStyleActive then
+  if (verinfo.dwMajorVersion >= 6) and not TStyleManager.IsCustomStyleActive then
   begin
     DLLHandle := LoadLibrary('comctl32.dll');
     if DLLHandle >= 32 then
@@ -557,11 +555,6 @@ begin
 
     Result := MessageDlgEx(AContent, DlgType, Btns, 0);
   end;
-end;
-
-function TaskDialog(Handle: THandle; AContent, ATitle,ADescription : string; Buttons,Icon: integer): integer;
-begin
-  Result := TaskDialogEx(Handle, AContent, ATitle, ADescription, Buttons, Icon, true);
 end;
 
 end.

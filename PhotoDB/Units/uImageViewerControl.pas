@@ -55,6 +55,7 @@ uses
   uFormCreatePerson,
   uFormSelectPerson,
   uFormInterfaces,
+  uCollectionEvents,
   uThemesUtils,
   uSettings,
   uExifInfo,
@@ -433,7 +434,7 @@ begin
 
   FItem := TDBPopupMenuInfoRecord.Create;
 
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TImageViewerControl.DblClick;
@@ -445,7 +446,7 @@ end;
 
 destructor TImageViewerControl.Destroy;
 begin
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
   F(FAnimatedImage);
   F(FAnimatedBuffer);
   F(FDrawImage);

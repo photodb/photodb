@@ -21,7 +21,6 @@ uses
   CCR.Exif,
 
   UnitGroupsWork,
-  UnitDBKernel,
   CommonDBSupport,
   UnitDBDeclare,
   GraphicCrypt,
@@ -50,6 +49,8 @@ uses
   uDBImageUtils,
   uCDMappingTypes,
   uDBForm,
+  uCollectionEvents,
+  uSessionPasswords,
   uDBGraphicTypes,
   uDBAdapter,
   uExifUtils;
@@ -58,10 +59,6 @@ type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
   TProgressValueHandler = procedure(Count: Integer) of object;
   TOnDBKernelEventProcedure = procedure(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
-
-procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
-procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory: string);
-procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
 
 procedure RenameFolderWithDB(CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
@@ -85,7 +82,6 @@ procedure SetRating(ID, Rating: Integer);
 procedure SetAttr(ID, Attr: Integer);
 
 function UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer): Boolean;
-function SelectDB(Caller: TDBForm; DB: string): Boolean;
 
 procedure ExecuteQuery(SQL: string);
 procedure GetFileListByMask(BeginFile, Mask: string;
@@ -170,124 +166,6 @@ begin
   ROT[DB_IMAGE_ROTATE_270, DB_IMAGE_ROTATE_270] := DB_IMAGE_ROTATE_180;
 
   Result := ROT[OldRotation, NewRotation];
-end;
-
-procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
-begin
-  if not DBKernel.TestDB(FileName) then
-    DBKernel.CreateDBbyName(FileName);
-
-  CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory);
-end;
-
-procedure CreateExampleGroups(FileName, IcoName, CurrentImagesDirectory : string);
-var
-  NewGroup: TGroup;
-  ImagesDir: string;
-begin
-  if not IsValidGroupsTableW(FileName) then
-  begin
-    ImagesDir := IncludeTrailingBackslash(CurrentImagesDirectory) + 'Images\';
-    if FileExists(ImagesDir + 'Me.jpg') then
-    begin
-      try
-        NewGroup.GroupName := GetWindowsUserName;
-        NewGroup.GroupCode := CreateNewGroupCode;
-        NewGroup.GroupImage := TJPEGImage.Create;
-        try
-          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Me.jpg');
-          NewGroup.GroupDate := Now;
-          NewGroup.GroupComment := '';
-          NewGroup.GroupFaces := '';
-          NewGroup.GroupAccess := 0;
-          NewGroup.GroupKeyWords := NewGroup.GroupName;
-          NewGroup.AutoAddKeyWords := True;
-          NewGroup.RelatedGroups := '';
-          NewGroup.IncludeInQuickList := True;
-          AddGroupW(NewGroup, FileName);
-        finally
-          NewGroup.GroupImage.Free;
-        end;
-      except
-        on E: Exception do
-          EventLog(':CreateExampleDB() throw exception: ' + E.message);
-      end;
-    end;
-  if FileExists(ImagesDir + 'Friends.jpg') then
-    begin
-      try
-        NewGroup.GroupName := TA('Friends', 'Setup');
-        NewGroup.GroupCode := CreateNewGroupCode;
-        NewGroup.GroupImage := TJPEGImage.Create;
-        try
-          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Friends.jpg');
-          NewGroup.GroupDate := Now;
-          NewGroup.GroupComment := '';
-          NewGroup.GroupFaces := '';
-          NewGroup.GroupAccess := 0;
-          NewGroup.GroupKeyWords := TA('Friends', 'Setup');
-          NewGroup.AutoAddKeyWords := True;
-          NewGroup.RelatedGroups := '';
-          NewGroup.IncludeInQuickList := True;
-          AddGroupW(NewGroup, FileName);
-        finally
-          NewGroup.GroupImage.Free;
-        end;
-      except
-        on E: Exception do
-          EventLog(':CreateExampleDB() throw exception: ' + E.message);
-      end;
-    end;
-    if FileExists(ImagesDir + 'Family.jpg') then
-    begin
-      try
-        NewGroup.GroupName := TA('Family', 'Setup');
-        NewGroup.GroupCode := CreateNewGroupCode;
-        NewGroup.GroupImage := TJPEGImage.Create;
-        try
-          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Family.jpg');
-          NewGroup.GroupDate := Now;
-          NewGroup.GroupComment := '';
-          NewGroup.GroupFaces := '';
-          NewGroup.GroupAccess := 0;
-          NewGroup.GroupKeyWords := TA('Family', 'Setup');
-          NewGroup.AutoAddKeyWords := True;
-          NewGroup.RelatedGroups := '';
-          NewGroup.IncludeInQuickList := True;
-          AddGroupW(NewGroup, FileName);
-        finally
-          NewGroup.GroupImage.Free;
-        end;
-      except
-        on E: Exception do
-          EventLog(':CreateExampleDB() throw exception: ' + E.message);
-      end;
-    end;
-  end;
-end;
-
-procedure GetValidMDBFilesInFolder(Dir: string; Init: Boolean; Res: TStrings);
-var
-  Found: Integer;
-  SearchRec: TSearchRec;
-  FE : Boolean;
-begin
-  Found := FindFirst(IncludeTrailingBackslash(Dir) + '*.photodb', FaAnyFile, SearchRec);
-  while Found = 0 do
-  begin
-    if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
-    begin
-      FE := (SearchRec.Attr and FaDirectory = 0);
-      if FE then
-      begin
-        if DBKernel.TestDB(Dir + SearchRec.name) then
-          Res.Add(Dir + SearchRec.name);
-      end else
-        GetValidMDBFilesInFolder(Dir + SearchRec.name, False, Res);
-    end;
-    Found := System.SysUtils.FindNext(SearchRec);
-  end;
-  System.SysUtils.FindClose(SearchRec);
 end;
 
 function RenameFileWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
@@ -517,7 +395,7 @@ begin
         EventInfo.Rotation := DB_IMAGE_ROTATE_180;
     end;
     SetRotate(ID, EventInfo.Rotation);
-    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
+    CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
 
@@ -538,7 +416,7 @@ begin
         EventInfo.Rotation := DB_IMAGE_ROTATE_0;
     end;
     SetRotate(ID, EventInfo.Rotation);
-    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
+    CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
 
@@ -559,7 +437,7 @@ begin
         EventInfo.Rotation := DB_IMAGE_ROTATE_90;
     end;
     SetRotate(ID, EventInfo.Rotation);
-    DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
+    CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
   end;
 end;
 
@@ -937,7 +815,7 @@ begin
               if Caller = nil then
                 Caller := TDBForm(Application.MainForm);
 
-              DBKernel.DoIDEvent(Caller, ID, EF, EventInfo);
+              CollectionEvents.DoIDEvent(Caller, ID, EF, EventInfo);
             end
           );
           UpdateImageThInLinks(DA.LongImageID, Res.ImTh);
@@ -1041,7 +919,7 @@ begin
     begin
       if GraphicCrypt.ValidCryptGraphicFile(FileName) then
       begin
-        Pass := DBKernel.FindPasswordForCryptImageFile(FileName);
+        Pass := SessionPasswords.FindForFile(FileName);
         if Pass = '' then
         begin
           Setlength(Result.Ids, 0);
@@ -1069,7 +947,7 @@ begin
       if ValidCryptBlobStreamJPG(FQuery.FieldByName('Thum')) then
       begin
         Pass := '';
-        Pass := DBkernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('Thum'));
+        Pass := SessionPasswords.FindForBlobStream(FQuery.FieldByName('Thum'));
         FJPEG := TJPEGImage.Create;
         if Pass <> '' then
           DeCryptBlobStreamJPG(FQuery.FieldByName('Thum'), Pass, FJPEG);
@@ -1401,29 +1279,6 @@ begin
   end;
 end;
 
-function SelectDB(Caller: TDBForm; DB: string) : Boolean;
-var
-  EventInfo: TEventValues;
-  DBVersion: Integer;
-
-begin
-  Result := False;
-  if FileExists(DB) then
-  begin
-    DBVersion := DBKernel.TestDBEx(DB);
-    if DBkernel.ValidDBVersion(DB, DBVersion) then
-    begin
-      DBname := DB;
-      DBKernel.SetDataBase(DB);
-      EventInfo.FileName := Dbname;
-      LastInseredID := 0;
-      DBKernel.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
-      Result := True;
-      Exit;
-    end
-  end;
-end;
-
 function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
 var
   FQuery: TDataSet;
@@ -1472,7 +1327,7 @@ begin
       if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
       begin
         DeCryptBlobStreamJPG(FQuery.FieldByName('thum'),
-          DBKernel.FindPasswordForCryptBlobStream(FQuery.FieldByName('thum')), Info.Image);
+          SessionPasswords.FindForBlobStream(FQuery.FieldByName('thum')), Info.Image);
         Info.Encrypted := True;
         if (Info.Image <> nil) and (not Info.Image.Empty) then
           Info.Tag := 1;

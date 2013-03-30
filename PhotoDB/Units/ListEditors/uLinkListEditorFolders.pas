@@ -31,7 +31,8 @@ type
     Title: string;
     Path: string;
     Icon: string;
-    constructor Create(Title: string; Path: string; Icon: string);
+    SortOrder: Integer;
+    constructor Create(Title: string; Path: string; Icon: string; SortOrder: Integer);
     function Clone: TDataObject; override;
     procedure Assign(Source: TDataObject); override;
   end;
@@ -76,19 +77,21 @@ begin
     Title := SI.Title;
     Path := SI.Path;
     Icon := SI.Icon;
+    SortOrder := SI.SortOrder;
   end;
 end;
 
 function TLinkInfo.Clone: TDataObject;
 begin
-  Result := TLinkInfo.Create(Title, Path, Icon);
+  Result := TLinkInfo.Create(Title, Path, Icon, SortOrder);
 end;
 
-constructor TLinkInfo.Create(Title, Path, Icon: string);
+constructor TLinkInfo.Create(Title, Path, Icon: string; SortOrder: Integer);
 begin
   Self.Title := Title;
   Self.Path := Path;
   Self.Icon := Icon;
+  Self.SortOrder := SortOrder;
 end;
 
 { TLinkListEditorFolder }
@@ -183,12 +186,12 @@ begin
       if Verb = 'Add' then
       begin
         if SelectLocationForm.Execute(FOwner.L('Select a directory'), '', PI, True) then
-          Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
+          Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '', 0);
       end else
       begin
         PI := PathProviderManager.CreatePathItem(FCurrentPath);
         if PI <> nil then
-          Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '');
+          Data := TLinkInfo.Create(PI.DisplayName, PI.Path, '', 0);
       end;
     finally
       F(PI);

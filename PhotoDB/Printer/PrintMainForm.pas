@@ -27,7 +27,6 @@ uses
   UnitPrinterTypes,
 
   UnitDBFileDialogs,
-  UnitDBKernel,
   GraphicCrypt,
   Menus,
   EasyListview,
@@ -51,7 +50,8 @@ uses
   uThemesUtils,
   uSettings,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords;
 
 type
   TPrintForm = class(TDBForm)
@@ -620,7 +620,7 @@ begin
 
   for I := FFiles.Count - 1 downto 0 do
     if ValidCryptGraphicFile(FFiles[I]) then
-      if DBKernel.FindPasswordForCryptImageFile(FFiles[I]) = '' then
+      if SessionPasswords.FindForFile(FFiles[I]) = '' then
         FFiles.Delete(I);
 
   if FFiles.Count = 0 then

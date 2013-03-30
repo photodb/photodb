@@ -39,6 +39,7 @@ uses
   uSettings,
   uExifUtils,
   uDBClasses,
+  uCollectionEvents,
   uDBPopupMenuInfo;
 
 type
@@ -439,7 +440,7 @@ begin
 
       EventInfo.JPEGImage := Res.Jpeg;
       EventInfo.IsEncrypted := Res.IsEncrypted;
-      DBKernel.DoIDEvent(TDBForm(Application.MainForm), LastInseredID, [SetNewIDFileData], EventInfo);
+      CollectionEvents.DoIDEvent(TDBForm(Application.MainForm), LastInseredID, [SetNewIDFileData], EventInfo);
     end
   );
 end;

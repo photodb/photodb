@@ -15,7 +15,6 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitDBDeclare,
-  UnitDBKernel,
   ExplorerTypes,
 
   uMemory,
@@ -30,7 +29,8 @@ uses
   uTranslate,
   uInterfaces,
   uImageSource,
-  uExifInfo;
+  uExifInfo,
+  uSessionPasswords;
 
 type
   TImageViewer = class(TInterfacedObject, IImageViewer, IFaceResultForm)
@@ -287,7 +287,7 @@ begin
 
   if FileInfo.Encrypted then
   begin
-    if DBKernel.FindPasswordForCryptImageFile(FileInfo.FileName) = '' then
+    if SessionPasswords.FindForFile(FileInfo.FileName) = '' then
     begin
       SetText(TA('File is encrypted', 'Explorer'));
       Exit;

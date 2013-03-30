@@ -48,7 +48,7 @@ begin
     begin
       if Handle = 0 then
         Handle := Screen.ActiveFormHandle;
-      Res := TaskDialogEx(Handle, AContent, Title, ADescription, Buttons, Icon, GetParamStrDBBool('NoVistaMsg'));
+      Res := TaskDialog(Handle, AContent, Title, ADescription, Buttons, Icon);
     end
   );
   Result := Res;

@@ -17,7 +17,6 @@ uses
   Dmitry.Utils.Files,
 
   GIFImage,
-  UnitDBkernel,
   CommonDBSupport,
   ActiveX,
   UnitDBDeclare,
@@ -37,7 +36,8 @@ uses
   uPortableDeviceUtils,
   uAnimatedJPEG,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords;
 
 type
   TViewerThread = class(TDBThread)
@@ -279,7 +279,7 @@ begin
   begin
 
     FIsEncrypted := True;
-    PassWord := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+    PassWord := SessionPasswords.FindForFile(FInfo.FileName);
     if PassWord = '' then
     begin
       if not FIsForward then

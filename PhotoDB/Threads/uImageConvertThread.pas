@@ -4,45 +4,48 @@ interface
 
 uses
   Windows,
+  ActiveX,
   Classes,
   Graphics,
   Forms,
   SysUtils,
   JPEG,
-  ActiveX,
-  GIFImage,
   PngImage,
-  RAWImage,
-  uTiffImage,
-  UnitDBKernel,
-  GraphicCrypt,
-  uLogger,
-  GraphicEx,
-  uMemory,
+
+  CCR.Exif,
 
   Dmitry.Utils.Files,
 
-  uGOM,
-  UnitDBDeclare,
-  uJpegUtils,
-  GDIPlusRotate,
+  GraphicEx,
+  GraphicCrypt,
   UnitPropeccedFilesSupport,
+  UnitDBCommonGraphics,
+  UnitDBDeclare,
+  GDIPlusRotate,
+  GIFImage,
+  RAWImage,
+
+  uTiffImage,
+  uLogger,
+  uMemory,
+  uGOM,
+  uJpegUtils,
   uThreadEx,
   uThreadForm,
   uTranslate,
   uConstants,
   uLockedFileNotifications,
-  CCR.Exif,
   uDBUtils,
   uGraphicUtils,
   uAssociations,
   uExifUtils,
   uBitmapUtils,
-  UnitDBCommonGraphics,
   uImageLoader,
   uFaceDetectionThread,
   uDatabaseDirectoriesUpdater,
-  uPortableDeviceUtils;
+  uPortableDeviceUtils,
+  uSessionPasswords,
+  uCollectionEvents;
 
 type
   TJpegX = class(TJPEGImage);
@@ -400,7 +403,7 @@ begin
     Encrypted := not IsDevicePath(FData.FileName) and ValidCryptGraphicFile(FData.FileName);
     if Encrypted then
     begin
-      Password := DBKernel.FindPasswordForCryptImageFile(FData.FileName);
+      Password := SessionPasswords.FindForFile(FData.FileName);
       if Password = '' then
         Exit;
     end;
@@ -695,7 +698,7 @@ var
 begin
   EventInfo.FileName := FData.FileName;
   EventInfo.NewName := FData.FileName;
-  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
+  CollectionEvents.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh, EventID_Param_Image], EventInfo);
 end;
 
 procedure TImageConvertThread.OnEnd;
@@ -707,7 +710,7 @@ procedure TImageConvertThread.RefreshItem;
 var
   EventInfo: TEventValues;
 begin
-  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh], EventInfo);
+  CollectionEvents.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Refresh], EventInfo);
 end;
 
 procedure TImageConvertThread.RotateFaces(Rotation: Integer);
@@ -745,7 +748,7 @@ var
 begin
   EventInfo.FileName := FData.FileName;
   EventInfo.Rotation := FIntParam;
-  DBKernel.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Rotate], EventInfo);
+  CollectionEvents.DoIDEvent(ThreadForm, FData.ID, [EventID_Param_Rotate], EventInfo);
 end;
 
 procedure TImageConvertThread.UpdatePreview;

@@ -22,7 +22,6 @@ uses
   CommonDBSupport,
   UnitINI,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uRuntime,
@@ -47,6 +46,7 @@ uses
   uTranslate,
   uLockedFileNotifications,
   uCDMappingTypes,
+  uCollectionEvents,
   uSettings;
 
 type
@@ -201,7 +201,6 @@ implementation
 
 const
   cAddImagesAtOneStep = 4;
-  UpdaterDirectoriesFormat = '\Updater\Databases\{0}';
 
 var
   DirectoriesScanID: TGUID = '{00000000-0000-0000-0000-000000000000}';
@@ -232,7 +231,7 @@ end;
 procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string; AddDefaultPlaces: Boolean);
 var
   Reg: TBDRegistry;
-  DBPrefix, FName, FPath, FIcon: string;
+  FName, FPath, FIcon: string;
   I, SortOrder: Integer;
   S: TStrings;
   DD: TDatabaseDirectory;
@@ -242,9 +241,7 @@ begin
 
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    DBPrefix := ExtractFileName(CollectionFile) + IntToStr(StringCRC(CollectionFile));
-
-    Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]), True);
+    Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories', True);
     S := TStringList.Create;
     try
       Reg.GetKeyNames(S);
@@ -252,7 +249,7 @@ begin
       for I := 0 to S.Count - 1 do
       begin
         Reg.CloseKey;
-        Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]) + '\' + S[I], True);
+        Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + S[I], True);
 
         FName := '';
         FPath := '';
@@ -295,15 +292,12 @@ procedure SaveDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; Collect
 var
   Folder: TDatabaseDirectory;
   Reg: TBDRegistry;
-  DBPrefix: string;
   S: TStrings;
   I: Integer;
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    DBPrefix := ExtractFileName(CollectionFile) + IntToStr(StringCRC(CollectionFile));
-
-    Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]), True);
+    Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories', True);
     S := TStringList.Create;
     try
       Reg.GetKeyNames(S);
@@ -313,7 +307,7 @@ begin
       for Folder in FolderList do
       begin
         Reg.CloseKey;
-        Reg.OpenKey(GetRegRootKey + FormatEx(UpdaterDirectoriesFormat, [DBPrefix]) + '\' + Folder.Name, True);
+        Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + Folder.Name, True);
 
         Reg.WriteString('Path', Folder.Path);
         Reg.WriteInteger('SortOrder', Folder.SortOrder);
@@ -697,8 +691,8 @@ end;
 procedure TUserDirectoriesWatcher.Execute;
 begin
   inherited;
-  StartWatch;
   FCollectionFile := dbname;
+  StartWatch;
   TDatabaseDirectoriesUpdater.Create(FCollectionFile);
 end;
 
@@ -943,7 +937,7 @@ var
 begin
   EventInfo.ReadFromInfo(Info);
   EventInfo.JPEGImage := Res.Jpeg;
-  DBKernel.DoIDEvent(Application.MainForm as TDBForm, LastInseredID, [EventID_FileProcessed], EventInfo);
+  CollectionEvents.DoIDEvent(Application.MainForm as TDBForm, LastInseredID, [EventID_FileProcessed], EventInfo);
 end;
 
 { TUpdaterStorage }
@@ -1239,6 +1233,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
+  Priority := tpLowest;
 
   //task will work in background
   while True do

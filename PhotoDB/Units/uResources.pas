@@ -49,13 +49,11 @@ function GetCollectionSyncImage: TPngImage;
 {$R CollectionSync.res}
 
 //Icons
-{$R icons.res}
 {$R db_icons.res}
 {$R ZoomRc.res}
 {$R editor.res}
 {$R explorer.res}
 {$R cmd_icons.res}
-{$R updater.res}
 
 //for mobile test
 {$IFDEF MOBILE_TEST}

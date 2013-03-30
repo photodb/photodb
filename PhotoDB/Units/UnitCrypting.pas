@@ -13,7 +13,7 @@ uses
   Dmitry.Utils.Files,
 
   UnitDBDeclare,
-  UnitDBKernel,
+  uCollectionEvents,
   CommonDBSupport,
   uDBForm,
   uMemory,
@@ -139,12 +139,12 @@ begin
 
   if ID <> 0 then
     if DoEvent then
-      DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Crypt], Info)
+      CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Crypt], Info)
     else
     begin
       Info.NewName := FileName;
       if DoEvent then
-        DBKernel.DoIDEvent(Caller, ID, [EventID_Param_Name], Info)
+        CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Name], Info)
     end;
   if Result = CRYPT_RESULT_UNDEFINED then
     Result := CRYPT_RESULT_OK;

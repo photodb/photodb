@@ -14,12 +14,14 @@ uses
   Vcl.Forms,
   Vcl.Controls,
   Vcl.ImgList,
+  Vcl.Imaging.Jpeg,
 
   UnitDBDeclare,
   GraphicCrypt,
   CommonDBSupport,
   UnitINI,
 
+  Dmitry.CRC32,
   Dmitry.Utils.Files,
   Dmitry.Utils.System,
   Dmitry.Graphics.LayeredBitmap,
@@ -30,28 +32,20 @@ uses
   uCDMappingTypes,
   uConstants,
   uTime,
+  uCollectionEvents,
+  uSplashThread,
+  uShellUtils,
   uAppUtils,
   uTranslate,
   uDBForm,
+  uGroupTypes,
+  UnitGroupsWork,
   uRuntime,
   uStringUtils,
   uSettings,
   uImageListUtils,
   uProgramStatInfo,
   uVCLHelpers;
-
-type
-  DBChangesIDEvent = procedure(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
-
-type
-  DBEventsIDArray = record
-    Sender: TObject;
-    IDs: Integer;
-    DBChangeIDArrayesEvents: DBChangesIDEvent;
-  end;
-
-type
-  TDBEventsIDArray = array of DBEventsIDArray;
 
 const
   IconsCount = 130;
@@ -65,9 +59,6 @@ type
   TDBKernel = class(TObject)
   private
     { Private declarations }
-    FINIPasswods: TStrings;
-    FPasswodsInSession: TStrings;
-    FEvents: TDBEventsIDArray;
     FImageList: TCustomImageList;
     FDisabledImageList: TCustomImageList;
     FForms: TList;
@@ -88,26 +79,16 @@ type
     property DBs: TList<TDatabaseInfo> read FDBs;
     property ImageList: TCustomImageList read FImageList;
     property DisabledImageList: TCustomImageList read FDisabledImageList;
-    procedure UnRegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
-    procedure UnRegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
-    procedure RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
-    procedure UnRegisterChangesIDBySender(Sender: TObject);
-    procedure RegisterChangesIDbyID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
-    procedure DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
+
     function TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
     procedure BackUpTable;
     procedure DBInit;
     function CreateDBbyName(FileName: string): Integer;
     function GetDataBaseName: string;
     procedure SetDataBase(DatabaseFileName: string);
-    procedure AddTemporaryPasswordInSession(Pass: string);
-    function FindPasswordForCryptImageFile(FileName: string): string;
-    procedure ClearTemporaryPasswordsInSession;
-    function FindPasswordForCryptBlobStream(DF: TField): string;
-    procedure SavePassToINIDirectory(Pass: string);
-    procedure LoadINIPasswords;
-    procedure SaveINIPasswords;
-    procedure ClearINIPasswords;
+
+
+
     procedure ThreadOpenResult(Result: Boolean);
     procedure AddDB(DBName, DBFile, DBIco: string; Force: Boolean = False);
     function RenameDB(OldDBName, NewDBName: string): Boolean;
@@ -120,8 +101,12 @@ type
     function ValidDBVersion(DBFile: string; DBVersion: Integer): Boolean;
     procedure ReadDBOptions;
     procedure DoSelectDB;
-    procedure GetPasswordsFromParams;
+    procedure CheckDatabase;
+    procedure CheckSampleDB;
     procedure LoadIcons;
+    function SelectDB(Caller: TDBForm; DB: string): Boolean;
+    procedure CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
+
     property ImageOptions: TImageDBOptions read FImageOptions;
     property SortGroupsByName : Boolean read GetSortGroupsByName;
   end;
@@ -170,10 +155,8 @@ begin
   FDisabledImageList := nil;
   FSych := TCriticalSection.Create;
   FForms := TList.Create;
-  FPasswodsInSession := TStringList.Create;
   FDBs := TList<TDatabaseInfo>.Create;
   LoadDBs;
-  FINIPasswods := nil;
   FApplicationKey := '';
 end;
 
@@ -211,12 +194,99 @@ begin
   ProgramStatistics.DBUsed;
 end;
 
+procedure TDBKernel.CreateExampleDB(FileName, IcoName, CurrentImagesDirectory: string);
+var
+  NewGroup: TGroup;
+  ImagesDir: string;
+begin
+  if not DBKernel.TestDB(FileName) then
+    DBKernel.CreateDBbyName(FileName);
+
+  if not IsValidGroupsTableW(FileName) then
+  begin
+    ImagesDir := IncludeTrailingBackslash(CurrentImagesDirectory) + 'Images\';
+    if FileExists(ImagesDir + 'Me.jpg') then
+    begin
+      try
+        NewGroup.GroupName := GetWindowsUserName;
+        NewGroup.GroupCode := CreateNewGroupCode;
+        NewGroup.GroupImage := TJPEGImage.Create;
+        try
+          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Me.jpg');
+          NewGroup.GroupDate := Now;
+          NewGroup.GroupComment := '';
+          NewGroup.GroupFaces := '';
+          NewGroup.GroupAccess := 0;
+          NewGroup.GroupKeyWords := NewGroup.GroupName;
+          NewGroup.AutoAddKeyWords := True;
+          NewGroup.RelatedGroups := '';
+          NewGroup.IncludeInQuickList := True;
+          AddGroupW(NewGroup, FileName);
+        finally
+          NewGroup.GroupImage.Free;
+        end;
+      except
+        on E: Exception do
+          EventLog(':CreateExampleDB() throw exception: ' + E.message);
+      end;
+    end;
+  if FileExists(ImagesDir + 'Friends.jpg') then
+    begin
+      try
+        NewGroup.GroupName := TA('Friends', 'Setup');
+        NewGroup.GroupCode := CreateNewGroupCode;
+        NewGroup.GroupImage := TJPEGImage.Create;
+        try
+          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Friends.jpg');
+          NewGroup.GroupDate := Now;
+          NewGroup.GroupComment := '';
+          NewGroup.GroupFaces := '';
+          NewGroup.GroupAccess := 0;
+          NewGroup.GroupKeyWords := TA('Friends', 'Setup');
+          NewGroup.AutoAddKeyWords := True;
+          NewGroup.RelatedGroups := '';
+          NewGroup.IncludeInQuickList := True;
+          AddGroupW(NewGroup, FileName);
+        finally
+          NewGroup.GroupImage.Free;
+        end;
+      except
+        on E: Exception do
+          EventLog(':CreateExampleDB() throw exception: ' + E.message);
+      end;
+    end;
+    if FileExists(ImagesDir + 'Family.jpg') then
+    begin
+      try
+        NewGroup.GroupName := TA('Family', 'Setup');
+        NewGroup.GroupCode := CreateNewGroupCode;
+        NewGroup.GroupImage := TJPEGImage.Create;
+        try
+          NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Family.jpg');
+          NewGroup.GroupDate := Now;
+          NewGroup.GroupComment := '';
+          NewGroup.GroupFaces := '';
+          NewGroup.GroupAccess := 0;
+          NewGroup.GroupKeyWords := TA('Family', 'Setup');
+          NewGroup.AutoAddKeyWords := True;
+          NewGroup.RelatedGroups := '';
+          NewGroup.IncludeInQuickList := True;
+          AddGroupW(NewGroup, FileName);
+        finally
+          NewGroup.GroupImage.Free;
+        end;
+      except
+        on E: Exception do
+          EventLog(':CreateExampleDB() throw exception: ' + E.message);
+      end;
+    end;
+  end;
+end;
+
 destructor TDBKernel.Destroy;
 begin
   F(FImageList);
   F(FDisabledImageList);
-  F(FINIPasswods);
-  F(FPasswodsInSession);
   F(FSych);
   F(FForms);
   FreeList(FDBs);
@@ -224,86 +294,9 @@ begin
   inherited;
 end;
 
-procedure TDBKernel.DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
-var
-  I: Integer;
-  FXevents: TDBEventsIDArray;
-begin
-  if Sender = nil then
-    raise Exception.Create('Sender is null!');
-
-  if GetCurrentThreadId <> MainThreadID then
-    raise Exception.Create('DoIDEvent call not from main thread! Sender: ' + Sender.ClassName);
-
-  if Length(Fevents) = 0 then
-    Exit;
-
-  SetLength(FXevents, Length(Fevents));
-  for I := 0 to Length(Fevents) - 1 do
-    FXevents[I] := Fevents[I];
-  for I := 0 to Length(FXevents) - 1 do
-  begin
-    if FXevents[I].Ids = -1 then
-    begin
-      if Assigned(FXevents[I].DBChangeIDArrayesEvents) then
-        FXevents[I].DBChangeIDArrayesEvents(Sender, ID, Params, Value)
-    end else
-    begin
-      if FXevents[I].Ids = ID then
-      begin
-        if Assigned(FXevents[I].DBChangeIDArrayesEvents) then
-          FXevents[I].DBChangeIDArrayesEvents(Sender, ID, Params, Value)
-      end;
-    end;
-  end;
-end;
-
 procedure TDBKernel.DBInit;
 begin
   DoSelectDB;
-  LoadINIPasswords;
-end;
-
-procedure TDBKernel.RegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
-var
-  I: Integer;
-  Is_: Boolean;
-begin
-  Is_ := False;
-  for I := 0 to Length(Fevents) - 1 do
-    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = -1) and (Sender = Fevents[I].Sender) then
-    begin
-      Is_ := True;
-      Break;
-    end;
-  if not Is_ then
-  begin
-    Setlength(Fevents, Length(Fevents) + 1);
-    Fevents[Length(Fevents) - 1].Ids := -1;
-    Fevents[Length(Fevents) - 1].Sender := Sender;
-    Fevents[Length(Fevents) - 1].DBChangeIDArrayesEvents := Event_;
-  end;
-end;
-
-procedure TDBKernel.RegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
-var
-  I: Integer;
-  Is_: Boolean;
-begin
-  Is_ := False;
-  for I := 0 to Length(Fevents) - 1 do
-    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = Id) and (Sender = Fevents[I].Sender) then
-    begin
-      Is_ := True;
-      Break;
-    end;
-  if not Is_ then
-  begin
-    Setlength(Fevents, Length(Fevents) + 1);
-    Fevents[Length(Fevents) - 1].Ids := Id;
-    Fevents[Length(Fevents) - 1].Sender := Sender;
-    Fevents[Length(Fevents) - 1].DBChangeIDArrayesEvents := Event_;
-  end;
 end;
 
 function TDBKernel.TestDB(DBName_: string; OpenInThread: Boolean = False): Boolean;
@@ -506,57 +499,6 @@ begin
   FreeDS(FTestTable);
 end;
 
-procedure TDBKernel.UnRegisterChangesID(Sender: TObject; Event_: DBChangesIDEvent);
-var
-  I, J: Integer;
-begin
-  if Length(Fevents) = 0 then
-    Exit;
-  for I := 0 to Length(Fevents) - 1 do
-  begin
-    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = -1) and (Sender = Fevents[I].Sender) then
-    begin
-      for J := I to Length(Fevents) - 2 do
-        Fevents[J] := Fevents[J + 1];
-      SetLength(Fevents, Length(Fevents) - 1);
-      Break;
-    end;
-  end;
-end;
-
-procedure TDBKernel.UnRegisterChangesIDByID(Sender: TObject; Event_: DBChangesIDEvent; Id: Integer);
-var
-  I, J: Integer;
-begin
-  if Length(Fevents) = 0 then
-    Exit;
-  for I := 0 to Length(Fevents) - 1 do
-    if (@Fevents[I].DBChangeIDArrayesEvents = @Event_) and (Fevents[I].Ids = Id) and (Sender = Fevents[I].Sender) then
-    begin
-      for J := I to Length(Fevents) - 2 do
-        Fevents[J] := Fevents[J + 1];
-      SetLength(Fevents, Length(Fevents) - 1);
-      Break;
-    end;
-end;
-
-procedure TDBKernel.UnRegisterChangesIDBySender(Sender: TObject);
-var
-  I, J, K: Integer;
-begin
-  if Length(Fevents) = 0 then
-    Exit;
-  for K := 0 to Length(Fevents) - 1 do
-    for I := 0 to Length(Fevents) - 1 do
-      if (Sender = Fevents[I].Sender) then
-      begin
-        for J := I to Length(Fevents) - 2 do
-          Fevents[J] := Fevents[J + 1];
-        SetLength(Fevents, Length(Fevents) - 1);
-        Break;
-      end;
-end;
-
 function TDBKernel.GetDataBaseName: string;
 var
   I: Integer;
@@ -570,6 +512,29 @@ begin
 
   if Result = '' then
     Result := TA('Unknown DB', 'System');
+end;
+
+function TDBKernel.SelectDB(Caller: TDBForm; DB: string): Boolean;
+var
+  EventInfo: TEventValues;
+  DBVersion: Integer;
+
+begin
+  Result := False;
+  if FileExists(DB) then
+  begin
+    DBVersion := DBKernel.TestDBEx(DB);
+    if DBkernel.ValidDBVersion(DB, DBVersion) then
+    begin
+      DBname := DB;
+      DBKernel.SetDataBase(DB);
+      EventInfo.FileName := Dbname;
+      LastInseredID := 0;
+      CollectionEvents.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
+      Result := True;
+      Exit;
+    end
+  end;
 end;
 
 procedure TDBKernel.SetDataBase(DatabaseFileName: string);
@@ -614,148 +579,66 @@ begin
   end;
 end;
 
-procedure TDBKernel.AddTemporaryPasswordInSession(Pass: String);
+
+procedure TDBKernel.CheckDatabase;
 var
-  I : integer;
+  DBVersion: Integer;
+  StringDBCheckKey: string;
 begin
-  FSych.Enter;
-  try
-    for I := 0 to FPasswodsInSession.Count - 1 do
-      if FPasswodsInSession[I] = Pass then
-        Exit;
-    FPasswodsInSession.Add(Pass);
-  finally
-    FSych.Leave;
+  TW.I.Start('FM -> InitializeDolphinDB');
+  if FolderView then
+  begin
+    dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
+
+    if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
+      dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
   end;
-end;
 
-procedure TDBKernel.ClearTemporaryPasswordsInSession;
-begin
-  FSych.Enter;
-  try
-    FPasswodsInSession.Clear;
-  finally
-    FSych.Leave;
-  end;
-end;
+  if not DBTerminating then
+  begin
 
-function TDBKernel.FindPasswordForCryptImageFile(FileName: String): String;
-var
-  I : Integer;
-begin
-  Result := '';
-  FSych.Enter;
-  try
-    FileName := ProcessPath(FileName);
-    for I := 0 to FPasswodsInSession.Count - 1 do
-      if ValidPassInCryptGraphicFile(FileName, FPasswodsInSession[I]) then
-      begin
-        Result := FPasswodsInSession[I];
-        Exit;
-      end;
-    for I := 0 to FINIPasswods.Count - 1 do
-      if ValidPassInCryptGraphicFile(FileName, FINIPasswods[I]) then
-      begin
-        Result := FINIPasswods[I];
-        Exit;
-      end;
-  finally
-    FSych.Leave;
-  end;
-end;
-
-function TDBKernel.FindPasswordForCryptBlobStream(DF : TField): String;
-var
-  I : Integer;
-begin
-  Result := '';
-  FSych.Enter;
-  try
-    for I := 0 to FPasswodsInSession.Count - 1 do
-      if ValidPassInCryptBlobStreamJPG(DF, FPasswodsInSession[I]) then
-      begin
-        Result := FPasswodsInSession[I];
-        Exit;
-      end;
-    for I := 0 to FINIPasswods.Count - 1 do
-      if ValidPassInCryptBlobStreamJPG(DF, FINIPasswods[I]) then
-      begin
-        Result := FINIPasswods[I];
-        Exit;
-      end;
-  finally
-    FSych.Leave;
-  end;
-end;
-
-procedure TDBKernel.SavePassToINIDirectory(Pass: String);
-var
-  I : integer;
-begin
-  FSych.Enter;
-  try
-    for I := 0 to FINIPasswods.Count - 1 do
-      if FINIPasswods[I] = Pass then
-        Exit;
-
-     FINIPasswods.Add(Pass);
-     SaveINIPasswords;
-
-   finally
-     FSych.Leave;
-   end;
-end;
-
-procedure TDBKernel.LoadINIPasswords;
-var
-  Reg: TBDRegistry;
-  S: string;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    try
-      F(FINIPasswods);
-      Reg.OpenKey(GetRegRootKey, True);
-      S := '';
-      if Reg.ValueExists('INI') then
-          S := Reg.ReadString('INI');
-
-      S := HexStringToString(S);
-      if Length(S) > 0 then
-        FINIPasswods := DeCryptTStrings(S, 'dbpass')
-      else
-        FINIPasswods := TStringList.Create;
-    except
-      on E: Exception do
-        EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
+    if not FileExistsSafe(dbname) then
+    begin
+      CloseSplashWindow;
+      CheckSampleDB;
     end;
-  finally
-    F(Reg);
+
+    TW.I.Start('FM -> check valid db version');
+
+    // check valid db version
+    StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(dbname)), DB_VER_CURRENT]);
+    if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
+    begin
+      TW.I.Start('FM -> TestDBEx');
+      DBVersion := DBKernel.TestDBEx(dbname, False);
+      if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+      begin
+        CloseSplashWindow;
+        //ConvertDB(dbname);
+        DBVersion := DBKernel.TestDBEx(dbname, False);
+        if not DBKernel.ValidDBVersion(dbname, DBVersion) then
+        begin
+          DBTerminating := True;
+          Exit;
+        end;
+      end;
+      Settings.WriteBool('DBVersionCheck', StringDBCheckKey, True);
+    end;
+
   end;
 end;
 
-procedure TDBKernel.SaveINIPasswords;
+procedure TDBKernel.CheckSampleDB;
 var
-  Reg: TBDRegistry;
-  S: string;
+  FileName: string;
 begin
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetRegRootKey, True); // todo!
-    S := CryptTStrings(FINIPasswods, 'dbpass');
-    S := StringToHexString(S);
-    Reg.WriteString('INI', S);
-  except
-    on E: Exception do
-      EventLog(':TDBKernel::ReadActivateKey() throw exception: ' + E.message);
-  end;
-  Reg.Free;
-end;
+  //if program was uninstalled with registered databases - restore database or create new database
+  FileName := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+  if not FileExistsSafe(FileName) then
+    CreateExampleDB(FileName, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
 
-procedure TDBKernel.ClearINIPasswords;
-begin
-  FINIPasswods.Clear;
-  SaveINIPasswords;
+  DBKernel.AddDB(TA('My collection'), FileName, Application.ExeName + ',0');
+  DBKernel.SetDataBase(FileName);
 end;
 
 procedure TDBKernel.ThreadOpenResult(Result: Boolean);
@@ -1100,23 +983,6 @@ begin
   end;
 end;
 
-procedure TDBKernel.GetPasswordsFromParams;
-var
-  PassParam: string;
-  PassArray: TStrings;
-  I: Integer;
-begin
-  PassArray:= TStringList.Create;
-  try
-    PassParam := GetParamStrDBValue('/AddPass');
-    PassParam := AnsiDequotedStr(PassParam, '"');
-    SplitString(PassParam, '!', PassArray);
-    for I := 0 to PassArray.Count - 1 do
-      AddTemporaryPasswordInSession(PassArray[I]);
-  finally
-    F(PassArray);
-  end;
-end;
 
 function TDBKernel.GetSortGroupsByName: Boolean;
 begin

@@ -24,7 +24,6 @@ uses
   Dmitry.Utils.Files,
   Dmitry.Controls.WatermarkedEdit,
 
-  UnitDBKernel,
   FormManegerUnit,
   GraphicCrypt,
 
@@ -35,7 +34,8 @@ uses
   uSettings,
   uMemory,
   uDatabaseDirectoriesUpdater,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords;
 
 type
   PasswordType = Integer;
@@ -253,9 +253,9 @@ begin
   begin
     Password := EdPassword.Text;
     if CbSavePassToSession.Checked then
-      DBKernel.AddTemporaryPasswordInSession(Password);
+      SessionPasswords.AddForSession(Password);
     if CbSavePassPermanent.Checked then
-      DBKernel.SavePassToINIDirectory(Password);
+      SessionPasswords.SaveInSettings(Password);
 
     if CbSavePassToSession.Checked or CbSavePassPermanent.Checked then
       RecheckDirectoryOnDrive(ExtractFilePath(FFileName));
@@ -271,7 +271,7 @@ begin
   begin
     if ShiftKeyDown then
     begin
-      DBKernel.AddTemporaryPasswordInSession(EdPassword.Text);
+      SessionPasswords.AddForSession(EdPassword.Text);
       Exit;
     end;
     Key := #0;

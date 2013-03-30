@@ -14,7 +14,6 @@ uses
   UnitLinksSupport,
   UnitSQLOptimizing,
   ProgressActionUnit,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -23,6 +22,7 @@ uses
   uDatabaseDirectoriesUpdater,
   uDBForm,
   uGroupTypes,
+  uCollectionEvents,
   uDBClasses;
 
 type
@@ -147,7 +147,7 @@ begin
         EventInfo.Include := UserInput.Include;
         for I := 0 to FFilesInfo.Count - 1 do
           if FFilesInfo[I].ID > 0 then
-            DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Include], EventInfo);
+            CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Include], EventInfo);
       end;// [END] Include Support
 
       // [BEGIN] Rating Support
@@ -160,7 +160,7 @@ begin
         EventInfo.Rating := UserInput.Rating;
         for I := 0 to FFilesInfo.Count - 1 do
           if FFilesInfo[I].ID > 0 then
-            DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Rating], EventInfo);
+            CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Rating], EventInfo);
       end; // [END] Rating Support
 
       // [BEGIN] KeyWords Support
@@ -198,7 +198,7 @@ begin
           ExecSQL(WorkQuery);
           EventInfo.KeyWords := List[I].Value;
           for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Owner, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
+            CollectionEvents.DoIDEvent(Owner, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
         end;
       end;// [END] KeyWords Support
 
@@ -239,7 +239,7 @@ begin
           ExecSQL(WorkQuery);
           EventInfo.Groups := List[I].Value;
           for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(Owner, List[I].IDs[J], [EventID_Param_Groups], EventInfo);
+            CollectionEvents.DoIDEvent(Owner, List[I].IDs[J], [EventID_Param_Groups], EventInfo);
         end;
       end; // [END] Groups Support
 
@@ -294,7 +294,7 @@ begin
           ProgressForm.XPosition := ProgressForm.XPosition + 1;
           { !!! } Application.ProcessMessages;
           if FFilesInfo[I].ID > 0 then
-            DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Comment], EventInfo);
+            CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Comment], EventInfo);
         end;
       end;// [END] Commnet Support
 
@@ -311,7 +311,7 @@ begin
           EventInfo.IsDate := False;
           for I := 0 to FFilesInfo.Count - 1 do
             if FFilesInfo[I].ID > 0 then
-              DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
+              CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_IsDate], EventInfo);
         end else
         begin
           SQL := Format('Update $DB$ Set DateToAdd=:DateToAdd, IsDate=TRUE Where ID in (%s)', [GenerateIDList]);
@@ -323,7 +323,7 @@ begin
           EventInfo.IsDate := True;
           for I := 0 to FFilesInfo.Count - 1 do
             if FFilesInfo[I].ID > 0 then
-              DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
+              CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
         end;
       end; // [END] Date Support
 
@@ -340,7 +340,7 @@ begin
           EventInfo.IsTime := False;
           for I := 0 to FFilesInfo.Count - 1 do
             if FFilesInfo[I].ID > 0 then
-              DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
+              CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_IsTime], EventInfo);
         end else
         begin
           SQL := Format('Update $DB$ Set aTime = :aTime, IsTime = True Where ID in (%s)', [GenerateIDList]);
@@ -352,7 +352,7 @@ begin
           EventInfo.IsTime := True;
           for I := 0 to FFilesInfo.Count - 1 do
             if FFilesInfo[I].ID > 0 then
-              DBKernel.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
+              CollectionEvents.DoIDEvent(Owner, FFilesInfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
         end;
       end;// [END] Time Support
 
@@ -436,7 +436,7 @@ begin
       EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime, EventID_Param_Groups,
       EventID_Param_Include, EventID_Param_Links];
 
-    DBKernel.DoIDEvent(Owner, Info.Id, Params, EventInfo);
+    CollectionEvents.DoIDEvent(Owner, Info.Id, Params, EventInfo);
   finally
     F(UC);
   end;

@@ -12,7 +12,6 @@ uses
 
   Dmitry.Utils.Files,
 
-  UnitDBKernel,
   UnitPropeccedFilesSupport,
   UnitCrypting,
   CommonDBSupport,
@@ -27,7 +26,9 @@ uses
   uGUIDUtils,
   uShellIntegration,
   uInterfaces,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents,
+  uSessionPasswords;
 
 type
   TCryptingImagesThread = class(TDBThread)
@@ -107,11 +108,11 @@ begin
     EventInfo.IsEncrypted := CryptResult <> CRYPT_RESULT_OK;
 
   if IntParam <> 0 then
-    DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt], EventInfo)
+    CollectionEvents.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt], EventInfo)
   else
   begin
     EventInfo.NewName := StrParam;
-    DBKernel.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt, EventID_Param_Name], EventInfo)
+    CollectionEvents.DoIDEvent(FSender, IntParam, [EventID_Param_Crypt, EventID_Param_Name], EventInfo)
   end;
 end;
 
@@ -119,7 +120,7 @@ procedure TCryptingImagesThread.DoDBkernelEventRefreshList;
 var
   EventInfo: TEventValues;
 begin
-  DBKernel.DoIDEvent(FSender, 0, [EventID_Repaint_ImageList], EventInfo);
+  CollectionEvents.DoIDEvent(FSender, 0, [EventID_Repaint_ImageList], EventInfo);
 end;
 
 procedure TCryptingImagesThread.Execute;
@@ -220,12 +221,12 @@ end;
 
 procedure TCryptingImagesThread.FindPasswordToFile;
 begin
-  FPassword := DBkernel.FindPasswordForCryptImageFile(StrParam)
+  FPassword := SessionPasswords.FindForFile(StrParam)
 end;
 
 procedure TCryptingImagesThread.FindPasswordToBlob;
 begin
-  FPassword := DBkernel.FindPasswordForCryptBlobStream(FField);
+  FPassword := SessionPasswords.FindForBlobStream(FField);
 end;
 
 procedure TCryptingImagesThread.GetPassword;

@@ -34,6 +34,7 @@ implementation
 var
   Logger: TLogger = nil;
 
+
 procedure EventLog(Ex: Exception);
 var
   Msg, Stack: String;

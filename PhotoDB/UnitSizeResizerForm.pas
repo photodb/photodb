@@ -20,9 +20,9 @@ uses
   Vcl.ImgList,
   Vcl.Imaging.JPEG,
 
-  UnitDBkernel,
   UnitDBDeclare,
   UnitDBFileDialogs,
+  UnitPropeccedFilesSupport,
 
   Dmitry.Utils.Files,
   Dmitry.Controls.Base,
@@ -32,8 +32,6 @@ uses
   Dmitry.Controls.SaveWindowPos,
   Dmitry.Controls.PathEditor,
   Dmitry.Controls.ImButton,
-
-  UnitPropeccedFilesSupport,
 
   uBitmapUtils,
   uDBForm,
@@ -53,7 +51,8 @@ uses
   uPortableDeviceUtils,
   uThemesUtils,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents;
 
 const
   Settings_ConvertForm = 'Convert settings';
@@ -417,7 +416,7 @@ begin
   begin
     for I := 0 to FProcessingList.Count - 1 do
       ProcessedFilesCollection.RemoveFile(FProcessingList[I]);
-    DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
+    CollectionEvents.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
   end;
   F(FPreviewImage);
   UnRegisterMainForm(Self);
@@ -513,7 +512,7 @@ begin
     ProcessedFilesCollection.AddFile(FData[I].FileName);
     FProcessingList.Add(AnsiLOwerCase(FData[I].FileName));
   end;
-  DBKernel.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
+  CollectionEvents.DoIDEvent(Self, 0, [EventID_Repaint_ImageList], EventInfo);
 
   //statistics
   ProgramStatistics.ConverterUsed;

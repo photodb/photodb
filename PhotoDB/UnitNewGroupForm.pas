@@ -31,7 +31,6 @@ uses
   UnitGroupsWork,
   GraphicSelectEx,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uEditorTypes,
   uRuntime,
@@ -47,7 +46,8 @@ uses
   uDialogUtils,
   uThemesUtils,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents;
 
 type
   TNewGroupForm = class(TDBForm, IGroupCreateForm)
@@ -109,7 +109,7 @@ type
 implementation
 
 uses
-  ImEditor;
+  ImEditor, UnitDBKernel;
 
 {$R *.dfm}
 
@@ -223,7 +223,7 @@ begin
   try
     GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
     EventInfo.Data := GroupItem;
-    DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupAdded], EventInfo);
+    CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupAdded], EventInfo);
   finally
     F(GroupItem);
   end;

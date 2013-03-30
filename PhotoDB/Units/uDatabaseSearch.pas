@@ -33,6 +33,7 @@ uses
   uThreadEx,
   uPeopleSupport,
   uAssociations,
+  uSessionPasswords,
   uSearchQuery;
 
 const
@@ -624,7 +625,7 @@ begin
   try
     if SearchData.Encrypted then
     begin
-      PassWord := DBKernel.FindPasswordForCryptBlobStream(S.FieldByName('thum'));
+      PassWord := SessionPasswords.FindForBlobStream(S.FieldByName('thum'));
       if PassWord <> '' then
         DeCryptBlobStreamJPG(S.FieldByName('thum'), PassWord, JPEG);
     end else

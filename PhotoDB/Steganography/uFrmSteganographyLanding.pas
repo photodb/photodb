@@ -32,7 +32,8 @@ uses
   uAssociations,
   uPortableDeviceUtils,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords;
 
 type
   TFrmSteganographyLanding = class(TFrameWizardBase)
@@ -175,7 +176,7 @@ var
     Result := nil;
     if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
     begin
-      Password := DBkernel.FindPasswordForCryptImageFile(FileName);
+      Password := SessionPasswords.FindForFile(FileName);
       if Password = '' then
         Password := RequestPasswordForm.ForImage(FileName);
 
@@ -323,7 +324,7 @@ begin
       try;
         if not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName) then
         begin
-          Password := DBkernel.FindPasswordForCryptImageFile(FileName);
+          Password := SessionPasswords.FindForFile(FileName);
           if Password = '' then
             Password := RequestPasswordForm.ForImage(FileName);
 

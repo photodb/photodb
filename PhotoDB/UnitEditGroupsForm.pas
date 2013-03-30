@@ -44,7 +44,8 @@ uses
   uThemesUtils,
   uMachMask,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents;
 
 type
   TEditGroupsForm = class(TDBForm, IGroupsSelectForm)
@@ -200,7 +201,7 @@ begin
   LstSelectedGroups.Color := Theme.ListColor;
 
   RecreateGroupsList;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataGroups);
   LoadLanguage;
   CbRemoveKeywords.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
   CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
@@ -214,7 +215,7 @@ begin
   FreeGroups(FShowenRegGroups);
   FreeGroups(FOldGroups);
   FreeGroups(FSetGroups);
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataGroups);
 end;
 
 procedure TEditGroupsForm.BtnCreateGroupClick(Sender: TObject);

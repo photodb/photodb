@@ -3,18 +3,20 @@ unit uDBImageUtils;
 interface
 
 uses
-  Graphics,
+  System.SysUtils,
+  Vcl.Graphics,
+
   GraphicCrypt,
+  RAWImage,
+
   uMemory,
-  UnitDBKernel,
+  uSessionPasswords,
   uAssociations,
-  SysUtils,
   uJpegUtils,
   uPortableDeviceUtils,
   uExifUtils,
   uBitmapUtils,
-  uGraphicUtils,
-  RAWImage;
+  uGraphicUtils;
 
 //TODO: remove this function
 function LoadGraphic(FileName: string; var G: TGraphic; var IsEnCrypted: Boolean; var Password: string): Boolean;
@@ -31,7 +33,7 @@ begin
   IsEnCrypted := not IsDevicePath(FileName) and ValidCryptGraphicFile(FileName);
   if IsEnCrypted then
   begin
-    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    Password := SessionPasswords.FindForFile(FileName);
     if PassWord = '' then
       Exit;
 

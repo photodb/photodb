@@ -1,6 +1,6 @@
 program PhotoDB;
 
-{$DESCRIPTION 'Photo DB v4.0'}
+{$DESCRIPTION 'Photo DB v4.5'}
 
 { Reduce EXE size by disabling as much of RTTI as possible (delphi 2009+) }
 {$IF CompilerVersion >= 21.0}
@@ -392,21 +392,16 @@ uses
   uTranslateUtils in 'Units\uTranslateUtils.pas',
   uDialogUtils in 'Units\uDialogUtils.pas',
   uFormUpdateStatus in 'uFormUpdateStatus.pas' {FormUpdateStatus},
-  uLinkListEditorUpdateDirectories in 'Units\ListEditors\uLinkListEditorUpdateDirectories.pas';
+  uLinkListEditorUpdateDirectories in 'Units\ListEditors\uLinkListEditorUpdateDirectories.pas',
+  uSessionPasswords in 'Units\uSessionPasswords.pas',
+  uCollectionEvents in 'Units\uCollectionEvents.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
 {$R *.res}
 
 var
-  S1: string;
   _I: Integer;
-
-procedure StopApplication;
-begin
-  CloseSplashWindow;
-  DBTerminating := True;
-end;
 
 procedure FindRunningVersion;
 var
@@ -460,17 +455,13 @@ begin
   try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
+
   {
    //Command line
 
-   /OPTIMIZE_DUBLICTES
-   /SHOWBADLINKS
-   /RECREATETHTABLE
    /BACKUP
    /PACKTABLE
-   /CONVERT
    /SLEEP
-   /SAFEMODE
    /UNINSTALL
    /EXPLORER
    /GETPHOTOS
@@ -478,28 +469,17 @@ begin
    /NoPrevVersion
    /NoFaultCheck
    /NoFullRun
-   /Execute "c:\script.dbscript"
-   /NoVistaMsg
-   /NoVistaFileDlg
    /SelectDB "DBFile"
    /SelectDB "DBName"
    /SelectDBPermanent
-   /ADD "file"
-   /ADD "directory"
    /AddPass "pass1!pass2!..."
    /Logging
-   /SQLExec
-   /SQLExecFile
   }
+
     TW.I.Start('START');
     for _I := 0 to 10 do
       if ParamStr(_I) <> '' then
         TW.I.Start('Parameter: ' + ParamStr(_I));
-
-    EventLog('');
-    EventLog('');
-    EventLog('');
-    EventLog(Format('Program running! [%s]', [ProductName]));
 
     if FolderView then
       DBID := ReadInternalFSContent('ID');
@@ -511,6 +491,7 @@ begin
     SetSplashProgress(15);
     TW.I.Start('Application.Initialize');
     Application.Initialize;
+
     SetSplashProgress(30);
 
     EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
@@ -527,6 +508,7 @@ begin
     begin
       TW.I.Start('DBKernel.DBInit');
       DBKernel.DBInit;
+      // MigrateToVersion002(dbname);
 
       TW.I.Start('SetSplashProgress 35');
       SetSplashProgress(45);
@@ -546,60 +528,13 @@ begin
     Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
 
-    TW.I.Start('SetSplashProgress 70');
-    SetSplashProgress(70);
-
     TW.I.Start('GetCIDA');
     SetSplashProgress(90);
-
-    EventLog('...GROUPS CHECK + MENU...');
-    // DB FAULT ----------------------------------------------------
-
-    TW.I.Start('CHECKS');
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
 
-    if not FolderView and not DBTerminating and GetParamStrDBBool('/install') then
-    begin
-      if not FileExistsSafe(dbname) then
-      begin
-        s1 := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
-        CreateExampleDB(s1, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
-        DBKernel.AddDB(TA('My collection'), s1, Application.ExeName + ',0');
-        DBKernel.SetDataBase(s1);
-      end;
-
-      RegisterVideoFiles;
-      StopApplication;
-    end;
-
-   // MigrateToVersion002(dbname);
-
-    if not FolderView and not DBTerminating and GetParamStrDBBool('/uninstall') then
-    begin
-      CleanUpUserSettings;
-      StopApplication;
-    end;
-
-    if not FolderView and not DBTerminating then
-      if not GetParamStrDBBool('/NoFaultCheck') then
-        if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1')
-          and not DBInDebug then
-        begin
-          EventLog('Application terminated...');
-          CloseSplashWindow;
-          if ID_OK = MessageBoxDB(FormManager.Handle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
-          begin
-            Settings.WriteBool('StartUp', 'Pack', False);
-            Application.CreateForm(TCMDForm, CMDForm);
-            CMDForm.PackPhotoTable;
-            R(CMDForm);
-          end;
-        end;
-
     TCommandLine.ProcessServiceCommands;
-
     TCommandLine.ProcessUserCommandLine;
 
     CMDInProgress := False;
@@ -608,24 +543,12 @@ begin
 
     SetSplashProgress(100);
 
-    if GetParamStrDBBool('/close') then
-      StopApplication;
-
-    if DBTerminating then
-      Application.ShowMainForm := False;
     if not DBTerminating then
     begin
       EventLog('Form manager...');
       TW.I.Start('Form manager...');
-      FormManager.Load;
+      DBKernel.CheckDatabase;
     end;
-
-    // THEMES AND RUNNING DB ---------------------------------------------
-    TW.I.Start('THEMES AND RUNNING DB');
-
-    //fix for datetimepicker in XP
-    if (TOSVersion.Major = 5) and (TOSVersion.Minor = 1) then
-      TCustomStyleEngine.RegisterStyleHook(TDateTimePicker, TDateTimePickerStyleHookXP);
 
     if not DBTerminating then
     begin
@@ -636,34 +559,8 @@ begin
       if GetParamStrDBBool('/SLEEP') then
         ActivateBackgroundApplication(Application.Handle);
 
-      if not DBTerminating and not FolderView then
-      begin
-        if AnsiUpperCase(ParamStr(1)) = '/GETPHOTOS' then
-          if ParamStr(2) <> '' then
-            ImportForm.FromDrive(ParamStr(2)[1]);
-      end;
     end else if FormManager <> nil then
       FormManager.RunInBackground;
-
-    EventLog('Application Started!...');
-
-    if GetParamStrDBBool('/AddPass') then
-    begin
-      DBKernel.GetPasswordsFromParams;
-    end;
-
-    s1 := AnsiDequotedStr(GetParamStrDBValue('/Add'), '"');
-
-    if GetParamStrDBBool('/installExt') then
-    begin
-      s1 := GetParamStrDBValue('/installExt');
-
-      InstallGraphicFileAssociationsFromParamStr(Application.ExeName, s1);
-      RefreshSystemIconCache;
-    end;
-
-    if GetParamStrDBBool('/CPU1') then
-      ProcessorCount := 1;
 
     TW.I.Start('AllowDragAndDrop');
     AllowDragAndDrop;
@@ -680,7 +577,7 @@ begin
       end;
 
     UnRegisterPersonManager;
-    UnloadTranslateModule;
+    UnLoadTranslateModule;
   except
     on e: Exception do
     begin

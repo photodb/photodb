@@ -58,7 +58,8 @@ uses
   uThemesUtils,
   uDialogUtils,
   uProgramStatInfo,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents;
 
 type
   TFormCreatePerson = class(TThreadForm)
@@ -296,7 +297,7 @@ begin
     EventValues.ID := FPerson.ID;
     EventValues.FileName := FPerson.Name;
     EventValues.NewName := FPerson.Name;
-    DBKernel.DoIDEvent(Self, FPerson.ID, [EventID_PersonChanged], EventValues);
+    CollectionEvents.DoIDEvent(Self, FPerson.ID, [EventID_PersonChanged], EventValues);
 
     ModalResult := MB_OK;
     Close;
@@ -319,7 +320,7 @@ begin
       EventValues.ID := FPerson.ID;
       EventValues.FileName := FPerson.Name;
       EventValues.NewName := FPerson.Name;
-      DBKernel.DoIDEvent(Self, FPerson.ID, [EventID_PersonAdded], EventValues);
+      CollectionEvents.DoIDEvent(Self, FPerson.ID, [EventID_PersonAdded], EventValues);
     end;
   end;
 end;
@@ -492,7 +493,7 @@ begin
   PmImageOptions.Images := DBKernel.ImageList;
   MiLoadotherimage.ImageIndex := DB_IC_LOADFROMFILE;
   MiEditImage.ImageIndex := DB_IC_IMEDITOR;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_PERSON_RELOAD_GROUPS');
   FixFormPosition;
 
@@ -501,7 +502,7 @@ end;
 
 procedure TFormCreatePerson.FormDestroy(Sender: TObject);
 begin
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
   F(FPicture);
   F(FFormPersonSuggest);
   F(FDisplayImage);

@@ -42,7 +42,6 @@ uses
 
   DBCMenu,
   UnitGroupsWork,
-  UnitDBKernel,
   Effects,
   GraphicCrypt,
   UnitLinksSupport,
@@ -97,7 +96,9 @@ uses
   uEXIFDisplayControl,
   uProgramStatInfo,
   uDatabaseDirectoriesUpdater,
-  uFormInterfaces;
+  uCollectionEvents,
+  uFormInterfaces,
+  uSessionPasswords;
 
 type
   TValueListEditor = class(TEXIFDisplayControl);
@@ -396,7 +397,7 @@ uses
   uManagerExplorer,
   UnitFormChangeGroup,
   SelectGroupForm,
-  UnitGroupsTools;
+  UnitGroupsTools, UnitDBKernel;
 
 {$R *.dfm}
 
@@ -591,9 +592,9 @@ begin
     ImgReloadInfo.Visible := False;
     FShowInfoType := SHOW_INFO_ID;
 
-    DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-    DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
-    DBKernel.RegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
+    CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
+    CollectionEvents.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
+    CollectionEvents.RegisterChangesIDbyID(Self, ChangedDBDataByID, ID);
     DBitem1.Visible := True;
     CommentMemo.Cursor := crDefault;
     CommentMemo.PopupMenu := nil;
@@ -632,7 +633,7 @@ begin
               DataRecord.Encrypted :=  ValidCryptBlobStreamJPG(DA.Thumb);
               if DataRecord.Encrypted then
               begin
-                PassWord := DBKernel.FindPasswordForCryptBlobStream(WorkQuery.FieldByName('thum'));
+                PassWord := SessionPasswords.FindForBlobStream(WorkQuery.FieldByName('thum'));
                 if PassWord = '' then
                   PassWord := RequestPasswordForm.ForBlob(DA.Thumb, DA.FileName);
 
@@ -713,7 +714,7 @@ begin
       DateEdit.Enabled := True;
       TimeEdit.Enabled := True;
 
-      CollectionMemo.Text := DBkernel.GetDataBaseName;
+      CollectionMemo.Text := 'TODO: DELETE';//DBkernel.GetDataBaseName;
       OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
       if YearOf(DataRecord.Date) > cMinEXIFYear then
@@ -811,7 +812,7 @@ begin
   No_file := False;
   Editing_info := True;
   Adding_now := False;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataGroups);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataGroups);
   TimeEdit.ParentColor := True;
 
   PmItem.Images := DBKernel.ImageList;
@@ -1175,7 +1176,7 @@ begin
 
   FShowInfoType := SHOW_INFO_FILE_NAME;
   DBitem1.Visible := False;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
   Editing_info := False;
 
   Rec := TDBPopupMenuInfoRecord.Create;
@@ -1532,7 +1533,7 @@ begin
     ImgReloadInfo.Visible := False;
     DateEdit.Enabled := True;
     TimeEdit.Enabled := True;
-    DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+    CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 
     FShowInfoType := SHOW_INFO_IDS;
 
@@ -1663,9 +1664,9 @@ begin
   R(EditLinkForm);
   Hide;
   PropertyManager.RemoveProperty(Self);
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataGroups);
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
-  DBKernel.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ImageId);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataGroups);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesIDbyID(Self, ChangedDBDataByID, ImageId);
   Release;
 end;
 

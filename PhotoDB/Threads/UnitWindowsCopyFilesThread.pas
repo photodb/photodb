@@ -5,20 +5,23 @@ interface
 uses
   Classes,
   Windows,
+  ActiveX,
   DBCommon,
   SysUtils,
   Forms,
+
   Dmitry.Utils.Files,
+
+  UnitDBDeclare,
+  ProgressActionUnit,
+
   uMemory,
   uLogger,
   uDBUtils,
   uDBForm,
-  UnitDBDeclare,
-  UnitDBKernel,
   uDBThread,
-  ActiveX,
-  ProgressActionUnit,
-  uConstants;
+  uConstants,
+  uCollectionEvents;
 
 type
   TWindowsCopyFilesThread = class(TDBThread)
@@ -145,7 +148,7 @@ end;
 
 procedure TWindowsCopyFilesThread.KernelEventCallBackSync;
 begin
-  DBKernel.DoIDEvent(FOwnerForm, FID, FParams, FValue);
+  CollectionEvents.DoIDEvent(FOwnerForm, FID, FParams, FValue);
 end;
 
 procedure TWindowsCopyFilesThread.CreateProgress(MaxCount: Integer);

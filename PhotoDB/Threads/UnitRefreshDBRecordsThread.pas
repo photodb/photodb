@@ -8,7 +8,6 @@ uses
   System.SysUtils,
   Vcl.Forms,
 
-  UnitDBKernel,
   UnitPropeccedFilesSupport,
   UnitDBDeclare,
 
@@ -16,6 +15,7 @@ uses
   uMemory,
   uDBUtils,
   uDBPopupMenuInfo,
+  uCollectionEvents,
   uDBForm,
   uDBThread,
   uConstants;
@@ -174,19 +174,19 @@ var
   EventInfo: TEventValues;
 begin
   EventInfo.ID := IntParam;
-  DBKernel.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Param_Image], EventInfo);
+  CollectionEvents.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Param_Image], EventInfo);
 end;
 
 procedure TRefreshDBRecordsThread.DoDBkernelEventRefreshList;
 var
   EventInfo: TEventValues;
 begin
-  DBKernel.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Repaint_ImageList], EventInfo);
+  CollectionEvents.DoIDEvent(DBEvent_Sender, IntParam, [EventID_Repaint_ImageList], EventInfo);
 end;
 
 procedure TRefreshDBRecordsThread.OnDBKernelEventProcedureSunch;
 begin
-  DBKernel.DoIDEvent(DBEvent_Sender, DBEvent_ID, DBEvent_Params, DBEvent_Value);
+  CollectionEvents.DoIDEvent(DBEvent_Sender, DBEvent_ID, DBEvent_Params, DBEvent_Value);
 end;
 
 end.

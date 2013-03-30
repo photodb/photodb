@@ -2328,13 +2328,11 @@ END
 /* Resources\SampleDB.res */
 /* Resources\Import.res */
 /* Resources\CollectionSync.res */
-/* ..\DBIcons\icons.res */
 /* ..\DBIcons\db_icons.res */
 /* ..\DBIcons\ZoomRc.res */
 /* ..\DBIcons\editor.res */
 /* ..\DBIcons\explorer.res */
 /* ..\DBIcons\cmd_icons.res */
-/* ..\DBIcons\updater.res */
 /* Resources\MOBILE_FS.res */
 /* Resources\explorer_search.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Controls.res */

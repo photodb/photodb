@@ -32,18 +32,19 @@ uses
   GraphicSelectEx,
   UnitGroupsWork,
   UnitGroupsTools,
+  UnitDBCommon,
 
   uRuntime,
   uEditorTypes,
   uInterfaces,
   uBitmapUtils,
-  UnitDBCommon,
   uExplorerGroupsProvider,
   uConstants,
   uDBForm,
   uGroupTypes,
   uMemoryEx,
   uShellIntegration,
+  uCollectionEvents,
   uDialogUtils,
   uMemory,
   uThemesUtils,
@@ -242,7 +243,7 @@ begin
       EventInfo.Data := GroupItem;
       EventInfo.FileName := FGroup.GroupName;
       EventInfo.NewName := GroupItem.GroupName;
-      DBKernel.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
+      CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
     finally
       F(GroupItem);
     end;

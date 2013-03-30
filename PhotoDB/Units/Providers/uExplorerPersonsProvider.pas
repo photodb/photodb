@@ -8,9 +8,12 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
 
+  Dmitry.Utils.System,
   Dmitry.Utils.ShellIcons,
   Dmitry.PathProviders,
   Dmitry.PathProviders.MyComputer,
+
+  UnitDBDeclare,
 
   uPeopleSupport,
   uBitmapUtils,
@@ -24,9 +27,7 @@ uses
   uShellIntegration,
   uDBForm,
   uDBClasses,
-  Dmitry.Utils.System,
-  UnitDBKernel,
-  UnitDBDeclare;
+  uCollectionEvents;
 
 type
   TPersonsItem = class(TPathItem)
@@ -142,7 +143,7 @@ begin
             if Result then
             begin
               EventValues.ID := P.ID;
-              DBKernel.DoIDEvent(Form, Item.PersonID, [EventID_PersonRemoved], EventValues);
+              CollectionEvents.DoIDEvent(Form, Item.PersonID, [EventID_PersonRemoved], EventValues);
             end;
           end;
         end;
@@ -268,7 +269,7 @@ begin
     EventValues.ID := Item.PersonID;
     EventValues.FileName := Options.NewName;
     EventValues.NewName := Options.NewName;
-    DBKernel.DoIDEvent(TDBForm(Sender), Item.PersonID, [EventID_PersonChanged], EventValues);
+    CollectionEvents.DoIDEvent(TDBForm(Sender), Item.PersonID, [EventID_PersonChanged], EventValues);
   end;
 end;
 

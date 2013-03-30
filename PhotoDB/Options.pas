@@ -67,7 +67,8 @@ uses
   uTransparentEncryption,
   uProgramStatInfo,
   uShellIntegration,
-
+  uCollectionEvents,
+  uSessionPasswords,
   uLinkListEditorForExecutables;
 
 type
@@ -501,7 +502,7 @@ begin
   if ReloadData then
   begin
     if MessageBoxDB(Handle, L('Refresh data in windows?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
-      DBKernel.DoIDEvent(Self, 0, [EventID_Param_Refresh_Window], EventInfo);
+      CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_Refresh_Window], EventInfo);
 
   end;
   // case TabbedNotebook1.PageIndex of
@@ -1048,12 +1049,12 @@ end;
 
 procedure TOptionsForm.BtnClearSessionPasswordsClick(Sender: TObject);
 begin
-  DBKernel.ClearTemporaryPasswordsInSession;
+  SessionPasswords.ClearSession;
 end;
 
 procedure TOptionsForm.BtnClearPasswordsInSettingsClick(Sender: TObject);
 begin
-  DBKernel.ClearINIPasswords;
+  SessionPasswords.ClearINIPasswords;
 end;
 
 procedure TOptionsForm.MiSelectextensionClick(Sender: TObject);

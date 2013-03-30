@@ -22,7 +22,6 @@ uses
   Dmitry.Controls.DmProgress,
   Dmitry.Controls.SaveWindowPos,
 
-  UnitDBKernel,
   UnitDBDeclare,
 
   uConstants,
@@ -30,6 +29,7 @@ uses
   uMemory,
   uDBForm,
   uFormInterfaces,
+  uCollectionEvents,
   uJpegUtils,
   uGraphicUtils,
   uBitmapUtils,
@@ -143,13 +143,13 @@ procedure TFormUpdateStatus.FormCreate(Sender: TObject);
 begin
   FCurrentFileName := '';
   FHiddenByUser := False;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormUpdateStatus.FormDestroy(Sender: TObject);
 begin
   SwpWindow.SavePosition;
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormUpdateStatus.HideForm;

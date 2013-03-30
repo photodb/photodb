@@ -3,13 +3,15 @@ unit uPhotoShelf;
 interface
 
 uses
-  uMemory,
+  System.Classes,
+  System.SysUtils,
+  System.SyncObjs,
+
   UnitDBDeclare,
-  UnitDBKernel,
+
+  uMemory,
+  uCollectionEvents,
   uDBForm,
-  Classes,
-  SysUtils,
-  SyncObjs,
   uSettings,
   uProgramStatInfo,
   uLogger;
@@ -83,12 +85,12 @@ begin
         I: Integer;
       begin
         EventInfo.ID := 0;
-        DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
+        CollectionEvents.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
 
         for I := 0 to AddedItems.Count - 1 do
         begin
           EventInfo.FileName := AddedItems[I];
-          DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfItemAdded], EventInfo);
+          CollectionEvents.DoIDEvent(Sender, 0, [EventID_ShelfItemAdded], EventInfo);
         end;
       end
     );
@@ -153,12 +155,12 @@ begin
         I: Integer;
       begin
         EventInfo.ID := 0;
-        DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
+        CollectionEvents.DoIDEvent(Sender, 0, [EventID_ShelfChanged], EventInfo);
 
         for I := 0 to RemovedItems.Count - 1 do
         begin
           EventInfo.FileName := RemovedItems[I];
-          DBKernel.DoIDEvent(Sender, 0, [EventID_ShelfItemRemoved], EventInfo);
+          CollectionEvents.DoIDEvent(Sender, 0, [EventID_ShelfItemRemoved], EventInfo);
         end;
       end
     );

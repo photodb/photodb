@@ -15,7 +15,6 @@ uses
 
   Dmitry.Utils.System,
 
-  UnitDBKernel,
   UnitGroupsWork,
   UnitDBDeclare,
   CmpUnit,
@@ -35,6 +34,7 @@ uses
   uBitmapUtils,
   uTranslate,
   uProgramStatInfo,
+  uCollectionEvents,
   uShellIntegration;
 
 const
@@ -432,7 +432,7 @@ begin
 
                 Values.Groups := Groups;
                 Values.Keywords := Keywords;
-                DBKernel.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups, EventID_Param_KeyWords], Values);
+                CollectionEvents.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups, EventID_Param_KeyWords], Values);
 
               finally
                 F(UC);
@@ -1005,12 +1005,12 @@ end;
 
 procedure TPersonManager.RegisterManager;
 begin
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TPersonManager.Unregister;
 begin
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TPersonManager.ChangedDBDataByID(Sender: TObject; ID: Integer;

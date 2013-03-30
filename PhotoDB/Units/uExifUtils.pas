@@ -19,7 +19,6 @@ uses
   GraphicEx,
   RAWImage,
   GraphicCrypt,
-  UnitDBKernel,
   UnitDBDeclare,
 
   uMemory,
@@ -31,7 +30,8 @@ uses
   uAssociations,
   uLogger,
   uPortableDeviceUtils,
-  uTranslate;
+  uTranslate,
+  uSessionPasswords;
 
 const
   TAG_IMAGE_WIDTH					        = $0100;
@@ -1055,7 +1055,7 @@ begin
 
   if ValidCryptGraphicFile(FileName) then
   begin
-    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    Password := SessionPasswords.FindForFile(FileName);
     MS := TMemoryStream.Create;
     try
       if DecryptGraphicFileToStream(FileName, Password, MS) then
@@ -1084,7 +1084,7 @@ begin
   FD := GetFileDate(FileName);
   if ValidCryptGraphicFile(FileName) then
   begin
-    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    Password := SessionPasswords.FindForFile(FileName);
     MS := TMemoryStream.Create;
     try
       if DecryptGraphicFileToStream(FileName, Password, MS) then

@@ -32,6 +32,7 @@ uses
   UnitINI,
   UnitDBDeclare,
   UnitDBFileDialogs,
+  CmpUnit,
 
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
@@ -45,7 +46,6 @@ uses
   uCDMappingTypes,
   uGroupTypes,
   uMemory,
-  CmpUnit,
   uBitmapUtils,
   uGraphicUtils,
   uDBPopupMenuInfo,
@@ -64,7 +64,8 @@ uses
   uVCLHelpers,
   uPhotoShelf,
   uLinkListEditorForExecutables,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents;
 
 type
   TDBPopupMenu = class
@@ -864,7 +865,7 @@ begin
         EventInfo.IsDate := True;
         for I := 0 to FInfo.Count - 1 do
           if FInfo[I].Selected then
-            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
+            CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Date, EventID_Param_IsDate], EventInfo);
       end else
       begin
         _sqlexectext := 'Update $DB$ Set IsDate = FALSE Where ID in (';
@@ -885,7 +886,7 @@ begin
         EventInfo.IsDate := FALSE;
         for I := 0 to FInfo.Count - 1 do
           if Finfo[I].Selected then
-            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsDate], EventInfo);
+            CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsDate], EventInfo);
       end;
       // [END] Date Support
       // [BEGIN] Time Support
@@ -911,7 +912,7 @@ begin
         EventInfo.IsTime := True;
         for I := 0 to Finfo.Count - 1 do
           if Finfo[I].Selected then
-            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
+            CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Time, EventID_Param_IsTime], EventInfo);
       end else
       begin
         _sqlexectext := 'Update $DB$ Set IsTime = FALSE Where ID in (';
@@ -932,7 +933,7 @@ begin
         EventInfo.IsTime := FALSE;
         for I := 0 to FInfo.Count - 1 do
           if Finfo[I].Selected then
-            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsTime], EventInfo);
+            CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_IsTime], EventInfo);
       end;
       // [END] Time Support
     finally
@@ -990,7 +991,7 @@ begin
             SetSQL(FQuery, SQL_);
             ExecSQL(FQuery);
             EventInfo.Attr := Db_attr_norm;
-            DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Attr], EventInfo);
+            CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Attr], EventInfo);
             SetLength(S, 1);
             for J := 0 to Length(Files) - 1 do
             begin
@@ -1003,7 +1004,7 @@ begin
                   end;
                 end;
               end;
-              DBKernel.DoIDEvent(FOwner, IDs[J], [EventID_Param_Delete], EventInfo);
+              CollectionEvents.DoIDEvent(FOwner, IDs[J], [EventID_Param_Delete], EventInfo);
             end;
           finally
             F(DA);
@@ -1055,7 +1056,7 @@ begin
             end;
           end;
         end;
-        DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
+        CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
       end;
     FreeDS(FQuery);
   end;
@@ -1093,7 +1094,7 @@ begin
       ExecSQL(FQuery);
       for I := 0 to Finfo.Count - 1 do
         if Finfo[I].Selected then
-          DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
+          CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
     finally
       FreeDS(FQuery);
     end;
@@ -1118,7 +1119,7 @@ begin
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
     if RequestPasswordForm.ForImage(FInfo[FInfo.Position].FileName) <> '' then
-      DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
+      CollectionEvents.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
     Query := GetQuery;
@@ -1130,7 +1131,7 @@ begin
       SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
       Query.Open;
       if RequestPasswordForm.ForBlob(DA.Thumb, FInfo[FInfo.Position].FileName) <> '' then
-        DBKernel.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
+        CollectionEvents.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
     finally
       F(DA);
       FreeDS(Query);
@@ -1335,7 +1336,7 @@ begin
         ExecSQL(FQuery);
         EventInfo.KeyWords := List[I].Value;
         for J := 0 to Length(List[I].IDs) - 1 do
-          DBKernel.DoIDEvent(FOwner, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
+          CollectionEvents.DoIDEvent(FOwner, List[I].IDs[J], [EventID_Param_KeyWords], EventInfo);
       end;
 
     finally
@@ -1383,7 +1384,7 @@ begin
           ExecSQL(FQuery);
           EventInfo.Groups := List[I].Value;
           for J := 0 to Length(List[I].IDs) - 1 do
-            DBKernel.DoIDEvent(FOwner,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
+            CollectionEvents.DoIDEvent(FOwner,List[i].IDs[j],[EventID_Param_Groups],EventInfo);
       end;
       finally
         FreeDS(fQuery);
@@ -1465,7 +1466,7 @@ begin
         begin
           SetPrivate(FInfo[I].ID);
           EventInfo.Access := Db_access_private;
-          DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
+          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
       end else
       begin
@@ -1473,7 +1474,7 @@ begin
         begin
           UnSetPrivate(FInfo[I].ID);
           EventInfo.Access := Db_access_none;
-          DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
+          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
       end;
     end;
@@ -1605,7 +1606,7 @@ var
 begin
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
-      DBKernel.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Image], EventInfo);
+      CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Image], EventInfo);
 end;
 
 procedure TDBPopupMenu.RenameItemPopUpMenu(Sender: TObject);
@@ -1634,16 +1635,16 @@ begin
       if IsInShelf then
       begin
         PhotoShelf.RemoveFromShelf(FInfo[I].FileName);
-        DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfItemRemoved], EventInfo);
+        CollectionEvents.DoIDEvent(FOwner, 0, [EventID_ShelfItemRemoved], EventInfo);
       end else
       begin
         PhotoShelf.AddToShelf(FInfo[I].FileName);
-        DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfItemAdded], EventInfo);
+        CollectionEvents.DoIDEvent(FOwner, 0, [EventID_ShelfItemAdded], EventInfo);
       end;
     end;
 
   EventInfo.FileName := '';
-  DBKernel.DoIDEvent(FOwner, 0, [EventID_ShelfChanged], EventInfo);
+  CollectionEvents.DoIDEvent(FOwner, 0, [EventID_ShelfChanged], EventInfo);
 end;
 
 procedure TDBPopupMenu.SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
@@ -1691,7 +1692,7 @@ begin
       if FInfo[I].Selected then
       begin
         EventInfo.Rating := NewRating;
-        DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rating], EventInfo);
+        CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rating], EventInfo);
       end;
   finally
     FreeDS(FQuery);
@@ -1712,7 +1713,7 @@ begin
     begin
       SetRotate(Finfo[I].ID, NewRotate);
       EventInfo.Rotation := NewRotate;
-      DBKernel.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
+      CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
     end;
 end;
 

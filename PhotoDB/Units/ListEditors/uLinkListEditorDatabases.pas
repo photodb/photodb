@@ -213,8 +213,9 @@ begin
     WLUpdateOptions.Text := FOwner.L('Change synchronization settings');
     WLUpdateOptions.Top := WedDescription.Top + WedDescription.Height + 8;
     WLUpdateOptions.Left := 35;
-    WLUpdateOptions.IconWidth := 0;
-    WLUpdateOptions.IconHeight := 0;
+    WLUpdateOptions.IconWidth := 16;
+    WLUpdateOptions.IconHeight := 16;
+    WLUpdateOptions.LoadFromResource('SYNC');
     WLUpdateOptions.RefreshBuffer(True);
     WLUpdateOptions.OnClick := OnUpdateOptionsClick;
   end;
@@ -228,8 +229,9 @@ begin
     WlPreviewOptions.Text := FOwner.L('Change preview options');
     WlPreviewOptions.Top := WLUpdateOptions.Top + WLUpdateOptions.Height + 8;
     WlPreviewOptions.Left := 35;
-    WlPreviewOptions.IconWidth := 0;
-    WlPreviewOptions.IconHeight := 0;
+    WlPreviewOptions.IconWidth := 16;
+    WlPreviewOptions.IconHeight := 16;
+    WlPreviewOptions.LoadFromResource('PICTURE');
     WlPreviewOptions.RefreshBuffer(True);
     WlPreviewOptions.OnClick := OnPreviewOptionsClick;
   end;
@@ -274,7 +276,7 @@ var
           FileName := FileName + '.photodb';
 
         Icon := Application.ExeName + ',0';
-        CreateExampleDB(FileName, Icon, ExtractFileDir(Application.ExeName));
+        DBKernel.CreateExampleDB(FileName, Icon, ExtractFileDir(Application.ExeName));
 
         Data := TDatabaseInfo.Create(GetFileNameWithoutExt(FileName), FileName, Icon, '');
       end;

@@ -3,42 +3,42 @@ unit UnitHintCeator;
 interface
 
 uses
-  System.Types,
-  Windows,
-  Messages,
+  Math,
   SysUtils,
   Classes,
-  ExtCtrls,
-  uBitmapUtils,
-  Graphics,
-  Controls,
-  Forms,
-  GIFImage,
-  uAnimatedJPEG,
-  GraphicEx,
-  Math,
-  Dialogs,
+  System.Types,
+  SyncObjs,
+  Windows,
+  ActiveX,
+  Messages,
   StdCtrls,
   ComCtrls,
   ShellCtrls,
-  RAWImage,
-  uJpegUtils,
-  GraphicCrypt,
+  ExtCtrls,
+  Graphics,
+  Controls,
+  Forms,
 
   Dmitry.Utils.Files,
 
+  GIFImage,
+  GraphicEx,
+  RAWImage,
+  GraphicCrypt,
+  UnitDBDeclare,
+
+  uAnimatedJPEG,
+  uJpegUtils,
+  uBitmapUtils,
   uDBForm,
   uMemory,
-  SyncObjs,
-  UnitDBKernel,
-  ActiveX,
-  UnitDBDeclare,
   uGraphicUtils,
   uRuntime,
   uAssociations,
   uDBThread,
   uConstants,
   uPortableDeviceUtils,
+  uSessionPasswords,
   uImageLoader;
 
 type
@@ -122,7 +122,7 @@ begin
     Password := '';
     if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
     begin
-      Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+      Password := SessionPasswords.FindForFile(FInfo.FileName);
       if Password = '' then
         Exit;
     end;

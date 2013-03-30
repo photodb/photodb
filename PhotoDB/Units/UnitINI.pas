@@ -9,6 +9,9 @@ uses
   System.Win.Registry,
   System.IniFiles,
   Winapi.Windows,
+
+  Dmitry.CRC32,
+
   uLogger,
   uConstants,
   uMemory,
@@ -67,13 +70,22 @@ const
   REGISTRY_CURRENT_USER = 1;
   REGISTRY_CLASSES      = 2;
 
-  function GetRegRootKey: string;
+function GetRegRootKey: string;
+function GetCollectionRootKey(CollectionFile: string): string;
 
 implementation
 
 function GetRegRootKey: string;
 begin
   Result := RegRoot + cUserData;
+end;
+
+function GetCollectionRootKey(CollectionFile: string): string;
+var
+  DBPrefix: string;
+begin
+  DBPrefix := ExtractFileName(CollectionFile) + '.' + IntToHex(StringCRC(CollectionFile), 8);
+  Result := GetRegRootKey + '\Collections\' + DBPrefix;
 end;
 
 function GetRegIniFileName: string;

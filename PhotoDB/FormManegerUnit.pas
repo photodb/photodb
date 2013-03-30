@@ -11,17 +11,18 @@ uses
   Winapi.Messages,
   Vcl.Forms,
   Vcl.Themes,
+  Vcl.ComCtrls,
   Vcl.AppEvnts,
 
   Dmitry.CRC32,
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
-  UnitDBKernel,
   CommonDBSupport,
   EasyListView,
   UnitDBDeclare,
   UnitDBCommon,
+  UnitDBKernel,
 
   uAppUtils,
   uLogger,
@@ -49,9 +50,12 @@ uses
   uActivationUtils,
   {$ENDIF}
   uProgramStatInfo,
+  uDateTimePickerStyleHookXP,
   uLinkListEditorDatabases,
   uDatabaseDirectoriesUpdater,
-  uFormInterfaces;
+  uFormInterfaces,
+  uSessionPasswords,
+  uCollectionEvents;
 
 type
   TFormManager = class(TDBForm)
@@ -68,11 +72,8 @@ type
     FCheckCount: Integer;
     WasIde: Boolean;
     ExitAppl: Boolean;
-    FLockCleaning: Boolean;
-    FSetLanguageMessage: Cardinal;
     FDirectoryWatcher: IDirectoryWatcher;
     procedure ExitApplication;
-    function GetTimeLimitMessage: string;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure RegisterMainForm(Value: TForm);
     procedure UnRegisterMainForm(Value: TForm);
@@ -91,12 +92,7 @@ type
     destructor Destroy; override;
     procedure Run;
     procedure RunInBackground;
-    procedure Close(Form: TForm);
-    function MainFormsCount: Integer;
-    function IsMainForms(Form: TForm): Boolean;
     procedure CloseApp(Sender: TObject);
-    procedure Load;
-    property TimeLimitMessage: string read GetTimeLimitMessage;
     property Count: Integer read GetCount;
     property Forms[Index: Integer]: TForm read GetFormByIndex; default;
   end;
@@ -347,7 +343,7 @@ begin
         SharedMemory := MapViewOfFile(SharedMemHandle, FILE_MAP_WRITE, 0, 0, 0);
         if SharedMemory <> nil then
         begin
-          Password := DBKernel.FindPasswordForCryptImageFile(S);
+          Password := SessionPasswords.FindForFile(S);
 
           CopyMemory(SharedMemory, PChar(Password), SizeOf(Char) * (Length(Password) + 1));
 
@@ -381,11 +377,6 @@ begin
   TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
 end;
 
-procedure TFormManager.Close(Form: TForm);
-begin
-  UnRegisterMainForm(Self);
-end;
-
 procedure TFormManager.RegisterMainForm(Value: TForm);
 begin
   FMainForms.Add(Value);
@@ -396,14 +387,10 @@ var
   I: Integer;
 begin
   FMainForms.Remove(Value);
-  try
-    for I := FMainForms.Count - 1 downto 0 do
-      if not TForm(FMainForms[I]).Visible then
-        TForm(FMainForms[I]).Close;
-  except
-    on E: Exception do
-      EventLog(':TFormManager::UnRegisterMainForm() throw exception: ' + E.message);
-  end;
+
+  for I := FMainForms.Count - 1 downto 0 do
+    if not TForm(FMainForms[I]).Visible then
+      TForm(FMainForms[I]).Close;
 end;
 
 procedure TFormManager.ExitApplication;
@@ -433,14 +420,7 @@ begin
 
   for I := FMainForms.Count - 1 downto 0 do
     if not TForm(FMainForms[I]).Visible then
-    begin
-      try
-        TForm(FMainForms[I]).Close;
-      except
-        on E: Exception do
-          EventLog(':TFormManager::ExitApplication()/CloseForms throw exception: ' + E.message);
-      end;
-    end;
+      TForm(FMainForms[I]).Close;
 
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
@@ -456,11 +436,8 @@ begin
 
   if not GetParamStrDBBool('/uninstall') then
     Settings.WriteProperty('Starting', 'ApplicationStarted', '0');
+
   EventLog(':TFormManager::ExitApplication()/OK...');
-  EventLog('');
-  EventLog('');
-  EventLog('');
-  EventLog('finalization:');
 end;
 
 procedure TFormManager.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -468,21 +445,28 @@ var
   I: Integer;
 begin
   for I := FMainForms.Count - 1 downto 0 do
-  try
     TForm(FMainForms[I]).Close;
-  except
-    on E: Exception do
-      EventLog(':TFormManager::ExitApplication()/CloseForms throw exception: ' + E.message);
-  end;
+
   ExitApplication;
 end;
 
 procedure TFormManager.FormCreate(Sender: TObject);
 begin
+  Caption := DBID;
+
   if Assigned(TStyleManager.Engine) then
     TStyleManager.Engine.RegisterStyleHook(TEasyListview, TScrollingStyleHook);
-  FSetLanguageMessage := RegisterWindowMessage('UPDATE_APP_LANGUAGE');
-  DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
+
+  if (TOSVersion.Major = 5) and (TOSVersion.Minor = 1) then
+    TCustomStyleEngine.RegisterStyleHook(TDateTimePicker, TDateTimePickerStyleHookXP);
+
+  CollectionEvents.RegisterChangesID(Sender, ChangedDBDataByID);
+
+  HidefromTaskBar(Application.Handle);
+
+  TW.I.Start('FM -> SetTimer');
+  if DBTerminating then
+    TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
 end;
 
 function TFormManager.GetCount: Integer;
@@ -498,11 +482,6 @@ end;
 function TFormManager.GetFormID: string;
 begin
   Result := 'System';
-end;
-
-function TFormManager.GetTimeLimitMessage: string;
-begin
-  Result := L('After the 30 days has expired, you must activate your copy!');
 end;
 
 procedure TFormManager.AeMainException(Sender: TObject; E: Exception);
@@ -551,16 +530,8 @@ begin
 end;
 
 procedure TFormManager.CheckSampleDB;
-var
-  FileName: string;
 begin
-  //if program was uninstalled with registered databases - restore database or create new database
-  FileName := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
-  if not FileExistsSafe(FileName) then
-    CreateExampleDB(FileName, Application.ExeName + ',0', ExtractFileDir(Application.ExeName));
 
-  DBKernel.AddDB(TA('My collection'), FileName, Application.ExeName + ',0');
-  DBKernel.SetDataBase(FileName);
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
@@ -648,16 +619,6 @@ begin
   end;
 end;
 
-function TFormManager.MainFormsCount: Integer;
-begin
-  Result := FMainForms.Count;
-end;
-
-function TFormManager.IsMainForms(Form: TForm): Boolean;
-begin
-  Result := FMainForms.IndexOf(Form) > -1;
-end;
-
 procedure TFormManager.CloseApp(Sender: TObject);
 var
   I: Integer;
@@ -669,71 +630,6 @@ end;
 procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
 begin
   inherited Close;
-end;
-
-procedure TFormManager.Load;
-var
-  DBVersion: Integer;
-  StringDBCheckKey: string;
-
-begin
-  TW.I.Start('FM -> Load');
-  Caption := DBID;
-
-  FLockCleaning := True;
-  try
-
-    TW.I.Start('FM -> InitializeDolphinDB');
-    if FolderView then
-    begin
-      dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
-
-      if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
-        dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
-    end;
-
-    TW.I.Start('FM -> SetTimer');
-    if DBTerminating then
-      TimerCloseHandle := SetTimer(0, TIMER_CLOSE, 1000, @TimerProc);
-
-    if not DBTerminating then
-    begin
-
-      if not FileExistsSafe(Dbname) then
-      begin
-        TW.I.Start('FM -> DoChooseDBFile');
-        CloseSplashWindow;
-
-        CheckSampleDB;
-      end;
-
-      TW.I.Start('FM -> check valid db version');
-      // check valid db version
-      StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(Dbname)), DB_VER_CURRENT]);
-      if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
-      begin
-        TW.I.Start('FM -> TestDBEx');
-        DBVersion := DBKernel.TestDBEx(Dbname, False);
-        if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
-        begin
-          CloseSplashWindow;
-          ConvertDB(Dbname);
-          DBVersion := DBKernel.TestDBEx(Dbname, False);
-          if not DBKernel.ValidDBVersion(Dbname, DBVersion) then
-          begin
-            DBTerminating := True;
-            Exit;
-          end;
-        end;
-        Settings.WriteBool('DBVersionCheck', StringDBCheckKey, True);
-      end;
-    end;
-  finally
-    FLockCleaning := False;
-  end;
-
-  TW.I.Start('FM -> HidefromTaskBar');
-  HidefromTaskBar(Application.Handle);
 end;
 
 procedure TFormManager.WMCopyData(var Msg: TWMCopyData);
@@ -772,7 +668,6 @@ begin
   FMainForms := TList.Create;
   WasIde := False;
   ExitAppl := False;
-  FLockCleaning := False;
   inherited Create(AOwner);
 end;
 

@@ -20,7 +20,6 @@ uses
   GraphicCrypt,
   RAWImage,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uTiffImage,
   uConstants,
@@ -37,6 +36,7 @@ uses
   uJpegUtils,
   uTranslate,
   uFormInterfaces,
+  uSessionPasswords,
   uPNGUtils;
 
 type
@@ -194,7 +194,7 @@ begin
             if Info.Encrypted then
             begin
               if ilfPassword in Flags then
-                Password := DBKernel.FindPasswordForCryptImageFile(Info.FileName);
+                Password := SessionPasswords.FindForFile(Info.FileName);
 
               if (Password = '') and (ilfAskUserPassword in flags) then
                 TThread.Synchronize(nil,

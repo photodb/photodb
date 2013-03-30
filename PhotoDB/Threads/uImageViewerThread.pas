@@ -10,7 +10,6 @@ uses
   Vcl.Imaging.PngImage,
 
   UnitDBDeclare,
-  UnitDBKernel,
   RAWImage,
   GraphicCrypt,
 
@@ -31,6 +30,7 @@ uses
   uSettings,
   uAnimatedJPEG,
   uProgramStatInfo,
+  uSessionPasswords,
   uFaceDetection,
   uFaceDetectionThread;
 
@@ -116,7 +116,7 @@ begin
 
       if not IsDevicePath(FInfo.FileName) and ValidCryptGraphicFile(FInfo.FileName) then
       begin
-        Password := DBKernel.FindPasswordForCryptImageFile(FInfo.FileName);
+        Password := SessionPasswords.FindForFile(FInfo.FileName);
         if Password = '' then
         begin
           SetNOImageAsynch('');

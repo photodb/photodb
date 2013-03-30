@@ -27,7 +27,6 @@ uses
 
   uConstants,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uMemory,
   uDBForm,
@@ -36,7 +35,8 @@ uses
   uShellIntegration,
   uDBBaseTypes,
   uDBUtils,
-  uSettings;
+  uSettings,
+  uCollectionEvents;
 
 type
   TFormFastFileRenamer = class(TDBForm)
@@ -471,7 +471,7 @@ end;
 procedure TFormFastFileRenamer.KernelEventCallBack(ID: Integer;
   Params: TEventFields; Value: TEventValues);
 begin
-  DBKernel.DoIDEvent(Self, ID, Params, Value);
+  CollectionEvents.DoIDEvent(Self, ID, Params, Value);
 end;
 
 function TFormFastFileRenamer.CheckConflictFileNames: boolean;

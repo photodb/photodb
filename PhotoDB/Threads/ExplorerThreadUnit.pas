@@ -30,9 +30,6 @@ uses
   CCR.Exif,
 
   ExplorerTypes,
-  uGraphicUtils,
-  uShellIntegration,
-  UnitDBKernel,
   ExplorerUnit,
   GraphicCrypt,
   RAWImage,
@@ -42,6 +39,8 @@ uses
   CommonDBSupport,
   UnitBitmapImageList,
 
+  uGraphicUtils,
+  uShellIntegration,
   uExplorerFolderImages,
   uGUIDUtils,
   uResources,
@@ -74,7 +73,8 @@ uses
   uExplorerPersonsProvider,
   uExplorerDateStackProviders,
   uPhotoShelf,
-  uImageLoader;
+  uImageLoader,
+  uSessionPasswords;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -1451,7 +1451,7 @@ begin
         if FInfo.Encrypted then
         begin
           JPEG := TJpegImage.Create;
-          DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), DBKernel.FindPasswordForCryptBlobStream(fQuery.FieldByName('thum')), JPEG);
+          DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), SessionPasswords.FindForBlobStream(fQuery.FieldByName('thum')), JPEG);
           FInfo.Image := JPEG;
           FInfo.IsImageEncrypted := not FInfo.Image.Empty;
         end else
@@ -1629,7 +1629,7 @@ begin
                   begin
                     OK := True;
                     if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
-                    if DBkernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'))='' then
+                    if SessionPasswords.FindForBlobStream(Query.FieldByName('thum'))='' then
                       OK := False;
                     if OK then
                     begin
@@ -1664,7 +1664,7 @@ begin
                 begin
                   OK := True;
                   if ValidCryptGraphicFile(CurrentFile + SearchRec.Name) then
-                    if DBKernel.FindPasswordForCryptImageFile(CurrentFile + SearchRec.Name) = '' then
+                    if SessionPasswords.FindForFile(CurrentFile + SearchRec.Name) = '' then
                       OK := False;
                     if OK then
                     begin
@@ -1743,7 +1743,7 @@ begin
           Query.RecNo := RecNos[c];
           if ValidCryptBlobStreamJPG(Query.FieldByName('thum')) then
           begin
-            Password := DBKernel.FindPasswordForCryptBlobStream(Query.FieldByName('thum'));
+            Password := SessionPasswords.FindForBlobStream(Query.FieldByName('thum'));
             if Password <> '' then
             begin
               FJPEG := TJpegImage.Create;

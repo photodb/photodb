@@ -18,7 +18,6 @@ uses
   Dmitry.Controls.LoadingSign,
 
   UnitDBDeclare,
-  UnitDBKernel,
 
   uMemory,
   uFormUtils,
@@ -26,7 +25,8 @@ uses
   uThemesUtils,
   uDBForm,
   uDatabaseDirectoriesUpdater,
-  uFormInterfaces;
+  uFormInterfaces,
+  uCollectionEvents;
 
 type
   TFormAddingImage = class(TDBForm, ICollectionAddItemForm)
@@ -141,19 +141,19 @@ procedure TFormAddingImage.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caHide;
   TmrRedraw.Enabled := False;
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormAddingImage.FormCreate(Sender: TObject);
 begin
   FInfo := nil;
-  DBKernel.RegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 procedure TFormAddingImage.FormDestroy(Sender: TObject);
 begin
   TmrRedraw.Enabled := False;
-  DBKernel.UnRegisterChangesID(Self, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
 end;
 
 function TFormAddingImage.GetFormID: string;

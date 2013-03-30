@@ -43,6 +43,7 @@ uses
 
   VirtualTrees,
 
+  Dmitry.CRC32,
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
   Dmitry.Utils.ShellIcons,
@@ -71,10 +72,10 @@ uses
   MPCommonObjects,
   EasyListview,
 
+  UnitDBKernel,
   PrintMainForm,
   ExplorerTypes,
   DBCMenu,
-  UnitDBKernel,
   UnitINI,
   UnitGroupsWork,
   UnitLinksSupport,
@@ -166,6 +167,8 @@ uses
   uPathProvideTreeView,
   uDBInfoEditorUtils,
   uFormInterfaces,
+  uCollectionEvents,
+  uSessionPasswords,
   uTransparentEncryption,
   uMediaEncryption,
   uIImageViewer,
@@ -857,7 +860,6 @@ type
     LastListViewSelCount: Integer;
     ItemsDeselected: Boolean;
     FPopupMenuWasActiveOnMouseDown: Boolean;
-    IsReallignInfo: Boolean;
     FWasDragAndDrop: Boolean;
     RenameResult: Boolean;
     FChangeHistoryOnChPath: Boolean;
@@ -1132,6 +1134,10 @@ type
     property IsExplorerTreeViewVisible: Boolean read GetIsExplorerTreeViewVisible;
   end;
 
+const
+  BAR_ITEM_VISIBLE = 0;
+  BAR_ITEM_HIDDEN = 1;
+
 implementation
 
 uses
@@ -1396,7 +1402,6 @@ begin
   FWasDragAndDrop := False;
   LockDrawIcon := False;
   ListView := LV_THUMBS;
-  IsReallignInfo := False;
   FIsMapLoaded := False;
   FOldWidth := Width;
   IsResizePreivew := True;
@@ -1482,7 +1487,7 @@ begin
   FHistory.OnHistoryChange := HistoryChanged;
   TbBack.Enabled := False;
   TbForward.Enabled := False;
-  DBKernel.RegisterChangesID(Sender, ChangedDBDataByID);
+  CollectionEvents.RegisterChangesID(Sender, ChangedDBDataByID);
 
   NewFormState;
   MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
@@ -1793,7 +1798,7 @@ begin
     ImageEditor2.Visible := True;
     CryptFile1.Visible := not IIF(Info.Loaded, Info.Encrypted, ValidCryptGraphicFile(Info.FileName));
     ResetPassword1.Visible := not CryptFile1.Visible;
-    EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(Info.FileName) = '');
+    EnterPassword1.Visible := not CryptFile1.Visible and (SessionPasswords.FindForFile(Info.FileName) = '');
 
     Convert1.Visible := not EnterPassword1.Visible;
     Resize1.Visible := not EnterPassword1.Visible;
@@ -1832,7 +1837,7 @@ begin
     begin
       CryptFile1.Visible := not ValidCryptGraphicFile(Info.FileName);
       ResetPassword1.Visible := not CryptFile1.Visible;
-      EnterPassword1.Visible := not CryptFile1.Visible and (DBKernel.FindPasswordForCryptImageFile(info.FileName) = '');
+      EnterPassword1.Visible := not CryptFile1.Visible and (SessionPasswords.FindForFile(info.FileName) = '');
     end;
   end;
 
@@ -2196,7 +2201,7 @@ begin
   SaveWindowPos1.SavePosition;
   DropFileTargetFake.Unregister;
   DropFileTargetMain.Unregister;
-  DBKernel.UnRegisterChangesID(Sender, ChangedDBDataByID);
+  CollectionEvents.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
   Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
   Settings.WriteInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
@@ -3026,7 +3031,7 @@ var
 begin
   DBIndex := TMenuItem(Sender).Tag;
 
-  SelectDB(Self, DBKernel.DBs[DBIndex].Path);
+  DBKernel.SelectDB(Self, DBKernel.DBs[DBIndex].Path);
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -6064,7 +6069,6 @@ var
   end;
 
 begin
-  IsReallignInfo := True;
   EventLog('ReallignInfo...');
 
   VerifyPaste(Self);
@@ -6218,11 +6222,11 @@ begin
     begin
       TbbCreateObject.Caption := L('New group');
       TbbCreateObject.Visible := True;
-      TbbCreateObject.Tag := 0;
+      TbbCreateObject.Tag := BAR_ITEM_VISIBLE;
     end else
     begin
       TbbCreateObject.Visible := False;
-      TbbCreateObject.Tag := 1;
+      TbbCreateObject.Tag := BAR_ITEM_HIDDEN;
     end;
 
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
@@ -6259,11 +6263,11 @@ begin
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_SHELF)) and (SelCount = 0) then
     begin
       TbbClear.Visible := True;
-      TbbClear.Tag := 0;
+      TbbClear.Tag := BAR_ITEM_VISIBLE;
     end else
     begin
       TbbClear.Visible := False;
-      TbbClear.Tag := 1;
+      TbbClear.Tag := BAR_ITEM_HIDDEN;
     end;
 
     if (FSelectedInfo.FileType <> EXPLORER_ITEM_IMAGE) then
@@ -6274,8 +6278,7 @@ begin
         TbbShare.Enabled := False;
     end;
 
-    IsReallignInfo := False;
-
+    CoolBarBottomResize(Self);
   finally
     EndScreenUpdate(Handle, False);
   end;
@@ -6284,7 +6287,7 @@ end;
 
 procedure TExplorerForm.CopyToLinkClick(Sender: TObject);
 var
-  EndDir: String;
+  EndDir: string;
   I, Index: integer;
   Files: TStringList;
   DlgCaption: string;
@@ -7831,7 +7834,7 @@ end;
 procedure TExplorerForm.KernelEventCallBack(ID: Integer; Params: TEventFields;
   Value: TEventValues);
 begin
-  DBKernel.DoIDEvent(Self, ID, Params, Value);
+  CollectionEvents.DoIDEvent(Self, ID, Params, Value);
 end;
 
 procedure TExplorerForm.DragTimerTimer(Sender: TObject);
@@ -8020,7 +8023,7 @@ begin
       FileName := IIF(Index > -1, ProcessPath(FFilesInfo[Index].FileName), '');
     end;
 
-    Password := DBKernel.FindPasswordForCryptImageFile(FileName);
+    Password := SessionPasswords.FindForFile(FileName);
     if (Password = '') then
       Password := RequestPasswordForm.ForImage(FileName);
     if (Password = '') then
@@ -8098,7 +8101,7 @@ begin
   if FFilesInfo[PmItemPopup.Tag].ID <> 0 then
   begin
     if RequestPasswordForm.ForImage(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
-      DBKernel.DoIDEvent(Self, FFilesInfo[PmItemPopup.Tag].ID, [EventID_Param_Image], EventInfo);
+      CollectionEvents.DoIDEvent(Self, FFilesInfo[PmItemPopup.Tag].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
     if RequestPasswordForm.ForImage(ProcessPath(FFilesInfo[PmItemPopup.Tag].FileName)) <> '' then
@@ -8152,6 +8155,7 @@ begin
 end;
 
 procedure TExplorerForm.CoolBarBottomResize(Sender: TObject);
+
 var
   I, TotalWidth, WidthDiff: Integer;
   ToolButtonsToHide: TList<TToolButton>;
@@ -8159,14 +8163,14 @@ begin
   //Bottom toolbar width customization
   TotalWidth := 0;
   for I := 0 to ToolBarBottom.ButtonCount - 1 do
-    if ToolBarBottom.Buttons[I].Tag = 0 then
+    if ToolBarBottom.Buttons[I].Tag = BAR_ITEM_VISIBLE then
       Inc(TotalWidth, ToolBarBottom.Buttons[I].Width);
 
   ToolButtonsToHide := TList<TToolButton>.Create;
   try
-    ToolButtonsToHide.Add(TbbOpenDirectory);
     ToolButtonsToHide.Add(TbbConvert);
     ToolButtonsToHide.Add(TbbCrop);
+    ToolButtonsToHide.Add(TbbOpenDirectory);
     ToolButtonsToHide.Add(TbbRename);
     ToolButtonsToHide.Add(TbbEditor);
     ToolButtonsToHide.Add(TbbPrint);
@@ -8610,8 +8614,8 @@ var
   Reg: TBDRegistry;
   S: TStrings;
   Place: TLinkInfo;
-  FName, FFolderName, FIcon: string;
-  I: Integer;
+  Path, Icon, ParentKey: string;
+  I, SortOrder: Integer;
 
 const
   FixedPlaceIcons: array[0 .. 3] of Integer =
@@ -8621,9 +8625,11 @@ const
 begin
   FreeList(Places, False);
 
+  ParentKey := GetCollectionRootKey(dbname) + '\Places';
+
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Reg.OpenKey(GetRegRootKey + '\Places', True);
+    Reg.OpenKey(ParentKey, True);
     S := TStringList.Create;
     try
       Reg.GetKeyNames(S);
@@ -8631,18 +8637,23 @@ begin
       for I := 0 to S.Count - 1 do
       begin
         Reg.CloseKey;
-        Reg.OpenKey(GetRegRootKey + '\Places\' + S[I], True);
+        Reg.OpenKey(ParentKey + '\' + S[I], True);
 
-        if Reg.ValueExists('Name') then
-          FName := Reg.ReadString('Name');
-        if Reg.ValueExists('FolderName') then
-          FFolderName := Reg.ReadString('FolderName');
+        Path := '';
+        Icon := '';
+        SortOrder := 0;
+        if Reg.ValueExists('Path') then
+          Path := Reg.ReadString('Path');
         if Reg.ValueExists('Icon') then
-          FIcon := Reg.ReadString('Icon');
+          Icon := Reg.ReadString('Icon');
+        if Reg.ValueExists('Icon') then
+          Icon := Reg.ReadString('Icon');
+        if Reg.ValueExists('SortOrder') then
+          SortOrder := Reg.ReadInteger('Icon');
 
-        if FName <> '' then
+        if Path <> '' then
         begin
-          Place := TLinkInfo.Create(FName, FFolderName, FIcon);
+          Place := TLinkInfo.Create(S[I], Path, Icon, SortOrder);
           Places.Add(Place);
         end;
       end;
@@ -8652,6 +8663,13 @@ begin
   finally
     F(Reg);
   end;
+
+  Places.Sort(TComparer<TLinkInfo>.Construct(
+     function (const L, R: TLinkInfo): Integer
+     begin
+       Result := L.SortOrder - R.SortOrder;
+     end
+  ));
 end;
 
 procedure TExplorerForm.AddDefaultPlaces(Places: TList<TLinkInfo>);
@@ -8662,15 +8680,15 @@ begin
   Reg := TRegIniFile.Create(SHELL_FOLDERS_ROOT);
   try
     Path := Reg.ReadString('Shell Folders', 'My Pictures', '');
-    Places.Add(TLinkInfo.Create(L('My pictures'), Path, ''));
+    Places.Add(TLinkInfo.Create(L('My pictures'), Path, '', 0));
 
     Path := Reg.ReadString('Shell Folders', 'Personal', '');
-    Places.Add(TLinkInfo.Create(L('My documents'), Path, ''));
+    Places.Add(TLinkInfo.Create(L('My documents'), Path, '', 1));
 
     Path := Reg.ReadString('Shell Folders', 'Desktop', '');
-    Places.Add(TLinkInfo.Create(L('Desktop'), Path, ''));
+    Places.Add(TLinkInfo.Create(L('Desktop'), Path, '', 2));
 
-    Places.Add(TLinkInfo.Create(L('My Computer'), '', ''));
+    Places.Add(TLinkInfo.Create(L('My Computer'), '', '', 3));
   finally
     F(Reg);
   end;
@@ -8681,26 +8699,30 @@ var
   I: Integer;
   Reg: TBDRegistry;
   S: TStrings;
+  ParentKey: string;
+
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    Reg.OpenKey(GetRegRootKey + '\Places', true);
+    ParentKey := GetCollectionRootKey(dbname) + '\Places';
+
+    Reg.OpenKey(ParentKey, True);
     S := TStringList.Create;
     try
       Reg.GetKeyNames(S);
       Reg.CloseKey;
       for I := 0 to S.Count - 1 do
-        Reg.DeleteKey(GetRegRootKey + '\Places\.' + IntToStr(i));
+        Reg.DeleteKey(ParentKey + '\' + S[I]);
     finally
       F(S);
     end;
 
     for I := 0 to Places.Count - 1 do
     begin
-      Reg.OpenKey(GetRegRootKey + '\Places\.' + IntToStr(I), True);
-      Reg.WriteString('Name', Places[I].Title);
-      Reg.WriteString('FolderName', Places[I].Path);
+      Reg.OpenKey(ParentKey + '\' + Places[I].Title, True);
+      Reg.WriteString('Path', Places[I].Path);
       Reg.WriteString('Icon', Places[I].Icon);
+      Reg.WriteInteger('SortOrder', I);
       Reg.CloseKey;
     end;
   finally
@@ -10288,7 +10310,7 @@ begin
   begin
     SetRating(RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
     EventInfo.Rating := (Sender as TMenuItem).Tag;
-    DBKernel.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating], EventInfo);
+    CollectionEvents.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating], EventInfo);
   end else
   begin
     FileInfo := TDBPopupMenuInfoRecord.Create;
@@ -10730,7 +10752,7 @@ var
   EventInfo: TEventValues;
 begin
   PhotoShelf;
-  DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
+  CollectionEvents.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
   TmrDelayedStart.Enabled := False;
 end;
 
@@ -11082,7 +11104,7 @@ var
 begin
   ClearList;
   PhotoShelf.Clear;
-  DBKernel.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
+  CollectionEvents.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
 
   SpeedButton1Click(Sender);
 end;

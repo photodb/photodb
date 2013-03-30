@@ -133,8 +133,7 @@ end;
 
 function CanUseVistaDlg: Boolean;
 begin
-  Result := IsWindowsVista and (GetDOSEnvVar('SAFEBOOT_OPTION') = '')
-  {$IFDEF PHOTODB} and not GetParamStrDBBool ('/NoVistaFileDlg'){$ENDIF};
+  Result := IsWindowsVista and (GetDOSEnvVar('SAFEBOOT_OPTION') = '');
 end;
 
 function DBSelectDir(Handle: THandle; Title: string; UseSimple: Boolean): string;

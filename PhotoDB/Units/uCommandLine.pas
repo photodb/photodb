@@ -3,6 +3,7 @@ unit uCommandLine;
 interface
 
 uses
+  Winapi.Windows,
   System.SysUtils,
   Vcl.Forms,
 
@@ -12,12 +13,21 @@ uses
   GraphicCrypt,
   UnitCrypting,
 
+  uConstants,
   uMemoryEx,
   uAppUtils,
   uSplashThread,
+  uMediaPlayers,
   uLogger,
   uSettings,
+  uTranslate,
+  uShellIntegration,
+  uUninstallUtils,
   uRuntime,
+  uShellUtils,
+  uFormInterfaces,
+  uSessionPasswords,
+  uAssociations,
   uDBUtils;
 
 type
@@ -28,10 +38,61 @@ type
 
 implementation
 
+procedure StopApplication;
+begin
+  CloseSplashWindow;
+  DBTerminating := True;
+end;
+
 { TCommandLine }
 
 class procedure TCommandLine.ProcessServiceCommands;
+var
+  ExtensionList: string;
 begin
+  if GetParamStrDBBool('/AddPass') then
+    SessionPasswords.GetPasswordsFromParams;
+
+  if GetParamStrDBBool('/installExt') then
+  begin
+    ExtensionList := GetParamStrDBValue('/installExt');
+
+    InstallGraphicFileAssociationsFromParamStr(Application.ExeName, ExtensionList);
+    RefreshSystemIconCache;
+  end;
+
+  if GetParamStrDBBool('/CPU1') then
+    ProcessorCount := 1;
+
+  if not FolderView and not DBTerminating and GetParamStrDBBool('/install') then
+  begin
+    RegisterVideoFiles;
+    StopApplication;
+  end;
+
+  if not FolderView and not DBTerminating and GetParamStrDBBool('/uninstall') then
+  begin
+    CleanUpUserSettings;
+    StopApplication;
+  end;
+
+  if GetParamStrDBBool('/close') then
+    StopApplication;
+
+  if not FolderView and not DBTerminating then
+    if not GetParamStrDBBool('/NoFaultCheck') then
+      if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1') and not DBInDebug then
+      begin
+        CloseSplashWindow;
+        if ID_OK = MessageBoxDB(Application.MainFormHandle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
+        begin
+          Settings.WriteBool('StartUp', 'Pack', False);
+          Application.CreateForm(TCMDForm, CMDForm);
+          CMDForm.PackPhotoTable;
+          R(CMDForm);
+        end;
+      end;
+
   if not FolderView and not DBTerminating then
     if GetParamStrDBBool('/PACKTABLE') or Settings.ReadBool('StartUp', 'Pack', False) then
     begin
@@ -95,6 +156,13 @@ begin
     Password := AnsiDequotedStr(GetParamStrDBValue('/p'), '"');
 
     ResetPasswordImageByFileName(nil, S, ID, Password);
+  end;
+
+  if not FolderView then
+  begin
+    if AnsiUpperCase(ParamStr(1)) = '/GETPHOTOS' then
+      if ParamStr(2) <> '' then
+        ImportForm.FromDrive(ParamStr(2)[1]);
   end;
 end;
 
