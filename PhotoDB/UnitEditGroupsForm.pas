@@ -26,7 +26,6 @@ uses
 
   Dmitry.Controls.WatermarkedEdit,
 
-  UnitDBKernel,
   CmpUnit,
   UnitGroupsWork,
   UnitGroupsTools,
@@ -39,6 +38,7 @@ uses
   uShellIntegration,
   uVCLHelpers,
   uGraphicUtils,
+  uDBIcons,
   uConstants,
   uSettings,
   uThemesUtils,
@@ -405,7 +405,7 @@ begin
     SmallB.Canvas.Pen.Color := Theme.ListColor;
     SmallB.Canvas.Brush.Color := Theme.ListColor;
     SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
-    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], SmallB.Width div 2 - 8,
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], SmallB.Width div 2 - 8,
       SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
     GroupsImageList.Add(SmallB, nil);
   finally
@@ -643,7 +643,7 @@ begin
 
       GroupsImageList.Draw(ACanvas, Rect.Left + 1, Rect.Top + 1, Max(0, N));
       if N = -1 then
-        DrawIconEx(Canvas.Handle, Rect.Left + 10, Rect.Top + 8, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
+        DrawIconEx(Canvas.Handle, Rect.Left + 10, Rect.Top + 8, Icons[DB_IC_DELETE_INFO], 8, 8, 0, 0, DI_NORMAL);
 
       IsChoosed := False;
       if Control = LstSelectedGroups then

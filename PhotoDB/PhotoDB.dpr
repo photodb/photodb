@@ -24,11 +24,6 @@ uses
   System.Win.ComObj,
   Vcl.Controls,
   Vcl.Forms,
-  Vcl.Dialogs,
-  Vcl.ComCtrls,
-  Vcl.Themes,
-  Vcl.Styles,
-  Data.Win.ADODB,
   Dmitry.Utils.Files,
   SlideShow in 'SlideShow.pas' {Viewer},
   Options in 'Options.pas' {OptionsForm},
@@ -394,14 +389,12 @@ uses
   uFormUpdateStatus in 'uFormUpdateStatus.pas' {FormUpdateStatus},
   uLinkListEditorUpdateDirectories in 'Units\ListEditors\uLinkListEditorUpdateDirectories.pas',
   uSessionPasswords in 'Units\uSessionPasswords.pas',
-  uCollectionEvents in 'Units\uCollectionEvents.pas';
+  uCollectionEvents in 'Units\uCollectionEvents.pas',
+  uDBIcons in 'Units\uDBIcons.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
 {$R *.res}
-
-var
-  _I: Integer;
 
 procedure FindRunningVersion;
 var
@@ -450,6 +443,16 @@ begin
   end;
 end;
 
+procedure LogApplicationParameters;
+var
+  I: Integer;
+begin
+  TW.I.Start('START');
+  for I := 0 to 10 do
+    if ParamStr(I) <> '' then
+      TW.I.Start('Parameter: ' + ParamStr(I));
+end;
+
 begin
   CoInitFlags := COM_MODE;
   try
@@ -475,11 +478,7 @@ begin
    /AddPass "pass1!pass2!..."
    /Logging
   }
-
-    TW.I.Start('START');
-    for _I := 0 to 10 do
-      if ParamStr(_I) <> '' then
-        TW.I.Start('Parameter: ' + ParamStr(_I));
+    LogApplicationParameters;
 
     if FolderView then
       DBID := ReadInternalFSContent('ID');
@@ -488,11 +487,8 @@ begin
     if GetParamStrDBBool('/SLEEP') then
       Sleep(1000);
 
-    SetSplashProgress(15);
     TW.I.Start('Application.Initialize');
     Application.Initialize;
-
-    SetSplashProgress(30);
 
     EventLog(Format('Folder View = %s', [BoolToStr(FolderView)]));
 
@@ -507,11 +503,9 @@ begin
     if not DBTerminating then
     begin
       TW.I.Start('DBKernel.DBInit');
-      DBKernel.DBInit;
+      DBKernel.DoSelectDB;
+      DBKernel.CheckDatabase;
       // MigrateToVersion002(dbname);
-
-      TW.I.Start('SetSplashProgress 35');
-      SetSplashProgress(45);
 
       if not GetParamStrDBBool('/install') then
       begin
@@ -520,36 +514,20 @@ begin
       end;
     end;
 
-    SetSplashProgress(60);
-
-    TW.I.Start('TFormManager Create');
-
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
   Application.ShowMainForm := False;
 
-    TW.I.Start('GetCIDA');
-    SetSplashProgress(90);
-
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
-
-    TCommandLine.ProcessServiceCommands;
-    TCommandLine.ProcessUserCommandLine;
-
-    CMDInProgress := False;
-
-    // PREPAIRING RUNNING DB ----------------------------------------
-
-    SetSplashProgress(100);
-
-    if not DBTerminating then
-    begin
-      EventLog('Form manager...');
-      TW.I.Start('Form manager...');
-      DBKernel.CheckDatabase;
+    try
+      TCommandLine.ProcessServiceCommands;
+      TCommandLine.ProcessUserCommandLine;
+    finally
+      CMDInProgress := False;
     end;
 
+    // PREPAIRING RUNNING DB ----------------------------------------
     if not DBTerminating then
     begin
       EventLog('Run manager...');
@@ -583,7 +561,7 @@ begin
     begin
       CloseSplashWindow;
       EventLog(e);
-      ShowMessage('Fatal error: ' + e.ToString + sLineBreak + e.StackTrace);
+      MessageBox(0, PChar(e.ToString + sLineBreak + e.StackTrace), 'Fatal error', MB_OK or MB_ICONERROR);
     end;
   end;
 end.

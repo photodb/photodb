@@ -39,7 +39,6 @@ uses
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.SaveWindowPos,
 
-  UnitDBKernel,
   UnitINI,
   UnitDBDeclare,
   UnitDBFileDialogs,
@@ -56,6 +55,7 @@ uses
   uDBThread,
   uBitmapUtils,
   uThemesUtils,
+  uDBIcons,
   uConfiguration,
   uICCProfile,
   uExplorerFolderImages,
@@ -481,8 +481,8 @@ begin
 
   WblMethod.LoadFromResource('PASSWORD');
 
-  WlAddPlayerExtension.LoadFromResource('GROUP_ADD_SMALL');
-  WlRemovePlayerExtension.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  WlAddPlayerExtension.LoadFromResource('SERIES_EXPAND');
+  WlRemovePlayerExtension.LoadFromHIcon(Icons[DB_IC_DELETE_INFO]);
   WlSavePlayerChanges.LoadFromResource('CMD_OK');
 
 end;
@@ -822,7 +822,7 @@ begin
       Ico := ExtractSmallIconByPath(Player);
 
     if Ico = 0 then
-      Ico := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
+      Ico := CopyIcon(Icons[DB_IC_SIMPLEFILE]);
     Icon := TIcon.Create;
     try
       Icon.Handle := Ico;
@@ -1269,7 +1269,7 @@ begin
 
     Ico := ExtractSmallIconByPath(EdPlayerExecutable.Text);
     if Ico = 0 then
-      Ico := CopyIcon(UnitDBKernel.Icons[DB_IC_SIMPLEFILE + 1]);
+      Ico := CopyIcon(Icons[DB_IC_SIMPLEFILE]);
 
     Icon := TIcon.Create;
     try

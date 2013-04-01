@@ -19,7 +19,6 @@ uses
   Vcl.Menus,
   Data.DB,
 
-  UnitDBKernel,
   UnitCDMappingSupport,
   CommonDBSupport,
   UnitDBDeclare,
@@ -27,6 +26,7 @@ uses
   uLogger,
   uDBForm,
   uMemory,
+  uDBIcons,
   uDBPopupMenuInfo,
   uShellIntegration,
   uConstants,
@@ -99,10 +99,10 @@ procedure TFormCDMapper.FormCreate(Sender: TObject);
 var
   Icon : TIcon;
 begin
-  PopupMenuCDActions.Images:=DBKernel.ImageList;
+  PopupMenuCDActions.Images := Icons.ImageList;
   Icon := TIcon.Create;
   try
-    DBkernel.ImageList.GetIcon(DB_IC_CD_IMAGE, Icon);
+    Icons.ImageList.GetIcon(DB_IC_CD_IMAGE, Icon);
     CDImageList.AddIcon(Icon);
   finally
     F(Icon);

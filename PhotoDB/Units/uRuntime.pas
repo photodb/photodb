@@ -18,13 +18,12 @@ var
 var
   PortableWork: Boolean = False;
   FolderView: Boolean = False;
-  LastInseredID: Integer = 0;
   DBTerminating: Boolean = False;
   DBID: string = DB_ID;
   CMDInProgress: Boolean = False;
   ProgramVersionString: string = '';
   BlockClosingOfWindows: Boolean = False;
-  FExtImagesInImageList: Integer = 0;
+  FExtImagesInImageList: Integer = 0;  //TODO: recheck usings
   UserDirectoryUpdaterCount: Integer = 0;
 
 var

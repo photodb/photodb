@@ -17,14 +17,12 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
-
   Vcl.Clipbrd,
   Vcl.Menus,
   Vcl.Buttons,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   Vcl.Themes,
-
   Vcl.Imaging.Jpeg,
 
   CCR.Exif,
@@ -37,7 +35,6 @@ uses
   Dmitry.Controls.SaveWindowPos,
 
   GIFImage,
-
   DropTarget,
   ToolsUnit,
   CropToolUnit,
@@ -55,9 +52,7 @@ uses
   GraphicCrypt,
   UnitPasswordForm,
   FormManegerUnit,
-  UnitDBKernel,
   PropertyForm,
-
   GraphicEx,
   PngImage,
   DragDrop,
@@ -74,6 +69,7 @@ uses
   uManagerExplorer,
   uCDMappingTypes,
   uLogger,
+  uDBIcons,
   uAssociations,
   uEditorTypes,
   uShellIntegration,
@@ -443,7 +439,7 @@ begin
 
   VirtualBrushCursor := Settings.ReadBool('Editor', 'VirtualCursor', False);
   RegisterMainForm(Self);
-  PmMain.Images := DBKernel.ImageList;
+  PmMain.Images := Icons.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
   Explorer1.ImageIndex := DB_IC_EXPLORER;
   Properties1.ImageIndex := DB_IC_PROPERTIES;

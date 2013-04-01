@@ -17,7 +17,7 @@ uses
   uGroupTypes,
   UnitGroupsWork,
   ImgList,
-  UnitDBkernel,
+  uDBIcons,
   uBitmapUtils,
   uDBForm,
   uConstants;
@@ -133,7 +133,7 @@ begin
       SmallB.Canvas.Pen.Color := BackgroundColor;
       SmallB.Canvas.Brush.Color := BackgroundColor;
       if I = -1 then
-        DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL)
+        DrawIconEx(SmallB.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], 16, 16, 0, 0, DI_NORMAL)
       else
       begin
         if (Groups[I].GroupImage <> nil) and not Groups[I].GroupImage.Empty then

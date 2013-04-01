@@ -20,11 +20,11 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitDBDeclare,
-  UnitDBKernel,
   UnitDBCommon,
 
   uGraphicUtils,
   uDBForm,
+  uDBIcons,
   uConstants;
 
 type
@@ -92,7 +92,7 @@ procedure TBigImagesSizeForm.FormCreate(Sender: TObject);
 begin
   FCallBack := nil;
 
-  LnkClose.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
+  LnkClose.LoadFromHIcon(Icons[DB_IC_DELETE_INFO]);
 
   RgPictureSize.HandleNeeded;
   RgPictureSize.DoubleBuffered := True;

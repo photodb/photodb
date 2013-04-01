@@ -33,7 +33,6 @@ uses
   Dmitry.PathProviders,
 
   UnitDBDeclare,
-  UnitDBKernel,
   CommonDBSupport,
   UnitGroupsWork,
 
@@ -42,6 +41,7 @@ uses
   uMemory,
   uMemoryEx,
   uBitmapUtils,
+  uDBIcons,
   uThreadEx,
   uDBThread,
   uThreadForm,
@@ -490,7 +490,7 @@ begin
   LoadLanguage;
   PersonManager.InitDB;
   TLoad.Instance.RequiredDBSettings;
-  PmImageOptions.Images := DBKernel.ImageList;
+  PmImageOptions.Images := Icons.ImageList;
   MiLoadotherimage.ImageIndex := DB_IC_LOADFROMFILE;
   MiEditImage.ImageIndex := DB_IC_IMEDITOR;
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
@@ -848,7 +848,7 @@ begin
     SmallB.Canvas.Pen.Color := Theme.PanelColor;
     SmallB.Canvas.Brush.Color := Theme.PanelColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
-    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], 16, 16, 0, 0, DI_NORMAL);
     GroupsImageList.Add(SmallB, nil);
   finally
     F(SmallB);

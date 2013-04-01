@@ -19,6 +19,7 @@ uses
   uRuntime,
   uConstants,
   uDBForm,
+  uDBIcons,
   uThemesUtils,
   uImageLoader;
 
@@ -131,8 +132,8 @@ begin
     if IsEqualGUID((fOptions.Owner as TPropertiesForm).SID, fOptions.SID) then
       begin
         if PassWord <> '' then
-          DrawIconEx(BitmapParam.Canvas.Handle, 20, 0, UnitDBKernel.Icons[DB_IC_KEY + 1], 18, 18, 0, 0, DI_NORMAL);
-        DrawIconEx(BitmapParam.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_NEW + 1], 18, 18, 0, 0, DI_NORMAL);
+          DrawIconEx(BitmapParam.Canvas.Handle, 20, 0, Icons[DB_IC_KEY], 18, 18, 0, 0, DI_NORMAL);
+        DrawIconEx(BitmapParam.Canvas.Handle, 0, 0, Icons[DB_IC_NEW], 18, 18, 0, 0, DI_NORMAL);
 
         with (FOptions.Owner as TPropertiesForm) do
         begin

@@ -21,7 +21,6 @@ uses
   Data.DB,
 
   UnitGroupsWork,
-  UnitDBKernel,
   CommonDBSupport,
   ProgressActionUnit,
   PrintMainForm,
@@ -52,6 +51,7 @@ uses
   uAssociations,
   uConstants,
   uPrivateHelper,
+  uDBIcons,
   uTranslate,
   uPathProviderUtils,
   uShellIntegration,
@@ -705,8 +705,8 @@ var
     try
       if Icon <> 0 then
       begin
-        ImageList_ReplaceIcon(DBKernel.ImageList.Handle, -1, Icon);
-        Result := DBKernel.ImageList.Count - 1;
+        ImageList_ReplaceIcon(Icons.ImageList.Handle, -1, Icon);
+        Result := Icons.ImageList.Count - 1;
       end;
     finally
       DestroyIcon(Icon);
@@ -1149,7 +1149,7 @@ begin
     if FInfo.Count = 0 then
       Exit;
     begin
-      FPopupMenu.Images := DBKernel.ImageList;
+      FPopupMenu.Images := Icons.ImageList;
       FPopupMenu.Items.Clear;
       AddDBContMenu(FOwner, FPopupMenu.Items, Finfo);
       FPopupMenu.DoPopupEx(X, Y);
@@ -1175,7 +1175,7 @@ begin
     Exit;
   begin
 
-    FPopupMenu.Images := DBKernel.ImageList;
+    FPopupMenu.Images := Icons.ImageList;
     FPopupMenu.Items.Clear;
     AddDBContMenu(FOwner, FPopupMenu.Items, Finfo);
     if Length(Menus) > 0 then
@@ -1226,18 +1226,17 @@ begin
           B.Width := Size;
           B.Height := Size;
           B.Canvas.Rectangle(0, 0, Size, Size);
-          B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2,
-            FGroup.GroupImage);
+          B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2, FGroup.GroupImage);
           DoResize(16, 16, B, SmallB);
 
-          ImageList_Add(DBKernel.ImageList.Handle, SmallB.Handle, 0);
+          ImageList_Add(Icons.ImageList.Handle, SmallB.Handle, 0);
         finally
           F(SmallB);
         end;
       finally
         F(B);
       end;
-      Result := DBKernel.ImageList.Count - 1;
+      Result := Icons.ImageList.Count - 1;
     end else
       Result := DB_IC_GROUPS;
   end else

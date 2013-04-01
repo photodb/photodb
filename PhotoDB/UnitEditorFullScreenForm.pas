@@ -12,16 +12,18 @@ uses
   Forms,
   Dialogs,
   ExtCtrls,
+  Themes,
+  Vcl.PlatformDefaultStyleActnCtrls,
+  Vcl.ActnPopup,
   Menus,
+
+  Dmitry.Utils.System,
+
   uConstants,
   uMemory,
   uDBForm,
   uBitmapUtils,
-  UnitDBKernel,
-  Themes,
-  Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnPopup,
-  Dmitry.Utils.System;
+  uDBIcons;
 
 type
   TEditorFullScreenForm = class(TDBForm)
@@ -57,7 +59,6 @@ var
 
 implementation
 
-uses ImEditor;
 
 {$R *.dfm}
 
@@ -115,7 +116,7 @@ begin
   DrawImage.PixelFormat := pf24bit;
   LoadLanguage;
 
-  PmMain.Images := DBKernel.ImageList;
+  PmMain.Images := Icons.ImageList;
   Close1.ImageIndex := DB_IC_EXIT;
   SelectBackGroundColor1.ImageIndex := DB_IC_DESKTOP;
 end;

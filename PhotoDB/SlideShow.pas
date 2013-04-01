@@ -45,7 +45,6 @@ uses
   DragDrop,
 
   ToolWin,
-  UnitDBKernel,
   GraphicCrypt,
   FormManegerUnit,
   DBCMenu,
@@ -91,6 +90,7 @@ uses
   uPortableDeviceManager,
   uShellNamespaceUtils,
   uThemesUtils,
+  uDBIcons,
   uAnimationHelper,
   uImageZoomHelper,
   uPhotoShelf,
@@ -511,7 +511,7 @@ begin
   LastZoomValue := 1;
   FDrawFace := nil;
   LockEventRotateFileList := TStringList.Create;
-  RatingPopupMenu.Images := DBKernel.ImageList;
+  RatingPopupMenu.Images := Icons.ImageList;
   FPlay := False;
   FCurrentlyLoadedFile := '';
   TransparentImage := False;
@@ -549,7 +549,7 @@ begin
   if IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
 
-  WlFaceCount.ImageList := DBkernel.ImageList;
+  WlFaceCount.ImageList := Icons.ImageList;
   N01.ImageIndex := DB_IC_DELETE_INFO;
   N11.ImageIndex := DB_IC_RATING_1;
   N21.ImageIndex := DB_IC_RATING_2;
@@ -560,7 +560,7 @@ begin
 
   SaveWindowPos1.Key := RegRoot + 'SlideShow';
   SaveWindowPos1.SetPosition;
-  PmMain.Images := DBKernel.ImageList;
+  PmMain.Images := Icons.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;
   FullScreen1.ImageIndex := DB_IC_DESKTOP;
   Next1.ImageIndex := DB_IC_NEXT;
@@ -586,7 +586,7 @@ begin
   ImageEditor1.ImageIndex := DB_IC_IMEDITOR;
   Print1.ImageIndex := DB_IC_PRINTER;
   MiShelf.ImageIndex := DB_IC_SHELF;
-  PmSteganography.Images := DBKernel.ImageList;
+  PmSteganography.Images := Icons.ImageList;
   AddHiddenInfo1.ImageIndex := DB_IC_STENO;
   ExtractHiddenInfo1.ImageIndex := DB_IC_DESTENO;
 

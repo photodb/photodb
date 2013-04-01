@@ -33,9 +33,9 @@ uses
   DragDropFile,
   UnitCDMappingSupport,
   UnitDBFileDialogs,
-  UnitDBKernel,
 
   uAssociatedIcons,
+  uDBIcons,
   uMemory,
   uCDMappingTypes,
   uDBForm,
@@ -161,7 +161,7 @@ begin
   EditCDSize.Text := SizeInText(Mapping.GetCDSize);
 
   DropFileTarget1.Register(CDListView);
-  PopupMenuListView.Images := DBKernel.ImageList;
+  PopupMenuListView.Images := Icons.ImageList;
   RegisterMainForm(Self);
   ComboBoxPathList.ItemIndex := 0;
   LoadLanguage;

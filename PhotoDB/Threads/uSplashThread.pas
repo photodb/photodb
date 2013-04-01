@@ -26,7 +26,6 @@ type
     procedure Execute; override;
   end;
 
-procedure SetSplashProgress(ProgressValue: Byte);
 procedure CloseSplashWindow;
 
 implementation
@@ -40,7 +39,6 @@ const
 var
   SplashWindowClass: TWndClass;
   HSplashWnd: HWND;
-  HSplashProgress: Byte = 0;
   IsFirstDraw: Boolean = True;
   MouseCaptured: Boolean = False;
   LoadingImage: TBitmap = nil;
@@ -50,11 +48,6 @@ procedure CloseSplashWindow;
 begin
   if SplashThread <> nil then
     SplashThread.Terminate;
-end;
-
-procedure SetSplashProgress(ProgressValue: Byte);
-begin
-  hSplashProgress := ProgressValue;
 end;
 
 procedure UpdateFormImage;

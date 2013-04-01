@@ -208,7 +208,7 @@ begin
     end else
       IC.AddParameter(TPersistentParameter.Create('Thum', Res.Jpeg));
 
-    LastInseredID := IC.Execute;
+    Info.ID := IC.Execute;
   finally
     F(IC);
     F(M);
@@ -440,7 +440,7 @@ begin
 
       EventInfo.JPEGImage := Res.Jpeg;
       EventInfo.IsEncrypted := Res.IsEncrypted;
-      CollectionEvents.DoIDEvent(TDBForm(Application.MainForm), LastInseredID, [SetNewIDFileData], EventInfo);
+      CollectionEvents.DoIDEvent(TDBForm(Application.MainForm), Info.ID, [SetNewIDFileData], EventInfo);
     end
   );
 end;

@@ -13,36 +13,12 @@ uses
 
   UnitDBDeclare,
 
+  uDBIcons,
   uConstants,
   uRuntime,
   uMemory;
 
 type
-  TIconEx = class
-  private
-    FIcon: TLayeredBitmap;
-    FGrayIcon: TLayeredBitmap;
-    FIconIndex: Integer;
-    function GetGrayIcon: TLayeredBitmap;
-  public
-    constructor Create(AIconIndex: Integer);
-    destructor Destroy; override;
-    property IconIndex: Integer read FIconIndex;
-    property GrayIcon: TLayeredBitmap read GetGrayIcon;
-    property Icon: TLayeredBitmap read FIcon;
-  end;
-
-  TIconsEx = class
-  private
-    Icons: TList;
-    FSync: TCriticalSection;
-    function GetValueByIndex(Index: Integer): TIconEx;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    property Items[index: Integer]: TIconEx read GetValueByIndex; default;
-  end;
-
   TDrawAttributesOption = (daoEXIF, daoNonImage);
   TDrawAttributesOptions = set of TDrawAttributesOption;
 
@@ -52,24 +28,10 @@ procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY
 function GetListItemBorderColor(Data: TLVDataObject): TColor;
 function RectInRect(const R1, R2: TRect): Boolean;
 
-function Icons: TIconsEx;
-
 implementation
 
 uses
-  UnitDBKernel,
   uManagerExplorer;
-
-var
-  FIcons: TIconsEx = nil;
-
-function Icons: TIconsEx;
-begin
-  if FIcons = nil then
-    FIcons := TIconsEx.Create;
-
-  Result := FIcons;
-end;
 
 procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
 var
@@ -97,7 +59,7 @@ var
   begin
     if Bitmap <> nil then
     begin
-      Icon := Icons[Index];
+      Icon := Icons.IconsEx[Index];
       if not Disabled then
         Icon.Icon.DoDraw(xLeft, yTop, Bitmap, False)
       else
@@ -105,10 +67,10 @@ var
     end else
     begin
       if not Disabled then
-        DrawIconEx(HCanvas, xLeft, yTop, UnitDBKernel.Icons[Index + 1], 16, 16, 0, 0, DI_NORMAL)
+        DrawIconEx(HCanvas, xLeft, yTop, Icons[Index], 16, 16, 0, 0, DI_NORMAL)
       else
       begin
-        Icon := Icons[Index];
+        Icon := Icons.IconsEx[Index];
         GrayIco := Icon.GrayIcon;
 
         bf.BlendOp := AC_SRC_OVER;
@@ -207,77 +169,5 @@ function RectInRect(const R1, R2: TRect): Boolean;
 begin
  Result := PtInRect(R2, R1.TopLeft) or PtInRect(R2, R1.BottomRight) or PtInRect(R1, R2.TopLeft) or PtInRect(R1, R2.BottomRight);
 end;
-
-{ TIconsEx }
-
-constructor TIconsEx.Create;
-begin
-  Icons := TList.Create;
-  FSync := TCriticalSection.Create;
-end;
-
-destructor TIconsEx.Destroy;
-begin
-  FreeList(Icons);
-  F(FSync);
-  inherited;
-end;
-
-function TIconsEx.GetValueByIndex(Index: Integer): TIconEx;
-var
-  I: Integer;
-  Item: TIconEx;
-begin
-  FSync.Enter;
-  try
-    for I := 0 to Icons.Count - 1 do
-    begin
-      Item := Icons[I];
-      if Item.IconIndex = Index then
-      begin
-        Result := Item;
-        Exit;
-      end;
-    end;
-    Item := TIconEx.Create(Index);
-    Icons.Add(Item);
-    Result := Item;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-{ TIconEx }
-
-constructor TIconEx.Create(AIconIndex: Integer);
-begin
-  FIconIndex := AIconIndex;
-  FGrayIcon := nil;
-  FIcon := TLayeredBitmap.Create;
-  FIcon.LoadFromHIcon(UnitDBKernel.Icons[AIconIndex + 1]);
-end;
-
-destructor TIconEx.Destroy;
-begin
-  F(FIcon);
-  F(FGrayIcon);
-  inherited;
-end;
-
-function TIconEx.GetGrayIcon: TLayeredBitmap;
-begin
-  if FGrayIcon = nil then
-  begin
-    FGrayIcon := TLayeredBitmap.Create;
-    FGrayIcon.Load(FIcon);
-    FGrayIcon.GrayScale;
-  end;
-  Result := FGrayIcon;
-end;
-
-initialization
-
-finalization
-  F(FIcons);
 
 end.

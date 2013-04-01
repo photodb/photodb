@@ -10,12 +10,14 @@ uses
   Graphics,
   JPEG,
   DB,
+
+  CommonDBSupport,
+
   uMemory,
   uConstants,
-
   uRuntime,
   uGroupTypes,
-  CommonDBSupport,
+  uDBIcons,
   uDBClasses;
 
 function GroupSearchByGroupName(GroupName: string): string;
@@ -45,7 +47,6 @@ function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
 implementation
 
 uses
-  UnitDBkernel,
   UnitFileCheckerDB;
 
 function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
@@ -306,7 +307,7 @@ begin
           Bit.PixelFormat := Pf24bit;
           Bit.Width := 16;
           Bit.Height := 16;
-          DrawIconEx(Bit.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 16, 16, 0, 0, DI_NORMAL);
+          DrawIconEx(Bit.Canvas.Handle, 0, 0, Icons[DB_IC_DELETE_INFO], 16, 16, 0, 0, DI_NORMAL);
           Group.GroupImage := TJpegImage.Create;
           Group.GroupImage.Assign(Bit);
         finally

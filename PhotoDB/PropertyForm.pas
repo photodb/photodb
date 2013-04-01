@@ -92,6 +92,7 @@ uses
   uThemesUtils,
   uMachMask,
   uExifInfo,
+  uDBIcons,
   uDBInfoEditorUtils,
   uEXIFDisplayControl,
   uProgramStatInfo,
@@ -397,7 +398,7 @@ uses
   uManagerExplorer,
   UnitFormChangeGroup,
   SelectGroupForm,
-  UnitGroupsTools, UnitDBKernel;
+  UnitGroupsTools;
 
 {$R *.dfm}
 
@@ -714,8 +715,8 @@ begin
       DateEdit.Enabled := True;
       TimeEdit.Enabled := True;
 
-      CollectionMemo.Text := 'TODO: DELETE';//DBkernel.GetDataBaseName;
-      OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
+      CollectionMemo.Text := 'TODO: DELETE';
+      OwnerMemo.Text := 'TODO: DELETE'; //TActivationManager.Instance.ActivationUserName;
 
       if YearOf(DataRecord.Date) > cMinEXIFYear then
         DateEdit.DateTime := DataRecord.Date
@@ -815,8 +816,8 @@ begin
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataGroups);
   TimeEdit.ParentColor := True;
 
-  PmItem.Images := DBKernel.ImageList;
-  PmLinks.Images := DBKernel.ImageList;
+  PmItem.Images := Icons.ImageList;
+  PmLinks.Images := Icons.ImageList;
   Shell1.ImageIndex := DB_IC_SHELL;
   Show1.ImageIndex := DB_IC_SLIDE_SHOW;
   Copy1.ImageIndex := DB_IC_COPY_ITEM;
@@ -841,7 +842,7 @@ begin
   SaveWindowPos1.SetPosition;
   FixFormPosition;
 
-  WlAddLink.LoadFromResource('GROUP_ADD_SMALL');
+  WlAddLink.LoadFromResource('SERIES_EXPAND');
   WlAddLink.Color := Theme.WindowColor;
 
   LoadLanguage;
@@ -1551,7 +1552,7 @@ begin
         B.Canvas.Rectangle(0, 0, 100, 100);
         Ico := TIcon.Create;
         try
-          Ico.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_MANY_FILES + 1]);
+          Ico.Handle := CopyIcon(Icons[DB_IC_MANY_FILES]);
           B.Canvas.Draw(100 div 2 - Ico.Width div 2, 100 div 2 - Ico.Height div 2, Ico);
         finally
           F(Ico);
@@ -1565,7 +1566,7 @@ begin
     Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
     SizeLAbel.Text := SizeInText(FFilesInfo.FilesSize);
     CollectionMemo.Readonly := True;
-    CollectionMemo.Text := DBKernel.GetDataBaseName;
+    CollectionMemo.Text := 'TODO: DELETE';
     OwnerMemo.ReadOnly := True;
     OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
@@ -1970,19 +1971,19 @@ begin
     try
       case LI[I].LinkType of
         LINK_TYPE_ID:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_SLIDE_SHOW]);
         LINK_TYPE_ID_EXT:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_NOTES + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_NOTES]);
         LINK_TYPE_IMAGE:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_DESKTOP + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_DESKTOP]);
         LINK_TYPE_FILE:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_SHELL + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_SHELL]);
         LINK_TYPE_FOLDER:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_DIRECTORY]);
         LINK_TYPE_TXT:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_TEXT_FILE]);
         LINK_TYPE_HTML:
-          Icon.Handle := CopyIcon(UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
+          Icon.Handle := CopyIcon(Icons[DB_IC_SLIDE_SHOW]);
       end;
       Links[I].Icon := Icon;
       Links[I].Refresh;
@@ -2326,7 +2327,7 @@ var
     B.PixelFormat := pf24bit;
     B.SetSize(16, 16);
     FillColorEx(B, Theme.PanelColor);
-    DrawIconEx(B.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(B.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], 16, 16, 0, 0, DI_NORMAL);
   end;
 
 begin
@@ -2472,7 +2473,7 @@ begin
 
     RegGroupsImageList.Draw(ACanvas, Rect.Left + 2, Rect.Top + 2, Max(0, N));
     if N = -1 then
-      DrawIconEx(ACanvas.Handle, Rect.Left + 10, Rect.Top + 8, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1], 8, 8, 0, 0, DI_NORMAL);
+      DrawIconEx(ACanvas.Handle, Rect.Left + 10, Rect.Top + 8, Icons[DB_IC_DELETE_INFO], 8, 8, 0, 0, DI_NORMAL);
 
     IsChoosed := False;
     if Control = LstCurrentGroups then

@@ -3,7 +3,7 @@ unit UnitLoadDBKernelIconsThread;
 interface
 
 uses
-  UnitDBkernel,
+  uDBIcons,
   uDBThread;
 
 type
@@ -21,7 +21,7 @@ implementation
 procedure TLoadDBKernelIconsThread.Execute;
 begin
   FreeOnTerminate := True;
-  DBKernel.LoadIcons;
+  Icons.LoadIcons;
 end;
 
 end.

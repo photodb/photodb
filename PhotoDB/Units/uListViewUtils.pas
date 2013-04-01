@@ -26,6 +26,7 @@ uses
   uConstants,
   uRuntime,
   uSettings,
+  uDBIcons,
   uThemesUtils,
   uBitmapUtils;
 
@@ -122,8 +123,7 @@ const
 implementation
 
 uses
-  UnitPropeccedFilesSupport,
-  UnitDBKernel;
+  UnitPropeccedFilesSupport;
 
 procedure FixListViewText(ACanvas: TCanvas; Item: TEasyItem; Include: Boolean);
 var
@@ -283,7 +283,7 @@ begin
   end;
 
   if (Info <> nil) and (ProcessedFilesCollection.ExistsFile(Info.FileName) <> nil) then
-    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, UnitDBKernel.Icons[DB_IC_RELOADING + 1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(ACanvas.Handle, X + 2, ARect.Bottom - 20, Icons[DB_IC_RELOADING], 16, 16, 0, 0, DI_NORMAL);
 
   if ShowInfo and (Info <> nil) then
     DrawAttributesEx(ACanvas.Handle, Max(ARect.Left, ARect.Right - 100), Max(ARect.Top, Y - 16), Info, Options);

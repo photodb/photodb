@@ -26,7 +26,6 @@ uses
   Dmitry.Graphics.Utils,
   Dmitry.Controls.ImButton,
 
-  UnitDBKernel,
   DropSource,
   DropTarget,
   GIFImage,
@@ -45,6 +44,7 @@ uses
   uConstants,
   uDBPopupMenuInfo,
   uFormUtils,
+  uDBIcons,
   uAnimationHelper,
   uThemesUtils,
   uTranslateUtils,
@@ -123,9 +123,9 @@ var
   procedure DoDrawIcon(X, Y: Integer; ImageIndex: Integer; Grayscale: Boolean = False);
   begin
     if not Grayscale then
-      DrawIconEx(Bitmap.Canvas.Handle, X, Y, UnitDBKernel.Icons[ImageIndex + 1], 16, 16, 0, 0, DI_NORMAL)
+      DrawIconEx(Bitmap.Canvas.Handle, X, Y, Icons[ImageIndex], 16, 16, 0, 0, DI_NORMAL)
     else
-      Icons.Items[ImageIndex].GrayIcon.DoDraw(X, Y, Bitmap);
+      Icons.IconsEx[ImageIndex].GrayIcon.DoDraw(X, Y, Bitmap);
   end;
 
 begin

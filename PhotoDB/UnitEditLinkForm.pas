@@ -27,16 +27,16 @@ uses
   Dmitry.Controls.ComboBoxExDB,
 
   UnitLinksSupport,
-  UnitDBKernel,
   UnitDBFileDialogs,
   UnitDBDeclare,
 
+  uConstants,
+  uMemory,
   uDBUtils,
   uDBForm,
   uShellIntegration,
-  uConstants,
   uAssociations,
-  uMemory,
+  uDBIcons,
   uProgramStatInfo,
   uThemesUtils;
 
@@ -143,17 +143,17 @@ begin
   begin
     case I of
       LINK_TYPE_ID:
-        Icon := UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1];
+        Icon := Icons[DB_IC_SLIDE_SHOW];
       LINK_TYPE_ID_EXT:
-        Icon := UnitDBKernel.Icons[DB_IC_NOTES + 1];
+        Icon := Icons[DB_IC_NOTES];
       LINK_TYPE_IMAGE:
-        Icon := UnitDBKernel.Icons[DB_IC_DESKTOP + 1];
+        Icon := Icons[DB_IC_DESKTOP];
       LINK_TYPE_FILE:
-        Icon := UnitDBKernel.Icons[DB_IC_SHELL + 1];
+        Icon := Icons[DB_IC_SHELL];
       LINK_TYPE_FOLDER:
-        Icon := UnitDBKernel.Icons[DB_IC_DIRECTORY + 1];
+        Icon := Icons[DB_IC_DIRECTORY];
       LINK_TYPE_TXT:
-        Icon := UnitDBKernel.Icons[DB_IC_TEXT_FILE + 1];
+        Icon := Icons[DB_IC_TEXT_FILE];
     else
       Icon := 0;
     end;

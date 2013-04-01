@@ -40,6 +40,7 @@ uses
   uConstants,
   uGroupTypes,
   uBitmapUtils,
+  uDBIcons,
   uExplorerGroupsProvider,
   uDBForm,
   uShellIntegration,
@@ -109,7 +110,7 @@ type
 implementation
 
 uses
-  ImEditor, UnitDBKernel;
+  ImEditor;
 
 {$R *.dfm}
 
@@ -415,7 +416,7 @@ begin
     SmallB.Canvas.Pen.Color := Theme.PanelColor;
     SmallB.Canvas.Brush.Color := Theme.PanelColor;
     SmallB.Canvas.Rectangle(0, 0, 16, 16);
-    DrawIconEx(SmallB.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+    DrawIconEx(SmallB.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], 16, 16, 0, 0, DI_NORMAL);
     GroupsImageList.Add(SmallB, nil);
   finally
     F(SmallB);

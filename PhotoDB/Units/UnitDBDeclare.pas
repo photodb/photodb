@@ -628,7 +628,7 @@ end;
 procedure TEventValues.ReadFromInfo(Info: TDBPopupMenuInfoRecord);
 begin
   Self.FileName := AnsiLowerCase(Info.FileName);
-  Self.ID := LastInseredID;
+  Self.ID := Info.ID;
   Self.Rotation := Info.Rotation;
   Self.Rating := Info.Rating;
   Self.Comment := Info.Comment;

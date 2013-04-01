@@ -72,7 +72,6 @@ uses
   MPCommonObjects,
   EasyListview,
 
-  UnitDBKernel,
   PrintMainForm,
   ExplorerTypes,
   DBCMenu,
@@ -87,6 +86,7 @@ uses
   CommonDBSupport,
   UnitRefreshDBRecordsThread,
   UnitCryptingImagesThread,
+  UnitDBKernel,
 
   wfsU,
   uExplorerFolderImages,
@@ -124,6 +124,7 @@ uses
   uDBUtils,
   uPathUtils,
   uSettings,
+  uDBIcons,
   uStringUtils,
   uAssociations,
   uExplorerPersonsProvider,
@@ -1378,7 +1379,7 @@ begin
     FImageViewer.OnUpdateButtonsState := OnPreviewUpdateButtonsState;
     TsMediaPreviewResize(Self);
 
-    WlFaceCount.ImageList := DBkernel.ImageList;
+    WlFaceCount.ImageList := Icons.ImageList;
     WlFaceCount.Visible := FaceDetectionManager.IsActive;
     LsDetectingFaces.Visible := FaceDetectionManager.IsActive;
   end;
@@ -1524,8 +1525,8 @@ begin
 
   MiCollections.Caption := L('Edit collections');
 
-  PmHelp.Images := DBKernel.ImageList;
-  PmOptions.Images := DBKernel.ImageList;
+  PmHelp.Images := Icons.ImageList;
+  PmOptions.Images := Icons.ImageList;
 
   MiActivation.ImageIndex := DB_IC_NOTES;
   MiAbout.ImageIndex := DB_IC_HELP;
@@ -1552,7 +1553,7 @@ begin
   ToolBarMain.Images := ToolBarNormalImageList;
   ToolBarMain.DisabledImages := ToolBarDisabledImageList;
 
-  ToolBarBottom.DisabledImages := DBKernel.DisabledImageList;
+  ToolBarBottom.DisabledImages := Icons.DisabledImageList;
 
   PePath.Width := PnNavigation.Width - (StAddress.Left + StAddress.Width + 5);
 
@@ -2803,7 +2804,7 @@ var
   Wl: TWebLink;
   P: TPoint;
 begin
-  PmPreviewPersonItem.Images := DBKernel.ImageList;
+  PmPreviewPersonItem.Images := Icons.ImageList;
   MiPreviewPersonFind.Caption := L('Find pictures');
   MiPreviewPersonUpdateAvatar.Caption := L('Update avatar');
   MiPreviewPersonProperties.Caption := L('Properties');
@@ -5802,7 +5803,7 @@ begin
         P.Image.AddToImageList(ImLocations);
         MI.ImageIndex := ImLocations.Count - 1;
       end else
-        ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[DB_IC_DIRECTORY + 1]);
+        ImageList_AddIcon(ImLocations.Handle, Icons[DB_IC_DIRECTORY]);
 
       PmLocations.Items.Add(MI);
 
@@ -8788,7 +8789,7 @@ begin
   MI.Tag := 0;
   MI.OnClick := EditPlacesListClick;
   PmLocations.Items.Add(MI);
-  ImageList_AddIcon(ImLocations.Handle, UnitDBKernel.Icons[DB_IC_RENAME + 1]);
+  ImageList_AddIcon(ImLocations.Handle, Icons[DB_IC_RENAME]);
 
   MI := TMenuItem.Create(PmLocations);
   MI.Caption := '-';
@@ -10545,10 +10546,10 @@ begin
   if FShowAttributes then
   begin
     if Info.GeoLocation <> nil then
-      DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, UnitDBKernel.Icons[DB_IC_MAP_MARKER + 1], 16, 16, 0, 0, DI_NORMAL);
+      DrawIconEx(ACanvas.Handle, ARect.Left, ARect.Bottom, Icons[DB_IC_MAP_MARKER], 16, 16, 0, 0, DI_NORMAL);
 
     if PhotoShelf.PathInShelf(Info.FileName) > -1 then
-      DrawIconEx(ACanvas.Handle, ARect.Right - 20, ARect.Bottom, UnitDBKernel.Icons[DB_IC_SHELF + 1], 16, 16, 0, 0, DI_NORMAL);
+      DrawIconEx(ACanvas.Handle, ARect.Right - 20, ARect.Bottom, Icons[DB_IC_SHELF], 16, 16, 0, 0, DI_NORMAL);
   end;
 end;
 
@@ -11301,7 +11302,7 @@ begin
   B.PixelFormat := pf24bit;
   B.SetSize(16, 16);
   FillColorEx(B, Theme.PanelColor);
-  DrawIconEx(B.Canvas.Handle, 0, 0, UnitDBKernel.Icons[DB_IC_GROUPS + 1], 16, 16, 0, 0, DI_NORMAL);
+  DrawIconEx(B.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], 16, 16, 0, 0, DI_NORMAL);
 end;
 
 procedure CreateGroupImage(GroupName: string; var B: TBitmap);
@@ -11483,8 +11484,8 @@ begin
     try
       BeginScreenUpdate(TsDetailedSearch.Handle);
 
-      PmESPerson.Images := DBKernel.ImageList;
-      PmESGroup.Images := DBKernel.ImageList;
+      PmESPerson.Images := Icons.ImageList;
+      PmESGroup.Images := Icons.ImageList;
 
       MiESPersonFindPictures.Caption := L('Find pictures');
       MiESPersonRemoveFromList.Caption := L('Remove from list');
@@ -11530,14 +11531,14 @@ begin
 
       LoadSpeedButtonFromResourcePNG(SbExtendedSearchStart, 'SEARCH');
 
-      WlExtendedSearchDateFrom.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
-      WlExtendedSearchDateTo.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EDIT_DATE + 1]);
+      WlExtendedSearchDateFrom.LoadFromHIcon(Icons[DB_IC_EDIT_DATE]);
+      WlExtendedSearchDateTo.LoadFromHIcon(Icons[DB_IC_EDIT_DATE]);
 
       WlExtendedSearchOptions.LoadFromResource('SERIES_SETTINGS');
 
       WlExtendedSearchSortDescending.LoadFromResource('SORT_DESCENDING');
 
-      BtnSearch.Images := DBKernel.ImageList;
+      BtnSearch.Images := Icons.ImageList;
       BtnSearch.ImageIndex := DB_IC_SEARCH;
 
       WlSearchRatingFromValue.LoadFromResource('TRATING_DEL');
@@ -11589,7 +11590,7 @@ begin
     WlExtendedSearchAddGroup.IconWidth := 16;
     WlExtendedSearchAddGroup.IconHeight := 16;
     WlExtendedSearchAddGroup.Text := L('Photos with groups');
-    WlExtendedSearchAddGroup.LoadFromResource('GROUP_ADD_SMALL');
+    WlExtendedSearchAddGroup.LoadFromResource('SERIES_EXPAND');
     WlExtendedSearchAddGroup.OnClick := ExtendedSearchGroupClick;
     WlExtendedSearchAddGroup.Tag := -1;
 
@@ -11713,7 +11714,7 @@ begin
     WlExtendedSearchAddPerson.IconWidth := 16;
     WlExtendedSearchAddPerson.IconHeight := 16;
     WlExtendedSearchAddPerson.Text := L('Persons on photo');
-    WlExtendedSearchAddPerson.LoadFromResource('GROUP_ADD_SMALL');
+    WlExtendedSearchAddPerson.LoadFromResource('SERIES_EXPAND');
     WlExtendedSearchAddPerson.OnClick := WlExtendedSearchAddPersonClick;
     WlExtendedSearchAddPerson.PopupMenu := PmSelectPerson;
 
@@ -11848,8 +11849,8 @@ var
 begin
 
   ImFacePopup.Clear;
-  ImageList_AddIcon(ImFacePopup.Handle, UnitDBKernel.Icons[DB_IC_DELETE_INFO + 1]);
-  ImageList_AddIcon(ImFacePopup.Handle, UnitDBKernel.Icons[DB_IC_PEOPLE + 1]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_DELETE_INFO]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_PEOPLE]);
 
   SelectedPersons := TPersonCollection.Create;
   try
@@ -12263,14 +12264,14 @@ end;
 
 procedure TExplorerForm.PmCopyPopup(Sender: TObject);
 begin
-  PmCopy.Images := DBKernel.ImageList;
+  PmCopy.Images := Icons.ImageList;
   MiCopyTo.Caption := L('Copy to');
   MiCopyTo.ImageIndex := DB_IC_COPY;
 end;
 
 procedure TExplorerForm.PmCutPopup(Sender: TObject);
 begin
-  PmCut.Images := DBKernel.ImageList;
+  PmCut.Images := Icons.ImageList;
   MiCutTo.Caption := L('Move to');
   MiCutTo.ImageIndex := DB_IC_CUT;
 end;
@@ -12694,7 +12695,7 @@ begin
   MI.OnClick := EditDatabasesClick;
   PmDBList.Items.Add(MI);
 
-  ImageList_ReplaceIcon(ImDBList.Handle, -1, UnitDBKernel.Icons[DB_IC_RENAME + 1]);
+  ImageList_ReplaceIcon(ImDBList.Handle, -1, Icons[DB_IC_RENAME]);
 end;
 
 procedure TExplorerForm.EditDatabasesClick(Sender: TObject);
@@ -12734,10 +12735,10 @@ var
   end;
 
 begin
-  PmItemPopup.Images := DBKernel.ImageList;
-  PmListPopup.Images := DBKernel.ImageList;
-  ToolBarBottom.Images := DBKernel.ImageList;
-  PmInfoGroup.Images := DBKernel.ImageList;
+  PmItemPopup.Images := Icons.ImageList;
+  PmListPopup.Images := Icons.ImageList;
+  ToolBarBottom.Images := Icons.ImageList;
+  PmInfoGroup.Images := Icons.ImageList;
 
   ToolBarBottom.DisableToolBarForButtons;
   TbbPlay.ImageIndex := DB_IC_SLIDE_SHOW;
@@ -12756,20 +12757,20 @@ begin
   TbbClear.ImageIndex := DB_IC_DELETE_INFO;
   ToolBarBottom.EnableToolBarForButtons;
 
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1]);
-  for I := 1 to 5 do
-    ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_RATING_1 + I]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_RATING_STAR]);
+  for I := 0 to 4 do
+    ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_RATING_1 + I]);
 
-  AddGrayIcon(ImlPreview, UnitDBKernel.Icons[DB_IC_RATING_STAR + 1]);
-  for I := 1 to 5 do
-    AddGrayIcon(ImlPreview, UnitDBKernel.Icons[DB_IC_RATING_1 + I]);
+  AddGrayIcon(ImlPreview, Icons[DB_IC_RATING_STAR + 1]);
+  for I := 0 to 4 do
+    AddGrayIcon(ImlPreview, Icons[DB_IC_RATING_1 + I]);
 
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_PREVIOUS + 1]);
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_NEXT + 1]);
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_90 + 1]);
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_ROTATED_270 + 1]);
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_SLIDE_SHOW + 1]);
-  ImageList_AddIcon(ImlPreview.Handle, UnitDBKernel.Icons[DB_IC_INFO_PANEL + 1]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_PREVIOUS]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_NEXT]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_ROTATED_90]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_ROTATED_270]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_SLIDE_SHOW]);
+  ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_INFO_PANEL]);
 
   ToolBarPreview.DisableToolBarForButtons;
   TbPreviewPrevious.ImageIndex := 11 + 1;
@@ -12808,7 +12809,7 @@ begin
   OpenInNewWindow1.ImageIndex := DB_IC_FOLDER;
   NewWindow1.ImageIndex := DB_IC_FOLDER;
 
-  PmTreeView.Images := DBKernel.ImageList;
+  PmTreeView.Images := Icons.ImageList;
 
   MiTreeViewOpenInNewWindow.ImageIndex := DB_IC_EXPLORER;
   MiTreeViewRefresh.ImageIndex := DB_IC_REFRESH_THUM;
@@ -12853,7 +12854,7 @@ begin
   MakeFolderViewer2.ImageIndex := DB_IC_SAVE_AS_TABLE;
   Number1.ImageIndex := DB_IC_RENAME;
 
-  RatingPopupMenu.Images := DBKernel.ImageList;
+  RatingPopupMenu.Images := Icons.ImageList;
 
   N00.ImageIndex := DB_IC_DELETE_INFO;
   N01.ImageIndex := DB_IC_RATING_1;
@@ -12875,7 +12876,7 @@ begin
   if not IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
 
-  WlGoToShelf.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SHELF + 1]);
+  WlGoToShelf.LoadFromHIcon(Icons[DB_IC_SHELF]);
 end;
 
 destructor TExplorerForm.Destroy;

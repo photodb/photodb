@@ -48,8 +48,6 @@ object ActionsForm: TActionsForm
       Text = 'Save To File'
       OnClick = SaveToFileLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -68,8 +66,6 @@ object ActionsForm: TActionsForm
       Text = 'Load From File'
       OnClick = LoadFromFileLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False
@@ -88,8 +84,6 @@ object ActionsForm: TActionsForm
       Text = 'Close'
       OnClick = CloseLinkClick
       ImageIndex = 0
-      IconWidth = 16
-      IconHeight = 16
       UseEnterColor = False
       EnterColor = clBlack
       EnterBould = False

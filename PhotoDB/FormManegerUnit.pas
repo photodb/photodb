@@ -82,7 +82,6 @@ type
     function ProcessEncryptionErrorMessage(S: string): Boolean;
     function GetCount: Integer;
     function GetFormByIndex(Index: Integer): TForm;
-    procedure CheckSampleDB;
   protected
     function GetFormID: string; override;
     procedure WMCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
@@ -527,11 +526,6 @@ begin
 
   if UpdateInfoParams * Params <> [] then
     ExifPatchManager.AddPatchInfo(ID, Params, Value);
-end;
-
-procedure TFormManager.CheckSampleDB;
-begin
-
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);

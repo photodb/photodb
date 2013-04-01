@@ -21,6 +21,7 @@ uses
   ImageHistoryUnit,
   UnitDBFileDialogs,
 
+  uDBIcons,
   uDBForm,
   uMemory,
   uDBFileTypes,
@@ -73,7 +74,6 @@ var
 implementation
 
 uses
-  UnitDBKernel,
   ImEditor,
   EffectsToolUnit;
 
@@ -82,9 +82,9 @@ uses
 procedure TActionsForm.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
-  SaveToFileLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_SAVETOFILE + 1]);
-  LoadFromFileLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_LOADFROMFILE + 1]);
-  CloseLink.LoadFromHIcon(UnitDBKernel.Icons[DB_IC_EXIT + 1]);
+  SaveToFileLink.LoadFromHIcon(Icons[DB_IC_SAVETOFILE]);
+  LoadFromFileLink.LoadFromHIcon(Icons[DB_IC_LOADFROMFILE]);
+  CloseLink.LoadFromHIcon(Icons[DB_IC_EXIT]);
 
   Cursor := 0;
   Actions := TList.Create;

@@ -18,7 +18,7 @@ var
   zPoint: TPoint;
   zBf: TBlendFunction;
   TopLeft: TPoint;
-  Bounds : TRect;
+  Bounds: TRect;
 begin
   if UpdateFormStyle then
     SetWindowLong(FormHandle, GWL_EXSTYLE, GetWindowLong(FormHandle, GWL_EXSTYLE) or WS_EX_LAYERED);

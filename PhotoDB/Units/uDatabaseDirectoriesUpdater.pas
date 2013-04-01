@@ -937,7 +937,7 @@ var
 begin
   EventInfo.ReadFromInfo(Info);
   EventInfo.JPEGImage := Res.Jpeg;
-  CollectionEvents.DoIDEvent(Application.MainForm as TDBForm, LastInseredID, [EventID_FileProcessed], EventInfo);
+  CollectionEvents.DoIDEvent(Application.MainForm as TDBForm, Info.ID, [EventID_FileProcessed], EventInfo);
 end;
 
 { TUpdaterStorage }
