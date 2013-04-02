@@ -132,10 +132,10 @@ end;
 
 function TDBIcons.GetIconByIndex(Index: Integer): HIcon;
 begin
-  if FHIcons[Index] <> 0 then
+   if FHIcons[Index] <> 0 then
     Exit(FHIcons[Index]);
 
-  FHIcons[Index] := ImageList_GetIcon(FImageList.Handle, Index - 1, 0);
+  FHIcons[Index] := ImageList_GetIcon(FImageList.Handle, Index, 0);
   Result := FHIcons[Index];
 end;
 

@@ -22,7 +22,7 @@ uses
   EasyListView,
   UnitDBDeclare,
   UnitDBCommon,
-  UnitDBKernel,
+  UnitBackUpTableInCMD,
 
   uAppUtils,
   uLogger,
@@ -117,7 +117,6 @@ implementation
 uses
   uManagerExplorer,
   UnitInternetUpdate,
-  UnitConvertDBForm,
   uExifPatchThread;
 
 {$R *.dfm}
@@ -600,7 +599,7 @@ begin
       TInternetUpdate.Create(nil, True, nil);
     end;
     if (FCheckCount = 600) and not FolderView then // after 1.min. backup database
-      DBKernel.BackUpTable;
+      CreateBackUpForCollection;
 
     if (FCheckCount mod 100 = 0) then
     begin

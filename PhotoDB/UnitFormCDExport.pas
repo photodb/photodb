@@ -378,7 +378,7 @@ procedure TFormCDExport.ButtonChooseDirectoryClick(Sender: TObject);
 var
   Dir: string;
 begin
-  Dir := DBSelectDir(Handle, L('Select a folder to export files'), UseSimpleSelectFolderDialog);
+  Dir := DBSelectDir(Handle, L('Select a folder to export files'));
   if DirectoryExists(Dir) then
     EditExportDirectory.Text := Dir;
 end;

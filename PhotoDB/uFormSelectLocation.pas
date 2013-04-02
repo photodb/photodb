@@ -76,7 +76,7 @@ begin
   FShellTreeView := TPathProvideTreeView.Create(Self);
   FShellTreeView.Parent := PnExplorer;
   FShellTreeView.Align := AlClient;
-  FShellTreeView.OnlyFileSystem := True;
+  FShellTreeView.OnlyFileSystem := not AllowVirtualItems;
   FShellTreeView.LoadHomeDirectory(Self);
   FShellTreeView.OnSelectPathItem := PathTreeViewChange;
 

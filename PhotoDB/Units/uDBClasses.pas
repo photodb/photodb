@@ -159,7 +159,7 @@ type
   protected
     function GetSQL: string; virtual; abstract;
   public
-    constructor Create(Async: Boolean = False);
+    constructor Create(Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
     destructor Destroy; override;
     procedure UpdateParameters;
     function Execute: Integer; virtual; abstract;
@@ -181,7 +181,7 @@ type
   public
     function Execute: Integer; override;
     function LastID: Integer;
-    constructor Create(TableName: string);
+    constructor Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
   end;
 
   TDeleteCommand = class(TSqlCommand)
@@ -201,7 +201,7 @@ type
     function GetSQL: string; override;
   public
     function Execute: Integer; override;
-    constructor Create(TableName: string);
+    constructor Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
   end;
 
   TOrderParameter = class
@@ -238,7 +238,7 @@ type
   public
     function Execute: Integer; override;
     function ExecuteSql(Sql: string; ForwardOnly: Boolean): Integer;
-    constructor Create(TableName: string; Async: Boolean = False);
+    constructor Create(TableName: string; Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
     destructor Destroy; override;
     property TopRecords: Integer read FTopRecords write FTopRecords;
     property Order: TOrderParameterCollection read FOrderParameterCollection;
@@ -274,9 +274,9 @@ end;
 
 { TInsertCommand }
 
-constructor TInsertCommand.Create(TableName: string);
+constructor TInsertCommand.Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create;
+  inherited Create(False, CollectionFileName, IsolationLevel);
   FTableName := TableName;
 end;
 
@@ -324,12 +324,15 @@ begin
   FWhereParameters.Add(Parameter);
 end;
 
-constructor TSqlCommand.Create(Async: Boolean = False);
+constructor TSqlCommand.Create(Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
   FParameters := FParameterCollection.Create;
   FWhereParameters := FParameterCollection.Create;
   FCustomParameters := FParameterCollection.Create;
-  FQuery := GetQuery(Async);
+  if CollectionFileName = '' then
+    CollectionFileName := dbname;
+
+  FQuery := GetQuery(CollectionFileName, Async, IsolationLevel);
 end;
 
 destructor TSqlCommand.Destroy;
@@ -663,9 +666,9 @@ end;
 
 { TUpdateCommand }
 
-constructor TUpdateCommand.Create(TableName: string);
+constructor TUpdateCommand.Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create;
+  inherited Create(False, CollectionFileName, IsolationLevel);
   FTableName := TableName;
 end;
 
@@ -716,9 +719,9 @@ end;
 
 { TSelectCommand }
 
-constructor TSelectCommand.Create(TableName: string; Async: Boolean = False);
+constructor TSelectCommand.Create(TableName: string; Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create(Async);
+  inherited Create(Async, CollectionFileName, IsolationLevel);
   FOrderParameterCollection := TOrderParameterCollection.Create;
   FTopRecords := 0;
   FTableName := TableName;

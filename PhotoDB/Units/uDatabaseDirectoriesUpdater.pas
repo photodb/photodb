@@ -607,7 +607,7 @@ function TDatabaseDirectoriesUpdater.IsDirectoryChangedOnDrive(
   Directory: string; ItemSizes: TList<Int64>; ItemsToAdd: TList<string>; ItemsToUpdate: TList<TUpdateTask>): Boolean;
 var
   I, J: Integer;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
   FileName: string;
 begin
   if ItemsToAdd.Count = 0 then
@@ -619,7 +619,7 @@ begin
     if not FQuery.IsEmpty then
     begin
       FQuery.First;
-      DA := TDBAdapter.Create(FQuery);
+      DA := TImageTableAdapter.Create(FQuery);
       try
         for I := 1 to FQuery.RecordCount do
         begin

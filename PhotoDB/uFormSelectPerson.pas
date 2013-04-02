@@ -258,7 +258,6 @@ begin
   LoadList;
   TmrSearchTimer(Self);
   LoadLanguage;
-  PersonManager.InitDB;
   SaveWindowPos1.Key := RegRoot + 'SelectPerson';
   SaveWindowPos1.SetPosition(True);
 end;

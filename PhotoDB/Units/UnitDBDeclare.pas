@@ -458,10 +458,10 @@ end;
 procedure TDBPopupMenuInfoRecord.ReadFromDS(DS: TDataSet);
 var
   ThumbField: TField;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 begin
   F(Image);
-  DA := TDBAdapter.Create(DS);
+  DA := TImageTableAdapter.Create(DS);
   try
     ID := DA.ID;
     Name := DA.Name;
@@ -499,9 +499,9 @@ end;
 
 procedure TDBPopupMenuInfoRecord.WriteToDS(DS: TDataSet);
 var
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 begin
-  DA := TDBAdapter.Create(DS);
+  DA := TImageTableAdapter.Create(DS);
   try
     DA.Name := Name;
     DA.FileName := FOriginalFileName;

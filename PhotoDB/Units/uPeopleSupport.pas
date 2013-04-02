@@ -26,7 +26,6 @@ uses
   uFaceDetection,
   uSettings,
   uDBForm,
-  uPersonDB,
   uGroupTypes,
   uRuntime,
   uConstants,
@@ -58,7 +57,6 @@ type
     FSync: TCriticalSection;
     function GetAllPersons: TPersonCollection;
   public
-    procedure InitDB;
     procedure LoadPersonList(Persons: TPersonCollection);
     procedure LoadTopPersons(CallBack: TPersonFoundCallBack);
     function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
@@ -681,7 +679,6 @@ function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection
 var
   SC: TSelectCommand;
 begin
-  InitDB;
   Result := TPersonAreaCollection.Create;
   SC := TSelectCommand.Create(ObjectMappingTableName);
   try
@@ -759,7 +756,6 @@ function TPersonManager.GetPersonsByNames(
 var
   SC: TSelectCommand;
 begin
-  InitDB;
   Result := TPersonCollection.Create;
   SC := TSelectCommand.Create(ObjectTableName);
   try
@@ -785,7 +781,6 @@ function TPersonManager.GetPersonsOnImage(ImageID: Integer): TPersonCollection;
 var
   SC: TSelectCommand;
 begin
-  InitDB;
   Result := TPersonCollection.Create;
   SC := TSelectCommand.Create(ObjectTableName);
   try
@@ -803,24 +798,6 @@ begin
     end;
   finally
     F(SC);
-  end;
-end;
-
-procedure TPersonManager.InitDB;
-begin
-  FSync.Enter;
-  try
-    if FIsInitialized then
-      Exit;
-
-    FIsInitialized := True;
-    if not CheckObjectTables(DatabaseManager.DBFile) then
-    begin
-      ADOCreateObjectsTable(DatabaseManager.DBFile);
-      ADOCreateObjectMappingTable(DatabaseManager.DBFile);
-    end;
-  finally
-    FSync.Leave;
   end;
 end;
 

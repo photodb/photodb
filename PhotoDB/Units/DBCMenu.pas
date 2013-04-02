@@ -955,7 +955,7 @@ var
   SQL_: string;
   Files, S: TArStrings;
   IDs: TArInteger;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 begin
   if CheckDBReadOnly then
     Exit;
@@ -967,7 +967,7 @@ begin
         if Finfo[I].Attr = Db_attr_duplicate then
         begin
           FQuery := GetQuery;
-          DA := TDBAdapter.Create(FQuery);
+          DA := TImageTableAdapter.Create(FQuery);
           try
             SQL_ := 'SELECT FFileName, ID FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
               ') AND (StrTh=(SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Finfo[I].ID) + '))';
@@ -1114,7 +1114,7 @@ var
   EventInfo: TEventValues;
   Query: TDataSet;
   ID: Integer;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 begin
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
@@ -1123,7 +1123,7 @@ begin
   end else
   begin
     Query := GetQuery;
-    DA := TDBAdapter.Create(Query);
+    DA := TImageTableAdapter.Create(Query);
     try
       ID := GetIdByFileName(FInfo[FInfo.Position].FileName);
       if ID = 0 then

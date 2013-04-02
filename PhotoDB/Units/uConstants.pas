@@ -468,6 +468,7 @@ const
   ObjectMappingTableName = 'ObjectMapping';
   ImageTable = 'ImageTable';
   GroupsTableName = 'Groups';
+  TableSettings = 'DBSettings';
 
 const
   DBT_DeviceArrival        = $8000;

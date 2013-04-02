@@ -9,7 +9,7 @@ uses
   Data.DB;
 
 type
-  TDBAdapter = class(TObject)
+  TImageTableAdapter = class(TObject)
   private
     FDS: TDataSet;
     function GetName: string;
@@ -83,212 +83,212 @@ implementation
 
 { TDBAdapter }
 
-constructor TDBAdapter.Create(DS: TDataSet);
+constructor TImageTableAdapter.Create(DS: TDataSet);
 begin
   FDS := DS;
 end;
 
-function TDBAdapter.GetAccess: Integer;
+function TImageTableAdapter.GetAccess: Integer;
 begin
   Result := FDS.FieldByName('Access').AsInteger;
 end;
 
-function TDBAdapter.GetAttributes: Integer;
+function TImageTableAdapter.GetAttributes: Integer;
 begin
   Result := FDS.FieldByName('Attr').AsInteger;
 end;
 
-function TDBAdapter.GetComment: string;
+function TImageTableAdapter.GetComment: string;
 begin
   Result := FDS.FieldByName('Comment').AsString;
 end;
 
-function TDBAdapter.GetDate: TDate;
+function TImageTableAdapter.GetDate: TDate;
 begin
   Result := DateOf(FDS.FieldByName('DateToAdd').AsDateTime);
 end;
 
-function TDBAdapter.GetFileName: string;
+function TImageTableAdapter.GetFileName: string;
 begin
   Result := FDS.FieldByName('FFileName').AsString;
 end;
 
-function TDBAdapter.GetFileSize: Integer;
+function TImageTableAdapter.GetFileSize: Integer;
 begin
   Result := FDS.FieldByName('FileSize').AsInteger;
 end;
 
-function TDBAdapter.GetGroups: string;
+function TImageTableAdapter.GetGroups: string;
 begin
   Result := FDS.FieldByName('Groups').AsString;
 end;
 
-function TDBAdapter.GetHeight: Integer;
+function TImageTableAdapter.GetHeight: Integer;
 begin
   Result := FDS.FieldByName('Height').AsInteger;
 end;
 
-function TDBAdapter.GetID: Integer;
+function TImageTableAdapter.GetID: Integer;
 begin
   Result := FDS.FieldByName('ID').AsInteger;
 end;
 
-function TDBAdapter.GetInclude: Boolean;
+function TImageTableAdapter.GetInclude: Boolean;
 begin
   Result := FDS.FieldByName('Include').Value;
 end;
 
-function TDBAdapter.GetIsDate: Boolean;
+function TImageTableAdapter.GetIsDate: Boolean;
 begin
   Result := FDS.FieldByName('IsDate').Value;
 end;
 
-function TDBAdapter.GetIsTime: Boolean;
+function TImageTableAdapter.GetIsTime: Boolean;
 begin
   Result := FDS.FieldByName('IsTime').Value;
 end;
 
-function TDBAdapter.GetKeyWords: string;
+function TImageTableAdapter.GetKeyWords: string;
 begin
   Result := FDS.FieldByName('Keywords').AsString;
 end;
 
-function TDBAdapter.GetLinks: string;
+function TImageTableAdapter.GetLinks: string;
 begin
   Result := FDS.FieldByName('Links').AsString;
 end;
 
-function TDBAdapter.GetLongImageID: string;
+function TImageTableAdapter.GetLongImageID: string;
 begin
   Result := FDS.FieldByName('StrTh').AsString;
 end;
 
-function TDBAdapter.GetName: string;
+function TImageTableAdapter.GetName: string;
 begin
   Result := Trim(FDS.FieldByName('Name').AsString);
 end;
 
-function TDBAdapter.GetRating: Integer;
+function TImageTableAdapter.GetRating: Integer;
 begin
   Result := FDS.FieldByName('Rating').AsInteger;
 end;
 
-function TDBAdapter.GetRotation: Integer;
+function TImageTableAdapter.GetRotation: Integer;
 begin
   Result := FDS.FieldByName('Rotated').AsInteger;
 end;
 
-function TDBAdapter.GetThumb: TField;
+function TImageTableAdapter.GetThumb: TField;
 begin
   Result := FDS.FieldByName('thum');
 end;
 
-function TDBAdapter.GetTime: TTime;
+function TImageTableAdapter.GetTime: TTime;
 begin
   Result := TimeOf(FDS.FieldByName('aTime').AsDateTime);
 end;
 
-function TDBAdapter.GetWidth: Integer;
+function TImageTableAdapter.GetWidth: Integer;
 begin
   Result := FDS.FieldByName('Width').AsInteger;
 end;
 
-procedure TDBAdapter.SetAccess(const Value: Integer);
+procedure TImageTableAdapter.SetAccess(const Value: Integer);
 begin
   FDS.FieldByName('Access').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetAttributes(const Value: Integer);
+procedure TImageTableAdapter.SetAttributes(const Value: Integer);
 begin
   FDS.FieldByName('Attr').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetComment(const Value: string);
+procedure TImageTableAdapter.SetComment(const Value: string);
 begin
   FDS.FieldByName('Comment').AsString := Value;
 end;
 
-procedure TDBAdapter.SetDate(const Value: TDate);
+procedure TImageTableAdapter.SetDate(const Value: TDate);
 begin
   FDS.FieldByName('DateToAdd').AsDateTime := DateOf(Value);
 end;
 
-procedure TDBAdapter.SetFileName(const Value: string);
+procedure TImageTableAdapter.SetFileName(const Value: string);
 begin
   FDS.FieldByName('FFileName').AsString := Value;
 end;
 
-procedure TDBAdapter.SetFileSize(const Value: Integer);
+procedure TImageTableAdapter.SetFileSize(const Value: Integer);
 begin
   FDS.FieldByName('FileSize').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetGroups(const Value: string);
+procedure TImageTableAdapter.SetGroups(const Value: string);
 begin
   FDS.FieldByName('Groups').AsString := Value;
 end;
 
-procedure TDBAdapter.SetHeight(const Value: Integer);
+procedure TImageTableAdapter.SetHeight(const Value: Integer);
 begin
   FDS.FieldByName('Height').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetID(const Value: Integer);
+procedure TImageTableAdapter.SetID(const Value: Integer);
 begin
   FDS.FieldByName('ID').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetInclude(const Value: Boolean);
+procedure TImageTableAdapter.SetInclude(const Value: Boolean);
 begin
   FDS.FieldByName('Include').AsBoolean := Value;
 end;
 
-procedure TDBAdapter.SetIsDate(const Value: Boolean);
+procedure TImageTableAdapter.SetIsDate(const Value: Boolean);
 begin
   FDS.FieldByName('IsDate').AsBoolean := Value;
 end;
 
-procedure TDBAdapter.SetIsTime(const Value: Boolean);
+procedure TImageTableAdapter.SetIsTime(const Value: Boolean);
 begin
   FDS.FieldByName('IsTime').AsBoolean := Value;
 end;
 
-procedure TDBAdapter.SetKeyWords(const Value: string);
+procedure TImageTableAdapter.SetKeyWords(const Value: string);
 begin
   FDS.FieldByName('Keywords').AsString := Value;
 end;
 
-procedure TDBAdapter.SetLinks(const Value: string);
+procedure TImageTableAdapter.SetLinks(const Value: string);
 begin
   FDS.FieldByName('Links').AsString := Value;
 end;
 
-procedure TDBAdapter.SetLongImageID(const Value: string);
+procedure TImageTableAdapter.SetLongImageID(const Value: string);
 begin
   FDS.FieldByName('StrTh').AsString :=  LeftStr(Value, 100);
 end;
 
-procedure TDBAdapter.SetName(const Value: string);
+procedure TImageTableAdapter.SetName(const Value: string);
 begin
   FDS.FieldByName('Name').AsString := Value;
 end;
 
-procedure TDBAdapter.SetRating(const Value: Integer);
+procedure TImageTableAdapter.SetRating(const Value: Integer);
 begin
   FDS.FieldByName('Rating').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetRotation(const Value: Integer);
+procedure TImageTableAdapter.SetRotation(const Value: Integer);
 begin
   FDS.FieldByName('Rotated').AsInteger := Value;
 end;
 
-procedure TDBAdapter.SetTime(const Value: TTime);
+procedure TImageTableAdapter.SetTime(const Value: TTime);
 begin
   FDS.FieldByName('aTime').AsDateTime := Value;
 end;
 
-procedure TDBAdapter.SetWidth(const Value: Integer);
+procedure TImageTableAdapter.SetWidth(const Value: Integer);
 begin
   FDS.FieldByName('Width').AsInteger := Value;
 end;

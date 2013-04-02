@@ -176,11 +176,8 @@ begin
   SGroupToMove := CodeGroup(GroupToMove);
   SIntoGroup := CodeGroup(IntoGroup);
 
-  if GetDBType = DB_TYPE_MDB then
-  begin
-    Table := GetQuery;
-    SetSQL(Table, 'Select ID, Groups from $DB$');
-  end;
+  Table := GetQuery;
+  SetSQL(Table, 'Select ID, Groups from $DB$');
 
   ProgressWindow := GetProgressWindow;
   ProgressWindow.OneOperation := True;

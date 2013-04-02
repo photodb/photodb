@@ -5,13 +5,13 @@ interface
 uses
   System.SysUtils,
 
-  UnitDBKernel,
   UnitGroupsWork,
 
   uRuntime,
   uTranslate,
   uGroupTypes,
   uConstants,
+  uSettings,
   uShellIntegration;
 
 procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
@@ -80,6 +80,7 @@ var
   TempGroups, Temp: TGroups;
   GrNameIn, GrNameOut: string;
   Options: GroupReplaceOptions;
+  SortGroupsByName: Boolean;
 
   function GroupExistsIn(GroupCode: string): string;
   var
@@ -146,6 +147,8 @@ var
   end;
 
 begin
+  SortGroupsByName := Settings.Readbool('Options', 'SortGroupsByName', True);
+
   Pi := @I;
   for I := 0 to Length(Groups) - 1 do
   begin
@@ -207,7 +210,7 @@ begin
           Action.InGroup := GetGroupByGroupNameW(Groups[I].GroupName, False, FileName);
           Action.Action := GROUP_ACTION_ADD_IN_EXISTS;
           AddGroupsAction(Actions.Actions, Action);
-          InRegGroups := GetRegisterGroupListW(FileName, True, DBKernel.SortGroupsByName);
+          InRegGroups := GetRegisterGroupListW(FileName, True, SortGroupsByName);
         end else
         begin
           MessageBoxDB(0, Format(TA('An error occurred while adding a group', 'Groups'),

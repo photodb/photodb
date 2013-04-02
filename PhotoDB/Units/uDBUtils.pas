@@ -74,8 +74,6 @@ function GetFileNameById(ID: Integer): string;
 
 procedure SetPrivate(ID: Integer);
 procedure UnSetPrivate(ID: Integer);
-procedure UpdateDeletedDBRecord(ID: Integer; FileName: string);
-procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
 procedure UpdateDBItemPathInfo(ID: Integer; FileName: string);
 procedure SetRotate(ID, Rotate: Integer);
 procedure SetRating(ID, Rating: Integer);
@@ -302,23 +300,21 @@ begin
                 NewPath := NewFileName + NewPath;
                 OldPath := FQuery.FieldByName('FFileName').AsString;
 
-                if GetDBType = DB_TYPE_MDB then
+                if not FolderView then
                 begin
-                  if not FolderView then
-                  begin
-                    CalcStringCRC32(AnsiLowerCase(NewFileName), Crc);
-                  end else
-                  begin
-                    S := ExcludeTrailingBackslash(NewFileName);
-                    Delete(S, 1, Length(ProgramDir));
-                    CalcStringCRC32(AnsiLowerCase(S), Crc);
-                    NewPath := AnsiLowerCase(IncludeTrailingBackslash(S) + ExtractFileName(FQuery.FieldByName('FFileName').AsString));
-                  end;
-                  Int := Integer(Crc);
-                  Sql := 'UPDATE $DB$ SET FFileName= ' + AnsiLowerCase(NormalizeDBString(NewPath))
-                    + ' , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
-                  SetSQL(SetQuery, Sql);
+                  CalcStringCRC32(AnsiLowerCase(NewFileName), Crc);
+                end else
+                begin
+                  S := ExcludeTrailingBackslash(NewFileName);
+                  Delete(S, 1, Length(ProgramDir));
+                  CalcStringCRC32(AnsiLowerCase(S), Crc);
+                  NewPath := AnsiLowerCase(IncludeTrailingBackslash(S) + ExtractFileName(FQuery.FieldByName('FFileName').AsString));
                 end;
+                Int := Integer(Crc);
+                Sql := 'UPDATE $DB$ SET FFileName= ' + AnsiLowerCase(NormalizeDBString(NewPath))
+                  + ' , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
+                SetSQL(SetQuery, Sql);
+
                 ExecSQL(SetQuery);
                 EventInfo.FileName := OldPath;
                 EventInfo.NewName := NewPath;
@@ -378,69 +374,6 @@ begin
   end;
 end;
 
-procedure RotateDBImage270(Caller : TDBForm; ID: Integer; OldRotation: Integer);
-var
-  EventInfo: TEventValues;
-begin
-  if ID <> 0 then
-  begin
-    case OldRotation of
-      DB_IMAGE_ROTATE_0:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_270;
-      DB_IMAGE_ROTATE_90:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_0;
-      DB_IMAGE_ROTATE_180:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_90;
-      DB_IMAGE_ROTATE_270:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_180;
-    end;
-    SetRotate(ID, EventInfo.Rotation);
-    CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
-  end;
-end;
-
-procedure RotateDBImage90(Caller : TDBForm; ID: Integer; OldRotation: Integer);
-var
-  EventInfo: TEventValues;
-begin
-  if ID <> 0 then
-  begin
-    case OldRotation of
-      DB_IMAGE_ROTATE_0:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_90;
-      DB_IMAGE_ROTATE_90:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_180;
-      DB_IMAGE_ROTATE_180:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_270;
-      DB_IMAGE_ROTATE_270:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_0;
-    end;
-    SetRotate(ID, EventInfo.Rotation);
-    CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
-  end;
-end;
-
-procedure RotateDBImage180(Caller : TDBForm; ID: Integer; OldRotation: Integer);
-var
-  EventInfo: TEventValues;
-begin
-  if ID <> 0 then
-  begin
-    case OldRotation of
-      DB_IMAGE_ROTATE_0:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_180;
-      DB_IMAGE_ROTATE_90:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_270;
-      DB_IMAGE_ROTATE_180:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_0;
-      DB_IMAGE_ROTATE_270:
-        EventInfo.Rotation := DB_IMAGE_ROTATE_90;
-    end;
-    SetRotate(ID, EventInfo.Rotation);
-    CollectionEvents.DoIDEvent(Caller, ID, [EventID_Param_Rotate], EventInfo);
-  end;
-end;
-
 function GetIdByFileName(FileName: string): Integer;
 var
   FQuery: TDataSet;
@@ -490,38 +423,6 @@ begin
   end;
 end;
 
-procedure SetStringField(ID: Integer; FieldName, FieldValue: string);
-var
-  DS: TDataSet;
-  SQL: string;
-begin
-  DS := GetQuery;
-  try
-    SQL := 'UPDATE $DB$ SET ' + FieldName + ' = :' + FieldName + ' WHERE ID = ' +IntToStr(ID);
-    SetSQL(DS, SQL);
-    SetStrParam(DS, 0, FieldValue);
-    try
-      ExecSQL(DS);
-      EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK [' + SQL + ']');
-    except
-      on E: Exception do
-        EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: ' + E.message);
-    end;
-  finally
-    FreeDS(DS);
-  end;
-end;
-
-procedure SetComment(ID: Integer; Comment: string);
-begin
-  SetStringField(ID, 'Comment', Comment);
-end;
-
-procedure SetKeyWords(ID: Integer; KeyWords: string);
-begin
-  SetStringField(ID, 'KeyWords', KeyWords);
-end;
-
 procedure SetRotate(ID, Rotate: Integer);
 begin
   ExecuteQuery(Format('Update $DB$ Set Rotated=%d Where ID=%d', [Rotate, ID]));
@@ -535,24 +436,6 @@ end;
 procedure SetRating(ID, Rating: Integer);
 begin
   ExecuteQuery(Format('Update $DB$ Set Rating=%d Where ID=%d', [Rating, ID]));
-end;
-
-function FilePathCRC(FileName: string): Cardinal;
-var
-  Folder: string;
-begin
-  Folder := ExcludeTrailingBackslash(ExtractFileDir(FileName));
-  CalcStringCRC32(AnsiLowerCase(Folder), Result);
-end;
-
-procedure UpdateMovedDBRecord(ID: Integer; FileName: string);
-var
-  MDBstr: string;
-begin
-  MDBstr := ', FolderCRC = ' + IntToStr(Integer(FilePathCRC(FileName)));
-
-  ExecuteQuery('UPDATE $DB$ SET FFileName="' + AnsiLowerCase(FileName) + '", Name ="' + ExtractFileName(FileName)
-      + '", Attr=' + Inttostr(Db_access_none) + MDBstr + ' WHERE (ID=' + Inttostr(ID) + ')');
 end;
 
 procedure UpdateDBItemPathInfo(ID: Integer; FileName: string);
@@ -573,30 +456,6 @@ begin
       EventLog(e);
   end;
   F(UC);
-end;
-
-procedure UpdateDeletedDBRecord(ID: Integer; Filename: string);
-var
-  FQuery: TDataSet;
-  Crc: Cardinal;
-  Int: Integer;
-  MDBstr: string;
-begin
-  FQuery := GetQuery;
-  try
-    FQuery.Active := False;
-    if GetDBType(Dbname) = DB_TYPE_MDB then
-    begin
-      Crc := FilePathCRC(FileName);
-      Int := Integer(Crc);
-      MDBstr := ', FolderCRC = ' + IntToStr(Int);
-    end;
-    SetSQL(FQuery, 'UPDATE $DB$ SET FFileName="' + AnsiLowerCase(Filename) + '", Attr=' + Inttostr(Db_access_none)
-        + MDBstr + ' WHERE (ID=' + Inttostr(ID) + ') AND (Attr=' + Inttostr(Db_attr_not_exists) + ')');
-    ExecSQL(FQuery);
-  except
-  end;
-  FreeDS(FQuery);
 end;
 
 procedure SetPrivate(ID: Integer);
@@ -641,7 +500,7 @@ var
 
   UC: TUpdateCommand;
   SC: TSelectCommand;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 
   function MapDBFileName(FileName: string): string;
   var
@@ -700,7 +559,7 @@ begin
       if SC.Execute > 0 then
       begin
         MS := nil;
-        DA := TDBAdapter.Create(SC.DS);
+        DA := TImageTableAdapter.Create(SC.DS);
         UC := TUpdateCommand.Create(ImageTable);
         try
           UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
@@ -842,10 +701,10 @@ var
   FQuery: TDataSet;
   I: Integer;
   FromDB: string;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 begin
   FQuery := GetQuery;
-  DA := TDBAdapter.Create(FQuery);
+  DA := TImageTableAdapter.Create(FQuery);
   try
     FromDB := '(Select ID, FFileName, Attr from $DB$ where StrThCrc = ' + IntToStr(Integer(StringCRC(ImageTh))) + ')';
 
@@ -1011,20 +870,16 @@ begin
   FQuery := GetQuery;
 
   Sql := '';
-  if GetDBType = DB_TYPE_MDB then
+
+  FromDB := '(SELECT ID, FFileName, Attr, StrTh FROM $DB$ WHERE ';
+  for I := 1 to L do
   begin
-    FromDB := '(SELECT ID, FFileName, Attr, StrTh FROM $DB$ WHERE ';
-    for I := 1 to L do
-    begin
-      if I = 1 then
-        Sql := Sql + Format(' (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I])
-      else
-        Sql := Sql + Format(' or (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I]);
-    end;
-    FromDB := FromDB + Sql + ')';
-  end
-  else
-    FromDB := '$DB$';
+    if I = 1 then
+      Sql := Sql + Format(' (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I])
+    else
+      Sql := Sql + Format(' or (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I]);
+  end;
+  FromDB := FromDB + Sql + ')';
 
   Sql := 'SELECT ID, FFileName, Attr, StrTh FROM ' + FromDB + ' WHERE ';
 
@@ -1036,24 +891,15 @@ begin
       Sql := Sql + Format(' or (StrTh = :str%d) ', [I]);
   end;
   SetSQL(FQuery, Sql);
-  if GetDBType = DB_TYPE_MDB then
-  begin
-    for I := 0 to L - 1 do
-    begin
-      Result[I] := ThImS[I];
-      SetIntParam(FQuery, I, Integer(StringCRC(ThImS[I].ImTh)));
-    end;
-    for I := L to 2 * L - 1 do
-      SetStrParam(FQuery, I, ThImS[I - L].ImTh);
 
-  end else
+
+  for I := 0 to L - 1 do
   begin
-    for I := 0 to L - 1 do
-    begin
-      Result[I] := ThImS[I];
-      SetStrParam(FQuery, I, ThImS[I].ImTh);
-    end;
+    Result[I] := ThImS[I];
+    SetIntParam(FQuery, I, Integer(StringCRC(ThImS[I].ImTh)));
   end;
+  for I := L to 2 * L - 1 do
+    SetStrParam(FQuery, I, ThImS[I - L].ImTh);
 
   try
     FQuery.Active := True;
@@ -1674,7 +1520,6 @@ begin
     FreeDS(FQuery);
   end;
 end;
-
 
 ///
 ///  END DB TYPES

@@ -1056,8 +1056,7 @@ procedure TFormSizeResizer.BtChangeDirectoryClick(Sender: TObject);
 var
   Directory: string;
 begin
-  Directory := UnitDBFileDialogs.DBSelectDir(Handle, L('Select folder for processed images'), PeSavePath.Path,
-    UseSimpleSelectFolderDialog);
+  Directory := UnitDBFileDialogs.DBSelectDir(Handle, L('Select folder for processed images'), PeSavePath.Path);
   if DirectoryExists(Directory) then
     PeSavePath.Path := Directory;
 end;

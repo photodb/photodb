@@ -24,8 +24,6 @@ function GroupSearchByGroupName(GroupName: string): string;
 function GroupsTableName: string; overload;
 function GroupsTableName(FileName: string): string; overload;
 function GetRegisterGroupList(LoadImages: Boolean; UseInclude: Boolean = False): TGroups;
-function IsValidGroupsTable: Boolean;
-function CreateGroupsTable: Boolean;
 function AddGroup(Group: TGroup): Boolean;
 function GroupNameExists(GroupName: string): Boolean;
 function DeleteGroup(Group: TGroup): Boolean;
@@ -36,18 +34,12 @@ function GetGroupByGroupCode(GroupCode: string; LoadImage: Boolean): TGroup; ove
 function UpdateGroup(Group: TGroup): Boolean;
 function GetRegisterGroupListW(FileName: string; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
 function GroupWithCodeExists(GroupCode: string): Boolean;
-function IsValidGroupsTableW(FileName: string; NoCheck: Boolean = False): Boolean;
 function GetGroupByGroupNameW(GroupName: string; LoadImage: Boolean; FileName: string): TGroup;
 function AddGroupW(Group: TGroup; FileName: string): Boolean;
 function GroupNameExistsW(GroupName: string; FileName: string): Boolean;
-function CreateGroupsTableW(FileName: string): Boolean;
-
 function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
 
 implementation
-
-uses
-  UnitFileCheckerDB;
 
 function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
 var
@@ -106,8 +98,7 @@ end;
 
 function GroupSearchByGroupName(GroupName: string): string;
 begin
-  if GetDBType = DB_TYPE_MDB then
-    Result := '%#' + GroupName + '#%';
+  Result := '%#' + GroupName + '#%';
 end;
 
 function FindGroupCodeByGroupName(GroupName: string): string;
@@ -279,8 +270,7 @@ var
   Bit: TBitmap;
 begin
   Result := False;
-  if not IsValidGroupsTableW(FileName, True) then
-    CreateGroupsTableW(FileName);
+
   if GroupNameExistsW(Group.GroupName, FileName) then
     Exit;
 
@@ -347,145 +337,15 @@ end;
 
 function GroupsTableName(FileName: string): string;
 begin
-  if FileName <> '' then
-    if (FileName[1] = FileName[Length(FileName)]) then
-      if FileName[1] = '"' then
-        FileName := Copy(FileName, 2, Length(FileName) - 2);
-  if GetDBType(FileName) = DB_TYPE_MDB then
-    Result := 'Groups';
+  Result := 'Groups';
 end;
 
 function GroupsTableName: string;
 begin
-  if GetDBType = DB_TYPE_MDB then
-    Result := 'Groups';
+  Result := 'Groups';
 end;
 
-function IsValidGroupsTableW(FileName: string; NoCheck: Boolean = False): Boolean;
-var
-  Table: TDataSet;
-  Query: TDataSet;
-  CheckResult: Integer;
-begin
-  CheckResult := FileCheckedDB.CheckFile(GroupsTableFileNameW(FileName));
-  if (CheckResult = CHECK_RESULT_OK) and not NoCheck then
-  begin
-    Result := True;
-    FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(FileName));
-    Exit;
-  end;
-
-  Result:= False;
-  if (CheckResult = CHECK_RESULT_FILE_NOE_EXISTS) and (GetDBType <> DB_TYPE_MDB) then
-    Exit;
-  Table := GetTable(FileName, DB_TABLE_GROUPS);
-  if Table = nil then
-    Exit;
-
-  try
-    try
-      OpenDS(Table);
-    except
-      FileCheckedDB.SaveCheckFile(GroupsTableFileNameW(FileName));
-      Exit;
-    end;
-    Table.First;
-    try
-      Table.FieldByName('GroupCode').AsString;
-      Table.FieldByName('GroupName').AsString;
-      Table.FieldByName('GroupImage').AsString;
-      Table.FieldByName('GroupComment').AsString;
-      Table.FieldByName('GroupDate').AsDateTime;
-      Table.FieldByName('GroupFaces').AsString;
-      Table.FieldByName('GroupAccess').AsInteger;
-
-      if Table.FindField('GroupKW') = nil then
-      begin
-        Table.Active := False;
-        Query := GetQuery(FileName);
-        try
-          SetSQL(Query, 'ALTER TABLE ' + FileName + ' ADD GroupKW BLOB(240,1)');
-          ExecSQL(Query);
-        finally
-          FreeDS(Query);
-        end;
-        OpenDS(Query);
-      end;
-      Table.FieldByName('GroupKW').AsString;
-      if Table.FindField('GroupAddKW') = nil then
-      begin
-        Table.Active := False;
-        Query := GetQuery(FileName);
-        try
-          SetSQL(Query, 'ALTER TABLE ' + FileName + ' ADD GroupAddKW BOOLEAN');
-          ExecSQL(Query);
-        finally
-          FreeDS(Query);
-        end;
-        OpenDS(Query);
-      end;
-      Table.FieldByName('GroupAddKW').AsBoolean;
-      // Included in PhotoDB v1.9
-      if Table.FindField('RelatedGroups') = nil then
-      begin
-        Table.Active := False;
-        Query := GetQuery(FileName);
-        try
-          SetSQL(Query, 'ALTER TABLE ' + FileName + ' ADD RelatedGroups BLOB(240,1)');
-          ExecSQL(Query);
-        finally
-          FreeDS(Query);
-        end;
-        Table.Active := True;
-      end;
-      Table.FieldByName('RelatedGroups').AsString;
-      if Table.FindField('IncludeInQuickList') = nil then
-      begin
-        Table.Active := False;
-        Query := GetQuery(FileName);
-        try
-          SetSQL(Query, 'ALTER TABLE ' + FileName + ' ADD IncludeInQuickList BOOLEAN');
-          ExecSQL(Query);
-        finally
-          FreeDS(Query);
-        end;
-        Query := GetQuery(FileName);
-        try
-          SetSQL(Query, 'UPDATE ' + FileName + ' SET IncludeInQuickList = TRUE');
-          ExecSQL(Query);
-        finally
-          FreeDS(Query);
-        end;
-        OpenDS(Query);
-      end;
-      Table.FieldByName('IncludeInQuickList').AsBoolean;
-    except
-      Exit;
-    end;
-  finally
-    FreeDS(Table);
-  end;
-  Result := True;
-end;
-
-function IsValidGroupsTable: Boolean;
-begin
-  Result := IsValidGroupsTableW(Dbname);
-end;
-
-function CreateGroupsTableW(FileName: string): Boolean;
-begin
-  Result := False;
-  if GetDBType(FileName) = DB_TYPE_MDB then
-    Result := ADOCreateGroupsTable(FileName);
-end;
-
-function CreateGroupsTable: Boolean;
-begin
-  Result := CreateGroupsTableW(GroupsTableFileNameW(Dbname))
-end;
-
-Function GetGroupByGroupCode(GroupCode : String; LoadImage : Boolean) : TGroup;
+function GetGroupByGroupCode(GroupCode : String; LoadImage : Boolean) : TGroup;
 var
   Query: TDataSet;
 begin

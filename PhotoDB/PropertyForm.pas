@@ -570,7 +570,7 @@ var
   W, H: Integer;
   DataRecord: TDBPopupMenuInfoRecord;
   WorkQuery: TDataSet;
-  DA: TDBAdapter;
+  DA: TImageTableAdapter;
 begin
   try
     if FSaving then
@@ -600,7 +600,7 @@ begin
     CommentMemo.Cursor := crDefault;
     CommentMemo.PopupMenu := nil;
     WorkQuery := GetQuery;
-    DA := TDBAdapter.Create(WorkQuery);
+    DA := TImageTableAdapter.Create(WorkQuery);
     try
       ReadOnlyQuery(WorkQuery);
       SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE ID=' + IntToStr(ID));

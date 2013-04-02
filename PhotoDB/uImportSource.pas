@@ -495,7 +495,7 @@ begin
 
   if BI.ImportType = itDirectory then
   begin
-    Path := UnitDBFileDialogs.DBSelectDir(Application.Handle, Caption, UseSimpleSelectFolderDialog);
+    Path := UnitDBFileDialogs.DBSelectDir(Application.Handle, Caption);
     if Path = '' then
       Exit;
 

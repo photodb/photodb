@@ -213,8 +213,6 @@ begin
           SetMaxValue(Length(FGroupsFounded));
           FRegGroups := GetRegisterGroupList(True);
           try
-            CreateGroupsTableW(GroupsTableFileNameW(FDBFileName));
-
             for I := 0 to Length(FGroupsFounded) - 1 do
             begin
               if IsTerminated then
@@ -223,7 +221,7 @@ begin
               for J := 0 to Length(FRegGroups) - 1 do
                 if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
                 begin
-                  AddGroupW(FRegGroups[J], GroupsTableFileNameW(ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb'));
+                  AddGroupW(FRegGroups[J], ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb');
                   Break;
                 end;
             end;

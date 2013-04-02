@@ -1542,7 +1542,7 @@ procedure TFormImportImages.BtnSelectPathFromClick(Sender: TObject);
 var
   Dir: string;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Please select a folder or device with images'), '', UseSimpleSelectFolderDialog);
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Please select a folder or device with images'), '');
 
   if Dir <> '' then
      PeImportFromPath.Path := Dir;
@@ -1552,7 +1552,7 @@ procedure TFormImportImages.BtnSelectPathToClick(Sender: TObject);
 var
   Dir: string;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Please select destination directory'), GetMyPicturesPath, UseSimpleSelectFolderDialog);
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Please select destination directory'), GetMyPicturesPath);
 
   if Dir <> '' then
      PeImportToPath.Path := Dir;

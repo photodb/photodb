@@ -62,7 +62,6 @@ uses
   PrintMainForm in 'Printer\PrintMainForm.pas' {PrintForm},
   PrinterProgress in 'Printer\PrinterProgress.pas' {FormPrinterProgress},
   UnitActionsForm in 'Units\UnitActionsForm.pas' {ActionsForm},
-  UnitConvertDBForm in 'UnitConvertDBForm.pas' {FormConvertingDB},
   UnitBigImagesSize in 'UnitBigImagesSize.pas' {BigImagesSizeForm},
   UnitHintCeator in 'Threads\UnitHintCeator.pas',
   ExplorerThreadUnit in 'Threads\ExplorerThreadUnit.pas',
@@ -74,7 +73,6 @@ uses
   UnitInternetUpdate in 'Threads\UnitInternetUpdate.pas',
   UnitWindowsCopyFilesThread in 'Threads\UnitWindowsCopyFilesThread.pas',
   UnitBackUpTableInCMD in 'Threads\UnitBackUpTableInCMD.pas',
-  ConvertDBThreadUnit in 'Threads\ConvertDBThreadUnit.pas',
   UnitPropertyLoadImageThread in 'Threads\UnitPropertyLoadImageThread.pas',
   UnitPropertyLoadGistogrammThread in 'Threads\UnitPropertyLoadGistogrammThread.pas',
   UnitRefreshDBRecordsThread in 'Threads\UnitRefreshDBRecordsThread.pas',
@@ -136,7 +134,6 @@ uses
   UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
   UnitINI in 'Units\UnitINI.pas',
   wfsU in 'Units\wfsU.pas',
-  UnitFileCheckerDB in 'Units\UnitFileCheckerDB.pas',
   UnitPasswordKeeper in 'Units\UnitPasswordKeeper.pas',
   UnitDBDeclare in 'Units\UnitDBDeclare.pas',
   UnitDBCommon in 'Units\UnitDBCommon.pas',
@@ -183,7 +180,6 @@ uses
   uFormListView in 'Units\uFormListView.pas',
   uDBThread in 'Threads\uDBThread.pas',
   uGraphicUtils in 'Units\uGraphicUtils.pas',
-  UnitActiveTableThread in 'Threads\UnitActiveTableThread.pas',
   uImageSource in 'Units\uImageSource.pas',
   uDBPopupMenuInfo in 'Units\uDBPopupMenuInfo.pas',
   uPrivateHelper in 'Units\uPrivateHelper.pas',
@@ -228,7 +224,6 @@ uses
   uResourceUtils in 'Units\uResourceUtils.pas',
   uMobileUtils in 'Units\uMobileUtils.pas',
   uFrmConvertationSettings in 'Convertation\uFrmConvertationSettings.pas' {FrmConvertationSettings: TFrame},
-  uFrmConvertationProgress in 'Convertation\uFrmConvertationProgress.pas' {FrmConvertationProgress: TFrame},
   uInterfaces in 'Units\uInterfaces.pas',
   uDBAdapter in 'Units\uDBAdapter.pas',
   uCDMappingTypes in 'Units\uCDMappingTypes.pas',
@@ -257,7 +252,6 @@ uses
   uPeopleSupport in 'Units\uPeopleSupport.pas',
   uFormCreatePerson in 'uFormCreatePerson.pas' {FormCreatePerson},
   u2DUtils in 'Units\u2DUtils.pas',
-  uPersonDB in 'Units\uPersonDB.pas',
   uDBClasses in 'Units\uDBClasses.pas',
   uDateUtils in 'Units\uDateUtils.pas',
   uFormSelectPerson in 'uFormSelectPerson.pas' {FormFindPerson},
@@ -390,7 +384,8 @@ uses
   uLinkListEditorUpdateDirectories in 'Units\ListEditors\uLinkListEditorUpdateDirectories.pas',
   uSessionPasswords in 'Units\uSessionPasswords.pas',
   uCollectionEvents in 'Units\uCollectionEvents.pas',
-  uDBIcons in 'Units\uDBIcons.pas';
+  uDBIcons in 'Units\uDBIcons.pas',
+  uDBScheme in 'Units\uDBScheme.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -472,9 +467,6 @@ begin
    /NoPrevVersion
    /NoFaultCheck
    /NoFullRun
-   /SelectDB "DBFile"
-   /SelectDB "DBName"
-   /SelectDBPermanent
    /AddPass "pass1!pass2!..."
    /Logging
   }
@@ -503,9 +495,7 @@ begin
     if not DBTerminating then
     begin
       TW.I.Start('DBKernel.DBInit');
-      DBKernel.DoSelectDB;
       DBKernel.CheckDatabase;
-      // MigrateToVersion002(dbname);
 
       if not GetParamStrDBBool('/install') then
       begin

@@ -20,13 +20,13 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   UnitGroupsWork,
-  UnitDBKernel,
 
   uRuntime,
   uMemoryEx,
   uConstants,
   uGroupTypes,
   uDBForm,
+  uSettings,
   uShellIntegration,
   uFormInterfaces;
 
@@ -199,9 +199,12 @@ end;
 procedure TFormGroupReplace.RecreateGroupsList;
 var
   I: Integer;
+  SortGroupsByName: Boolean;
 begin
   FreeGroups(RegGroups);
-  RegGroups := GetRegisterGroupListW(FGroupFileName, False, DBKernel.SortGroupsByName);
+
+  SortGroupsByName := Settings.Readbool('Options', 'SortGroupsByName', True);
+  RegGroups := GetRegisterGroupListW(FGroupFileName, False, SortGroupsByName);
   CbExistedGroups.Clear;
   for I := 0 to Length(RegGroups) - 1 do
     CbExistedGroups.Items.Add(RegGroups[I].GroupName);

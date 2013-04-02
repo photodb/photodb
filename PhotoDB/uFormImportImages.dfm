@@ -309,6 +309,7 @@ object FormImportImages: TFormImportImages
       Selection.TextColor = clWindowText
       Selection.UseFocusRect = False
       TabOrder = 1
+      Themed = False
       View = elsFilmStrip
       WheelMouseDefaultScroll = edwsHorz
       OnItemDblClick = ElvPreviewItemDblClick

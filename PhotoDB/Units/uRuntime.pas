@@ -6,11 +6,6 @@ uses
   Winapi.Windows,
   uConstants;
 
-const
-  DBInDebug = True;
-  Emulation = False;
-  UseSimpleSelectFolderDialog = False;
-
 var
    //TODO: delete it
    dbname: string = '';
@@ -31,7 +26,6 @@ var
 
 var
   // Image sizes
-  // In FormManager this sizes loaded from DB
   DBJpegCompressionQuality: Integer = 75;
   ThSize: Integer = 202;
   ThSizeExplorerPreview: Integer = 100;

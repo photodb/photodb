@@ -44,7 +44,24 @@ type
     constructor Create(Options: TBackUpTableThreadOptions);
   end;
 
+procedure CreateBackUpForCollection;
+
 implementation
+
+procedure CreateBackUpForCollection;
+var
+   Options: TBackUpTableThreadOptions;
+begin
+  if Now - Settings.ReadDateTime('Options', 'BackUpDateTime', 0) > Settings.ReadInteger('Options', 'BackUpdays', 7) then
+  begin
+    Options.WriteLineProc := nil;
+    Options.WriteLnLineProc := nil;
+    Options.OnEnd := nil;
+    Options.FileName := DBName;
+    Options.OwnerForm := nil;
+    BackUpTableInCMD.Create(Options);
+  end;
+end;
 
 { BackUpTableInCMD }
 

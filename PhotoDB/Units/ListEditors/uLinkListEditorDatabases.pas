@@ -28,6 +28,7 @@ uses
   uRuntime,
   uStringUtils,
   uDBForm,
+  uDBScheme,
   uDBUtils,
   uVclHelpers,
   uIconUtils,
@@ -64,9 +65,6 @@ type
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 
 implementation
-
-uses
-  UnitConvertDBForm;
 
 const
   CHANGE_DB_ICON            = 1;
@@ -262,7 +260,7 @@ var
   procedure CreateSampleDB;
   var
     SaveDialog: DBSaveDialog;
-    FileName, Icon: string;
+    FileName: string;
   begin
     // Sample DB
     SaveDialog := DBSaveDialog.Create;
@@ -275,10 +273,9 @@ var
         if GetExt(FileName) <> 'PHOTODB' then
           FileName := FileName + '.photodb';
 
-        Icon := Application.ExeName + ',0';
-        DBKernel.CreateExampleDB(FileName, Icon, ExtractFileDir(Application.ExeName));
+        DBKernel.CreateExampleDB(FileName);
 
-        Data := TDatabaseInfo.Create(GetFileNameWithoutExt(FileName), FileName, Icon, '');
+        Data := TDatabaseInfo.Create(GetFileNameWithoutExt(FileName), FileName, Application.ExeName + ',0', '');
       end;
     finally
       F(SaveDialog);
@@ -287,7 +284,6 @@ var
 
   procedure OpenDB;
   var
-    DBVersion: Integer;
     DialogResult: Integer;
     OpenDialog: DBOpenDialog;
     FileName: string;
@@ -304,17 +300,15 @@ var
       begin
         FileName := OpenDialog.FileName;
 
-        DBVersion := DBKernel.TestDBEx(FileName);
-        if DBVersion > 0 then
-          if not DBKernel.ValidDBVersion(FileName, DBVersion) then
-          begin
-            DialogResult := MessageBoxDB(FOwner.Handle,
-              L('This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
-            if ID_YES = DialogResult then
-              ConvertDB(FileName);
-          end;
+        if TDBScheme.IsOldColectionFile(FileName) then
+        begin
+          DialogResult := MessageBoxDB(FOwner.Handle,
+            L('This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
+          if ID_YES = DialogResult then
+            //TODO: ConvertDB(FileName);
+        end;
 
-        if DBKernel.TestDB(FileName) then
+        if TDBScheme.IsValidCollectionFile(FileName) then
         begin
           Settings := CommonDBSupport.GetImageSettingsFromTable(FileName);
           try
@@ -417,14 +411,14 @@ begin
 end;
 
 procedure TLinkListEditorDatabases.OnPreviewOptionsClick(Sender: TObject);
-var
-  DI: TDatabaseInfo;
-  Editor: TPanel;
+//var
+  //DI: TDatabaseInfo;
+  //Editor: TPanel;
 begin
-  Editor := TPanel(TControl(Sender).Parent);
-  DI := TDatabaseInfo(Editor.Tag);
+  //Editor := TPanel(TControl(Sender).Parent);
+  //DI := TDatabaseInfo(Editor.Tag);
 
-  ConvertDB(DI.Path);
+  //TODO: ConvertDB(DI.Path);
 end;
 
 function TLinkListEditorDatabases.OnApply(Sender: ILinkItemSelectForm): Boolean;
@@ -462,7 +456,7 @@ begin
   try
     OpenDialog.Filter := FOwner.L('PhotoDB Files (*.photodb)|*.photodb');
     OpenDialog.FilterIndex := 0;
-    if OpenDialog.Execute and DBKernel.TestDB(OpenDialog.FileName) then
+    if OpenDialog.Execute and TDBScheme.IsValidCollectionFile(OpenDialog.FileName) then
     begin
       LbInfo := Editor.FindChildByTag<TLabel>(CHANGE_DB_PATH);
       LbInfo.Caption := OpenDialog.FileName;

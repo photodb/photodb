@@ -915,6 +915,7 @@ type
 
     FOldWidth: Integer;
     IsResizePreivew: Boolean;
+    FDatabases: TList<TDatabaseInfo>;
 
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
@@ -1394,6 +1395,8 @@ begin
   FImageViewer := nil;
   FExtendedSearchParams := nil;
   FExtendedSearchPersons := nil;
+  FDatabases := TList<TDatabaseInfo>.Create;
+  DBKernel.LoadDbs(FDatabases);
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -2179,6 +2182,7 @@ begin
   F(FWbGeoLocation);
   F(FPngNoHIstogram);
   F(FExtendedSearchParams);
+  FreeList(FDatabases);
   FreeList(FExtendedSearchPersons);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
@@ -3032,7 +3036,8 @@ var
 begin
   DBIndex := TMenuItem(Sender).Tag;
 
-  DBKernel.SelectDB(Self, DBKernel.DBs[DBIndex].Path);
+  if FDatabases.Count > DBIndex then
+    DBKernel.SelectDB(Self, FDatabases[DBIndex].Path);
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -5818,7 +5823,7 @@ begin
   MiUpdater.Visible := not FolderView;
   MiCDExport.Visible := not FolderView;
 
-  MiCollections.Visible := DBKernel.DBs.Count <= 1;
+  MiCollections.Visible := FDatabases.Count <= 1;
   MiCollectionsSeparator.Visible := MiCollections.Visible;
 end;
 
@@ -6316,7 +6321,7 @@ begin
     else
       DlgCaption := Format(L('Select place to copy %d files'), [Files.Count]);
 
-    EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption, UseSimpleSelectFolderDialog);
+    EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption);
 
     if EndDir <> '' then
       CopyFiles(Handle, Files, EndDir, False, False, Self);
@@ -6350,7 +6355,7 @@ begin
     else
       DlgCaption := Format(L('Select place to move %d files'), [Files.Count]);
 
-    EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption, UseSimpleSelectFolderDialog);
+    EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption);
     if EndDir <> '' then
       CopyFiles(Handle, Files, EndDir, True, False, Self);
 
@@ -8582,7 +8587,7 @@ var
   UpDir, Dir, NewDir, Temp: string;
   L1, L2: Integer;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to copy files'), UseSimpleSelectFolderDialog);
+  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to copy files'));
   if Dir <> '' then
   begin
     Files := TStringList.Create;
@@ -12630,14 +12635,17 @@ var
   IconFileName: string;
   LB: TLayeredBitmap;
 begin
+  FreeList(FDatabases, False);
+  DBKernel.LoadDbs(FDatabases);
+
   IconFileName := '';
-  TbDatabase.Visible := DBKernel.DBs.Count > 1;
+  TbDatabase.Visible := FDatabases.Count > 1;
 
   ImDBList.Clear;
   PmDBList.Items.Clear;
-  for I := 0 to DBKernel.DBs.Count - 1 do
+  for I := 0 to FDatabases.Count - 1 do
   begin
-    DB := DBKernel.DBs[I];
+    DB := FDatabases[I];
 
     MI := TMenuItem.Create(PmDBList);
     MI.Caption := DB.Title;
@@ -12700,16 +12708,13 @@ end;
 
 procedure TExplorerForm.EditDatabasesClick(Sender: TObject);
 var
-  Data: TList<TDataObject>;
   Editor: ILinkEditor;
 begin
   Editor := TLinkListEditorDatabases.Create(Self);
   try
-    Data := TList<TDataObject>(DBKernel.DBs);
-    if LinkItemSelectForm.Execute(450, L('List of collections'), Data, Editor) then
-      DBKernel.SaveDBs;
+    if LinkItemSelectForm.Execute(450, L('List of collections'), TList<TDataObject>(FDatabases), Editor) then
+      DBKernel.SaveDBs(FDatabases);
 
-    DBKernel.LoadDBs;
     LoadDBList;
   finally
     Editor := nil;

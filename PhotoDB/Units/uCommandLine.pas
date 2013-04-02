@@ -81,7 +81,7 @@ begin
 
   if not FolderView and not DBTerminating then
     if not GetParamStrDBBool('/NoFaultCheck') then
-      if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1') and not DBInDebug then
+      if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1') then
       begin
         CloseSplashWindow;
         if ID_OK = MessageBoxDB(Application.MainFormHandle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then

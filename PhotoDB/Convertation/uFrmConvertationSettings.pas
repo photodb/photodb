@@ -72,7 +72,6 @@ type
 implementation
 
 uses
-  UnitConvertDBForm,
   UnitHintCeator;
 
 {$R *.dfm}
@@ -252,8 +251,8 @@ begin
   F(JPEG);
 
   RecordCount := 1000;
-  if Manager.Owner is TFormConvertingDB then
-    RecordCount := TFormConvertingDB(Manager.Owner).RecordsCount;
+  //if Manager.Owner is TFormConvertingDB then
+  //  RecordCount := TFormConvertingDB(Manager.Owner).RecordsCount;
 
   LbSingleImageSize.Caption := Format(L('Image size: %s'), [SizeInText(ImageSize)]);
   LbDatabaseSize.Caption := Format(L('The size of new database (approximately): %s'),

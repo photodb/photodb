@@ -304,8 +304,6 @@ begin
 
           FRegGroups := GetRegisterGroupList(True);
           try
-            CreateGroupsTableW(GroupsTableFileNameW(DBPath));
-
             IntParam := Length(FGroupsFounded) - 1;
             Synchronize(SetMaxPosition);
             for I := 0 to Length(FGroupsFounded) - 1 do
@@ -318,7 +316,7 @@ begin
               for J := 0 to Length(FRegGroups) - 1 do
                 if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
                 begin
-                  AddGroupW(FRegGroups[J], GroupsTableFileNameW(Directory + Mapping.CDLabel + '.photodb'));
+                  AddGroupW(FRegGroups[J], Directory + Mapping.CDLabel + '.photodb');
                   Break;
                 end;
             end;

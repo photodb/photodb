@@ -488,7 +488,6 @@ begin
   FPicture := TBitmap.Create;
   FDisplayImage := TBitmap.Create;
   LoadLanguage;
-  PersonManager.InitDB;
   TLoad.Instance.RequiredDBSettings;
   PmImageOptions.Images := Icons.ImageList;
   MiLoadotherimage.ImageIndex := DB_IC_LOADFROMFILE;

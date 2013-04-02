@@ -109,8 +109,8 @@ type
     property Filter: string read FFilter write SetFilter;
   end;
 
-function DBSelectDir(Handle: THandle; Title: string; UseSimple: Boolean): string; overload;
-function DBSelectDir(Handle: THandle; Title, SelectedRoot: string; UseSimple: Boolean): string; overload;
+function DBSelectDir(Handle: THandle; Title: string): string; overload;
+function DBSelectDir(Handle: THandle; Title, SelectedRoot: string): string; overload;
 
 implementation
 
@@ -136,9 +136,9 @@ begin
   Result := IsWindowsVista and (GetDOSEnvVar('SAFEBOOT_OPTION') = '');
 end;
 
-function DBSelectDir(Handle: THandle; Title: string; UseSimple: Boolean): string;
+function DBSelectDir(Handle: THandle; Title: string): string;
 begin
-  Result := DBSelectDir(Handle, Title, '', UseSimple);
+  Result := DBSelectDir(Handle, Title, '');
 end;
 
 function GetItemName(Item: IShellItem; var ItemName: TFileName): HResult;
@@ -156,7 +156,7 @@ begin
   end;
 end;
 
-function DBSelectDir(Handle: THandle; Title, SelectedRoot: string; UseSimple: Boolean): string;
+function DBSelectDir(Handle: THandle; Title, SelectedRoot: string): string;
 var
   OpenDialog: DBOpenDialog;
   {$IFDEF PHOTODB}
@@ -168,7 +168,7 @@ var
   {$ENDIF}
 begin
   Result := '';
-  if UseSimple or not CanUseVistaDlg then
+  if not CanUseVistaDlg then
   begin
     Result := SelectDirPlus(Handle, Title, SelectedRoot);
   end else
