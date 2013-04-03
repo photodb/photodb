@@ -310,8 +310,8 @@
 #define IdResourceStrings_RSStackError 64685
 #define IdResourceStrings_RSStackEINTR 64686
 #define IdResourceStrings_RSStackEBADF 64687
-#define DragDropPIDL_sBadFilename 64688
-#define uShellIntegration_SNotSupported 64689
+#define Data_Win_ADOConst_sNameAttr 64688
+#define Data_Win_ADOConst_sValueAttr 64689
 #define DECUtil_sClassNotRegistered 64690
 #define DECCipher_sAlreadyPadded 64691
 #define DECCipher_sInvalidState 64692
@@ -326,70 +326,70 @@
 #define VirtualTrees_SWrongStreamFormat 64701
 #define VirtualTrees_SWrongStreamVersion 64702
 #define VirtualTrees_SStreamTooSmall 64703
-#define Data_Win_ADOConst_SConnectionRequired 64704
-#define Data_Win_ADOConst_SCantRequery 64705
-#define Data_Win_ADOConst_SNoFilterOptions 64706
-#define Data_Win_ADOConst_SRecordsetNotOpen 64707
-#define Data_Win_ADOConst_sNameAttr 64708
-#define Data_Win_ADOConst_sValueAttr 64709
-#define DropSource_sDropSourceBusy 64710
-#define DropSource_sDropSourceAsyncFailed 64711
-#define DropSource_sDropSourceAsyncBusy 64712
-#define DropTarget_sTargetAsyncBusy 64713
-#define DropTarget_sRichEditWarning 64714
-#define DragDrop_sImplementationRequired 64715
-#define DragDrop_sFormatNameReadOnly 64716
-#define DragDrop_sNoCopyStgMedium 64717
-#define DragDrop_sBadConstructor 64718
-#define DragDropPIDL_sBadDesktop 64719
-#define Data_DBConsts_SProviderExecuteNotSupported 64720
-#define Data_DBConsts_SDataSetUnidirectional 64721
-#define Data_DBConsts_SUnassignedVar 64722
-#define Data_DBConsts_SRecordNotFound 64723
-#define Data_DBConsts_SBcdOverflow 64724
-#define Data_DBConsts_SInvalidBcdValue 64725
-#define Data_DBConsts_SCouldNotParseTimeStamp 64726
-#define Data_DBConsts_SInvalidSqlTimeStamp 64727
-#define Data_Win_ADOConst_SMissingConnection 64728
-#define Data_Win_ADOConst_SNoDetailFilter 64729
-#define Data_Win_ADOConst_SBookmarksRequired 64730
-#define Data_Win_ADOConst_SMissingCommandText 64731
-#define Data_Win_ADOConst_SNoResultSet 64732
-#define Data_Win_ADOConst_SADOCreateError 64733
-#define Data_Win_ADOConst_SEventsNotSupported 64734
-#define Data_Win_ADOConst_SUsupportedFieldType 64735
-#define Data_DBConsts_SIndexNotFound 64736
-#define Data_DBConsts_SDBDuplicateName 64737
-#define Data_DBConsts_SCircularDataLink 64738
-#define Data_DBConsts_SLookupInfoError 64739
-#define Data_DBConsts_SDataSourceChange 64740
-#define Data_DBConsts_SDataSetOpen 64741
-#define Data_DBConsts_SNotEditing 64742
-#define Data_DBConsts_SDataSetClosed 64743
-#define Data_DBConsts_SDataSetReadOnly 64744
-#define Data_DBConsts_SNestedDataSetClass 64745
-#define Data_DBConsts_STextFalse 64746
-#define Data_DBConsts_STextTrue 64747
-#define Data_DBConsts_SParameterNotFound 64748
-#define Data_DBConsts_SInvalidVersion 64749
-#define Data_DBConsts_SBadFieldType 64750
-#define Data_DBConsts_SProviderSQLNotSupported 64751
-#define Data_DBConsts_SFieldAccessError 64752
-#define Data_DBConsts_SFieldValueError 64753
-#define Data_DBConsts_SFieldRangeError 64754
-#define Data_DBConsts_SBcdFieldRangeError 64755
-#define Data_DBConsts_SInvalidIntegerValue 64756
-#define Data_DBConsts_SInvalidBoolValue 64757
-#define Data_DBConsts_SInvalidFloatValue 64758
-#define Data_DBConsts_SFieldTypeMismatch 64759
-#define Data_DBConsts_SFieldSizeMismatch 64760
-#define Data_DBConsts_SInvalidVarByteArray 64761
-#define Data_DBConsts_SFieldOutOfRange 64762
-#define Data_DBConsts_SFieldRequired 64763
-#define Data_DBConsts_SDataSetMissing 64764
-#define Data_DBConsts_SInvalidCalcType 64765
-#define Data_DBConsts_SFieldReadOnly 64766
-#define Data_DBConsts_SNoIndexForFields 64767
+#define Data_DBConsts_SBcdOverflow 64704
+#define Data_DBConsts_SInvalidBcdValue 64705
+#define Data_DBConsts_SCouldNotParseTimeStamp 64706
+#define Data_DBConsts_SInvalidSqlTimeStamp 64707
+#define Data_Win_ADOConst_SMissingConnection 64708
+#define Data_Win_ADOConst_SNoDetailFilter 64709
+#define Data_Win_ADOConst_SBookmarksRequired 64710
+#define Data_Win_ADOConst_SMissingCommandText 64711
+#define Data_Win_ADOConst_SNoResultSet 64712
+#define Data_Win_ADOConst_SADOCreateError 64713
+#define Data_Win_ADOConst_SEventsNotSupported 64714
+#define Data_Win_ADOConst_SUsupportedFieldType 64715
+#define Data_Win_ADOConst_SConnectionRequired 64716
+#define Data_Win_ADOConst_SCantRequery 64717
+#define Data_Win_ADOConst_SNoFilterOptions 64718
+#define Data_Win_ADOConst_SRecordsetNotOpen 64719
+#define Data_DBConsts_SDataSourceChange 64720
+#define Data_DBConsts_SDataSetOpen 64721
+#define Data_DBConsts_SNotEditing 64722
+#define Data_DBConsts_SDataSetClosed 64723
+#define Data_DBConsts_SDataSetReadOnly 64724
+#define Data_DBConsts_SNestedDataSetClass 64725
+#define Data_DBConsts_STextFalse 64726
+#define Data_DBConsts_STextTrue 64727
+#define Data_DBConsts_SParameterNotFound 64728
+#define Data_DBConsts_SInvalidVersion 64729
+#define Data_DBConsts_SBadFieldType 64730
+#define Data_DBConsts_SProviderSQLNotSupported 64731
+#define Data_DBConsts_SProviderExecuteNotSupported 64732
+#define Data_DBConsts_SDataSetUnidirectional 64733
+#define Data_DBConsts_SUnassignedVar 64734
+#define Data_DBConsts_SRecordNotFound 64735
+#define Data_DBConsts_SInvalidIntegerValue 64736
+#define Data_DBConsts_SInvalidBoolValue 64737
+#define Data_DBConsts_SInvalidFloatValue 64738
+#define Data_DBConsts_SFieldTypeMismatch 64739
+#define Data_DBConsts_SFieldSizeMismatch 64740
+#define Data_DBConsts_SInvalidVarByteArray 64741
+#define Data_DBConsts_SFieldOutOfRange 64742
+#define Data_DBConsts_SFieldRequired 64743
+#define Data_DBConsts_SDataSetMissing 64744
+#define Data_DBConsts_SInvalidCalcType 64745
+#define Data_DBConsts_SFieldReadOnly 64746
+#define Data_DBConsts_SNoIndexForFields 64747
+#define Data_DBConsts_SIndexNotFound 64748
+#define Data_DBConsts_SDBDuplicateName 64749
+#define Data_DBConsts_SCircularDataLink 64750
+#define Data_DBConsts_SLookupInfoError 64751
+#define DragDrop_sFormatNameReadOnly 64752
+#define DragDrop_sNoCopyStgMedium 64753
+#define DragDrop_sBadConstructor 64754
+#define DragDropPIDL_sBadDesktop 64755
+#define DragDropPIDL_sBadFilename 64756
+#define uShellIntegration_SNotSupported 64757
+#define Data_DBConsts_SInvalidFieldSize 64758
+#define Data_DBConsts_SInvalidFieldKind 64759
+#define Data_DBConsts_SUnknownFieldType 64760
+#define Data_DBConsts_SFieldNameMissing 64761
+#define Data_DBConsts_SDuplicateFieldName 64762
+#define Data_DBConsts_SFieldNotFound 64763
+#define Data_DBConsts_SFieldAccessError 64764
+#define Data_DBConsts_SFieldValueError 64765
+#define Data_DBConsts_SFieldRangeError 64766
+#define Data_DBConsts_SBcdFieldRangeError 64767
 #define CCR_Exif_Consts_SInvalidXMPPacket 64768
 #define CCR_Exif_Consts_SSubPropertiesMustBeNamed 64769
 #define CCR_Exif_Consts_SSubPropertiesNotSupported 64770
@@ -400,12 +400,12 @@
 #define Xml_XMLConst_SDOMNotSupported 64775
 #define Xml_XMLConst_SNodeExpected 64776
 #define Xml_XMLConst_SMSDOMNotInstalled 64777
-#define Data_DBConsts_SInvalidFieldSize 64778
-#define Data_DBConsts_SInvalidFieldKind 64779
-#define Data_DBConsts_SUnknownFieldType 64780
-#define Data_DBConsts_SFieldNameMissing 64781
-#define Data_DBConsts_SDuplicateFieldName 64782
-#define Data_DBConsts_SFieldNotFound 64783
+#define DropSource_sDropSourceBusy 64778
+#define DropSource_sDropSourceAsyncFailed 64779
+#define DropSource_sDropSourceAsyncBusy 64780
+#define DropTarget_sTargetAsyncBusy 64781
+#define DropTarget_sRichEditWarning 64782
+#define DragDrop_sImplementationRequired 64783
 #define GIFImage_sGIFImageFile 64784
 #define GIFImage_sProgressLoading 64785
 #define GIFImage_sProgressSaving 64786
@@ -1462,8 +1462,8 @@ BEGIN
 	IdResourceStrings_RSStackError,	L"Socket Error # %d\r\n%s"
 	IdResourceStrings_RSStackEINTR,	L"Interrupted system call."
 	IdResourceStrings_RSStackEBADF,	L"Bad file number."
-	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
-	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
+	Data_Win_ADOConst_sNameAttr,	L"Name"
+	Data_Win_ADOConst_sValueAttr,	L"Value"
 	DECUtil_sClassNotRegistered,	L"Class %s is not registered"
 	DECCipher_sAlreadyPadded,	L"Cipher has already been padded, cannot process message"
 	DECCipher_sInvalidState,	L"Cipher is not in valid state for this action"
@@ -1478,26 +1478,6 @@ BEGIN
 	VirtualTrees_SWrongStreamFormat,	L"Unable to load tree structure, the format is wrong."
 	VirtualTrees_SWrongStreamVersion,	L"Unable to load tree structure, the version is unknown."
 	VirtualTrees_SStreamTooSmall,	L"Unable to load tree structure, not enough data available."
-	Data_Win_ADOConst_SConnectionRequired,	L"A connection component is required for async ExecuteOptions"
-	Data_Win_ADOConst_SCantRequery,	L"Cannot perform a requery after connection has changed"
-	Data_Win_ADOConst_SNoFilterOptions,	L"FilterOptions are not supported"
-	Data_Win_ADOConst_SRecordsetNotOpen,	L"Recordset is not open"
-	Data_Win_ADOConst_sNameAttr,	L"Name"
-	Data_Win_ADOConst_sValueAttr,	L"Value"
-	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
-	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
-	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
-	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
-	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
-	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
-	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
-	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
-	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
-	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
-	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
-	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
-	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
-	Data_DBConsts_SRecordNotFound,	L"Record not found"
 	Data_DBConsts_SBcdOverflow,	L"BCD overflow"
 	Data_DBConsts_SInvalidBcdValue,	L"%s is not a valid BCD value"
 	Data_DBConsts_SCouldNotParseTimeStamp,	L"Could not parse SQL TimeStamp string"
@@ -1510,10 +1490,10 @@ BEGIN
 	Data_Win_ADOConst_SADOCreateError,	L"Error creating object.  Please verify that the Microsoft Data Access Components 2.1 (or later) have been properly installed"
 	Data_Win_ADOConst_SEventsNotSupported,	L"Events are not supported with server side TableDirect cursors"
 	Data_Win_ADOConst_SUsupportedFieldType,	L"Unsupported field type (%s) in field %s"
-	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
-	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"
-	Data_DBConsts_SCircularDataLink,	L"Circular datalinks are not allowed"
-	Data_DBConsts_SLookupInfoError,	L"Lookup information for field '%s' is incomplete"
+	Data_Win_ADOConst_SConnectionRequired,	L"A connection component is required for async ExecuteOptions"
+	Data_Win_ADOConst_SCantRequery,	L"Cannot perform a requery after connection has changed"
+	Data_Win_ADOConst_SNoFilterOptions,	L"FilterOptions are not supported"
+	Data_Win_ADOConst_SRecordsetNotOpen,	L"Recordset is not open"
 	Data_DBConsts_SDataSourceChange,	L"DataSource cannot be changed"
 	Data_DBConsts_SDataSetOpen,	L"Cannot perform this operation on an open dataset"
 	Data_DBConsts_SNotEditing,	L"Dataset not in edit or insert mode"
@@ -1526,10 +1506,10 @@ BEGIN
 	Data_DBConsts_SInvalidVersion,	L"Unable to load bind parameters"
 	Data_DBConsts_SBadFieldType,	L"Field '%s' is of an unsupported type"
 	Data_DBConsts_SProviderSQLNotSupported,	L"SQL not supported"
-	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
-	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
-	Data_DBConsts_SFieldRangeError,	L"%g is not a valid value for field '%s'. The allowed range is %g to %g"
-	Data_DBConsts_SBcdFieldRangeError,	L"%s is not a valid value for field '%s'. The allowed range is %s to %s"
+	Data_DBConsts_SProviderExecuteNotSupported,	L"Execute not supported"
+	Data_DBConsts_SDataSetUnidirectional,	L"Operation not allowed on a unidirectional dataset"
+	Data_DBConsts_SUnassignedVar,	L"Unassigned variant value"
+	Data_DBConsts_SRecordNotFound,	L"Record not found"
 	Data_DBConsts_SInvalidIntegerValue,	L"'%s' is not a valid integer value for field '%s'"
 	Data_DBConsts_SInvalidBoolValue,	L"'%s' is not a valid boolean value for field '%s'"
 	Data_DBConsts_SInvalidFloatValue,	L"'%s' is not a valid floating point value for field '%s'"
@@ -1542,6 +1522,26 @@ BEGIN
 	Data_DBConsts_SInvalidCalcType,	L"Field '%s' cannot be a calculated or lookup field"
 	Data_DBConsts_SFieldReadOnly,	L"Field '%s' cannot be modified"
 	Data_DBConsts_SNoIndexForFields,	L"No index for fields '%s'"
+	Data_DBConsts_SIndexNotFound,	L"Index '%s' not found"
+	Data_DBConsts_SDBDuplicateName,	L"Duplicate name '%s' in %s"
+	Data_DBConsts_SCircularDataLink,	L"Circular datalinks are not allowed"
+	Data_DBConsts_SLookupInfoError,	L"Lookup information for field '%s' is incomplete"
+	DragDrop_sFormatNameReadOnly,	L"%s.ClipboardFormat is read-only"
+	DragDrop_sNoCopyStgMedium,	L"A required system function (URLMON.CopyStgMedium) was not available on this system. Operation aborted."
+	DragDrop_sBadConstructor,	L"The %s class can not be instantiated with the default constructor"
+	DragDropPIDL_sBadDesktop,	L"Failed to get interface to Desktop"
+	DragDropPIDL_sBadFilename,	L"Invalid filename: %s"
+	uShellIntegration_SNotSupported,	L"This function is not supported by your version of Windows"
+	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
+	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
+	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
+	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
+	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
+	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
+	Data_DBConsts_SFieldAccessError,	L"Cannot access field '%s' as type %s"
+	Data_DBConsts_SFieldValueError,	L"Invalid value for field '%s'"
+	Data_DBConsts_SFieldRangeError,	L"%g is not a valid value for field '%s'. The allowed range is %g to %g"
+	Data_DBConsts_SBcdFieldRangeError,	L"%s is not a valid value for field '%s'. The allowed range is %s to %s"
 	CCR_Exif_Consts_SInvalidXMPPacket,	L"XMP packet is not valid"
 	CCR_Exif_Consts_SSubPropertiesMustBeNamed,	L"Sub-properties must be named"
 	CCR_Exif_Consts_SSubPropertiesNotSupported,	L"Property type does not support sub-properties"
@@ -1552,12 +1552,12 @@ BEGIN
 	Xml_XMLConst_SDOMNotSupported,	L"Property or Method \"%s\" is not supported by DOM Vendor \"%s\""
 	Xml_XMLConst_SNodeExpected,	L"Node cannot be null"
 	Xml_XMLConst_SMSDOMNotInstalled,	L"Microsoft MSXML is not installed"
-	Data_DBConsts_SInvalidFieldSize,	L"Invalid field size"
-	Data_DBConsts_SInvalidFieldKind,	L"Invalid FieldKind"
-	Data_DBConsts_SUnknownFieldType,	L"Field '%s' is of an unknown type"
-	Data_DBConsts_SFieldNameMissing,	L"Field name missing"
-	Data_DBConsts_SDuplicateFieldName,	L"Duplicate field name '%s'"
-	Data_DBConsts_SFieldNotFound,	L"Field '%s' not found"
+	DropSource_sDropSourceBusy,	L"A drag and drop operation is already in progress"
+	DropSource_sDropSourceAsyncFailed,	L"Failed to initiate asynchronouse drag and drop operation"
+	DropSource_sDropSourceAsyncBusy,	L"An asynchronous drag and drop operation is in progress"
+	DropTarget_sTargetAsyncBusy,	L"Can't clear data while async data transfer is in progress"
+	DropTarget_sRichEditWarning,	L"It is strongly recommended that you set the AutoRegister\rproperty to False when the drop target is a rich edit control.\r\rOtherwise the text of the rich edit control might become\rinvisible when the control is scrolled or modifified"
+	DragDrop_sImplementationRequired,	L"Internal error: %s.%s needs implementation"
 	GIFImage_sGIFImageFile,	L"GIF Image"
 	GIFImage_sProgressLoading,	L"Loading..."
 	GIFImage_sProgressSaving,	L"Saving..."
@@ -2337,9 +2337,9 @@ END
 /* Resources\explorer_search.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Controls.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\CategoryButtons.res */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Mustangpeak\EasyListview\Source\EasyRes.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\Buttons.res */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\ExtDlgs.res */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Mustangpeak\EasyListview\Source\EasyRes.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ProgressActionUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Controls\virtual-treeview\Source\VirtualTrees.res */
 /* D:\Dmitry\Dmitry\Ratingres.res */

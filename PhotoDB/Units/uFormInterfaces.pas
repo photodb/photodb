@@ -33,6 +33,11 @@ type
     procedure Restore;
   end;
 
+  IImageSource = interface(IInterface)
+    ['{382D130E-5746-4A6D-9C15-B2EEEF089F44}']
+    function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
+  end;
+
   IViewerForm = interface(IFormInterface)
     ['{951665C9-EDA5-44BD-B833-B5543B58DF04}']
     function ShowImage(Sender: TObject; FileName: string): Boolean;

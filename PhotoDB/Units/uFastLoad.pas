@@ -29,14 +29,12 @@ type
     class function Instance: TLoad;
     //Starts
     procedure StartDBKernelIconsThread;
-    procedure StartDBSettingsThread;
     procedure StartCRCCheckThread;
     procedure StartPersonsThread;
     procedure StartStyleThread;
     //Requareds
     procedure RequiredCRCCheck;
     procedure RequiredDBKernelIcons;
-    procedure RequiredDBSettings;
     procedure RequaredPersons;
     procedure RequiredStyle;
     procedure Stop;
@@ -45,7 +43,6 @@ type
 implementation
 
 uses
-  UnitLoadDBSettingsThread,
   UnitLoadDBKernelIconsThread,
   UnitLoadCRCCheckThread,
   UnitLoadPersonsThread,
@@ -60,7 +57,6 @@ var
 constructor TLoad.Create;
 begin
   LoadDBKernelIconsThreadID := GetEmptyGUID;
-  LoadDBSettingsThreadID := GetEmptyGUID;
   LoadCRCCheckThreadID := GetEmptyGUID;
   LoadPersonsThreadID := GetEmptyGUID;
   LoadStyleThreadID := GetEmptyGUID;
@@ -77,15 +73,6 @@ begin
     SLoadInstance := TLoad.Create;
 
   Result := SLoadInstance;
-end;
-
-procedure TLoad.StartDBSettingsThread;
-var
-  T: TDBThread;
-begin
-  T := TLoadDBSettingsThread.Create(nil, True);
-  LoadDBSettingsThreadID := T.UniqID;
-  T.Start;
 end;
 
 procedure TLoad.StartDBKernelIconsThread;
@@ -178,14 +165,6 @@ begin
   if LoadDBKernelIconsThreadID <> GetEmptyGUID then
     WaitForThread(LoadDBKernelIconsThreadID);
   LoadDBKernelIconsThreadID := GetEmptyGUID;
-end;
-
-procedure TLoad.RequiredDBSettings;
-begin
-  TW.I.Start('TLoad.LoadDBSettingsThread');
-  if LoadDBSettingsThreadID <> GetEmptyGUID then
-    WaitForThread(LoadDBSettingsThreadID);
-  LoadDBSettingsThreadID := GetEmptyGUID;
 end;
 
 procedure TLoad.RequaredPersons;

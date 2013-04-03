@@ -87,7 +87,7 @@ procedure TFrAdvancedOptions.BtnSelectDirectoryClick(Sender: TObject);
 var
   Dir: string;
 begin
-  Dir := DBSelectDir(Handle, L('Please, select directory to install Photo Database.'), False);
+  Dir := DBSelectDir(Handle, L('Please, select directory to install Photo Database.'));
   if DirectoryExists(Dir) then
   begin
     Dir := IncludeTrailingBackslash(Dir);

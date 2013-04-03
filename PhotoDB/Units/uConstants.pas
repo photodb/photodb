@@ -54,9 +54,9 @@ const
   MajorVersion = 3;
   MinorVersion = 1;
   PhotoDBFileName = 'PhotoDB.exe';
-  ProductName = 'Photo DataBase 4.0';
-  StartMenuProgramsPath = 'Photo DB v4.0';
-  ProductMajorVersionVersion = '4.0';
+  ProductName = 'Photo DataBase 4.5';
+  StartMenuProgramsPath = 'Photo DB v4.5';
+  ProductMajorVersionVersion = '4.5';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;

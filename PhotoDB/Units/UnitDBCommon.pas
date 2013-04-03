@@ -98,19 +98,6 @@ begin
   ShowWindow(Application.Handle, SW_HIDE);
 end;
 
-procedure AllowToSetForegroundWindow(HWND : THandle);
-var
-  PID: DWORD;
-  AllowSetForegroundWindowFunc: function(dwProcessId: DWORD): BOOL; stdcall;
-begin
-  if GetWindowThreadProcessId(HWND, @PID) <> 0 then begin
-    AllowSetForegroundWindowFunc := GetProcAddress(GetModuleHandle(user32),
-      'AllowSetForegroundWindow');
-    if Assigned(AllowSetForegroundWindowFunc) then
-      AllowSetForegroundWindowFunc(PID);
-  end;
-end;
-
 procedure ActivateBackgroundApplication(hWnd: THandle);
 var
   hCurWnd, dwThreadID, dwCurThreadID: THandle;

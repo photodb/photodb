@@ -28,7 +28,7 @@ uses
   uGUIDUtils,
   uTranslate,
   uInterfaces,
-  uImageSource,
+  uFormInterfaces,
   uExifInfo,
   uSessionPasswords;
 

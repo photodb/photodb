@@ -13,7 +13,7 @@ uses
   uThreadForm,
   uDBDrawing,
   uListViewUtils,
-  uImageSource;
+  uFormInterfaces;
 
 type
   TListViewForm = class(TThreadForm, IImageSource)

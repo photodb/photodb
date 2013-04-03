@@ -343,7 +343,6 @@
         <DCCReference Include="Units\uConstants.pas"/>
         <DCCReference Include="Units\uStringUtils.pas"/>
         <DCCReference Include="Threads\UnitLoadDBKernelIconsThread.pas"/>
-        <DCCReference Include="Threads\UnitLoadDBSettingsThread.pas"/>
         <DCCReference Include="Threads\UnitLoadCRCCheckThread.pas"/>
         <DCCReference Include="Units\uFastLoad.pas"/>
         <DCCReference Include="Units\uResources.pas"/>
@@ -376,7 +375,6 @@
         <DCCReference Include="Units\uFormListView.pas"/>
         <DCCReference Include="Threads\uDBThread.pas"/>
         <DCCReference Include="Units\uGraphicUtils.pas"/>
-        <DCCReference Include="Units\uImageSource.pas"/>
         <DCCReference Include="Units\uDBPopupMenuInfo.pas"/>
         <DCCReference Include="Units\uPrivateHelper.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.Consts.pas"/>
@@ -541,7 +539,6 @@
         <DCCReference Include="Units\Formats\uAnimatedJPEG.pas"/>
         <DCCReference Include="Units\uPathProviderUtils.pas"/>
         <DCCReference Include="Units\uBufferedFileStream.pas"/>
-        <DCCReference Include="Units\uUpdateDBTypes.pas"/>
         <DCCReference Include="Units\uInterfaceManager.pas"/>
         <DCCReference Include="Units\uUpTime.pas"/>
         <DCCReference Include="Units\uGeoLocation.pas"/>
@@ -655,6 +652,7 @@
         <DCCReference Include="Units\uCollectionEvents.pas"/>
         <DCCReference Include="Units\uDBIcons.pas"/>
         <DCCReference Include="Units\uDBScheme.pas"/>
+        <DCCReference Include="Units\uDBContext.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

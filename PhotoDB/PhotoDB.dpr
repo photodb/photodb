@@ -149,7 +149,6 @@ uses
   uConstants in 'Units\uConstants.pas',
   uStringUtils in 'Units\uStringUtils.pas',
   UnitLoadDBKernelIconsThread in 'Threads\UnitLoadDBKernelIconsThread.pas',
-  UnitLoadDBSettingsThread in 'Threads\UnitLoadDBSettingsThread.pas',
   UnitLoadCRCCheckThread in 'Threads\UnitLoadCRCCheckThread.pas',
   uFastLoad in 'Units\uFastLoad.pas',
   uResources in 'Units\uResources.pas',
@@ -180,7 +179,6 @@ uses
   uFormListView in 'Units\uFormListView.pas',
   uDBThread in 'Threads\uDBThread.pas',
   uGraphicUtils in 'Units\uGraphicUtils.pas',
-  uImageSource in 'Units\uImageSource.pas',
   uDBPopupMenuInfo in 'Units\uDBPopupMenuInfo.pas',
   uPrivateHelper in 'Units\uPrivateHelper.pas',
   CCR.Exif.Consts in 'External\CCR.Exif\CCR.Exif.Consts.pas',
@@ -294,7 +292,6 @@ uses
   uAnimatedJPEG in 'Units\Formats\uAnimatedJPEG.pas',
   uPathProviderUtils in 'Units\uPathProviderUtils.pas',
   uBufferedFileStream in 'Units\uBufferedFileStream.pas',
-  uUpdateDBTypes in 'Units\uUpdateDBTypes.pas',
   uInterfaceManager in 'Units\uInterfaceManager.pas',
   uUpTime in 'Units\uUpTime.pas',
   uGeoLocation in 'Units\uGeoLocation.pas',
@@ -385,7 +382,8 @@ uses
   uSessionPasswords in 'Units\uSessionPasswords.pas',
   uCollectionEvents in 'Units\uCollectionEvents.pas',
   uDBIcons in 'Units\uDBIcons.pas',
-  uDBScheme in 'Units\uDBScheme.pas';
+  uDBScheme in 'Units\uDBScheme.pas',
+  uDBContext in 'Units\uDBContext.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -491,22 +489,19 @@ begin
     EventLog('TDBKernel.Create');
     DBKernel := TDBKernel.Create;
 
-    TW.I.Start('InitializeDBLoadScript');
-    if not DBTerminating then
+    TLoad.Instance.StartDBKernelIconsThread;
+    if not DBTerminating and not GetParamStrDBBool('/install') then
     begin
-      TW.I.Start('DBKernel.DBInit');
-      DBKernel.CheckDatabase;
-
-      if not GetParamStrDBBool('/install') then
+      if not DBKernel.LoadDefaultCollection then
       begin
-        TLoad.Instance.StartDBKernelIconsThread;
-        TLoad.Instance.StartDBSettingsThread;
+        //TODO: notify user that database is invalid!
+        DBTerminating := True;
       end;
     end;
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
@@ -537,12 +532,11 @@ begin
     Application.Run;
 
     if DBTerminating then
-      begin
-        TLoad.Instance.RequiredDBKernelIcons;
-        TLoad.Instance.RequiredCRCCheck;
-        TLoad.Instance.RequiredDBSettings;
-        TLoad.Instance.RequiredStyle;
-      end;
+    begin
+      TLoad.Instance.RequiredDBKernelIcons;
+      TLoad.Instance.RequiredCRCCheck;
+      TLoad.Instance.RequiredStyle;
+    end;
 
     UnRegisterPersonManager;
     UnLoadTranslateModule;

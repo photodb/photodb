@@ -36,8 +36,7 @@ uses
   uFastLoad,
   uGraphicUtils,
   {$ENDIF}
-  uThemesUtils,
-  uImageSource;
+  uThemesUtils;
 
 {$R-}
 

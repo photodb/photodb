@@ -296,10 +296,11 @@ begin
     Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL');
     Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL');
 
-    UpdateCollectionVersion(CollectionFile, 003);
   finally
     FreeDS(FQuery);
   end;
+
+  UpdateCollectionVersion(CollectionFile, 003);
 end;
 
 class function TDBScheme.CreateObjectsTable(CollectionFile: string): Boolean;

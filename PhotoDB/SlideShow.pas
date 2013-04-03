@@ -68,7 +68,6 @@ uses
   uMemory,
   uFaceDetection,
   uListViewUtils,
-  uImageSource,
   uDBPopupMenuInfo,
   uGraphicUtils,
   uShellIntegration,

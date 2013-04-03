@@ -1595,10 +1595,8 @@ begin
   FReloadESGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_GROUPS');
   FReloadRSPersonsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_PERSONS');
 
-  TLoad.Instance.RequiredDBSettings;
   FPictureSize := ThImageSize;
   LoadSizes;
-
 end;
 
 procedure TExplorerForm.ListView1ContextPopup(Sender: TObject;

@@ -99,7 +99,7 @@ begin
   begin
     InstalledVersion := GetExeVersion(GetInstalledFileName);
     if IsNewRelease(InstallVersion, InstalledVersion) then
-      if ID_Yes <> TaskDialogEx(Handle, Format(L('Newer version (%s) is already installed! Do you want to install old version (%s)?'), [ReleaseToString(InstalledVersion), ReleaseToString(InstallVersion)]), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING, False) then
+      if ID_Yes <> TaskDialog(Handle, Format(L('Newer version (%s) is already installed! Do you want to install old version (%s)?'), [ReleaseToString(InstalledVersion), ReleaseToString(InstallVersion)]), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING) then
         Exit;
   end;
 {$ENDIF}
@@ -129,7 +129,7 @@ begin
   FrmProgress := nil;
   hSemaphore := CreateSemaphore( nil, 0, 1, PWideChar(DBID));
   if ((hSemaphore <> 0) and (GetLastError = ERROR_ALREADY_EXISTS)) then
-    TaskDialogEx(Handle, L('Program is started! Install will close the program during installation process!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_WARNING, False);
+    TaskDialog(Handle, L('Program is started! Install will close the program during installation process!'), L('Warning'), '', TD_BUTTON_OK, TD_ICON_WARNING);
 
   LoadMainImage;
   LoadLanguage;
@@ -167,13 +167,13 @@ begin
   BeginTranslate;
   try
 {$IFDEF INSTALL}
-    S := L('PhotoDB 4.0 Setup');
+    S := L('PhotoDB 4.5 Setup');
     if IsApplicationInstalled then
       S := S + ' (' + L('Update') + ' ' + ReleaseToString(InstallVersion) + ')';
     Caption := S;
 {$ENDIF}
 {$IFDEF UNINSTALL}
-    Caption := L('PhotoDB 4.0 Uninstall');
+    Caption := L('PhotoDB 4.5 Uninstall');
 {$ENDIF}
     BtnCancel.Caption := L('Cancel');
     BtnNext.Caption := L('Next');
@@ -185,7 +185,7 @@ begin
 {$IFDEF UNINSTALL}
     BtnInstall.Caption := L('Uninstall');
 {$ENDIF}
-    LbWelcome.Caption := L('Welcome to the Photo Database 4.0');
+    LbWelcome.Caption := L('Welcome to the Photo Database 4.5');
   finally
     EndTranslate;
   end;

@@ -42,12 +42,14 @@ uses
   uStringUtils,
   uSettings,
   uProgramStatInfo,
-  uVCLHelpers;
+  uVCLHelpers,
+  uDBContext;
 
 type
   TDBKernel = class(TObject)
   private
     { Private declarations }
+    FDBContext: IDBContext;
     procedure HandleError(E: Exception);
   public
     { Public declarations }
@@ -60,10 +62,9 @@ type
 
     function CreateDBbyName(FileName: string): Integer;
     procedure SetDataBase(DatabaseFileName: string);
-    function ValidDBVersion(DBFile: string; DBVersion: Integer): Boolean;
     procedure ReadDBOptions;
-    procedure CheckDatabase;
-    procedure CheckSampleDB;
+    function LoadDefaultCollection: Boolean;
+    function CreateSampleDefaultCollection: string;
     function SelectDB(Caller: TDBForm; DB: string): Boolean;
     procedure CreateExampleDB(FileName: string);
   end;
@@ -78,6 +79,7 @@ implementation
 constructor TDBKernel.Create;
 begin
   inherited;
+  FDBContext := nil;
 end;
 
 function TDBKernel.CreateDBbyName(FileName: string): Integer;
@@ -197,6 +199,7 @@ end;
 
 destructor TDBKernel.Destroy;
 begin
+  FDBContext := nil;
   inherited;
 end;
 
@@ -231,60 +234,46 @@ begin
     Reg.OpenKey(RegRoot, True);
     Reg.WriteString('DBDefaultName', DatabaseFileName);
 
-    Dbname := DatabaseFileName;
+    dbname := DatabaseFileName;
   finally
     F(Reg);
   end;
   ReadDBOptions;
 end;
 
-procedure TDBKernel.CheckDatabase;
+function TDBKernel.LoadDefaultCollection: Boolean;
 var
-  StringDBCheckKey: string;
+  CollectionFileName: string;
 begin
-  Dbname := Settings.DataBase;
-
   if FolderView then
   begin
-    dbname := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
+    CollectionFileName := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
 
     if FileExistsSafe(ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb') then
-      dbname := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
-  end;
-
-  if not FileExistsSafe(dbname) then
-    CheckSampleDB;
-
-  // check valid db version
-  StringDBCheckKey := Format('%d-%d', [Integer(StringCRC(dbname)), DB_VER_CURRENT]);
-  if not Settings.ReadBool('DBVersionCheck', StringDBCheckKey, False) or GetParamStrDBBool('/dbcheck') then
+      CollectionFileName := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
+  end else
   begin
-    TW.I.Start('FM -> TestDBEx');
-    if not TDBScheme.IsOldColectionFile(dbname) then
-    begin
-      CloseSplashWindow;
-      //ConvertDB(dbname);
-      if not TDBScheme.IsValidCollectionFile(dbname) then
-      begin
-        DBTerminating := True;
-        Exit;
-      end;
-    end;
-    Settings.WriteBool('DBVersionCheck', StringDBCheckKey, True);
+    CollectionFileName := Settings.DataBase;
+
+    if not FileExistsSafe(CollectionFileName) then
+      CreateSampleDefaultCollection;
   end;
+
+  FDBContext := TDBContext.Create(CollectionFileName);
+  Result := FDBContext.IsValid;
+
+  dbname := FDBContext.CollectionFileName;
 end;
 
-procedure TDBKernel.CheckSampleDB;
-var
-  FileName: string;
+function TDBKernel.CreateSampleDefaultCollection: string;
 begin
   //if program was uninstalled with registered databases - restore database or create new database
-  FileName := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
-  if not FileExistsSafe(FileName) then
-    CreateExampleDB(FileName);
+  Result := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+  if not FileExistsSafe(Result) then
+    CreateExampleDB(Result);
 
-  DBKernel.AddDB(TA('My collection'), FileName, Application.ExeName + ',0');
-  DBKernel.SetDataBase(FileName);
+  DBKernel.AddDB(TA('My collection'), Result, Application.ExeName + ',0');
+  DBKernel.SetDataBase(Result);
 end;
 
 class procedure TDBKernel.LoadDBs(Collections: TList<TDatabaseInfo>);
@@ -383,12 +372,6 @@ begin
   finally
     FreeList(Collections);
   end;
-end;
-
-function TDBKernel.ValidDBVersion(DBFile: string;
-  DBVersion: Integer): Boolean;
-begin
-  Result := DBVersion = DB_VER_CURRENT;
 end;
 
 procedure TDBKernel.ReadDBOptions;

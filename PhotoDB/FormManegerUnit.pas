@@ -401,6 +401,8 @@ begin
   DBTerminating := True;
   ExitAppl := True;
 
+  CloseSplashWindow;
+
   //save uptime
   if not GetParamStrDBBool('/uninstall') then
     PermanentlySaveUpTime;

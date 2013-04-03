@@ -33,7 +33,7 @@ type
 function CreateMobileDBFilesInDirectory(DestinationName: string): Boolean;
 procedure UpdateExeResources(ExeFileName: string);
 function ReadInternalFSContent(Name: string): string;
-procedure LoadLanguageFromMobileFS(var Language : TLanguage; var LanguageCode: string);
+procedure LoadLanguageFromMobileFS(var Language: TLanguage; var LanguageCode: string);
 procedure AddStyleToMobileEXE(Update: Cardinal);
 
 implementation
