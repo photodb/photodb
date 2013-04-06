@@ -20,6 +20,10 @@ uses
   Vcl.Menus,
   Data.DB,
 
+  Dmitry.Utils.System,
+  Dmitry.Utils.Files,
+  Dmitry.PathProviders,
+
   UnitGroupsWork,
   CommonDBSupport,
   ProgressActionUnit,
@@ -32,10 +36,7 @@ uses
   UnitDBDeclare,
   UnitDBFileDialogs,
   CmpUnit,
-
-  Dmitry.Utils.System,
-  Dmitry.Utils.Files,
-  Dmitry.PathProviders,
+  UnitDBKernel,
 
   uRuntime,
   uMemoryEx,
@@ -58,6 +59,7 @@ uses
   uDBBaseTypes,
   uDBForm,
   uDBUtils,
+  uDBContext,
   uDBAdapter,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
@@ -534,7 +536,7 @@ begin
     if FD.Execute then
     begin
       Info := FInfo[FInfo.Position];
-      SetFileNameByID(Info.ID, FD.FileName);
+      SetFileNameByID(DBKernel.DBContext, Info.ID, FD.FileName);
     end;
   finally
     F(FD);
@@ -815,7 +817,10 @@ var
   _sqlexectext: string;
   FQuery: TDataSet;
   EventInfo: TEventValues;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   SetLength(ArDates, 0);
   SetLength(ArIsDates, 0);
   SetLength(ArTimes, 0);
@@ -840,7 +845,8 @@ begin
 
   if Changed and not CheckDBReadOnly then
   begin
-    FQuery := GetQuery;
+    Context := DBKernel.DBContext;
+    FQuery := Context.CreateQuery;
     try
    // [BEGIN] Date Support
       if IsDate then
@@ -956,17 +962,19 @@ var
   Files, S: TArStrings;
   IDs: TArInteger;
   DA: TImageTableAdapter;
+  Context: IDBContext;
 begin
   if CheckDBReadOnly then
     Exit;
   if ID_OK = MessageBoxDB(0, TA('Do you really want ot delete this info from DB?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
+    Context := DBKernel.DBContext;
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
         if Finfo[I].Attr = Db_attr_duplicate then
         begin
-          FQuery := GetQuery;
+          FQuery := Context.CreateQuery;
           DA := TImageTableAdapter.Create(FQuery);
           try
             SQL_ := 'SELECT FFileName, ID FROM $DB$ WHERE (ID<>' + IntToStr(Finfo[I].ID) +
@@ -1022,13 +1030,16 @@ var
   SQL_: string;
   S: TArStrings;
   FirstID: Boolean;
+  Context: IDBContext;
 begin
   if CheckDBReadOnly then
     Exit;
   if ID_OK = MessageBoxDB(0, L('Do you really want to delete this info from collection?'), L('Confirm'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    FQuery := GetQuery;
+    Context := DBKernel.DBContext;
+
+    FQuery := Context.CreateQuery;
     SQL_ := 'UPDATE $DB$ SET Attr=' + Inttostr(Db_attr_not_exists) + ' WHERE ID in (';
     FirstID := True;
     for I := 0 to Finfo.Count - 1 do
@@ -1069,6 +1080,7 @@ var
   EventInfo: TEventValues;
   SQL_: string;
   FirstID: Boolean;
+  Context: IDBContext;
 begin
   if CheckDBReadOnly then
     Exit;
@@ -1076,7 +1088,9 @@ begin
   if IdOk = MessageBoxDB(0, L('Do you really want to delete this info from collection?'),
     L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    FQuery := GetQuery;
+    Context := DBKernel.DBContext;
+
+    FQuery := Context.CreateQuery;
     try
       SQL_ := 'DELETE FROM $DB$ WHERE ID in (';
       FirstID := True;
@@ -1115,6 +1129,7 @@ var
   Query: TDataSet;
   ID: Integer;
   DA: TImageTableAdapter;
+  Context: IDBContext;
 begin
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
@@ -1122,10 +1137,12 @@ begin
       CollectionEvents.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
-    Query := GetQuery;
+    Context := DBKernel.DBContext;
+
+    Query := Context.CreateQuery;
     DA := TImageTableAdapter.Create(Query);
     try
-      ID := GetIdByFileName(FInfo[FInfo.Position].FileName);
+      ID := GetIdByFileName(Context, FInfo[FInfo.Position].FileName);
       if ID = 0 then
         Exit;
       SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
@@ -1207,8 +1224,11 @@ var
   FGroup: TGroup;
   B, SmallB: TBitmap;
   Size: Integer;
+  Context: IDBContext;
 begin
-  FGroup := GetGroupByGroupCode(GroupCode, True);
+  Context := DBKernel.DBContext;
+
+  FGroup := GetGroupByGroupCode(Context, GroupCode, True);
   if FGroup.GroupImage <> nil then
   begin
     if not FGroup.GroupImage.Empty then
@@ -1256,7 +1276,10 @@ var
   VarkeyWords, VarGroups: Boolean;
   List: TSQLList;
   IDs: string;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   FBusy := True;
   try
     GroupList := TStringList.Create;
@@ -1289,7 +1312,7 @@ begin
     if CheckDBReadOnly then
       Exit;
 
-    fQuery := GetQuery;
+    FQuery := Context.CreateQuery;
     try
       ProgressForm:= GetProgressWindow;
       ProgressForm.MaxPosCurrentOperation := Count;
@@ -1344,7 +1367,7 @@ begin
     if not CompareGroups(StrNewGroups, StrOldGroups) then
     begin
       FreeSQLList(List);
-      FQuery := GetQuery;
+      FQuery := Context.CreateQuery;
       try
         ProgressForm.XPosition := 0;
         if VarKeyWords and VarGroups then
@@ -1439,9 +1462,13 @@ var
   OldAccess: Integer;
   Count: Integer;
   ProgressForm: TProgressActionForm;
+  Context: IDBContext;
 begin
   if CheckDBReadOnly then
     Exit;
+
+  Context := DBKernel.DBContext;
+
   FBusy := True;
   OldAccess := (Sender as TMenuItem).Tag;
   Count := 0;
@@ -1463,7 +1490,7 @@ begin
       begin
         if FInfo[I].Access = Db_access_none then
         begin
-          SetPrivate(FInfo[I].ID);
+          SetPrivate(Context, FInfo[I].ID);
           EventInfo.Access := Db_access_private;
           CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
@@ -1471,7 +1498,7 @@ begin
       begin
         if FInfo[I].Access = DB_Access_Private then
         begin
-          UnSetPrivate(FInfo[I].ID);
+          UnSetPrivate(Context, FInfo[I].ID);
           EventInfo.Access := Db_access_none;
           CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
@@ -1595,7 +1622,7 @@ begin
   if CheckDBReadOnly then
     Exit;
   Options.Info := FInfo;
-  TRefreshDBRecordsThread.Create(FOwner, Options);
+  TRefreshDBRecordsThread.Create(DBKernel.DBContext, FOwner, Options);
 end;
 
 procedure TDBPopupMenu.RefreshThumItemPopUpMenu(Sender: TObject);
@@ -1661,12 +1688,16 @@ var
   SQL_, Str: string;
   FQuery: TDataSet;
   FirstID: Boolean;
+  Context: IDBContext;
 begin
   if CheckDBReadOnly then
     Exit;
   Str := (Sender as TMenuItem).Caption.Replace('&', '');
   NewRating := StrToInt(Str);
-  FQuery := GetQuery;
+
+  Context := DBKernel.DBContext;
+
+  FQuery := Context.CreateQuery;
   try
     SQL_ := 'Update $DB$ Set Rating=' + Inttostr(NewRating) + ' Where ID in (';
 
@@ -1703,14 +1734,18 @@ var
   I: Integer;
   EventInfo: TEventValues;
   NewRotate: Integer;
+  Context: IDBContext;
 begin
   if CheckDBReadOnly then
     Exit;
+
+  Context := DBKernel.DBContext;
+
   NewRotate := (Sender as Tmenuitem).Tag;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
     begin
-      SetRotate(Finfo[I].ID, NewRotate);
+      SetRotate(Context, Finfo[I].ID, NewRotate);
       EventInfo.Rotation := NewRotate;
       CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
     end;
@@ -1772,7 +1807,6 @@ procedure TDBPopupMenu.UserMenuItemPopUpMenu(Sender: TObject);
 var
   I: Integer;
   Params, ExeFile, ExeParams: string;
-
 begin
   for I := 0 to Finfo.Count - 1 do
     if FInfo[I].Selected then

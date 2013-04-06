@@ -31,6 +31,7 @@ uses
   UnitGroupsWork,
   GraphicSelectEx,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uEditorTypes,
   uRuntime,
@@ -43,6 +44,7 @@ uses
   uDBIcons,
   uExplorerGroupsProvider,
   uDBForm,
+  uDBContext,
   uShellIntegration,
   uDialogUtils,
   uThemesUtils,
@@ -87,8 +89,10 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure MiUseCurrentImageClick(Sender: TObject);
     procedure MiLoadFromMiniGalleryClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     FCreateFixedGroup: Boolean;
     FCreateGroupWithCode: Boolean;
     FNewGroupName, FGroupCode: string;
@@ -98,7 +102,7 @@ type
     procedure LoadLanguage;
     procedure GroupClick(Sender: TObject);
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
     procedure InterfaceDestroyed; override;
   public
     { Public declarations }
@@ -187,7 +191,7 @@ var
   EventInfo: TEventValues;
   GroupItem: TGroupItem;
 begin
-  if GroupNameExists(EdName.Text) then
+  if GroupNameExists(FContext, EdName.Text) then
   begin
     MessageBoxDB(Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
@@ -214,8 +218,8 @@ begin
   Group.RelatedGroups := FNewRelatedGroups;
   Group.IncludeInQuickList := CbInclude.Checked;
   Group.GroupDate := 0;
-  AddGroup(Group);
-  if GroupNameExists(EdName.Text) then
+  AddGroup(FContext, Group);
+  if GroupNameExists(FContext, EdName.Text) then
   begin
     FCreated := True;
     FNewGroupName := EdName.Text;
@@ -239,9 +243,15 @@ end;
 
 procedure TNewGroupForm.FormCreate(Sender: TObject);
 begin
+  FContext := DBKernel.DBContext;
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_GROUP_RELOAD_GROUPS');
   LoadLanguage;
   RelodDllNames;
+end;
+
+procedure TNewGroupForm.FormDestroy(Sender: TObject);
+begin
+  FContext := nil;
 end;
 
 procedure TNewGroupForm.LoadLanguage;
@@ -428,7 +438,7 @@ begin
     try
       SmallB.PixelFormat := pf24bit;
       SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
+      Group := GetGroupByGroupName(FContext, FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then
         begin

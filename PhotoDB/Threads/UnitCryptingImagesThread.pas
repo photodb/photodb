@@ -19,6 +19,7 @@ uses
 
   uGOM,
   uDBForm,
+  uDBContext,
   uLogger,
   uDBThread,
   uConstants,
@@ -34,6 +35,7 @@ type
   TCryptingImagesThread = class(TDBThread)
   private
     { Private declarations }
+    FContext: IDBContext;
     FOptions: TCryptImageThreadOptions;
     BoolParam: Boolean;
     IntParam: Integer;
@@ -53,7 +55,7 @@ type
     procedure OnFileProgress(FileName: string; BytesTotal, BytesDone: Int64; var BreakOperation: Boolean);
     procedure NotifyFileUpdated(FileName: string);
   public
-    constructor Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
+    constructor Create(Sender: TDBForm; Context: IDBContext; Options: TCryptImageThreadOptions);
   protected
     procedure Execute; override;
     procedure InitializeProgress;
@@ -77,12 +79,13 @@ uses ProgressActionUnit;
 
 { TCryptingImagesThread }
 
-constructor TCryptingImagesThread.Create(Sender: TDBForm; Options: TCryptImageThreadOptions);
+constructor TCryptingImagesThread.Create(Sender: TDBForm; Context: IDBContext; Options: TCryptImageThreadOptions);
 var
   I: Integer;
 begin
   inherited Create(Sender, False);
   FSender := Sender;
+  FContext := Context;
   Table := nil;
   FLastProgressTime := 0;
   FOptions := Options;
@@ -163,7 +166,7 @@ begin
           begin
             // Encrypting images
             try
-              CryptResult := EncryptImageByFileName(FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
+              CryptResult := EncryptImageByFileName(FContext, FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
                 FOptions.EncryptOptions, False, OnFileProgress);
 
               if CryptResult <> CRYPT_RESULT_OK then
@@ -181,7 +184,7 @@ begin
             IntParam := FOptions.IDs[I];
             GetPassword;
             // Decrypting images
-            CryptResult := ResetPasswordImageByFileName(Self, FOptions.Files[I], FOptions.IDs[I], FPassword, OnFileProgress);
+            CryptResult := ResetPasswordImageByFileName(FContext, Self, FOptions.Files[I], FOptions.IDs[I], FPassword, OnFileProgress);
 
             if CryptResult <> CRYPT_RESULT_OK then
               ShowError(DBErrorToString(CryptResult));
@@ -237,7 +240,7 @@ begin
   begin
     if Table = nil then
     begin
-      Table := GetTable;
+      Table := GetTable(FContext.CollectionFileName);
       Table.Open;
     end;
     Table.Locate('ID', IntParam, [LoPartialKey]);

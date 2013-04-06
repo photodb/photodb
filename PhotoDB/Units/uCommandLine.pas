@@ -28,12 +28,13 @@ uses
   uFormInterfaces,
   uSessionPasswords,
   uAssociations,
-  uDBUtils;
+  uDBUtils,
+  uDBContext;
 
 type
   TCommandLine = class
-    class procedure ProcessServiceCommands;
-    class procedure ProcessUserCommandLine;
+    class procedure ProcessServiceCommands(Context: IDBContext);
+    class procedure ProcessUserCommandLine(Context: IDBContext);
   end;
 
 implementation
@@ -46,7 +47,7 @@ end;
 
 { TCommandLine }
 
-class procedure TCommandLine.ProcessServiceCommands;
+class procedure TCommandLine.ProcessServiceCommands(Context: IDBContext);
 var
   ExtensionList: string;
 begin
@@ -88,7 +89,7 @@ begin
         begin
           Settings.WriteBool('StartUp', 'Pack', False);
           Application.CreateForm(TCMDForm, CMDForm);
-          CMDForm.PackPhotoTable;
+          CMDForm.PackPhotoTable(Context.CollectionFileName);
           R(CMDForm);
         end;
       end;
@@ -100,7 +101,7 @@ begin
       EventLog('Packing...');
       Settings.WriteBool('StartUp', 'Pack', False);
       Application.CreateForm(TCMDForm, CMDForm);
-      CMDForm.PackPhotoTable;
+      CMDForm.PackPhotoTable(Context.CollectionFileName);
       R(CMDForm);
     end;
 
@@ -111,12 +112,12 @@ begin
       EventLog('BackUp...');
       Settings.WriteBool('StartUp', 'BackUp', False);
       Application.CreateForm(TCMDForm, CMDForm);
-      CMDForm.BackUpTable;
+      CMDForm.BackUpTable(Context.CollectionFileName);
       R(CMDForm);
     end;
 end;
 
-class procedure TCommandLine.ProcessUserCommandLine;
+class procedure TCommandLine.ProcessUserCommandLine(Context: IDBContext);
 var
   S: string;
   Password: string;
@@ -130,32 +131,32 @@ begin
 
   if GetParamStrDBBool('/SQLExec') then
   begin
-    ExecuteQuery(AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
+    ExecuteQuery(Context, AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
   end;
 
   if GetParamStrDBBool('/SQLExecFile') then
   begin
     S := AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'), '"');
     S := ReadTextFileInString(S);
-    ExecuteQuery(S);
+    ExecuteQuery(Context, S);
   end;
 
   if GetParamStrDBBool('/e') then
   begin
     S := AnsiDequotedStr(GetParamStrDBValue('/e'), '"');
-    ID := GetIdByFileName(S);
+    ID := GetIdByFileName(Context, S);
     Password := AnsiDequotedStr(GetParamStrDBValue('/p'), '"');
 
-    EncryptImageByFileName(nil, S, ID, Password, CRYPT_OPTIONS_NORMAL, False);
+    EncryptImageByFileName(Context, nil, S, ID, Password, CRYPT_OPTIONS_NORMAL, False);
   end;
 
   if GetParamStrDBBool('/d') then
   begin
     S := AnsiDequotedStr(GetParamStrDBValue('/d'), '"');
-    ID := GetIdByFileName(S);
+    ID := GetIdByFileName(Context, S);
     Password := AnsiDequotedStr(GetParamStrDBValue('/p'), '"');
 
-    ResetPasswordImageByFileName(nil, S, ID, Password);
+    ResetPasswordImageByFileName(Context, nil, S, ID, Password);
   end;
 
   if not FolderView then

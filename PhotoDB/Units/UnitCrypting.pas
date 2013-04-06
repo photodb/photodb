@@ -20,18 +20,19 @@ uses
   uDBAdapter,
   uStrongCrypt,
   GraphicCrypt,
+  uDBContext,
   uErrors;
 
-function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
+function EncryptImageByFileName(Context: IDBContext; Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
   DoEvent: Boolean = True; Progress: TFileProgress = nil): Integer;
-function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string; Progress: TFileProgress = nil): Integer;
+function ResetPasswordImageByFileName(Context: IDBContext; Caller: TObject; FileName: string; ID: Integer; Password: string; Progress: TFileProgress = nil): Integer;
 function CryptTStrings(TS: TStrings; Pass: string): string;
 function DeCryptTStrings(S: string; Pass: string): TStrings;
-function CryptDBRecordByID(ID: Integer; Password: string): Integer;
+function CryptDBRecordByID(Context: IDBContext; ID: Integer; Password: string): Integer;
 
 implementation
 
-function CryptDBRecordByID(ID: Integer; Password: string): Integer;
+function CryptDBRecordByID(Context: IDBContext; ID: Integer; Password: string): Integer;
 var
   Query: TDataSet;
   JPEG: TJPEGImage;
@@ -40,7 +41,7 @@ var
 begin
   Result := CRYPT_RESULT_UNDEFINED;
 
-  Query := GetQuery;
+  Query := Context.CreateQuery;
   DA := TImageTableAdapter.Create(Query);
   try
     SetSQL(Query,'Select thum from $DB$ where ID = ' + IntToStr(ID));
@@ -67,7 +68,7 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
-function ResetPasswordDBRecordByID(ID: integer; Password: String): Integer;
+function ResetPasswordDBRecordByID(Context: IDBContext; ID: integer; Password: String): Integer;
 var
   Query: TDataSet;
   JPEG: TJPEGImage;
@@ -75,7 +76,7 @@ var
 begin
   Result := CRYPT_RESULT_UNDEFINED;
 
-  Query := GetQuery;
+  Query := Context.CreateQuery;
   DA := TImageTableAdapter.Create(Query);
   try
     SetSQL(Query, 'Select thum from $DB$ where ID = ' + IntToStr(ID));
@@ -98,7 +99,7 @@ begin
   Result := CRYPT_RESULT_OK;
 end;
 
-function EncryptImageByFileName(Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
+function EncryptImageByFileName(Context: IDBContext; Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;
   DoEvent: Boolean = True; Progress: TFileProgress = nil): Integer;
 var
   Info: TEventValues;
@@ -122,7 +123,7 @@ begin
     end;
   end;
   if ID <> 0 then
-    if CryptDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
+    if CryptDBRecordByID(Context, ID, Password) <> CRYPT_RESULT_OK then
     begin
       Result := CRYPT_RESULT_FAILED_CRYPT_DB;
     end;
@@ -145,7 +146,7 @@ begin
     Result := CRYPT_RESULT_OK;
 end;
 
-function ResetPasswordImageByFileName(Caller: TObject; FileName: string; ID: Integer; Password: string; Progress: TFileProgress = nil): Integer;
+function ResetPasswordImageByFileName(Context: IDBContext; Caller: TObject; FileName: string; ID: Integer; Password: string; Progress: TFileProgress = nil): Integer;
 begin
   if not FileExistsSafe(FileName) then
     Exit(CRYPT_RESULT_ERROR_READING_FILE);
@@ -161,7 +162,7 @@ begin
     Exit;
 
   if ID <> 0 then
-    if ResetPasswordDBRecordByID(ID, Password) <> CRYPT_RESULT_OK then
+    if ResetPasswordDBRecordByID(Context, ID, Password) <> CRYPT_RESULT_OK then
       Result := CRYPT_RESULT_FAILED_CRYPT_DB;
 end;
 

@@ -506,8 +506,8 @@ begin
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
     try
-      TCommandLine.ProcessServiceCommands;
-      TCommandLine.ProcessUserCommandLine;
+      TCommandLine.ProcessServiceCommands(DBKernel.DBContext);
+      TCommandLine.ProcessUserCommandLine(DBKernel.DBContext);
     finally
       CMDInProgress := False;
     end;

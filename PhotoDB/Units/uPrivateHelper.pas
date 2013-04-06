@@ -3,17 +3,19 @@ unit uPrivateHelper;
 interface
 
 uses
-  Classes,
-  SyncObjs,
-  SysUtils,
-  DB,
-  uConstants,
-  CommonDBSupport,
-  uMemory,
+  Winapi.ActiveX,
+  System.Classes,
+  System.SyncObjs,
+  System.SysUtils,
+  Data.DB,
 
   Dmitry.CRC32,
 
-  ActiveX,
+  CommonDBSupport,
+  UnitDBKernel,
+
+  uConstants,
+  uMemory,
   uDBThread;
 
 type
@@ -42,10 +44,12 @@ type
     procedure Execute; override;
   end;
 
+  //TODO: check class on select collection logic
+
 implementation
 
 var
-  FPrivateHelper : TPrivateHelper = nil;
+  FPrivateHelper: TPrivateHelper = nil;
 
 { TPrivateHelper }
 
@@ -107,7 +111,7 @@ end;
 
 function TPrivateHelper.IsPrivateDirectory(Directory: string): Boolean;
 var
-  CRC : Integer;
+  CRC: Integer;
 begin
   if not FListReady then
   begin
@@ -156,7 +160,7 @@ begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
-    Query := GetQuery(True);
+    Query := DBKernel.DBContext.CreateQuery(dbilRead);
     try
       ReadOnlyQuery(Query);
       SetSQL(Query, Format('SELECT DISTINCT FolderCRC from $DB$ WHERE Access = %d', [Db_access_private]));

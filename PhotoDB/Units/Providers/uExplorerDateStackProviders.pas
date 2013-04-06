@@ -16,6 +16,7 @@ uses
 
   CommonDBSupport,
   UnitGroupsWork,
+  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -23,6 +24,7 @@ uses
   uExplorerPathProvider,
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
+  uDBContext,
   uDateUtils;
 
 type
@@ -201,6 +203,7 @@ var
   PI: TPersonItem;
   FDateRangeDS: TDataSet;
   Filter, SQL, Table: string;
+  Context: IDBContext;
 
   function ImagesFilter: string;
   begin
@@ -236,7 +239,9 @@ begin
 
   if Item is TDateStackItem then
   begin
-    FDateRangeDS := GetQuery(True);
+    Context :=  DBKernel.DBContext;
+
+    FDateRangeDS := Context.CreateQuery(dbilRead);
     try
       ForwardOnlyQuery(FDateRangeDS);
       SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as GroupYear, Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + ImagesFilter + ' ) Group BY Year(DateToAdd) Order by Year(DateToAdd) desc');
@@ -260,8 +265,10 @@ begin
 
   if Item is TGroupItem then
   begin
-    GI := TGroupItem(item);
-    FDateRangeDS := GetQuery(True);
+    Context :=  DBKernel.DBContext;
+
+    GI := TGroupItem(Item);
+    FDateRangeDS := Context.CreateQuery(dbilRead);
     try
       ForwardOnlyQuery(FDateRangeDS);
 
@@ -288,8 +295,10 @@ begin
 
   if Item is TPersonItem then
   begin
+    Context :=  DBKernel.DBContext;
+
     PI := TPersonItem(item);
-    FDateRangeDS := GetQuery(True);
+    FDateRangeDS := Context.CreateQuery(dbilRead);
     try
       ForwardOnlyQuery(FDateRangeDS);
 
@@ -319,9 +328,11 @@ begin
 
   if Item is TDateStackYearItem then
   begin
+    Context :=  DBKernel.DBContext;
+
     YI := TDateStackYearItem(Item);
 
-    FDateRangeDS := GetQuery(True);
+    FDateRangeDS := Context.CreateQuery(dbilRead);
     try
       ForwardOnlyQuery(FDateRangeDS);
 
@@ -364,9 +375,11 @@ begin
 
   if Item is TDateStackMonthItem then
   begin
+    Context :=  DBKernel.DBContext;
+
     MI := TDateStackMonthItem(Item);
 
-    FDateRangeDS := GetQuery(True);
+    FDateRangeDS := Context.CreateQuery(dbilRead);
     try
       ForwardOnlyQuery(FDateRangeDS);
 

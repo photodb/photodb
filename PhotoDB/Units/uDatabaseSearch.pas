@@ -24,6 +24,7 @@ uses
   uConstants,
   uDBBaseTypes,
   uDBUtils,
+  uDBContext,
   uStringUtils,
   uTranslate,
   uJpegUtils,
@@ -64,6 +65,7 @@ type
 
   TDatabaseSearch = class(TObject)
   private
+    FDBContext: IDBContext;
     FSearchParams: TSearchQuery;
     FCurrentQueryType: TQueryType;
     FOwner: TThreadEx;
@@ -101,6 +103,7 @@ implementation
 
 constructor TDatabaseSearch.Create(AOwner: TThreadEx; ASearchParams: TSearchQuery);
 begin
+  FDBContext := DBKernel.DBContext;
   FCurrentQueryType := QT_TEXT;
   FSearchParams := ASearchParams;
   FOwner := AOwner;
@@ -109,6 +112,7 @@ end;
 destructor TDatabaseSearch.Destroy;
 begin
   F(FSearchParams);
+  FDBContext := nil;
   inherited;
 end;
 
@@ -260,7 +264,7 @@ begin
 
         Folder := Copy(Sysaction, 8, Length(Sysaction) - 8);
         if StrToIntDef(Folder, -1) <> -1 then
-          Folder := ExtractFileDir(uDBUtils.GetFileNameById(StrToInt(Folder)));
+          Folder := ExtractFileDir(uDBUtils.GetFileNameById(FDBContext, StrToInt(Folder)));
 
         Folder := IncludeTrailingBackslash(Folder);
 
@@ -278,7 +282,7 @@ begin
         Sid := Copy(Sysaction, 9, Length(Sysaction) - 9);
         Id := StrToIntDef(Sid, 0);
 
-        FSpecQuery := GetQuery;
+        FSpecQuery := FDBContext.CreateQuery(dbilRead);
         try
           SetSQL(FSpecQuery, 'SELECT StrTh FROM $DB$ WHERE ID = ' + IntToStr(Id));
           FSpecQuery.Open;
@@ -657,10 +661,12 @@ var
   FWorkQuery: TDataSet;
   EstimateCount: Integer;
   FLastPacketTime: Cardinal;
+  IsolationMode: TDBIsolationLevel;
 begin
   if Assigned(OnProgress) then
     OnProgress(Self, -1);
-  FWorkQuery := GetQuery(FSearchParams.IsEstimate);
+
+  FWorkQuery := FDBContext.CreateQuery(dbilRead);
   try
 
     if not FSearchParams.IsEstimate then

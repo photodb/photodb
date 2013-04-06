@@ -9,22 +9,23 @@ uses
   UnitGroupsWork,
   Classes,
   DB,
-  CommonDBSupport,
+  ActiveX,
+  Graphics,
   Forms,
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
 
-  ActiveX,
-  Graphics,
-  Dialogs,
+  CommonDBSupport,
+  UnitDBKernel,
+
   uConstants,
   uDBUtils,
   uShellIntegration,
-  UnitDBKernel,
   uMemory,
   uTranslate,
   uDBThread,
+  uDBContext,
   uResourceUtils,
   uThreadForm,
   uThreadEx,
@@ -40,6 +41,7 @@ type
   TSaveQueryThread = class(TThreadEx)
   private
     { Private declarations }
+    FDBContext: IDBContext;
     FDestinationPath, DBFolder: string;
     FIntParam: Integer;
     FRegGroups: TGroups;
@@ -52,11 +54,11 @@ type
     OriginalIconLanguage: Integer;
   protected
     { Protected declarations }
-    function GetThreadID : string; override;
+    function GetThreadID: string; override;
     procedure Execute; override;
-    procedure SetMaxValue(Value : integer);
+    procedure SetMaxValue(Value: integer);
     procedure SetMaxValueA;
-    procedure SetProgress(Value : integer);
+    procedure SetProgress(Value: integer);
     procedure SetProgressA;
     Procedure Done;
     procedure LoadCustomDBName;
@@ -64,21 +66,23 @@ type
     procedure SaveLocation(Src, Dest: TDataSet);
   public
     { Public declarations }
-    constructor Create(DestinationPath : String; OwnerForm : TThreadForm; 
-                       SubFolders : boolean; FileList : TStrings; State: TGUID);
+    constructor Create(DBContext: IDBContext; DestinationPath : String; OwnerForm: TThreadForm;
+                       SubFolders: boolean; FileList: TStrings; State: TGUID);
     destructor Destroy; override;
   end;
 
 implementation
 
-uses UnitSavingTableForm;
+uses
+  UnitSavingTableForm;
 
 { TSaveQueryThread }
 
-constructor TSaveQueryThread.Create(DestinationPath: string; OwnerForm: TThreadForm;
+constructor TSaveQueryThread.Create(DBContext: IDBContext;DestinationPath: string; OwnerForm: TThreadForm;
   SubFolders: Boolean; FileList: TStrings; State: TGUID);
 begin
   inherited Create(OwnerForm, State);
+  FDBContext := DBContext;
   FSubFolders := SubFolders;
   FDestinationPath := DestinationPath;
   FFileList := TStringList.Create;
@@ -160,6 +164,7 @@ var
   ImageSettings: TImageDBOptions;
   FQuery: TDataSet;
   FTable: TDataSet;
+  Destination: IDBContext;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -180,9 +185,11 @@ begin
         if DBKernel.CreateDBbyName(FDBFileName) <> 0 then
           Exit;
 
-        ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
+        Destination := TDBContext.Create(FDBFileName);
+
+        ImageSettings := GetImageSettingsFromTable(FDBContext);
         try
-          CommonDBSupport.UpdateImageSettings(FDBFileName, ImageSettings);
+          UpdateImageSettings(Destination, ImageSettings);
         finally
           F(ImageSettings);
         end;
@@ -198,7 +205,7 @@ begin
 
           for I := 0 to FFileList.Count - 1 do
           begin
-            FQuery := GetQuery;
+            FQuery := FDBContext.CreateQuery;
             try
               LoadLocation(FQuery, FFileList[I], FSubFolders);
               SaveLocation(FQuery, FTable);
@@ -211,7 +218,7 @@ begin
           ProgramStatistics.PortableUsed;
 
           SetMaxValue(Length(FGroupsFounded));
-          FRegGroups := GetRegisterGroupList(True);
+          FRegGroups := GetRegisterGroupList(FDBContext, True, True);
           try
             for I := 0 to Length(FGroupsFounded) - 1 do
             begin
@@ -221,7 +228,7 @@ begin
               for J := 0 to Length(FRegGroups) - 1 do
                 if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
                 begin
-                  AddGroupW(FRegGroups[J], ExtractFilePath(FDBFileName) + SaveToDBName + '.photodb');
+                  AddGroup(Destination, FRegGroups[J]);
                   Break;
                 end;
             end;
@@ -231,7 +238,7 @@ begin
         finally
           FreeDS(FTable);
         end;
-        TryRemoveConnection(FDBFileName, True);
+        TryRemoveConnection(Destination.CollectionFileName, True);
 
         TW.I.Check('Copy File');
 

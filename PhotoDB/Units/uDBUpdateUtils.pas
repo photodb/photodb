@@ -39,6 +39,7 @@ uses
   uSettings,
   uExifUtils,
   uDBClasses,
+  uDBContext,
   uCollectionEvents,
   uDBPopupMenuInfo;
 
@@ -50,11 +51,11 @@ type
     class procedure CleanUp;
     class procedure NotifyFileAdded(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
   public
-    class function AddFile(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class function AddFileAsDuplicate(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class function MergeWithExistedInfo(ID: Integer; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class function AddNewImageRecord(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class procedure ProcessGroups(Info: TDBPopupMenuInfoRecord; ExifGroups: string);
+    class function AddFile(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+    class function AddFileAsDuplicate(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+    class function AddNewImageRecord(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+    class procedure ProcessGroups(Context: IDBContext; Info: TDBPopupMenuInfoRecord; ExifGroups: string);
   end;
 
 implementation
@@ -62,7 +63,7 @@ implementation
 uses
   UnitGroupsReplace;
 
-class function TDatabaseUpdateManager.AddFile(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddFile(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
   Groups, ExifGroups: string;
 begin
@@ -79,9 +80,9 @@ begin
     ExifGroups := Info.Groups;
     Info.Groups := Groups;
 
-    ProcessGroups(Info, ExifGroups);
+    ProcessGroups(Context, Info, ExifGroups);
 
-    if AddNewImageRecord(Info, Res) then
+    if AddNewImageRecord(Context, Info, Res) then
     begin
       Result := True;
       Res.Jpeg.DIBNeeded;
@@ -95,7 +96,7 @@ begin
   end;
 end;
 
-class function TDatabaseUpdateManager.AddNewImageRecord(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddNewImageRecord(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
   IC: TInsertCommand;
   M: TMemoryStream;
@@ -165,7 +166,7 @@ begin
   end;
   Info.Rotation := Info.Rotation and DB_IMAGE_ROTATE_MASK;
 
-  IC := TInsertCommand.Create(ImageTable);
+  IC := Context.CreateInsert(ImageTable);
   try
     IC.AddParameter(TStringParameter.Create('Name', ExtractFileName(Info.FileName)));
     IC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(Info.FileName)));
@@ -216,15 +217,14 @@ begin
   Result := True;
 end;
 
-class procedure TDatabaseUpdateManager.ProcessGroups(
-  Info: TDBPopupMenuInfoRecord; ExifGroups: string);
+class procedure TDatabaseUpdateManager.ProcessGroups(Context: IDBContext; Info: TDBPopupMenuInfoRecord; ExifGroups: string);
 var
   RegisteredGroups: TGroups;
 begin
   if ExifGroups <> '' then
   begin
 
-    RegisteredGroups := GetRegisterGroupList(False);
+    RegisteredGroups := GetRegisterGroupList(Context, False, True);
     try
 
       TThread.Synchronize(nil,
@@ -238,7 +238,7 @@ begin
           //in groups are empty because in exif no additional groups information
           SetLength(InRegGroups, 0);
 
-          FilterGroups(GExifGroups, RegisteredGroups, InRegGroups, FGroupReplaceActions);
+          FilterGroups(Context, GExifGroups, RegisteredGroups, InRegGroups, FGroupReplaceActions);
 
           AddGroupsToGroups(Groups, GExifGroups);
           Info.Groups := CodeGroups(Groups);
@@ -260,7 +260,7 @@ begin
   FreeGroup(FGroupReplaceActions.ActionForKnown.InGroup);
 end;
 
-class function TDatabaseUpdateManager.MergeWithExistedInfo(ID: Integer;
+class function TDatabaseUpdateManager.MergeWithExistedInfo(Context: IDBContext; ID: Integer;
   Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
   DBInfo: TDBPopupMenuInfoRecord;
@@ -269,11 +269,11 @@ var
 begin
   Result := False;
 
-  DBInfo := GetMenuInfoRecordByID(ID);
+  DBInfo := GetMenuInfoRecordByID(Context, ID);
   if DBInfo = nil then
     Exit;
 
-  UC := TUpdateCommand.Create(ImageTable);
+  UC := Context.CreateUpdate(ImageTable);
   try
     if Info.Comment <> '' then
     begin
@@ -326,7 +326,7 @@ begin
   end;
 end;
 
-class function TDatabaseUpdateManager.AddFileAsDuplicate(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddFileAsDuplicate(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
   I: Integer;
   Infos: TDBPopupMenuInfo;
@@ -382,7 +382,7 @@ begin
   ItemsDuplicates := TStringList.Create;
   try
     for I := 0 to Res.Count - 1 do
-      Infos.Add(uDBUtils.GetMenuInfoRecordByID(Res.IDs[0]));
+      Infos.Add(uDBUtils.GetMenuInfoRecordByID(Context, Res.IDs[0]));
 
     for I := 0 to Infos.Count - 1 do
     begin
@@ -395,13 +395,13 @@ begin
     end;
 
     Info.Attr := Db_attr_duplicate;
-    if not AddFile(Info, Res) then
+    if not AddFile(Context, Info, Res) then
       Exit;
 
     //delete old not existed files
     if ItemsToDelete.Count > 0 then
     begin
-      DC := TDeleteCommand.Create(ImageTable);
+      DC := Context.CreateDelete(ImageTable);
       try
         DC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('[ID] in ({0})', [ItemsToDelete.Join(',')])));
         DC.Execute;
@@ -413,7 +413,7 @@ begin
     //all these files - duplicates
     if ItemsDuplicates.Count > 0 then
     begin
-      UC := TUpdateCommand.Create(ImageTable);
+      UC := Context.CreateUpdate(ImageTable);
       try
         UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_duplicate));
         UC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('[ID] in ({0})', [ItemsDuplicates.Join(',')])));

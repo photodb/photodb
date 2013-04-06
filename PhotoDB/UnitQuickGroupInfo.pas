@@ -25,12 +25,14 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitGroupsWork,
+  UnitDBKernel,
 
   uMemory,
   uConstants,
   uGroupTypes,
   uBitmapUtils,
   uDBForm,
+  uDBContext,
   uShellIntegration,
   uThemesUtils,
   uVCLHelpers,
@@ -69,8 +71,10 @@ type
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure GroupImageClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     FGroup: TGroup;
     FCloseOwner: Boolean;
     FOwner: TForm;
@@ -101,7 +105,7 @@ procedure TFormQuickGroupInfo.Execute(AOwner: TForm; GroupName: string;
 var
   Group: TGroup;
 begin
-  Group.GroupCode := FindGroupCodeByGroupName(GroupName);
+  Group.GroupCode := FindGroupCodeByGroupName(FContext, GroupName);
   Execute(AOwner, Group, CloseOwner);
 end;
 
@@ -116,7 +120,7 @@ var
 begin
   FCloseOwner := CloseOwner;
   FOwner := AOwner;
-  FGroup := GetGroupByGroupCode(Group.GroupCode, True);
+  FGroup := GetGroupByGroupCode(FContext, Group.GroupCode, True);
   try
     if FGroup.GroupName = '' then
     begin
@@ -193,8 +197,14 @@ end;
 
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
 begin
+  FContext := DBKernel.DBContext;
   Loadlanguage;
   BtnEdit.AdjustButtonWidth;
+end;
+
+procedure TFormQuickGroupInfo.FormDestroy(Sender: TObject);
+begin
+  FContext := nil;
 end;
 
 procedure TFormQuickGroupInfo.EditGroup1Click(Sender: TObject);
@@ -313,7 +323,7 @@ begin
     try
       SmallB.PixelFormat := pf24bit;
       SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
+      Group := GetGroupByGroupName(FContext, FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
       begin
         if not Group.GroupImage.Empty then

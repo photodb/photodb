@@ -4,7 +4,7 @@ interface
 
 uses
   UnitDBDeclare,
-  CommonDBSupport,
+  uDBUtils,
   uFaceDetection;
 
 type

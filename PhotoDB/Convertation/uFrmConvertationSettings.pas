@@ -22,6 +22,7 @@ uses
 
   uFrameWizardBase,
   uMemory,
+  uDBUtils,
   uJpegUtils,
   uBItmapUtils,
   uResources,

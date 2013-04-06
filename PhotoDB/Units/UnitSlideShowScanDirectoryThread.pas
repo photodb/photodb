@@ -3,13 +3,24 @@ unit UnitSlideShowScanDirectoryThread;
 interface
 
 uses
-  Classes, Forms, uThreadForm, uThreadEx, ActiveX, uMemory, uConstants,
-  uDBUtils, uDBPopupMenuInfo, uAssociations;
+  Classes,
+  Forms,
+  ActiveX,
+
+  uConstants,
+  uMemory,
+  uThreadEx,
+  uThreadForm,
+  uDBUtils,
+  uDBContext,
+  uDBPopupMenuInfo,
+  uAssociations;
 
 type
   TSlideShowScanDirectoryThread = class(TThreadEx)
   private
     { Private declarations }
+    FContext: IDBContext;
     FSender: TForm;
     BaseFileName: string;
     Info: TDBPopupMenuInfo;
@@ -17,7 +28,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(Sender : TThreadForm; SID : TGUID; aBaseFileName : string);
+    constructor Create(Context: IDBContext; Sender: TThreadForm; SID: TGUID; aBaseFileName: string);
     procedure SynchNotify;
   end;
 
@@ -25,10 +36,11 @@ implementation
 
 uses SlideShow, SysUtils;
 
-constructor TSlideShowScanDirectoryThread.Create(
-  Sender: TThreadForm; SID : TGUID; aBaseFileName: string);
+constructor TSlideShowScanDirectoryThread.Create(Context: IDBContext;
+  Sender: TThreadForm; SID: TGUID; aBaseFileName: string);
 begin
   inherited Create(Sender, SID);
+  FContext := Context;
   FSID := SID;
   FSender := Sender;
   BaseFileName := ABaseFileName;
@@ -44,7 +56,7 @@ begin
   try
     Info := TDBPopupMenuInfo.Create;
     try
-      GetFileListByMask(BaseFileName, TFileAssociations.Instance.ExtensionList, Info, N, True);
+      GetFileListByMask(FContext, BaseFileName, TFileAssociations.Instance.ExtensionList, Info, N, True);
       SynchronizeEx(SynchNotify);
     finally
       F(Info);

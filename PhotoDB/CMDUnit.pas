@@ -71,10 +71,11 @@ type
     function GetFormID: string; override;
   public
     { Public declarations }
-    procedure PackPhotoTable;
+    procedure PackPhotoTable(CollectionFileName: string);
+    procedure BackUpTable(CollectionFileName: string);
+
     procedure OnEnd(Sender: TObject);
     procedure LoadLanguage;
-    procedure BackUpTable;
     procedure WriteLine(Sender: TObject; Line: string; Info: Integer);
     procedure WriteLnLine(Sender: TObject; Line: string; Info: Integer);
     procedure LoadToolBarIcons;
@@ -124,18 +125,18 @@ begin
   Close;
 end;
 
-procedure TCMDForm.PackPhotoTable;
+procedure TCMDForm.PackPhotoTable(CollectionFileName: string);
 var
   Options: TPackingTableThreadOptions;
 begin
   TopRecords := 0;
   WriteLnLine(Self, L('Packing table:'), LINE_INFO_INFO);
-  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  WriteLnLine(Self, '[' + CollectionFileName + ']', LINE_INFO_DB);
   WriteLnLine(Self, L('Packing table:'), LINE_INFO_OK);
   SetWideIndex;
   Timer1.Enabled := True;
   Options.OwnerForm := Self;
-  Options.FileName := DBName;
+  Options.FileName := CollectionFileName;
   Options.OnEnd := OnEnd;
   Options.WriteLineProc := WriteLine;
   PackingTable.Create(Options);
@@ -205,13 +206,13 @@ begin
       Msg.message := 0;
 end;
 
-procedure TCMDForm.BackUpTable;
+procedure TCMDForm.BackUpTable(CollectionFileName: string);
 var
   Options: TBackUpTableThreadOptions;
 begin
 
   WriteLnLine(Self, L('Backing up the collection'), LINE_INFO_INFO);
-  WriteLnLine(Self, '[' + dbname + ']', LINE_INFO_DB);
+  WriteLnLine(Self, '[' + CollectionFileName + ']', LINE_INFO_DB);
   WriteLnLine(Self, L('Performing:'), LINE_INFO_OK);
   SetWideIndex;
   TopRecords := 0;
@@ -220,7 +221,7 @@ begin
   Options.WriteLineProc := WriteLine;
   Options.WriteLnLineProc := WriteLnLine;
   Options.OnEnd := OnEnd;
-  Options.FileName := DBName;
+  Options.FileName := CollectionFileName;
 
   Timer1.Enabled := False;
   BackUpTableInCMD.Create(Options);

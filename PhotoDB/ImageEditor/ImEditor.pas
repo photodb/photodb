@@ -59,6 +59,7 @@ uses
   DragDropFile,
   UnitDBDeclare,
   UnitDBFileDialogs,
+  UnitDBKernel,
 
   uInterfaces,
   uBitmapUtils,
@@ -75,6 +76,7 @@ uses
   uShellIntegration,
   uRuntime,
   uDBUtils,
+  uDBContext,
   uDBTypes,
   uDBFileTypes,
   uConstants,
@@ -2087,6 +2089,7 @@ var
   ID: Integer;
   SavePictureDialog: DBSavePictureDialog;
   FileName: string;
+  Context: IDBContext;
 
   function RewriteFile(FileName : string) : Boolean;
   begin
@@ -2104,6 +2107,8 @@ begin
     Close;
     Exit;
   end;
+
+  Context := DBKernel.DBContext;
 
   SavePictureDialog := DBSavePictureDialog.Create;
   try
@@ -2156,7 +2161,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(FileName);
+              ID := GetIdByFileName(Context, FileName);
             end;
 
             Image := TJPEGImage.Create;
@@ -2184,7 +2189,7 @@ begin
             end;
 
             if Replace then
-              UpdateImageRecord(Self, FileName, ID);
+              UpdateImageRecord(Context, Self, FileName, ID);
           end;
         2:
           begin
@@ -2196,7 +2201,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(FileName);
+              ID := GetIdByFileName(Context, FileName);
             end;
             Image := TGIFImage.Create;
             try
@@ -2213,7 +2218,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(Self, FileName, ID);
+              UpdateImageRecord(Context, Self, FileName, ID);
           end;
 
      3:
@@ -2226,7 +2231,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(FileName);
+              ID := GetIdByFileName(Context, FileName);
             end;
             Image := TBitmap.Create;
             try
@@ -2242,7 +2247,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(Self, FileName, ID);
+              UpdateImageRecord(Context, Self, FileName, ID);
           end;
 
         4:
@@ -2255,7 +2260,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(FileName);
+              ID := GetIdByFileName(DBKernel.DBContext, FileName);
             end;
             Image := TPngImage.Create;
             try
@@ -2271,7 +2276,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(Self, FileName, ID);
+              UpdateImageRecord(Context, Self, FileName, ID);
           end;
 
         5:
@@ -2284,7 +2289,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(FileName);
+              ID := GetIdByFileName(DBKernel.DBContext, FileName);
             end;
             Image := TTiffImage.Create;
             try
@@ -2300,7 +2305,7 @@ begin
               F(Image);
             end;
             if Replace then
-              UpdateImageRecord(Self, FileName, ID);
+              UpdateImageRecord(Context, Self, FileName, ID);
           end;
 
       end;
@@ -2426,7 +2431,7 @@ procedure TImageEditor.Properties1Click(Sender: TObject);
 var
   PR: TImageDBRecordA;
 begin
-  Pr := GetImageIDW(CurrentFileName, False);
+  Pr := GetImageIDW(DBKernel.DBContext, CurrentFileName, False);
   if Pr.Count <> 0 then
     PropertyManager.NewIDProperty(Pr.Ids[0]).Execute(Pr.Ids[0])
   else

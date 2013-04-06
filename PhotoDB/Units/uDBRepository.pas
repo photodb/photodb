@@ -301,7 +301,7 @@ end;
 constructor ItemQueries.Create(Table: TDBTable<TDBItem>);
 begin
   inherited Create(Table);
-  SelectCommand := TSelectCommand.Create(ImageTable);
+  //SelectCommand := TSelectCommand.Create(ImageTable);
 end;
 
 destructor ItemQueries.Destroy;
@@ -422,7 +422,7 @@ function TSimpleEntity.GetUC: TUpdateCommand;
 begin
   if FUC = nil then
   begin
-    FUC := TUpdateCommand.Create(TableName);
+    //FUC := TUpdateCommand.Create(TableName);
     InitUC;
   end;
 

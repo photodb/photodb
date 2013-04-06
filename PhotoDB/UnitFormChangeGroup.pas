@@ -33,6 +33,7 @@ uses
   UnitGroupsWork,
   UnitGroupsTools,
   UnitDBCommon,
+  UnitDBKernel,
 
   uRuntime,
   uEditorTypes,
@@ -47,6 +48,7 @@ uses
   uCollectionEvents,
   uDialogUtils,
   uDBIcons,
+  uDBContext,
   uMemory,
   uThemesUtils,
   uProgramStatInfo,
@@ -88,6 +90,7 @@ type
     procedure MiUseCurrentImageClick(Sender: TObject);
   private
     { Private declarations }
+    FDBContext: IDBContext;
     FGroup: TGroup;
     Saving: Boolean;
     FNewRelatedGroups: string;
@@ -96,7 +99,7 @@ type
     procedure FillImageList;
     procedure GroupClick(Sender: TObject);
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     procedure Execute(GroupCode: string);
@@ -127,17 +130,18 @@ end;
 
 procedure TFormChangeGroup.FormCreate(Sender: TObject);
 begin
+  FDBContext := DBKernel.DBContext;
   Saving := False;
   LoadLanguage;
   RelodDllNames;
   FReloadGroupsMessage := RegisterWindowMessage('EDIT_GROUP_RELOAD_GROUPS');
 end;
 
-Procedure TFormChangeGroup.Execute(GroupCode : String);
+Procedure TFormChangeGroup.Execute(GroupCode: String);
 var
-  Group : TGroup;
+  Group: TGroup;
 begin
-  Group := GetGroupByGroupCode(GroupCode, True);
+  Group := GetGroupByGroupCode(FDBContext, GroupCode, True);
   try
     if Group.GroupName = '' then
     begin
@@ -189,7 +193,7 @@ var
   EventInfo: TEventValues;
   GroupItem: TGroupItem;
 begin
-  if GroupNameExists(EdName.Text) and (FGroup.GroupName <> EdName.Text) then
+  if GroupNameExists(FDBContext, EdName.Text) and (FGroup.GroupName <> EdName.Text) then
   begin
     MessageBoxDB(Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
@@ -230,10 +234,10 @@ begin
       Group.GroupAccess := GROUP_ACCESS_PRIVATE
     else
       Group.GroupAccess := GROUP_ACCESS_COMMON;
-    if UpdateGroup(Group) then
+    if UpdateGroup(FDBContext, Group) then
       if FGroup.GroupName <> EdName.Text then
       begin
-        RenameGroup(FGroup, EdName.Text);
+        RenameGroup(FDBContext, FGroup, EdName.Text);
         MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
       end;
 
@@ -470,7 +474,7 @@ begin
     try
       SmallB.PixelFormat := pf24bit;
       SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
+      Group := GetGroupByGroupName(FDBContext, FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then
         begin

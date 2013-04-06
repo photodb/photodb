@@ -3,6 +3,7 @@ unit uLinkListEditorDatabases;
 interface
 
 uses
+  Generics.Defaults,
   Generics.Collections,
   Winapi.Windows,
   System.SysUtils,
@@ -22,6 +23,7 @@ uses
   UnitDBFileDialogs,
   UnitDBKernel,
   CommonDBSupport,
+  UnitINI,
 
   uConstants,
   uMemory,
@@ -30,6 +32,7 @@ uses
   uDBForm,
   uDBScheme,
   uDBUtils,
+  uDBContext,
   uVclHelpers,
   uIconUtils,
   uTranslate,
@@ -63,6 +66,8 @@ type
   end;
 
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
+procedure LoadDBs(Collections: TList<TDatabaseInfo>);
+procedure SaveDBs(Collections: TList<TDatabaseInfo>);
 
 implementation
 
@@ -97,6 +102,105 @@ begin
     Editor := nil;
   end;
 end;
+
+procedure LoadDBs(Collections: TList<TDatabaseInfo>);
+var
+  Reg: TBDRegistry;
+  List: TStrings;
+  I: Integer;
+  Icon, FileName, Description: string;
+begin
+  List := TStringList.Create;
+  try
+    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+    try
+      Reg.OpenKey(RegRoot + 'dbs', True);
+      Reg.GetKeyNames(List);
+      for I := 0 to List.Count - 1 do
+      begin
+        Reg.CloseKey;
+        Reg.OpenKey(RegRoot + 'dbs\' + List[I], True);
+        if Reg.ValueExists('Icon') and Reg.ValueExists('FileName') then
+        begin
+          Icon := Reg.ReadString('Icon');
+          FileName := Reg.ReadString('FileName');
+          Description := Reg.ReadString('Description');
+          Collections.Add(TDatabaseInfo.Create(List[I], FileName, Icon, Description, Reg.ReadInteger('Order')));
+        end;
+      end;
+    finally
+      F(Reg);
+    end;
+  finally
+    F(List);
+  end;
+
+  Collections.Sort(TComparer<TDatabaseInfo>.Construct(
+     function (const L, R: TDatabaseInfo): Integer
+     begin
+       Result := L.Order - R.Order;
+     end
+  ));
+end;
+
+procedure SaveDBs(Collections: TList<TDatabaseInfo>);
+var
+  Reg: TBDRegistry;
+  List: TStrings;
+  I: Integer;
+  DB: TDatabaseInfo;
+  Settings: TImageDBOptions;
+begin
+  List := TStringList.Create;
+  try
+    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+    try
+      Reg.OpenKey(RegRoot + 'dbs', True);
+      Reg.GetKeyNames(List);
+      for I := 0 to List.Count - 1 do
+        Reg.DeleteKey(List[I]);
+
+      for DB in Collections do
+      begin
+        Reg.CloseKey;
+        Reg.OpenKey(RegRoot + 'dbs\' + DB.Title, True);
+        Reg.WriteString('FileName', DB.Path);
+        Reg.WriteString('Icon', DB.Icon);
+        Reg.WriteString('Description', DB.Description);
+        Reg.WriteInteger('Order', Collections.IndexOf(DB));
+
+        //TODO:
+        {Settings := GetImageSettingsFromTable(DB.Path);
+        try
+          Settings.Name := DB.Title;
+          Settings.Description := DB.Description;
+          UpdateImageSettings(DB.Path, Settings);
+        finally
+          F(Settings);
+        end; }
+      end;
+
+    finally
+      F(Reg);
+    end;
+  finally
+    F(List);
+  end;
+end;
+        {
+class procedure AddDB(DBName, DBFile, DBIco: string);
+var
+  Collections: TList<TDatabaseInfo>;
+begin
+  Collections := TList<TDatabaseInfo>.Create;
+  try
+    LoadDBs(Collections);
+    Collections.Add(TDatabaseInfo.Create(DBName, DBFile, DBIco, ''));
+    SaveDBs(Collections);
+  finally
+    FreeList(Collections);
+  end;
+end;      }
 
 { TLinkListEditorDatabases }
 
@@ -251,6 +355,7 @@ var
   Link: TWebLink;
   Info: TLabel;
   DI: TDatabaseInfo;
+  Context: IDBContext;
 
   function L(Text: string): string;
   begin
@@ -293,8 +398,8 @@ var
     try
       OpenDialog.Filter := L('PhotoDB Files (*.photodb)|*.photodb');
 
-      if FileExistsSafe(dbname) then
-        OpenDialog.SetFileName(dbname);
+      if FileExistsSafe(Context.CollectionFileName) then
+        OpenDialog.SetFileName(Context.CollectionFileName);
 
       if OpenDialog.Execute then
       begin
@@ -310,7 +415,7 @@ var
 
         if TDBScheme.IsValidCollectionFile(FileName) then
         begin
-          Settings := CommonDBSupport.GetImageSettingsFromTable(FileName);
+          Settings := GetImageSettingsFromTable(Context);
           try
             Data := TDatabaseInfo.Create(IIF(Length(Trim(Settings.Name)) > 0, Trim(Settings.Name), GetFileNameWithoutExt(OpenDialog.FileName)), OpenDialog.FileName, Application.ExeName + ',0', Trim(Settings.Description));
           finally
@@ -324,6 +429,8 @@ var
   end;
 
 begin
+  Context := DBKernel.DBContext;
+
   if Data = nil then
   begin
 
@@ -340,7 +447,7 @@ begin
   Info := TLabel(Elements[leInfoLabel]);
 
   Link.Text := DI.Title;
-  if AnsiLowerCase(DI.Path) = AnsiLowerCase(dbname) then
+  if AnsiLowerCase(DI.Path) = AnsiLowerCase(Context.CollectionFileName) then
     Link.Font.Style := [fsBold];
 
   Info.Caption := DI.Path;

@@ -7,10 +7,12 @@ uses
   Classes,
   SysUtils,
   StrUtils,
-  UnitDBFileDialogs,
-  UnitDBDeclare,
 
   Dmitry.Utils.Files,
+
+  UnitDBFileDialogs,
+  UnitDBDeclare,
+  UnitDBKernel,
 
   uShellIntegration,
   uMemory,
@@ -18,12 +20,14 @@ uses
   uConstants,
   uDBBaseTypes,
   uDBUtils,
+  uDBContext,
   uDBPopupMenuInfo,
   uCDMappingTypes;
 
 type
   TCDIndexMapping = class(TObject)
   private
+    FContext: IDBContext;
     ClipboardCut: Boolean;
     Clipboard: TList;
     Root: TCDIndexMappingDirectory;
@@ -39,7 +43,7 @@ type
     function DeleteOriginalStructureWithDirectory(PDirectory: TCDIndexMappingDirectory;
       OnProgress: TCallBackProgressEvent): Boolean;
   public
-    constructor Create;
+    constructor Create(Context: IDBContext);
     destructor Destroy; override;
     function CreateDirectory(Directory: string): Boolean;
     function GoUp: Boolean;
@@ -237,7 +241,7 @@ begin
       Info.Information := '';
       Info.Terminate := False;
       N := 0;
-      GetFileListByMask(Directory, '*.*', DBInfo, N, True);
+      GetFileListByMask(FContext, Directory, '*.*', DBInfo, N, True);
       for I := 0 to DBInfo.Count - 1 do
       begin
         if DBInfo[I].ID = 0 then
@@ -308,7 +312,7 @@ begin
         AddRealDirectory(Files[I], nil);
       if FileExistsEx(Files[I]) then
       begin
-        if not GetInfoByFileNameA(Files[I], False, Info) then
+        if not GetInfoByFileNameA(DBKernel.DBContext, Files[I], False, Info) then
           AddRealFile(Files[I])
         else
           AddImageFile(DBFilePath(Info.FileName, Info.ID));
@@ -324,8 +328,9 @@ begin
   Result := Trim(FileName);
 end;
 
-constructor TCDIndexMapping.Create;
+constructor TCDIndexMapping.Create(Context: IDBContext);
 begin
+  FContext := Context;
   ClipboardCut := False;
   Clipboard := TList.Create;
   Root := TCDIndexMappingDirectory.Create;

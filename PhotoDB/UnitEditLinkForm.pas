@@ -29,11 +29,13 @@ uses
   UnitLinksSupport,
   UnitDBFileDialogs,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uConstants,
   uMemory,
   uDBUtils,
   uDBForm,
+  uDBContext,
   uShellIntegration,
   uAssociations,
   uDBIcons,
@@ -199,7 +201,9 @@ var
   S: string;
   OpenDialog: DBOpenDialog;
   OpenPictureDialog: DBOpenPictureDialog;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
 
   case CbLinkType.ItemIndex of
     LINK_TYPE_ID:
@@ -208,7 +212,7 @@ begin
         try
           OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
           if OpenPictureDialog.Execute then
-            EdValue.Text := IntToStr(GetIdByFileName(OpenPictureDialog.FileName));
+            EdValue.Text := IntToStr(GetIdByFileName(Context, OpenPictureDialog.FileName));
 
         finally
           F(OpenPictureDialog);
@@ -247,7 +251,7 @@ begin
         try
           OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
           if OpenPictureDialog.Execute then
-            EdValue.Text := CodeExtID(GetImageIDW(OpenPictureDialog.FileName, False).ImTh);
+            EdValue.Text := CodeExtID(GetImageIDW(Context, OpenPictureDialog.FileName, False).ImTh);
         finally
           F(OpenPictureDialog);
         end;
@@ -297,11 +301,14 @@ procedure TFormEditLink.DropFileTarget1Drop(Sender: TObject;
   ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
 var
   S: string;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   case CbLinkType.ItemIndex of
     LINK_TYPE_ID:
       begin
-        EdValue.Text := IntToStr(GetIdByFileName(DropFileTarget1.Files[0]));
+        EdValue.Text := IntToStr(GetIdByFileName(Context, DropFileTarget1.Files[0]));
       end;
     LINK_TYPE_IMAGE:
       begin
@@ -322,7 +329,7 @@ begin
       end;
     LINK_TYPE_ID_EXT:
       begin
-        EdValue.Text := CodeExtID(GetImageIDW(DropFileTarget1.Files[0], False).ImTh);
+        EdValue.Text := CodeExtID(GetImageIDW(Context, DropFileTarget1.Files[0], False).ImTh);
       end;
   end;
 end;

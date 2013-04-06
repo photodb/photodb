@@ -3,15 +3,18 @@ unit UnitSlideShowUpdateInfoThread;
 interface
 
 uses
+  ActiveX,
   Classes,
   SysUtils,
   DB,
+
+  UnitDBDeclare,
   CommonDBSupport,
+
   uThreadForm,
   uThreadEx,
-  ActiveX,
-  UnitDBDeclare,
   uMemory,
+  uDBContext,
   uExifUtils,
   uConstants;
 
@@ -19,8 +22,9 @@ type
   TSlideShowUpdateInfoThread = class(TThreadEx)
   private
     { Private declarations }
-    FFileName : string;
-    DS : TDataSet;
+    FContext: IDBContext;
+    FFileName: string;
+    DS: TDataSet;
     FInfo: TDBPopupMenuInfoRecord;
   protected
     procedure Execute; override;
@@ -28,7 +32,7 @@ type
     procedure DoSetNotDBRecord;
     procedure SetNoInfo;
   public
-    constructor Create(AOwner : TThreadForm; AState : TGUID; FileName : string);
+    constructor Create(AOwner: TThreadForm; AState: TGUID; Context: IDBContext; FileName: string);
     destructor Destroy; override;
   end;
 
@@ -38,9 +42,10 @@ uses SlideShow;
 
 { TSlideShowUpdateInfoThread }
 
-constructor TSlideShowUpdateInfoThread.Create(AOwner : TThreadForm; AState : TGUID; FileName : string);
+constructor TSlideShowUpdateInfoThread.Create(AOwner: TThreadForm; AState: TGUID; Context: IDBContext; FileName: string);
 begin
   inherited Create(AOwner, AState);
+  FContext := Context;
   FFileName := FileName;
   FInfo := nil;
 end;
@@ -67,7 +72,7 @@ begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
-    DS := GetQuery(True);
+    DS := FContext.CreateQuery(dbilRead);
     try
       SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName, True)) + ' AND FFileName LIKE :FFileName');
       SetStrParam(DS, 0, AnsiLowerCase(FFileName));

@@ -33,12 +33,14 @@ uses
   DragDropFile,
   UnitCDMappingSupport,
   UnitDBFileDialogs,
+  UnitDBKernel,
 
   uAssociatedIcons,
   uDBIcons,
   uMemory,
   uCDMappingTypes,
   uDBForm,
+  uDBContext,
   uShellIntegration,
   uRuntime,
   uConstants,
@@ -100,25 +102,23 @@ type
     procedure ComboBoxPathListSelect(Sender: TObject);
     procedure ButtonExportClick(Sender: TObject);
     procedure Rename1Click(Sender: TObject);
-    procedure CDListViewEditing(Sender: TObject; Item: TListItem;
-      var AllowEdit: Boolean);
-    procedure CDListViewEdited(Sender: TObject; Item: TListItem;
-      var S: String);
+    procedure CDListViewEditing(Sender: TObject; Item: TListItem; var AllowEdit: Boolean);
+    procedure CDListViewEdited(Sender: TObject; Item: TListItem; var S: String);
     procedure PopupMenuListViewPopup(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Cut1Click(Sender: TObject);
     procedure Paste1Click(Sender: TObject);
-    procedure ApplicationEvents1Message(var Msg: tagMSG;
-      var Handled: Boolean);
+    procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure Open1Click(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     Mapping: TCDIndexMapping;
     procedure LoadLanguage;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetFormID : string;override;
+    function GetFormID: string;override;
   public
     { Public declarations }
     procedure Execute;
@@ -155,9 +155,11 @@ end;
 
 procedure TFormCDExport.FormCreate(Sender: TObject);
 begin
+  FContext := DBKernel.DBContext;
+
   CDListView.DoubleBuffered := True;
 
-  Mapping := TCDIndexMapping.Create;
+  Mapping := TCDIndexMapping.Create(FContext);
   EditCDSize.Text := SizeInText(Mapping.GetCDSize);
 
   DropFileTarget1.Register(CDListView);
@@ -212,6 +214,7 @@ procedure TFormCDExport.FormDestroy(Sender: TObject);
 begin
   UnRegisterMainForm(Self);
   F(Mapping);
+  FContext := nil;
 end;
 
 function TFormCDExport.GetFormID: string;
@@ -471,7 +474,7 @@ begin
   Options.CreatePortableDB := CheckBoxCreatePortableDB.Checked;
   Options.OnEnd := OnThreadEnd;
 
-  TCDExportThread.Create(Self, Mapping, Options);
+  TCDExportThread.Create(Self, FContext, Mapping, Options);
 end;
 
 procedure TFormCDExport.Rename1Click(Sender: TObject);

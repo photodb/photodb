@@ -163,7 +163,7 @@ uses
   uThreadTask,
   uInterfaces,
   uInternetUtils,
-
+  uDBContext,
   uDatabaseDirectoriesUpdater,
   uPathProvideTreeView,
   uDBInfoEditorUtils,
@@ -1396,7 +1396,7 @@ begin
   FExtendedSearchParams := nil;
   FExtendedSearchPersons := nil;
   FDatabases := TList<TDatabaseInfo>.Create;
-  DBKernel.LoadDbs(FDatabases);
+  LoadDbs(FDatabases);
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -2307,6 +2307,7 @@ var
   PI: TPathItem;
   PL: TPathItemCollection;
   EO: TPathFeatureOptions;
+  Context: IDBContext;
 begin
   //.Tag is index of item
   if PmItemPopup.Tag < 0 then
@@ -2356,7 +2357,9 @@ begin
       end;
     if Info.FileType = EXPLORER_ITEM_FOLDER then
     begin
-      DS := GetQuery;
+      Context := DBKernel.DBContext;
+
+      DS := Context.CreateQuery(dbilRead);
       try
         Folder := IncludeTrailingBackslash(Info.FileName);
         SetSQL(DS, 'Select count(*) as CountField from $DB$ where (FFileName Like :FolderA)');
@@ -2370,13 +2373,13 @@ begin
             RenameResult := False;
           end;
         end else
-          RenameResult := RenameFileWithDB(KernelEventCallBack, Info.FileName,
+          RenameResult := RenameFileWithDB(DBKernel.DBContext, KernelEventCallBack, Info.FileName,
             ExtractFilePath(Info.FileName) + S, Info.ID, False);
       finally
         FreeDS(DS);
       end;
     end else
-      RenameResult := RenamefileWithDB(KernelEventCallBack, Info.FileName,
+      RenameResult := RenamefileWithDB(DBKernel.DBContext, KernelEventCallBack, Info.FileName,
         ExtractFilePath(Info.FileName) + S, Info.ID, False);
   end;
 end;
@@ -3357,12 +3360,12 @@ begin
       Index := ItemIndexToMenuIndex(I);
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) then
-        TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_IMAGE,
-          Info, Self, TUpdaterInfo.Create(FFilesInfo[Index]), StateID);
+        TExplorerThread.Create(DBKernel.DBContext, FFilesInfo[Index].FileName, '', THREAD_TYPE_IMAGE,
+          Info, Self, TUpdaterInfo.Create(DBKernel.DBContext, FFilesInfo[Index]), StateID);
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
-        TExplorerThread.Create(FFilesInfo[Index].FileName, '',
-          THREAD_TYPE_FOLDER_UPDATE, info, Self, TUpdaterInfo.Create(FFilesInfo[Index]), StateID);
+        TExplorerThread.Create(DBKernel.DBContext, FFilesInfo[Index].FileName, '',
+          THREAD_TYPE_FOLDER_UPDATE, info, Self, TUpdaterInfo.Create(DBKernel.DBContext, FFilesInfo[Index]), StateID);
     end;
 end;
 
@@ -3373,7 +3376,7 @@ var
   NotifyInfo: TExplorerNotifyInfo;
 begin
   Index := ItemIndexToMenuIndex(Number);
-  UpdaterInfo := TUpdaterInfo.Create(FFilesInfo[Index]);
+  UpdaterInfo := TUpdaterInfo.Create(DBKernel.DBContext, FFilesInfo[Index]);
   try
     UpdaterInfo.UpdateDB := UpdateDB;
     if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
@@ -3384,7 +3387,7 @@ begin
       UpdaterInfo := nil;
     end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
     begin
-      TExplorerThread.Create(FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo, Self, UpdaterInfo, StateID);
+      TExplorerThread.Create(DBKernel.DBContext, FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo, Self, UpdaterInfo, StateID);
       UpdaterInfo := nil;
     end;
   finally
@@ -4734,7 +4737,7 @@ begin
           try
             Info.FileName := PInfo[K].FNewFileName;
 
-            UpdaterInfo := TUpdaterInfo.Create(Info);
+            UpdaterInfo := TUpdaterInfo.Create(DBKernel.DBContext, Info);
             UpdaterInfo.IsUpdater := True;
             UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
 
@@ -4820,7 +4823,7 @@ begin
                   ListView1SelectItem(ElvMain, ListView1Selected, ListView1Selected = nil);
               end
               else
-                RenamefileWithDB(KernelEventCallBack, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
+                RenamefileWithDB(DBKernel.DBContext, KernelEventCallBack, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
               Continue;
             end;
           end;
@@ -5676,13 +5679,15 @@ var
   KeyWords: string;
   Group: TGroup;
   Groups: TGroups;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
   WL := TWebLink(PmInfoGroup.Tag);
 
   KeyWords := MemKeyWords.Text;
   Groups := EncodeGroups(FSelectedInfo.Groups);
 
-  Group := GetGroupByGroupName(WL.Text, False);
+  Group := GetGroupByGroupName(Context, WL.Text, False);
 
   RemoveGroupFromGroups(Groups, Group);
   DeleteWords(KeyWords, Group.GroupKeyWords);
@@ -6322,7 +6327,7 @@ begin
     EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption);
 
     if EndDir <> '' then
-      CopyFiles(Handle, Files, EndDir, False, False, Self);
+      CopyFiles(DBKernel.DBContext, Handle, Files, EndDir, False, False, Self);
   finally
     F(Files);
   end;
@@ -6355,7 +6360,7 @@ begin
 
     EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption);
     if EndDir <> '' then
-      CopyFiles(Handle, Files, EndDir, True, False, Self);
+      CopyFiles(DBKernel.DBContext, Handle, Files, EndDir, True, False, Self);
 
   finally
     F(Files);
@@ -6656,7 +6661,7 @@ begin
     end else
     begin
       if not EInfo.Loaded then
-        EInfo.ID := GetIdByFileName(EInfo.FileName);
+        EInfo.ID := GetIdByFileName(DBKernel.DBContext, EInfo.FileName);
       if EInfo.ID = 0 then
         PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
       else
@@ -7127,12 +7132,12 @@ begin
 
     if Effects = DROPEFFECT_MOVE then
     begin
-      CopyFiles(Handle, Files, Path, True, False, Self);
+      CopyFiles(DBKernel.DBContext, Handle, Files, Path, True, False, Self);
       ClipBoard.Clear;
       TbPaste.Enabled := False;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
-      CopyFiles(Handle, Files, Path, False, False, Self);
+      CopyFiles(DBKernel.DBContext, Handle, Files, Path, False, False, Self);
 
   finally
     F(Files);
@@ -7766,7 +7771,8 @@ begin
   begin
     PePath.CanBreakLoading := True;
     UpdaterInfo := TUpdaterInfo.Create;
-    TExplorerThread.Create(Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
+    UpdaterInfo.Context := DBKernel.DBContext;
+    TExplorerThread.Create(DBKernel.DBContext, Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
   if IsExplorerTreeViewVisible and not Explorer then
   begin
@@ -7976,7 +7982,7 @@ begin
   Options.Password := Password;
   Options.EncryptOptions := CRYPT_OPTIONS_NORMAL;
 
-  TCryptingImagesThread.Create(Owner, Options);
+  TCryptingImagesThread.Create(Owner, DBKernel.DBContext, Options);
 end;
 
 procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
@@ -8276,7 +8282,7 @@ begin
   Info := GetCurrentPopUpMenuInfo(nil);
   try
     Options.Info := Info;
-    TRefreshDBRecordsThread.Create(Self, Options);
+    TRefreshDBRecordsThread.Create(DBKernel.DBContext, Self, Options);
   finally
     F(Info);
   end;
@@ -8323,9 +8329,9 @@ begin
         FDBCanDragW := False;
 
         if Effect = DROPEFFECT_COPY then
-          CopyFiles(Handle, DropInfo, GetCurrentPath, False, False, Self)
+          CopyFiles(DBKernel.DBContext, Handle, DropInfo, GetCurrentPath, False, False, Self)
         else if Effect = DROPEFFECT_MOVE then
-          CopyFiles(Handle, DropInfo, GetCurrentPath, True, False, Self);
+          CopyFiles(DBKernel.DBContext, Handle, DropInfo, GetCurrentPath, True, False, Self);
 
       end;
       if SelCount = 1 then
@@ -8339,9 +8345,9 @@ begin
             Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
             if Effect = DROPEFFECT_COPY then
-              CopyFiles(Handle, DropInfo, Str, False, False, Self)
+              CopyFiles(DBKernel.DBContext, Handle, DropInfo, Str, False, False, Self)
             else if Effect = DROPEFFECT_MOVE then
-              CopyFiles(Handle, DropInfo, Str, True, False, Self);
+              CopyFiles(DBKernel.DBContext, Handle, DropInfo, Str, True, False, Self);
 
           end;
         end;
@@ -8605,7 +8611,7 @@ begin
         UpDir := Copy(Files[0], L2 + 1, L1 - L2);
         NewDir := IncludeTrailingBackslash(TPath.Combine(Dir, UpDir));
         CreateDirA(NewDir);
-        CopyFiles(Handle, Files, NewDir, False, False, Self);
+        CopyFiles(DBKernel.DBContext, Handle, Files, NewDir, False, False, Self);
       end;
     finally
       F(Files);
@@ -8613,7 +8619,7 @@ begin
   end;
 end;
 
-procedure ReadPlacesList(Places: TList<TLinkInfo>);
+procedure ReadPlacesList(Context: IDBContext; Places: TList<TLinkInfo>);
 var
   Reg: TBDRegistry;
   S: TStrings;
@@ -8629,7 +8635,7 @@ const
 begin
   FreeList(Places, False);
 
-  ParentKey := GetCollectionRootKey(dbname) + '\Places';
+  ParentKey := GetCollectionRootKey(Context.CollectionFileName) + '\Places';
 
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
@@ -8698,7 +8704,7 @@ begin
   end;
 end;
 
-procedure WritePlacesList(Places: TList<TLinkInfo>);
+procedure WritePlacesList(Context: IDBContext; Places: TList<TLinkInfo>);
 var
   I: Integer;
   Reg: TBDRegistry;
@@ -8708,7 +8714,7 @@ var
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
-    ParentKey := GetCollectionRootKey(dbname) + '\Places';
+    ParentKey := GetCollectionRootKey(Context.CollectionFileName) + '\Places';
 
     Reg.OpenKey(ParentKey, True);
     S := TStringList.Create;
@@ -8766,10 +8772,10 @@ begin
   Editor := TLinkListEditorFolder.Create(Self, FCurrentPath);
   Data := TList<TDataObject>.Create;
   try
-    ReadPlacesList(TList<TLinkInfo>(Data));
+    ReadPlacesList(DBKernel.DBContext, TList<TLinkInfo>(Data));
 
     if LinkItemSelectForm.Execute(450, L('List of directories'), Data, Editor) then
-      WritePlacesList(TList<TLinkInfo>(Data));
+      WritePlacesList(DBKernel.DBContext, TList<TLinkInfo>(Data));
 
   finally
     FreeList(Data);
@@ -8798,11 +8804,11 @@ begin
   MI.Caption := '-';
   PmLocations.Items.Add(MI);
 
-  ReadPlacesList(FPlaces);
+  ReadPlacesList(DBKernel.DBContext, FPlaces);
   if FPlaces.Count = 0 then
   begin
     AddDefaultPlaces(FPlaces);
-    WritePlacesList(FPlaces);
+    WritePlacesList(DBKernel.DBContext, FPlaces);
   end;
 
   for Place in FPlaces do
@@ -8875,9 +8881,9 @@ begin
     FDBCanDragW := False;
 
     if not(Sender = Move1) then
-      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self)
+      CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self)
     else
-      CopyFiles(Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self);
+      CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self);
 
   end;
   if LastListViewSelCount = 1 then
@@ -8891,9 +8897,9 @@ begin
         Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
         if not(Sender = Move1) then
-          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, Self)
+          CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, Str, Sender = Move1, False, Self)
         else
-          CopyFiles(Handle, DragFilesPopup, Str, Sender = Move1, False, Self);
+          CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, Str, Sender = Move1, False, Self);
 
       end;
     end;
@@ -9051,7 +9057,7 @@ begin
         try
           Info.FileType := FSelectedInfo.FileType;
           Info.ID := FSelectedInfo.Id;
-          TExplorerThumbnailCreator.Create(Info, FileSID, Self, True);
+          TExplorerThumbnailCreator.Create(DBKernel.DBContext, Info, FileSID, Self, True);
         finally
           F(Info);
         end;
@@ -9121,10 +9127,10 @@ begin
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
                      IsVideoFile(FileName) then
                   begin
-                    TExplorerThumbnailCreator.Create(Info, FSelectedInfo._GUID, Self, True);
+                    TExplorerThumbnailCreator.Create(DBKernel.DBContext, Info, FSelectedInfo._GUID, Self, True);
                   end else
                   begin
-                    TExplorerThumbnailCreator.Create(Info, FSelectedInfo.PreviewID, Self, False);
+                    TExplorerThumbnailCreator.Create(DBKernel.DBContext, Info, FSelectedInfo.PreviewID, Self, False);
                   end;
                 finally
                   F(Info);
@@ -10230,24 +10236,26 @@ var
   IncludeSub: Boolean;
   Folder: string;
   FileList: TStrings;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   FileList := TStringList.Create;
   try
     FileList.Add(GetCurrentPath);
     IncludeSub := False;
-    Query := GetQuery;
+    Query := Context.CreateQuery(dbilRead);
     try
       Folder := IncludeTrailingBackslash(GetCurrentPath);
       SetSQL(Query, 'SELECT count(*) AS CountField FROM $DB$ WHERE (FFileName LIKE :FolderA)');
       SetStrParam(Query, 0, '%' + Folder + '%\%');
       Query.Open;
       if Query.FieldByName('CountField').AsInteger > 0 then
-        IncludeSub := MessageBoxDB(Handle, L('Include subfolders?'), L('Question'), TD_BUTTON_OKCANCEL,
-          TD_ICON_QUESTION) = ID_OK;
+        IncludeSub := MessageBoxDB(Handle, L('Include subfolders?'), L('Question'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK;
     finally
       FreeDS(Query);
     end;
-    SaveQuery(GetCurrentPath, IncludeSub, FileList);
+    SaveQuery(DBKernel.DBContext, GetCurrentPath, IncludeSub, FileList);
   finally
     F(FileList);
   end;
@@ -10309,10 +10317,13 @@ procedure TExplorerForm.N05Click(Sender: TObject);
 var
   EventInfo: TEventValues;
   FileInfo: TDBPopupMenuInfoRecord;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   if RatingPopupMenu.Tag > 0 then
   begin
-    SetRating(RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
+    SetRating(Context, RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
     EventInfo.Rating := (Sender as TMenuItem).Tag;
     CollectionEvents.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating], EventInfo);
   end else
@@ -10817,7 +10828,7 @@ begin
               FileList.Add(FFilesInfo[Index].FileName)
 
         end;
-      SaveQuery(GetCurrentPath, False, FileList);
+      SaveQuery(DBKernel.DBContext, GetCurrentPath, False, FileList);
     finally
       F(FileList);
     end;
@@ -10930,12 +10941,13 @@ begin
     Exit;
   // тут начинается загрузка больших картинок
   UpdaterInfo := TUpdaterInfo.Create;
+  UpdaterInfo.Context := DBKernel.DBContext;
 
   NewFormState;
   DirectoryWatcher.UpdateStateID(StateID);
 
   PePath.CanBreakLoading := True;
-  TExplorerThread.Create('::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
+  TExplorerThread.Create(DBKernel.DBContext, '::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
   for I := 0 to FFilesInfo.Count - 1 do
     FFilesInfo[I].IsBigImage := False;
 end;
@@ -11308,12 +11320,12 @@ begin
   DrawIconEx(B.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], 16, 16, 0, 0, DI_NORMAL);
 end;
 
-procedure CreateGroupImage(GroupName: string; var B: TBitmap);
+procedure CreateGroupImage(Context: IDBContext; GroupName: string; var B: TBitmap);
 var
   Group: TGroup;
 begin
   B.PixelFormat := pf24bit;
-  Group := GetGroupByGroupName(GroupName, True);
+  Group := GetGroupByGroupName(Context, GroupName, True);
   try
     if (Group.GroupImage <> nil) and not Group.GroupImage.Empty  then
     begin
@@ -11330,6 +11342,7 @@ type
   TGroupLoadInfo = class
     Owner: TExplorerForm;
     Groups: string;
+    Context: IDBContext;
   end;
 
 procedure TExplorerForm.InitEditGroups;
@@ -11385,6 +11398,7 @@ begin
   LoadGroupInfo := TGroupLoadInfo.Create;
   LoadGroupInfo.Owner := Self;
   LoadGroupInfo.Groups := FSelectedInfo.Groups;
+  LoadGroupInfo.Context := DBKernel.DBContext;
 
   TThreadTask.Create(Self, LoadGroupInfo,
     procedure(Thread: TThreadTask; Data: Pointer)
@@ -11406,7 +11420,7 @@ begin
 
             B := TBitmap.Create;
             try
-              CreateGroupImage(Groups[J].GroupName, B);
+              CreateGroupImage(Info.Context, Groups[J].GroupName, B);
 
               IsTerminated := not Thread.SynchronizeTask(
                 procedure
@@ -11621,6 +11635,7 @@ begin
     LoadGroupInfo := TGroupLoadInfo.Create;
     LoadGroupInfo.Owner := Self;
     LoadGroupInfo.Groups := WllExtendedSearchGroups.TagEx;
+    LoadGroupInfo.Context := DBKernel.DBContext;
 
     TThreadTask.Create(Self, LoadGroupInfo,
       procedure(Thread: TThreadTask; Data: Pointer)
@@ -11642,7 +11657,7 @@ begin
 
               B := TBitmap.Create;
               try
-                CreateGroupImage(Groups[J].GroupName, B);
+                CreateGroupImage(Info.Context, Groups[J].GroupName, B);
 
                 IsTerminated := not Thread.SynchronizeTask(
                   procedure
@@ -12632,9 +12647,12 @@ var
   Ico: HIcon;
   IconFileName: string;
   LB: TLayeredBitmap;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   FreeList(FDatabases, False);
-  DBKernel.LoadDbs(FDatabases);
+  LoadDbs(FDatabases);
 
   IconFileName := '';
   TbDatabase.Visible := FDatabases.Count > 1;
@@ -12658,7 +12676,7 @@ begin
       DestroyIcon(Ico);
     end;
 
-    if AnsiLowerCase(DB.Path) = AnsiLowerCase(dbname) then
+    if AnsiLowerCase(DB.Path) = AnsiLowerCase(Context.CollectionFileName) then
     begin
       MI.Default := True;
       IconFileName := DB.Icon;
@@ -12711,7 +12729,7 @@ begin
   Editor := TLinkListEditorDatabases.Create(Self);
   try
     if LinkItemSelectForm.Execute(450, L('List of collections'), TList<TDataObject>(FDatabases), Editor) then
-      DBKernel.SaveDBs(FDatabases);
+      SaveDBs(FDatabases);
 
     LoadDBList;
   finally

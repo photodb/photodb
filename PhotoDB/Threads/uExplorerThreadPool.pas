@@ -47,7 +47,7 @@ begin
   ExplorerViewInfo.View := -1;
   ExplorerViewInfo.PictureSize := 0;
   if (Thread <> nil) and (AvaliableThreadsCount + BusyThreadsCount < Min(MAX_THREADS_USE, ProcessorCount + 1)) then
-    AddAvaliableThread(TExplorerThread.Create('', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, TUpdaterInfo.Create, Thread.StateID));
+    AddAvaliableThread(TExplorerThread.Create(nil, '', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, TUpdaterInfo.Create, Thread.StateID));
 end;
 
 procedure TExplorerThreadPool.ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
@@ -64,6 +64,7 @@ begin
   if Avaliablethread <> nil then
   begin
     Avaliablethread.ThreadForm := Sender.ThreadForm;
+    Avaliablethread.FContext := Thread.FContext;
     Avaliablethread.FSender := TExplorerForm(Sender.ThreadForm);
     Avaliablethread.UpdaterInfo.Assign(Thread.UpdaterInfo);
     Avaliablethread.ExplorerInfo := Thread.ExplorerInfo;

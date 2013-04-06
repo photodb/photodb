@@ -19,6 +19,7 @@ object NewGroupForm: TNewGroupForm
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     294
     347)

@@ -25,11 +25,13 @@ uses
 
   GraphicCrypt,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uFormInterfaces,
   uSessionPasswords,
   uConstants,
   uDBForm,
+  uDBContext,
   uShellIntegration,
   uSettings,
   uActivationUtils,
@@ -57,8 +59,10 @@ type
     procedure BtCancelClick(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     FFileName: string;
     Password: string;
     CryptFileName: Boolean;
@@ -118,7 +122,7 @@ begin
   Options.Action := ACTION_DECRYPT_IMAGES;
   Options.Password := Password;
   Options.EncryptOptions := 0;
-  TCryptingImagesThread.Create(Owner, Options);
+  TCryptingImagesThread.Create(Owner, FContext, Options);
 
   Close;
 end;
@@ -148,7 +152,7 @@ begin
   Options.Password := Opt.Password;
   Options.EncryptOptions := EncryptOptions;
   Options.Action := ACTION_ENCRYPT_IMAGES;
-  TCryptingImagesThread.Create(Owner, Options);
+  TCryptingImagesThread.Create(Owner, FContext, Options);
 end;
 
 function TCryptImageForm.QueryPasswordForFile(FileName: string): TEncryptImageOptions;
@@ -168,6 +172,8 @@ procedure TCryptImageForm.FormCreate(Sender: TObject);
 var
   FPassIcon: HIcon;
 begin
+  FContext := DBKernel.DBContext;
+
   if TActivationManager.Instance.IsDemoMode then
     SetDefaultCipherClass(TCipher_2DES);
 
@@ -183,6 +189,11 @@ begin
   finally
     DestroyIcon(FPassIcon);
   end;
+end;
+
+procedure TCryptImageForm.FormDestroy(Sender: TObject);
+begin
+  FContext := nil;
 end;
 
 procedure TCryptImageForm.BtOkClick(Sender: TObject);

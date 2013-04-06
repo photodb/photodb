@@ -18,25 +18,21 @@ uses
   uRuntime,
   uGroupTypes,
   uDBIcons,
+  uDBContext,
   uDBClasses;
 
+function AddGroup(Context: IDBContext; Group: TGroup): Boolean;
+function GroupNameExists(Context: IDBContext; GroupName: string): Boolean;
+function DeleteGroup(Context: IDBContext; Group: TGroup): Boolean;
+function FindGroupCodeByGroupName(Context: IDBContext; GroupName: string): string;
+function FindGroupNameByGroupCode(Context: IDBContext; GroupCode: string): string;
+function GetGroupByGroupCode(Context: IDBContext; GroupCode: string; LoadImage: Boolean): TGroup; overload;
+function UpdateGroup(Context: IDBContext; Group: TGroup): Boolean;
+function GetRegisterGroupList(Context: IDBContext; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
+function GroupWithCodeExists(Context: IDBContext; GroupCode: string): Boolean;
+function GetGroupByGroupName(Context: IDBContext; GroupName: string; LoadImage: Boolean): TGroup;
+
 function GroupSearchByGroupName(GroupName: string): string;
-function GroupsTableName: string; overload;
-function GroupsTableName(FileName: string): string; overload;
-function GetRegisterGroupList(LoadImages: Boolean; UseInclude: Boolean = False): TGroups;
-function AddGroup(Group: TGroup): Boolean;
-function GroupNameExists(GroupName: string): Boolean;
-function DeleteGroup(Group: TGroup): Boolean;
-function FindGroupCodeByGroupName(GroupName: string): string;
-function FindGroupNameByGroupCode(GroupCode: string): string;
-function GetGroupByGroupName(GroupName: string; LoadImage: Boolean): TGroup; overload;
-function GetGroupByGroupCode(GroupCode: string; LoadImage: Boolean): TGroup; overload;
-function UpdateGroup(Group: TGroup): Boolean;
-function GetRegisterGroupListW(FileName: string; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
-function GroupWithCodeExists(GroupCode: string): Boolean;
-function GetGroupByGroupNameW(GroupName: string; LoadImage: Boolean; FileName: string): TGroup;
-function AddGroupW(Group: TGroup; FileName: string): Boolean;
-function GroupNameExistsW(GroupName: string; FileName: string): Boolean;
 function ReadGroupFromDS(DS: TDataSet; var Group: TGroup): Boolean;
 
 implementation
@@ -101,14 +97,14 @@ begin
   Result := '%#' + GroupName + '#%';
 end;
 
-function FindGroupCodeByGroupName(GroupName: string): string;
+function FindGroupCodeByGroupName(Context: IDBContext; GroupName: string): string;
 var
   Query: TDataSet;
 begin
   Result := '';
-  Query := GetQuery;
+  Query := Context.CreateQuery(dbilRead);
   try
-    SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupName like "' + GroupName + '"');
+    SetSQL(Query, 'Select * From Groups Where GroupName like "' + GroupName + '"');
     try
       OpenDS(Query);
     except
@@ -125,14 +121,14 @@ begin
   end;
 end;
 
-function FindGroupNameByGroupCode(GroupCode: string): string;
+function FindGroupNameByGroupCode(Context: IDBContext; GroupCode: string): string;
 var
   Query: TDataSet;
 begin
   Result := '';
-  Query := GetQuery;
+  Query := Context.CreateQuery(dbilRead);
   try
-    SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode="' + GroupCode + '"');
+    SetSQL(Query, 'Select * From Groups Where GroupCode="' + GroupCode + '"');
     OpenDS(Query);
     if Query.RecordCount = 0 then
       Exit;
@@ -145,19 +141,14 @@ begin
   end;
 end;
 
-function GroupNameExists(GroupName: string): Boolean;
-begin
-  Result := GroupNameExistsW(GroupName, Dbname);
-end;
-
-function GroupNameExistsW(GroupName : String; FileName : String) : Boolean;
+function GroupNameExists(Context: IDBContext; GroupName: string): Boolean;
 var
   Query : TDataSet;
 begin
   Result := False;
-  Query := GetQuery(FileName);
+  Query := Context.CreateQuery(dbilRead);
   try
-    SetSQL(Query, 'Select 1 From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
+    SetSQL(Query, 'Select 1 From Groups Where GroupName like "' + GroupName + '"');
     try
       OpenDS(Query);
     except
@@ -170,14 +161,14 @@ begin
   end;
 end;
 
-function GroupWithCodeExists(GroupCode: string): Boolean;
+function GroupWithCodeExists(Context: IDBContext; GroupCode: string): Boolean;
 var
   Query: TDataSet;
 begin
   Result := False;
-  Query := GetQuery;
+  Query := Context.CreateQuery(dbilRead);
   try
-    SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode like "' + GroupCode + '"');
+    SetSQL(Query, 'Select * From Groups Where GroupCode like "' + GroupCode + '"');
     try
       OpenDS(Query);
     except
@@ -191,14 +182,14 @@ begin
   end;
 end;
 
-function DeleteGroup(Group: TGroup): Boolean;
+function DeleteGroup(Context: IDBContext; Group: TGroup): Boolean;
 var
   Query: TDataSet;
 begin
   Result := False;
-  Query := GetQuery;
+  Query := Context.CreateQuery;
   try
-    SetSQL(Query, 'Delete From ' + GroupsTableName + ' Where GroupCode like "' + Group.GroupCode + '"');
+    SetSQL(Query, 'Delete From Groups Where GroupCode like "' + Group.GroupCode + '"');
     try
       ExecSQL(Query);
     except
@@ -210,7 +201,7 @@ begin
   Result := True;
 end;
 
-function UpdateGroup(Group: TGroup): Boolean;
+function UpdateGroup(Context: IDBContext; Group: TGroup): Boolean;
 var
   SC: TSelectCommand;
   UC: TUpdateCommand;
@@ -218,7 +209,7 @@ var
   GroupDate: TDateTime;
 begin
   Result := False;
-  SC := TSelectCommand.Create(GroupsTableName);
+  SC := Context.CreateSelect(GroupsTableName);
   try
     SC.AddParameter(TCustomFieldParameter.Create('[ID]'));
     SC.AddWhereParameter(TStringParameter.Create('GroupCode', Group.GroupCode));
@@ -231,7 +222,7 @@ begin
     begin
       if ReadGroupFromDS(SC.DS, G) then
       begin
-        UC := TUpdateCommand.Create(GroupsTableName);
+        UC := Context.CreateUpdate(GroupsTableName);
         try
           UC.AddParameter(TStringParameter.Create('GroupName', Group.GroupName));
           UC.AddParameter(TIntegerParameter.Create('GroupAccess', Group.GroupAccess));
@@ -264,19 +255,19 @@ begin
   end;
 end;
 
-function AddGroupW(Group: TGroup; FileName: string): Boolean;
+function AddGroup(Context: IDBContext; Group: TGroup): Boolean;
 var
   Query: TDataSet;
   Bit: TBitmap;
 begin
   Result := False;
 
-  if GroupNameExistsW(Group.GroupName, FileName) then
+  if GroupNameExists(Context, Group.GroupName) then
     Exit;
 
-  Query := GetQuery(FileName);
+  Query := Context.CreateQuery;
   try
-    SetSQL(Query, 'Select * From ' + GroupsTableName(FileName) + ' Where GroupCode like "' + Group.GroupCode + '"');
+    SetSQL(Query, 'Select * From Groups Where GroupCode like "' + Group.GroupCode + '"');
     try
       OpenDS(Query);
     except
@@ -285,7 +276,7 @@ begin
     if Query.RecordCount = 0 then
     begin
       Query.Active := False;
-      SetSQL(Query, 'Insert Into ' + GroupsTableName(FileName) +
+      SetSQL(Query, 'Insert Into Groups ' +
           ' (GroupCode, GroupName, GroupImage, GroupComment, GroupDate, Groupfaces, GroupAccess, GroupKW, GroupAddKW, RelatedGroups, IncludeInQuickList) values' + ' (:GroupCode, :GroupName, :GroupImage, :GroupComment, :GroupDate, :Groupfaces, :GroupAccess, :GroupKW, :GroupAddKW, :RelatedGroups, :IncludeInQuickList)');
 
       SetStrParam(Query, 0, Group.GroupCode);
@@ -330,29 +321,14 @@ begin
   end;
 end;
 
-function AddGroup(Group: TGroup): Boolean;
-begin
-  Result := AddGroupW(Group, Dbname);
-end;
-
-function GroupsTableName(FileName: string): string;
-begin
-  Result := 'Groups';
-end;
-
-function GroupsTableName: string;
-begin
-  Result := 'Groups';
-end;
-
-function GetGroupByGroupCode(GroupCode : String; LoadImage : Boolean) : TGroup;
+function GetGroupByGroupCode(Context: IDBContext; GroupCode: String; LoadImage: Boolean): TGroup;
 var
   Query: TDataSet;
 begin
-  Query := GetQuery;
+  Query := Context.CreateQuery;
   try
     if LoadImage then
-      SetSQL(Query, 'Select * From ' + GroupsTableName + ' Where GroupCode like "' + GroupCode + '"')
+      SetSQL(Query, 'Select * From Groups Where GroupCode like "' + GroupCode + '"')
     else
       SetSQL(Query,
         'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW,RelatedGroups,IncludeInQuickList From '
@@ -371,23 +347,18 @@ begin
   end;
 end;
 
-function GetGroupByGroupName(GroupName: string; LoadImage: Boolean): TGroup;
-begin
-  Result := GetGroupByGroupNameW(GroupName, LoadImage, Dbname);
-end;
-
-function GetGroupByGroupNameW(GroupName: string; LoadImage: Boolean; FileName: string): TGroup;
+function GetGroupByGroupName(Context: IDBContext; GroupName: string; LoadImage: Boolean): TGroup;
 var
   Query: TDataSet;
 begin
   Result := GetNilGroup;
-  Query := GetQuery(FileName, True);
+  Query := Context.CreateQuery(dbilRead);
   try
     if LoadImage then
-      SetSQL(Query, 'Select * From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"')
+      SetSQL(Query, 'Select * From Groups Where GroupName like "' + GroupName + '"')
     else
       SetSQL(Query,
-        'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW, RelatedGroups, IncludeInQuickList From ' + GroupsTableName(FileName) + ' Where GroupName like "' + GroupName + '"');
+        'Select GroupCode,GroupName,GroupDate,GroupComment,GroupAccess,GroupFaces,GroupKW,GroupAddKW, RelatedGroups, IncludeInQuickList From Groups Where GroupName like "' + GroupName + '"');
     try
       OpenDS(Query);
     except
@@ -404,7 +375,7 @@ begin
   end;
 end;
 
-function GetRegisterGroupListW(FileName: String; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
+function GetRegisterGroupList(Context: IDBContext; LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
 var
   Table: TDataSet;
   N: Integer;
@@ -413,7 +384,7 @@ var
   B: Boolean;
 begin
   Setlength(Result, 0);
-  Table := GetTable(FileName, DB_TABLE_GROUPS);
+  Table := GetTable(Context.CollectionFileName, DB_TABLE_GROUPS);
   try
     if Table = nil then
       Exit;
@@ -458,11 +429,6 @@ begin
       if B then
         Break;
     end;
-end;
-
-function GetRegisterGroupList(LoadImages: Boolean; UseInclude: Boolean = False): TGroups;
-begin
-  Result := GetRegisterGroupListW(Dbname, LoadImages, True, UseInclude);
 end;
 
 end.

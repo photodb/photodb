@@ -407,8 +407,9 @@ object EditGroupsForm: TEditGroupsForm
   object CbRemoveKeywords: TCheckBox
     Left = 8
     Top = 412
-    Width = 281
+    Width = 455
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Remove KeyWords For Group'
     TabOrder = 5
     OnClick = CbRemoveKeywordsClick
@@ -416,8 +417,9 @@ object EditGroupsForm: TEditGroupsForm
   object CbShowAllGroups: TCheckBox
     Left = 8
     Top = 396
-    Width = 281
+    Width = 455
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Show All Groups'
     TabOrder = 4
     OnClick = CbShowAllGroupsClick

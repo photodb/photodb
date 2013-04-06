@@ -28,6 +28,7 @@ uses
   uAnimatedJPEG,
   uSettings,
   uAssociations,
+  uDBContext,
   uLogger,
   uPortableDeviceUtils,
   uTranslate,
@@ -184,6 +185,7 @@ type
     ID: Integer;
     Params: TEventFields;
     Value: TEventValues;
+    Context: IDBContext;
   end;
 
 type

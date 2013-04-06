@@ -14,6 +14,7 @@ uses
   UnitLinksSupport,
   UnitSQLOptimizing,
   ProgressActionUnit,
+  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -23,7 +24,8 @@ uses
   uDBForm,
   uGroupTypes,
   uCollectionEvents,
-  uDBClasses;
+  uDBClasses,
+  uDBContext;
 
 type
   TUserDBInfoInput = class
@@ -88,6 +90,7 @@ var
   WorkQuery: TDataSet;
   FileInfo: TDBPopupMenuInfoRecord;
   UC: TUpdateCommand;
+  Context: IDBContext;
 
   function GenerateIDList : string;
   var
@@ -103,7 +106,9 @@ var
   end;
 
 begin
-  WorkQuery := GetQuery;
+  Context := DBKernel.DBContext;
+
+  WorkQuery := Context.CreateQuery;
   try
 
     OperationCounter := 0;
@@ -134,7 +139,7 @@ begin
       // [BEGIN] Include Support
       if UserInput.IsIncludeChanged then
       begin
-        UC := TUpdateCommand.Create(ImageTable);
+        UC := Context.CreateUpdate(ImageTable);
         try
           UC.AddParameter(TBooleanParameter.Create('Include', UserInput.Include));
           UC.AddWhereParameter(TCustomConditionParameter.Create(Format('[ID] in (%s)', [GenerateIDList])));
@@ -404,8 +409,11 @@ var
   UC: TUpdateCommand;
   EventInfo: TEventValues;
   Params: TEventFields;
+  Context: IDBContext;
 begin
-  UC := TUpdateCommand.Create(ImageTable);
+  Context := DBKernel.DBContext;
+
+  UC := Context.CreateUpdate(ImageTable);
   try
     UC.AddParameter(TStringParameter.Create('Comment', UserInput.Comment));
     UC.AddParameter(TStringParameter.Create('KeyWords', UserInput.Keywords));

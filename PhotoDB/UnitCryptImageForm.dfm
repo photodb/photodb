@@ -17,6 +17,7 @@ object CryptImageForm: TCryptImageForm
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   DesignSize = (
     324

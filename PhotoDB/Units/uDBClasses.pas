@@ -157,9 +157,10 @@ type
     FQuery: TDataSet;
     function GetRecordCount: Integer;
   protected
+    FCollectionFile: string;
     function GetSQL: string; virtual; abstract;
   public
-    constructor Create(Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+    constructor Create(CollectionFileName: string; Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
     destructor Destroy; override;
     procedure UpdateParameters;
     function Execute: Integer; virtual; abstract;
@@ -181,7 +182,7 @@ type
   public
     function Execute: Integer; override;
     function LastID: Integer;
-    constructor Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+    constructor Create(TableName: string; CollectionFileName: string; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
   end;
 
   TDeleteCommand = class(TSqlCommand)
@@ -191,7 +192,7 @@ type
     function GetSQL: string; override;
   public
     function Execute: Integer; override;
-    constructor Create(TableName: string);
+    constructor Create(TableName: string; CollectionFileName: string; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
   end;
 
   TUpdateCommand = class(TSqlCommand)
@@ -201,7 +202,7 @@ type
     function GetSQL: string; override;
   public
     function Execute: Integer; override;
-    constructor Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+    constructor Create(TableName: string; CollectionFileName: string; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
   end;
 
   TOrderParameter = class
@@ -238,17 +239,10 @@ type
   public
     function Execute: Integer; override;
     function ExecuteSql(Sql: string; ForwardOnly: Boolean): Integer;
-    constructor Create(TableName: string; Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+    constructor Create(TableName: string; CollectionFileName: string; Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
     destructor Destroy; override;
     property TopRecords: Integer read FTopRecords write FTopRecords;
     property Order: TOrderParameterCollection read FOrderParameterCollection;
-  end;
-
-  TDatabaseManager = class(TObject)
-  private
-    function GetDBFile: string;
-  public
-    property DBFile: string read GetDBFile;
   end;
 
   TFieldHelper = class(TObject)
@@ -257,26 +251,13 @@ type
     constructor Create(Command: TSqlCommand);
   end;
 
-function DatabaseManager: TDatabaseManager;
-
 implementation
-
-var
-  FManager: TDatabaseManager = nil;
-
-function DatabaseManager: TDatabaseManager;
-begin
-  if FManager = nil then
-    FManager := TDatabaseManager.Create;
-
-  Result := FManager;
-end;
 
 { TInsertCommand }
 
-constructor TInsertCommand.Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+constructor TInsertCommand.Create(TableName: string; CollectionFileName: string; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create(False, CollectionFileName, IsolationLevel);
+  inherited Create(CollectionFileName, False, IsolationLevel);
   FTableName := TableName;
 end;
 
@@ -297,7 +278,7 @@ function TInsertCommand.LastID: Integer;
 var
   SC: TSelectCommand;
 begin
-  SC := TSelectCommand.Create('');
+  SC := TSelectCommand.Create(FTableName, FCollectionFile, False, dbilRead);
   try
     SC.AddParameter(TCustomFieldParameter.Create('@@identity as LastID'));
     SC.Execute;
@@ -324,13 +305,12 @@ begin
   FWhereParameters.Add(Parameter);
 end;
 
-constructor TSqlCommand.Create(Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+constructor TSqlCommand.Create(CollectionFileName: string;  Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
+  FCollectionFile := CollectionFileName;
   FParameters := FParameterCollection.Create;
   FWhereParameters := FParameterCollection.Create;
   FCustomParameters := FParameterCollection.Create;
-  if CollectionFileName = '' then
-    CollectionFileName := dbname;
 
   FQuery := GetQuery(CollectionFileName, Async, IsolationLevel);
 end;
@@ -432,9 +412,9 @@ end;
 
 { TDeleteCommand }
 
-constructor TDeleteCommand.Create(TableName: string);
+constructor TDeleteCommand.Create(TableName: string; CollectionFileName: string; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create;
+  inherited Create(CollectionFileName, False, IsolationLevel);
   FTableName := TableName;
 end;
 
@@ -666,9 +646,9 @@ end;
 
 { TUpdateCommand }
 
-constructor TUpdateCommand.Create(TableName: string; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+constructor TUpdateCommand.Create(TableName: string; CollectionFileName: string; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create(False, CollectionFileName, IsolationLevel);
+  inherited Create(CollectionFileName, False, IsolationLevel);
   FTableName := TableName;
 end;
 
@@ -683,13 +663,6 @@ end;
 function TUpdateCommand.GetSQL: string;
 begin
   Result := Format('UPDATE [%s] SET %s WHERE %s', [FTableName, Parameters.AsUpdateFieldsAndValues, WhereParameters.AsCondition]);
-end;
-
-{ TDatabaseManager }
-
-function TDatabaseManager.GetDBFile: string;
-begin
-  Result := dbname;
 end;
 
 { TAllParameter }
@@ -719,9 +692,9 @@ end;
 
 { TSelectCommand }
 
-constructor TSelectCommand.Create(TableName: string; Async: Boolean = False; CollectionFileName: string = ''; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+constructor TSelectCommand.Create(TableName: string; CollectionFileName: string; Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
-  inherited Create(Async, CollectionFileName, IsolationLevel);
+  inherited Create(CollectionFileName, Async, IsolationLevel);
   FOrderParameterCollection := TOrderParameterCollection.Create;
   FTopRecords := 0;
   FTableName := TableName;
@@ -844,10 +817,5 @@ constructor TFieldHelper.Create(Command: TSqlCommand);
 begin
   FCommand := Command;
 end;
-
-initialization
-
-finalization
-  F(FManager);
 
 end.

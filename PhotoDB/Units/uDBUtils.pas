@@ -44,6 +44,7 @@ uses
   uShellIntegration,
   uDBBaseTypes,
   uMemory,
+  uDBContext,
   uJpegUtils,
   uAssociations,
   uDBImageUtils,
@@ -60,45 +61,63 @@ type
   TProgressValueHandler = procedure(Count: Integer) of object;
   TOnDBKernelEventProcedure = procedure(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
 
-procedure RenameFolderWithDB(CallBack: TDBKernelCallBack;
+type
+  TImageDBOptions = class
+  public
+    Version: Integer;
+    DBJpegCompressionQuality: Byte;
+    ThSize: Integer;
+    ThHintSize: Integer;
+    Description: string;
+    Name: string;
+    constructor Create;
+    function Copy: TImageDBOptions;
+  end;
+
+function GetRecordsCount(Table: string): Integer;
+function UpdateImageSettings(Context: IDBContext; Settings: TImageDBOptions): Boolean;
+function GetImageSettingsFromTable(Context: IDBContext): TImageDBOptions;
+function GetDefaultImageDBOptions: TImageDBOptions;
+
+procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
   OldFileName, NewFileName: string; Ask: Boolean = True);
-function RenameFileWithDB(CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 
-function GetImageIDW(FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
+function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
-function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TImageDBRecordAArray;
-function GetImageIDTh(ImageTh: string): TImageDBRecordA;
-function GetIdByFileName(FileName: string): Integer;
-function GetFileNameById(ID: Integer): string;
+function GetImageIDWEx(DBContext: IDBContext; Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TImageDBRecordAArray;
+function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TImageDBRecordA;
+function GetIdByFileName(DBContext: IDBContext; FileName: string): Integer;
+function GetFileNameById(DBContext: IDBContext; ID: Integer): string;
 
-procedure SetPrivate(ID: Integer);
-procedure UnSetPrivate(ID: Integer);
-procedure UpdateDBItemPathInfo(ID: Integer; FileName: string);
-procedure SetRotate(ID, Rotate: Integer);
-procedure SetRating(ID, Rating: Integer);
-procedure SetAttr(ID, Attr: Integer);
+procedure SetPrivate(DBContext: IDBContext; ID: Integer);
+procedure UnSetPrivate(DBContext: IDBContext; ID: Integer);
+procedure UpdateDBItemPathInfo(DBConetext: IDBContext; ID: Integer; FileName: string);
+procedure SetRotate(DBContext: IDBContext; ID, Rotate: Integer);
+procedure SetRating(DBContext: IDBContext; ID, Rating: Integer);
+procedure SetAttr(DBContext: IDBContext; ID, Attr: Integer);
 
-function UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer): Boolean;
+function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
 
-procedure ExecuteQuery(SQL: string);
-procedure GetFileListByMask(BeginFile, Mask: string;
+procedure ExecuteQuery(Context: IDBContext; SQL: string);
+procedure GetFileListByMask(DBContext: IDBContext; BeginFile, Mask: string;
   Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
-function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
-procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
+function GetInfoByFileNameA(Context: IDBContext; FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
+procedure UpdateImageThInLinks(Context: IDBContext; OldImageTh, NewImageTh: string);
 function BitmapToString(Bit: TBitmap): string;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 function SumRotation(OldRotation, NewRotation: Integer): Integer;
-procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
+procedure CopyFiles(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
-procedure SetFileNameByID(ID: Integer; FileName: string);
+procedure SetFileNameByID(Context: IDBContext; ID: Integer; FileName: string);
 
 { DB Types }
 
-function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
-function GetMenuInfoRecordByID(ID: Integer): TDBPopupMenuInfoRecord;
-function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
-procedure UpdateDataFromDB(Info: TDBPopupMenuInfo);
+function GetMenuInfoByID(Context: IDBContext; ID: Integer): TDBPopupMenuInfo;
+function GetMenuInfoRecordByID(Context: IDBContext; ID: Integer): TDBPopupMenuInfoRecord;
+function GetMenuInfoByStrTh(Context: IDBContext; StrTh: string): TDBPopupMenuInfo;
+procedure UpdateDataFromDB(Context: IDBContext; Info: TDBPopupMenuInfo);
 { END DB Types }
 
 implementation
@@ -166,7 +185,100 @@ begin
   Result := ROT[OldRotation, NewRotation];
 end;
 
-function RenameFileWithDB(CallBack : TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
+function GetRecordsCount(Table: string) : integer;
+var
+  FTable: TDataSet;
+begin
+  Result := 0;
+  try
+    FTable := GetQuery(Table); // ONLY MDB
+    try
+      SetSQL(FTable, 'SELECT COUNT(*) AS RecordsCount FROM ImageTable');
+      FTable.Open;
+      Result := FTable.FieldByName('RecordsCount').AsInteger;
+    finally
+      FreeDS(FTable);
+    end;
+  except
+    on e: Exception do
+      TLogger.Instance.Message('GetRecordsCount throws an exception: ' + e.Message);
+  end;
+end;
+
+function UpdateImageSettings(Context: IDBContext; Settings: TImageDBOptions) : boolean;
+var
+  SQL: string;
+  FQuery: TDataSet;
+begin
+  Result := True;
+  FQuery := Context.CreateQuery;
+  try
+    SQL := 'Update DBSettings Set DBJpegCompressionQuality = ' + IntToStr
+      (Settings.DBJpegCompressionQuality) +
+      ', ThSizePanelPreview = 100' + ',' +
+      'ThImageSize = ' + IntToStr(Settings.ThSize) +
+      ', ThHintSize = ' + IntToStr(Settings.ThHintSize) +
+      ', DBName = ' + NormalizeDBString(Settings.name) +
+      ', DBDescription = ' + NormalizeDBString(Settings.Description);
+
+    SetSQL(FQuery, SQL);
+    try
+      ExecSQL(FQuery);
+    except
+      on E: Exception do
+      begin
+        EventLog(':UpdateImageSettings() throw exception: ' + E.message);
+        Result := False;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
+  end;
+end;
+
+function GetDefaultImageDBOptions: TImageDBOptions;
+begin
+  Result := TImageDBOptions.Create;
+  Result.DBJpegCompressionQuality := 75;
+  Result.ThSize := 200;
+  Result.ThHintSize := 400;
+end;
+
+function GetImageSettingsFromTable(Context: IDBContext): TImageDBOptions;
+var
+  SQL: string;
+  FQuery: TDataSet;
+begin
+  Result := GetDefaultImageDBOptions;
+
+  FQuery := Context.CreateQuery(dbilRead);
+  try
+    ReadOnlyQuery(FQuery);
+    SQL := 'SELECT * FROM DBSettings';
+    try
+      SetSQL(FQuery, SQL);
+      FQuery.Active := True;
+      if FQuery.Active then
+      begin
+        Result.DBJpegCompressionQuality := FQuery.FieldByName('DBJpegCompressionQuality').AsInteger;
+        Result.ThSize := FQuery.FieldByName('ThImageSize').AsInteger;
+        Result.ThHintSize := FQuery.FieldByName('ThHintSize').AsInteger;
+        Result.Name := FQuery.FieldByName('DBName').AsString;
+        Result.Description := FQuery.FieldByName('DBDescription').AsString;
+      end;
+    except
+      on E: Exception do
+      begin
+        EventLog(':GetImageSettingsFromTable()/Restore throw exception: ' + E.message);
+        raise;
+      end;
+    end;
+  finally
+    FreeDS(FQuery);
+  end;
+end;
+
+function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 var
   FQuery: TDataSet;
   EventInfo: TEventValues;
@@ -189,7 +301,7 @@ begin
 
   if ID <> 0 then
   begin
-    FQuery := GetQuery;
+    FQuery := Context.CreateQuery;
     try
 
     //TODO: review
@@ -219,7 +331,7 @@ begin
     end;
     FreeDS(FQuery);
   end;
-  RenameFolderWithDB(CallBack, nil, nil, nil, nil, OldFileName, NewFileName);
+  RenameFolderWithDB(Context, CallBack, nil, nil, nil, nil, OldFileName, NewFileName);
 
   if OnlyBD then
   begin
@@ -232,7 +344,7 @@ begin
   CallBack(ID, [EventID_Param_Name], EventInfo);
 end;
 
-procedure RenameFolderWithDB(CallBack: TDBKernelCallBack;
+procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
   OldFileName, NewFileName: string; Ask: Boolean = True);
 var
@@ -249,7 +361,7 @@ begin
     OldFileName := ExcludeTrailingBackslash(OldFileName);
     NewFileName := ExcludeTrailingBackslash(NewFileName);
 
-    FQuery := GetQuery;
+    FQuery := Context.CreateQuery(dbilRead);
     try
       FFolder := IncludeTrailingBackslash(OldFileName);
 
@@ -278,7 +390,7 @@ begin
             CreateProgress(FQuery.RecordCount);
 
           try
-            SetQuery := GetQuery;
+            SetQuery := Context.CreateQuery;
 
             if FQuery.RecordCount > 1 then
             begin
@@ -359,14 +471,14 @@ begin
     begin
       GetDirectoresOfPath(OldFileName, Dirs);
       for I := 0 to Dirs.Count - 1 do
-        RenameFolderWithDB(CallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress,
+        RenameFolderWithDB(Context, CallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress,
           OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
     end;
     if DirectoryExists(NewFileName) then
     begin
       GetDirectoresOfPath(NewFileName, Dirs);
       for I := 0 to Dirs.Count - 1 do
-        RenameFolderWithDB(CallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress,
+        RenameFolderWithDB(Context, CallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress,
           OldFileName + '\' + Dirs[I], NewFileName + '\' + Dirs[I]);
     end;
   finally
@@ -374,11 +486,11 @@ begin
   end;
 end;
 
-function GetIdByFileName(FileName: string): Integer;
+function GetIdByFileName(DBContext: IDBContext; FileName: string): Integer;
 var
   FQuery: TDataSet;
 begin
-  FQuery := GetQuery;
+  FQuery := DBContext.CreateQuery;
   try
     FQuery.Active := False;
     SetSQL(FQuery, 'SELECT ID FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
@@ -401,12 +513,12 @@ begin
   end;
 end;
 
-function GetFileNameById(ID: Integer): string;
+function GetFileNameById(DBContext: IDBContext; ID: Integer): string;
 var
   FQuery: TDataSet;
 begin
   Result := '';
-  FQuery := GetQuery;
+  FQuery := DBContext.CreateQuery;
   try
     FQuery.Active := False;
     SetSQL(FQuery, 'SELECT FFileName FROM $DB$ WHERE ID = :ID');
@@ -423,26 +535,26 @@ begin
   end;
 end;
 
-procedure SetRotate(ID, Rotate: Integer);
+procedure SetRotate(DBContext: IDBContext; ID, Rotate: Integer);
 begin
-  ExecuteQuery(Format('Update $DB$ Set Rotated=%d Where ID=%d', [Rotate, ID]));
+  ExecuteQuery(DBContext, Format('Update $DB$ Set Rotated=%d Where ID=%d', [Rotate, ID]));
 end;
 
-procedure SetAttr(ID, Attr: Integer);
+procedure SetAttr(DBContext: IDBContext; ID, Attr: Integer);
 begin
-  ExecuteQuery(Format('Update $DB$ Set Attr=%d Where ID=%d', [Attr, ID]));
+  ExecuteQuery(DBContext, Format('Update $DB$ Set Attr=%d Where ID=%d', [Attr, ID]));
 end;
 
-procedure SetRating(ID, Rating: Integer);
+procedure SetRating(DBContext: IDBContext; ID, Rating: Integer);
 begin
-  ExecuteQuery(Format('Update $DB$ Set Rating=%d Where ID=%d', [Rating, ID]));
+  ExecuteQuery(DBContext, Format('Update $DB$ Set Rating=%d Where ID=%d', [Rating, ID]));
 end;
 
-procedure UpdateDBItemPathInfo(ID: Integer; FileName: string);
+procedure UpdateDBItemPathInfo(DBConetext: IDBContext; ID: Integer; FileName: string);
 var
   UC: TUpdateCommand;
 begin
-  UC := TUpdateCommand.Create(ImageTable);
+  UC := DBConetext.CreateUpdate(ImageTable);
   try
    UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
@@ -458,22 +570,22 @@ begin
   F(UC);
 end;
 
-procedure SetPrivate(ID: Integer);
+procedure SetPrivate(DBContext: IDBContext; ID: Integer);
 begin
   TPrivateHelper.Instance.Reset;
-  ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [Db_access_private, ID]));
+  ExecuteQuery(DBContext, Format('Update $DB$ Set Access=%d WHERE ID=%d', [Db_access_private, ID]));
 end;
 
-procedure UnSetPrivate(ID: Integer);
+procedure UnSetPrivate(DBContext: IDBContext; ID: Integer);
 begin
-  ExecuteQuery(Format('Update $DB$ Set Access=%d WHERE ID=%d', [Db_access_none, ID]));
+  ExecuteQuery(DBContext, Format('Update $DB$ Set Access=%d WHERE ID=%d', [Db_access_none, ID]));
 end;
 
-procedure ExecuteQuery(SQL: string);
+procedure ExecuteQuery(Context: IDBContext; SQL: string);
 var
   DS: TDataSet;
 begin
-  DS := GetQuery;
+  DS := Context.CreateQuery;
   try
     SetSQL(DS, SQL);
     try
@@ -488,7 +600,7 @@ begin
   end;
 end;
 
-function UpdateImageRecord(Caller: TDBForm; FileName: string; ID: Integer): Boolean;
+function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
 var
   Res: TImageDBRecordA;
   I, Attribute: Integer;
@@ -535,7 +647,7 @@ begin
 
   FileName := MapDBFileName(FileName);
 
-  Res := GetImageIDW(FileName, False);
+  Res := GetImageIDW(DBContext, FileName, False);
   if Res.Jpeg = nil then
     Exit;
 
@@ -546,7 +658,7 @@ begin
     EventInfo.FileName := FileName;
     EF := [EventID_FileProcessed];
 
-    SC := TSelectCommand.Create(ImageTable, True);
+    SC := DBContext.CreateSelect(ImageTable);
     try
       SC.AddParameter(TStringParameter.Create('StrTh'));
       SC.AddParameter(TIntegerParameter.Create('Attr'));
@@ -560,7 +672,7 @@ begin
       begin
         MS := nil;
         DA := TImageTableAdapter.Create(SC.DS);
-        UC := TUpdateCommand.Create(ImageTable);
+        UC := DBContext.CreateUpdate(ImageTable);
         try
           UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
@@ -677,7 +789,7 @@ begin
               CollectionEvents.DoIDEvent(Caller, ID, EF, EventInfo);
             end
           );
-          UpdateImageThInLinks(DA.LongImageID, Res.ImTh);
+          UpdateImageThInLinks(DBContext, DA.LongImageID, Res.ImTh);
 
         finally
           F(UC);
@@ -696,14 +808,15 @@ begin
   end;
 end;
 
-function GetImageIDTh(ImageTh: string): TImageDBRecordA;
+function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TImageDBRecordA;
 var
   FQuery: TDataSet;
   I: Integer;
   FromDB: string;
   DA: TImageTableAdapter;
 begin
-  FQuery := GetQuery;
+  FQuery := DBContext.CreateQuery;
+
   DA := TImageTableAdapter.Create(FQuery);
   try
     FromDB := '(Select ID, FFileName, Attr from $DB$ where StrThCrc = ' + IntToStr(Integer(StringCRC(ImageTh))) + ')';
@@ -738,7 +851,7 @@ begin
   end;
 end;
 
-function GetImageIDFileName(FileName: string): TImageDBRecordA;
+function GetImageIDFileName(Context: IDBContext; FileName: string): TImageDBRecordA;
 var
   FQuery: TDataSet;
   I, Count, Rot: Integer;
@@ -750,111 +863,112 @@ var
   Pass: string;
   S: string;
 begin
-  FQuery := GetQuery;
+  FQuery := Context.CreateQuery;
   try
-  FQuery.Active := False;
+    FQuery.Active := False;
 
-  SetSQL(FQuery, 'SELECT ID, FFileName, Attr, StrTh, Thum FROM $DB$ WHERE FFileName like :str ');
-  S := FileName;
-  if FolderView then
-    Delete(S, 1, Length(ProgramDir));
-  SetStrParam(FQuery, 0, '%' + NormalizeDBStringLike(AnsiLowerCase(ExtractFileName(S))) + '%');
+    SetSQL(FQuery, 'SELECT ID, FFileName, Attr, StrTh, Thum FROM $DB$ WHERE FFileName like :str ');
+    S := FileName;
+    if FolderView then
+      Delete(S, 1, Length(ProgramDir));
+    SetStrParam(FQuery, 0, '%' + NormalizeDBStringLike(AnsiLowerCase(ExtractFileName(S))) + '%');
 
-  try
-    FQuery.Active := True;
-  except
-    Setlength(Result.Ids, 0);
-    Setlength(Result.FileNames, 0);
-    Setlength(Result.Attr, 0);
-    Result.Count := 0;
-    Result.ImTh := '';
-    Exit;
-  end;
-  FQuery.First;
+    try
+      FQuery.Active := True;
+    except
+      Setlength(Result.Ids, 0);
+      Setlength(Result.FileNames, 0);
+      Setlength(Result.Attr, 0);
+      Result.Count := 0;
+      Result.ImTh := '';
+      Exit;
+    end;
+    FQuery.First;
 
-  G := nil;
-  try
-    if FQuery.RecordCount <> 0 then
-    begin
-      if GraphicCrypt.ValidCryptGraphicFile(FileName) then
+    G := nil;
+    try
+      if FQuery.RecordCount <> 0 then
       begin
-        Pass := SessionPasswords.FindForFile(FileName);
-        if Pass = '' then
+        if GraphicCrypt.ValidCryptGraphicFile(FileName) then
         begin
-          Setlength(Result.Ids, 0);
-          Setlength(Result.FileNames, 0);
-          Setlength(Result.Attr, 0);
-          Result.Count := 0;
-          Result.ImTh := '';
-          Exit;
-        end
-        else
-          G := DeCryptGraphicFile(FileName, Pass);
-      end else
-      begin
-        G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
-        G.LoadFromFile(FileName);
+          Pass := SessionPasswords.FindForFile(FileName);
+          if Pass = '' then
+          begin
+            Setlength(Result.Ids, 0);
+            Setlength(Result.FileNames, 0);
+            Setlength(Result.Attr, 0);
+            Result.Count := 0;
+            Result.ImTh := '';
+            Exit;
+          end
+          else
+            G := DeCryptGraphicFile(FileName, Pass);
+        end else
+        begin
+          G := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)).Create;
+          G.LoadFromFile(FileName);
+        end;
       end;
-    end;
-    JPEGScale(G, 100, 100);
-    SetLength(Val, FQuery.RecordCount);
-    SetLength(Xrot, FQuery.RecordCount);
-    Count := 0;
-    FJPEG := nil;
-    for I := 1 to FQuery.RecordCount do
-    begin
-      if ValidCryptBlobStreamJPG(FQuery.FieldByName('Thum')) then
+      JPEGScale(G, 100, 100);
+      SetLength(Val, FQuery.RecordCount);
+      SetLength(Xrot, FQuery.RecordCount);
+      Count := 0;
+      FJPEG := nil;
+      for I := 1 to FQuery.RecordCount do
       begin
-        Pass := '';
-        Pass := SessionPasswords.FindForBlobStream(FQuery.FieldByName('Thum'));
-        FJPEG := TJPEGImage.Create;
-        if Pass <> '' then
-          DeCryptBlobStreamJPG(FQuery.FieldByName('Thum'), Pass, FJPEG);
+        if ValidCryptBlobStreamJPG(FQuery.FieldByName('Thum')) then
+        begin
+          Pass := '';
+          Pass := SessionPasswords.FindForBlobStream(FQuery.FieldByName('Thum'));
+          FJPEG := TJPEGImage.Create;
+          if Pass <> '' then
+            DeCryptBlobStreamJPG(FQuery.FieldByName('Thum'), Pass, FJPEG);
 
-      end else
-      begin
-        FJPEG := TJPEGImage.Create;
-        FJPEG.Assign(FQuery.FieldByName('Thum'));
+        end else
+        begin
+          FJPEG := TJPEGImage.Create;
+          FJPEG.Assign(FQuery.FieldByName('Thum'));
+        end;
+        try
+          Res := CompareImages(FJPEG, G, Rot);
+        finally
+          F(FJPEG);
+        end;
+        Xrot[I - 1] := Rot;
+        Val[I - 1] := (Res.ByGistogramm > 1) or (Res.ByPixels > 1);
+        if Val[I - 1] then
+          Inc(Count);
+        FQuery.Next;
       end;
-      try
-        Res := CompareImages(FJPEG, G, Rot);
-      finally
-        F(FJPEG);
-      end;
-      Xrot[I - 1] := Rot;
-      Val[I - 1] := (Res.ByGistogramm > 1) or (Res.ByPixels > 1);
+      F(FJPEG);
+    finally
+      F(G);
+    end;
+    Setlength(Result.Ids, Count);
+    Setlength(Result.FileNames, Count);
+    Setlength(Result.Attr, Count);
+    Setlength(Result.ChangedRotate, Count);
+    Result.Count := Count;
+    FQuery.First;
+    Count := -1;
+
+    for I := 1 to FQuery.RecordCount do
       if Val[I - 1] then
+      begin
         Inc(Count);
-      FQuery.Next;
-    end;
-    F(FJPEG);
-  finally
-    F(G);
-  end;
-  Setlength(Result.Ids, Count);
-  Setlength(Result.FileNames, Count);
-  Setlength(Result.Attr, Count);
-  Setlength(Result.ChangedRotate, Count);
-  Result.Count := Count;
-  FQuery.First;
-  Count := -1;
-  for I := 1 to FQuery.RecordCount do
-    if Val[I - 1] then
-    begin
-      Inc(Count);
-      Result.ChangedRotate[Count] := Xrot[Count] <> 0;
-      Result.Ids[Count] := FQuery.FieldByName('ID').AsInteger;
-      Result.FileNames[Count] := FQuery.FieldByName('FFileName').AsString;
-      Result.Attr[Count] := FQuery.FieldByName('Attr').AsInteger;
-      Result.ImTh := FQuery.FieldByName('StrTh').AsString;
-      FQuery.Next;
-    end;
+        Result.ChangedRotate[Count] := Xrot[Count] <> 0;
+        Result.Ids[Count] := FQuery.FieldByName('ID').AsInteger;
+        Result.FileNames[Count] := FQuery.FieldByName('FFileName').AsString;
+        Result.Attr[Count] := FQuery.FieldByName('Attr').AsInteger;
+        Result.ImTh := FQuery.FieldByName('StrTh').AsString;
+        FQuery.Next;
+      end;
   finally
     FreeDS(FQuery);
   end;
 end;
 
-function GetImageIDWEx(Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
+function GetImageIDWEx(DBContext: IDBContext; Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean;
   OnlyImTh: Boolean = False): TImageDBRecordAArray;
 var
   K, I, L, Len: Integer;
@@ -866,8 +980,9 @@ begin
   SetLength(ThImS, L);
   SetLength(Result, L);
   for I := 0 to L - 1 do
-    ThImS[I] := GetImageIDW(Images[I].FileName, UseFileNameScanning, True);
-  FQuery := GetQuery;
+    ThImS[I] := GetImageIDW(DBContext, Images[I].FileName, UseFileNameScanning, True);
+
+  FQuery := DBContext.CreateQuery(dbilRead);
 
   Sql := '';
 
@@ -948,7 +1063,7 @@ begin
   FreeDS(FQuery);
 end;
 
-function GetImageIDW(FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
+function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
   ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
 var
   Bmp, Thbmp: TBitmap;
@@ -1036,10 +1151,10 @@ begin
         Result.ImTh := Imth;
       end else
       begin
-        Result := GetImageIDTh(Imth);
+        Result := GetImageIDTh(Context, Imth);
         if (Result.Count = 0) and UseFileNameScanning then
         begin
-          Result := GetImageIDFileName(FileName);
+          Result := GetImageIDFileName(Context, FileName);
           Result.UsedFileNameSearch := True;
         end;
       end;
@@ -1056,7 +1171,7 @@ begin
   end;
 end;
 
-procedure UpdateImageThInLinks(OldImageTh, NewImageTh: string);
+procedure UpdateImageThInLinks(Context: IDBContext; OldImageTh, NewImageTh: string);
 var
   FQuery: TDataSet;
   IDs: TArInteger;
@@ -1071,7 +1186,7 @@ begin
   if not Settings.ReadBool('Options', 'CheckUpdateLinks', False) then
     Exit;
 
-  FQuery := GetQuery;
+  FQuery := Context.CreateQuery(dbilRead);
   try
     OldImageThCode := CodeExtID(OldImageTh);
     SetSQL(FQuery, 'Select ID, Links from $DB$ where Links like "%' + OldImageThCode + '%"');
@@ -1112,7 +1227,7 @@ begin
   end;
   // correction
   // Access
-  Table := GetQuery;
+  Table := Context.CreateQuery;
   try
     for I := 0 to Length(IDs) - 1 do
     begin
@@ -1125,7 +1240,7 @@ begin
   end;
 end;
 
-function GetInfoByFileNameA(FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
+function GetInfoByFileNameA(Context: IDBContext; FileName: string; LoadThum: Boolean; Info: TDBPopupMenuInfoRecord): Boolean;
 var
   FQuery: TDataSet;
   FBS: TStream;
@@ -1134,7 +1249,7 @@ var
 begin
   Result := False;
   Info.FileName := FileName;
-  FQuery := GetQuery;
+  FQuery := Context.CreateQuery(dbilRead);
   try
     FileName := AnsiLowerCase(FileName);
     FileName := ExcludeTrailingBackslash(FileName);
@@ -1239,7 +1354,7 @@ begin
   end;
 end;
 
-procedure GetFileListByMask(BeginFile, Mask: string; Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
+procedure GetFileListByMask(DBContext: IDBContext; BeginFile, Mask: string; Info: TDBPopupMenuInfo; var N: Integer; ShowPrivate: Boolean);
 var
   Found, I, J: Integer;
   SearchRec: TSearchRec;
@@ -1269,7 +1384,7 @@ begin
     N := 0;
     FBlockedFiles := TStringList.Create;
     try
-      FQuery := GetQuery(True);
+      FQuery := DBContext.CreateQuery(dbilRead);
       try
         Folder := IncludeTrailingBackslash(AnsiLowerCase(Folder));
 
@@ -1358,13 +1473,13 @@ end;
 ///  BEGIN DB TYPES
 ///////////////////////////////////////////////////////////////////////
 
-function GetMenuInfoByID(ID: Integer): TDBPopupMenuInfo;
+function GetMenuInfoByID(Context: IDBContext; ID: Integer): TDBPopupMenuInfo;
 var
   FQuery: TDataSet;
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-  FQuery := GetQuery(True);
+  FQuery := Context.CreateQuery(dbilRead);
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
     SetIntParam(FQuery, 0, ID);
@@ -1382,12 +1497,12 @@ begin
   end;
 end;
 
-function GetMenuInfoRecordByID(ID: Integer): TDBPopupMenuInfoRecord;
+function GetMenuInfoRecordByID(Context: IDBContext; ID: Integer): TDBPopupMenuInfoRecord;
 var
   FQuery: TDataSet;
 begin
   Result := nil;
-  FQuery := GetQuery(True);
+  FQuery := Context.CreateQuery(dbilRead);
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
     SetIntParam(FQuery, 0, ID);
@@ -1401,7 +1516,7 @@ begin
   end;
 end;
 
-procedure UpdateDataFromDB(Info: TDBPopupMenuInfo);
+procedure UpdateDataFromDB(Context: IDBContext; Info: TDBPopupMenuInfo);
 var
   I, J, K: Integer;
   FQuery: TDataSet;
@@ -1411,7 +1526,7 @@ begin
   begin
     if not Info[I].InfoLoaded then
     begin
-      FQuery := GetQuery;
+      FQuery := Context.CreateQuery(dbilRead);
       try
         //todo: don't select images
         SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Info[I].FileName, True)));
@@ -1439,13 +1554,14 @@ begin
   end;
 end;
 
-function GetMenuInfoByStrTh(StrTh: string): TDBPopupMenuInfo;
+function GetMenuInfoByStrTh(Context: IDBContext; StrTh: string): TDBPopupMenuInfo;
 var
   FQuery: TDataSet;
   MenuRecord: TDBPopupMenuInfoRecord;
 begin
   Result := TDBPopupMenuInfo.Create;
-  FQuery := GetQuery;
+
+  FQuery := Context.CreateQuery(dbilRead);
   try
     SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrThCrc = :CRC AND StrTh = :StrTh');
     SetIntParam(FQuery, 0, StringCRC(StrTh));
@@ -1503,11 +1619,11 @@ begin
   end;
 end;
 
-procedure SetFileNameByID(ID: Integer; FileName: string);
+procedure SetFileNameByID(Context: IDBContext; ID: Integer; FileName: string);
 var
   FQuery: TDataSet;
 begin
-  FQuery := GetQuery;
+  FQuery := Context.CreateQuery;
   try
     FQuery.Active := False;
     FileName := NormalizeDBString(AnsiLowerCase(FileName));
@@ -1525,10 +1641,28 @@ end;
 ///  END DB TYPES
 ///
 
-procedure CopyFiles(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
+procedure CopyFiles(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean;
   ExplorerForm: TDBForm);
 begin
-  TWindowsCopyFilesThread.Create(Handle, Src, Dest, Move, AutoRename, ExplorerForm);
+  TWindowsCopyFilesThread.Create(Context, Handle, Src, Dest, Move, AutoRename, ExplorerForm);
+end;
+
+{ TImageDBOptions }
+
+function TImageDBOptions.Copy: TImageDBOptions;
+begin
+  Result := TImageDBOptions.Create;
+  Result.Version := Version;
+  Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
+  Result.ThSize := ThSize;
+  Result.ThHintSize := ThHintSize;
+  Result.Description := Description;
+  Result.Name := Name;
+end;
+
+constructor TImageDBOptions.Create;
+begin
+  Version := 0;
 end;
 
 end.

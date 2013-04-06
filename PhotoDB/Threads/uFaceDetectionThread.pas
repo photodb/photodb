@@ -31,6 +31,7 @@ uses
   uBitmapUtils,
   uSettings,
   uDateUtils,
+  uDBContext,
   uPeopleSupport,
   u2DUtils,
   uConfiguration,
@@ -101,7 +102,7 @@ type
     procedure RequestFaceDetection(Caller: TObject; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
     function GetFaceDataFromCache(CacheFileName: string; Faces: TFaceDetectionResult): Integer;
     function RotateCacheData(ImageFileName: string; Rotate: Integer): Boolean;
-    function RotateDBData(ID: Integer; Rotate: Integer): Boolean;
+    function RotateDBData(Context: IDBContext; ID: Integer; Rotate: Integer): Boolean;
     constructor Create;
     destructor Destroy; override;
     property DetectionMethod: string read GetDetectionMethod;
@@ -427,7 +428,7 @@ begin
   end;
 end;
 
-function TFaceDetectionDataManager.RotateDBData(ID, Rotate: Integer): Boolean;
+function TFaceDetectionDataManager.RotateDBData(Context: IDBContext; ID, Rotate: Integer): Boolean;
 var
   PersonAreas: TPersonAreaCollection;
 begin
@@ -444,7 +445,7 @@ begin
           PersonAreas.RotateRight;
         end;
     end;
-    PersonAreas.UpdateDB;
+    PersonAreas.UpdateDB(Context);
     Result := True;
   finally
     F(PersonAreas);

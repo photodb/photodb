@@ -36,6 +36,7 @@ uses
   uConstants,
   uLockedFileNotifications,
   uDBUtils,
+  uDBContext,
   uGraphicUtils,
   uAssociations,
   uExifUtils,
@@ -54,6 +55,7 @@ type
   TImageConvertThread = class(TThreadEx)
   private
     { Private declarations }
+    FContext: IDBContext;
     FData: TDBPopupMenuInfoRecord;
     FProcessingParams: TProcessingParams;
     FDialogResult: Integer;
@@ -78,7 +80,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwnerForm: TThreadForm; AState : TGUID; AData : TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
+    constructor Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
     procedure AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect; Text: string);
     procedure SyncDrawCallBack;
     function AsyncPrepareBitmapCallBack(Bitmap: TBitmap; Font: HFont; Text: string): Integer;
@@ -125,9 +127,10 @@ begin
   Result := FIntParam;
 end;
 
-constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState : TGUID; AData: TDBPopupMenuInfoRecord; AProcessingParams: TProcessingParams);
+constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TDBPopupMenuInfoRecord; AProcessingParams: TProcessingParams);
 begin
   inherited Create(AOwnerForm, AState);
+  FContext := Context;
   FData := AData;
   FProcessingParams := AProcessingParams;
 end;
@@ -362,12 +365,12 @@ const
         begin
           if FProcessingParams.Rotate then
           begin
-            SetRotate(FData.ID, DB_IMAGE_ROTATE_0);
+            SetRotate(FContext, FData.ID, DB_IMAGE_ROTATE_0);
             FData.Rotation := DB_IMAGE_ROTATE_0;
 
             RotateFaces(Rotation);
           end;
-          UpdateImageRecord(ThreadForm, FData.FileName, FData.ID);
+          UpdateImageRecord(FContext, ThreadForm, FData.FileName, FData.ID);
           Synchronize(NotifyDB);
           TLockFiles.Instance.AddLockedFile(FileName, 1000);
         end;
@@ -446,7 +449,7 @@ begin
 
           if Rotation <> (FData.Rotation and DB_IMAGE_ROTATE_MASK) then
           begin
-            SetRotate(FData.ID, Rotation);
+            SetRotate(FContext, FData.ID, Rotation);
             FIntParam := Rotation;
             Synchronize(UpdateDBRotation);
           end;
@@ -717,7 +720,7 @@ procedure TImageConvertThread.RotateFaces(Rotation: Integer);
 begin
   FaceDetectionDataManager.RotateCacheData(FData.FileName, Rotation);
   if (FData.ID > 0) then
-    FaceDetectionDataManager.RotateDBData(FData.ID, Rotation);
+    FaceDetectionDataManager.RotateDBData(FContext, FData.ID, Rotation);
 end;
 
 procedure TImageConvertThread.ShowWriteError;

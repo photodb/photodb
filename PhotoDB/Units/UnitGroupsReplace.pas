@@ -8,14 +8,14 @@ uses
   UnitGroupsWork,
 
   uRuntime,
+  uDBContext,
   uTranslate,
   uGroupTypes,
   uConstants,
   uSettings,
   uShellIntegration;
 
-procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
-procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW; FileName: string);
+procedure FilterGroups(DBContext: IDBContext; var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 
 implementation
 
@@ -66,13 +66,7 @@ begin
     end;
 end;
 
-procedure FilterGroups(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
-begin
-  FilterGroupsW(Groups, OutRegGroups, InRegGroups, Actions, dbname);
-end;
-
-procedure FilterGroupsW(var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW;
-  FileName: string);
+procedure FilterGroups(DBContext: IDBContext; var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 var
   I: Integer;
   Pi: PInteger;
@@ -170,9 +164,9 @@ begin
       Options.MaxAuto := Actions.MaxAuto;
       Options.AllowAdd := True;
       if GrNameOut = '' then
-        GroupReplaceNotExists(Groups[I], Action, Options, FileName)
+        GroupReplaceNotExists(DBContext, Groups[I], Action, Options)
       else
-        GroupReplaceExists(GroupByNameOut(Groups[I].GroupName, Groups[I]), Action, Options, FileName);
+        GroupReplaceExists(DBContext, GroupByNameOut(Groups[I].GroupName, Groups[I]), Action, Options);
 
       if Action.Action <> GROUP_ACTION_ADD then
         AddGroupsAction(Actions.Actions, Action);
@@ -200,17 +194,17 @@ begin
       end;
       if Action.Action = GROUP_ACTION_ADD then
       begin
-        if AddGroupW(GroupByNameOut(Groups[I].GroupName, Groups[I]), FileName) then
+        if AddGroup(DBContext, GroupByNameOut(Groups[I].GroupName, Groups[I])) then
         begin
           SetLength(TempGroups, 1);
           TempGroups[0] := Action.InGroup;
           SetLength(Temp, 1);
           Temp[0] := Action.OutGroup;
           ReplaceGroupsW(Groups, Temp, TempGroups);
-          Action.InGroup := GetGroupByGroupNameW(Groups[I].GroupName, False, FileName);
+          Action.InGroup := GetGroupByGroupName(DBContext, Groups[I].GroupName, False);
           Action.Action := GROUP_ACTION_ADD_IN_EXISTS;
           AddGroupsAction(Actions.Actions, Action);
-          InRegGroups := GetRegisterGroupListW(FileName, True, SortGroupsByName);
+          InRegGroups := GetRegisterGroupList(DBContext, True, SortGroupsByName);
         end else
         begin
           MessageBoxDB(0, Format(TA('An error occurred while adding a group', 'Groups'),

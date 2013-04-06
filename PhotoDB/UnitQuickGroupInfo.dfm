@@ -18,6 +18,7 @@ object FormQuickGroupInfo: TFormQuickGroupInfo
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   DesignSize = (

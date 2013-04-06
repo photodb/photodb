@@ -15,6 +15,7 @@ uses
   UnitGroupsWork,
   uBitmapUtils,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -22,6 +23,7 @@ uses
   uGroupTypes,
   uShellIntegration,
   uDBForm,
+  uDBContext,
   uFormInterfaces,
   uCollectionEvents,
   uTranslate,
@@ -119,6 +121,7 @@ var
   Group: TGroup;
   GroupItem: TGroupItem;
   Form: TDBForm;
+  Context: IDBContext;
 begin
   Result := False;
   Form := TDBForm(Sender);
@@ -137,16 +140,18 @@ begin
   if GroupItem = nil then
     Exit;
 
-  Group := GetGroupByGroupName(GroupItem.GroupName, False);
+  Context := DBKernel.DBContext;
+
+  Group := GetGroupByGroupName(Context, GroupItem.GroupName, False);
   try
     EventInfo.Data := GroupItem;
     if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-      if UnitGroupsWork.DeleteGroup(Group) then
+      if UnitGroupsWork.DeleteGroup(Context, Group) then
       begin
         if ID_OK = MessageBoxDB(Form.Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Group.GroupName]),
           L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         begin
-          UnitGroupsTools.DeleteGroup(Group);
+          UnitGroupsTools.DeleteGroup(Context, Group);
           MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
           CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
           Result := True;
@@ -178,9 +183,13 @@ function TGroupProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
 var
   Group: TGroup;
+  Context: IDBContext;
 begin
   Result := False;
-  Group := GetGroupByGroupName(ExtractGroupName(Item.Path), True);
+
+  Context := DBKernel.DBContext;
+
+  Group := GetGroupByGroupName(Context, ExtractGroupName(Item.Path), True);
 
   if Group.GroupImage = nil then
     Exit;
@@ -208,6 +217,7 @@ var
   G: TGroupItem;
   Cancel: Boolean;
   Groups: TGroups;
+  Context: IDBContext;
 begin
   inherited;
   Result := True;
@@ -224,7 +234,9 @@ begin
 
   if Item is TGroupsItem then
   begin
-    Groups := GetRegisterGroupList(True);
+    Context := DBKernel.DBContext;
+
+    Groups := GetRegisterGroupList(Context, True, True);
     try
       for I := 0 to Length(Groups) - 1 do
       begin
@@ -256,20 +268,23 @@ var
   Form: TDBForm;
   EventInfo: TEventValues;
   Item: TGroupItem;
+  Context: IDBContext;
 begin
   Result := False;
 
   if Items.Count = 0 then
     Exit;
+
+  Context := DBKernel.DBContext;
   Item := Items[0] as TGroupItem;
 
-  Group := GetGroupByGroupName(Item.GroupName, False);
+  Group := GetGroupByGroupName(Context, Item.GroupName, False);
   try
     Form := TDBForm(Sender);
 
     if Group.GroupName <> Options.NewName then
     begin
-      if GroupNameExists(Options.NewName) then
+      if GroupNameExists(Context, Options.NewName) then
       begin
         MessageBoxDB(Form.Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Exit;
@@ -279,9 +294,9 @@ begin
         Exit;
 
       Group.GroupName := Options.NewName;
-      if UpdateGroup(Group) then
+      if UpdateGroup(Context, Group) then
       begin
-        RenameGroup(Group, Options.NewName);
+        RenameGroup(Context, Group, Options.NewName);
         MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
         Result := True;
       end;
@@ -311,6 +326,7 @@ begin
   Result := False;
   if Items.Count = 0 then
     Exit;
+
   GroupInfoForm.Execute(nil, TGroupItem(Items[0]).GroupName, False);
   Result := True;
 end;
@@ -411,9 +427,12 @@ end;
 function TGroupItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Group: TGroup;
+  Context: IDBContext;
 begin
   F(FImage);
-  Group := GetGroupByGroupName(GroupName, True);
+
+  Context := DBKernel.DBContext;
+  Group := GetGroupByGroupName(Context, GroupName, True);
   try
     ReadFromGroup(Group, Options, ImageSize);
     Result := True;

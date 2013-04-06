@@ -24,6 +24,7 @@ uses
   uThreadForm,
   uConstants,
   uGUIDUtils,
+  uDBContext,
 
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
@@ -141,6 +142,7 @@ type
 type
   TUpdaterInfo = class(TObject)
   private
+    FContext: IDBContext;
     FIsUpdater: Boolean;
     FUpdateDB: Boolean;
     FProcHelpAfterUpdate: TNotifyEvent;
@@ -154,7 +156,7 @@ type
     function GetSID: TGUID;
   public
     constructor Create; overload;
-    constructor Create(Info: TExplorerFileInfo); overload;
+    constructor Create(Context: IDBContext; Info: TExplorerFileInfo); overload;
     destructor Destroy; override;
     procedure Assign(Info: TUpdaterInfo);
     function Copy: TUpdaterInfo;
@@ -167,6 +169,7 @@ type
     property ID: Integer read GetID;
     property SID: TGUID read GetSID;
     property DisableLoadingOfBigImage: Boolean read FDisableLoadingOfBigImage write FDisableLoadingOfBigImage;
+    property Context: IDBContext read FContext write FContext;
   end;
 
 function AddOneExplorerFileInfo(Infos: TExplorerFileInfos; FileName: string; FileType, ImageIndex: Integer;
@@ -621,6 +624,7 @@ end;
 
 procedure TUpdaterInfo.Assign(Info: TUpdaterInfo);
 begin
+  Context := Info.Context;
   IsUpdater := Info.IsUpdater;
   UpdateDB := Info.UpdateDB;
   ProcHelpAfterUpdate := Info.ProcHelpAfterUpdate;
@@ -648,11 +652,13 @@ begin
   FNewFileItem := False;
   FFileInfo := nil;
   FDisableLoadingOfBigImage := False;
+  Context := nil;
 end;
 
-constructor TUpdaterInfo.Create(Info: TExplorerFileInfo);
+constructor TUpdaterInfo.Create(Context: IDBContext; Info: TExplorerFileInfo);
 begin
   Init;
+  FContext := Context;
   SetFileInfo(Info);
 end;
 

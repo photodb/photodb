@@ -15,6 +15,7 @@ uses
 
   Dmitry.Utils.System,
 
+  UnitDBKernel,
   UnitGroupsWork,
   UnitDBDeclare,
   CmpUnit,
@@ -22,6 +23,7 @@ uses
   uMemory,
   uStringUtils,
   uDBClasses,
+  uDBContext,
   uGUIDUtils,
   uFaceDetection,
   uSettings,
@@ -55,6 +57,7 @@ type
     FIsInitialized: Boolean;
     FPeoples: TPersonCollection;
     FSync: TCriticalSection;
+    FDBContext: IDBContext;
     function GetAllPersons: TPersonCollection;
   public
     procedure LoadPersonList(Persons: TPersonCollection);
@@ -80,8 +83,7 @@ type
     destructor Destroy; override;
     procedure RegisterManager;
     procedure Unregister;
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer;
-                                params: TEventFields; Value: TEventValues);
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
     property AllPersons: TPersonCollection read GetAllPersons;
   end;
 
@@ -173,7 +175,7 @@ type
     constructor Create; overload;
     constructor Create(ImageID, PersonID: Integer; Area: TFaceDetectionResultItem); overload;
     procedure ReadFromDS(DS: TDataSet);
-    function UpdateDB: Boolean;
+    function UpdateDB(DBContext: IDBContext): Boolean;
     procedure RotateLeft;
     procedure RotateRight;
     function Clone: TClonableObject; override;
@@ -202,7 +204,7 @@ type
     function Extract(Index: Integer): TPersonArea;
     procedure RotateLeft;
     procedure RotateRight;
-    procedure UpdateDB;
+    procedure UpdateDB(DBContext: IDBContext);
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPersonArea read GetAreaByIndex; default;
   end;
@@ -386,7 +388,7 @@ begin
     if P.Empty then
       Exit;
 
-    IC := TInsertCommand.Create(ObjectMappingTableName);
+    IC := FDBContext.CreateInsert(ObjectMappingTableName);
     try
       IC.AddParameter(TIntegerParameter.Create('ObjectID', PersonArea.PersonID));
       IC.AddParameter(TIntegerParameter.Create('Left', PersonArea.X));
@@ -402,7 +404,7 @@ begin
 
         if P.Groups <> '' then
         begin
-          SC := TSelectCommand.Create(ImageTable);
+          SC := FDBContext.CreateSelect(ImageTable);
           try
             SC.AddParameter(TStringParameter.Create('Groups'));
             SC.AddParameter(TStringParameter.Create('Keywords'));
@@ -416,12 +418,12 @@ begin
               GS := EncodeGroups(P.Groups);
               for I := 0 to Length(GS) - 1 do
               begin
-                G := GetGroupByGroupName(GS[I].GroupName, False);
+                G := GetGroupByGroupName(FDBContext, GS[I].GroupName, False);
                 AddWordsA(G.GroupKeyWords, KeyWords);
               end;
               AddWordsA(P.Name, KeyWords);
 
-              UC := TUpdateCommand.Create(ImageTable);
+              UC := FDBContext.CreateUpdate(ImageTable);
               try
                 UC.AddParameter(TStringParameter.Create('Groups', Groups));
                 UC.AddParameter(TStringParameter.Create('Keywords', Keywords));
@@ -469,7 +471,7 @@ begin
   //statistics
   ProgramStatistics.FaceDetectionUsed;
 
-  UC := TUpdateCommand.Create(ObjectMappingTableName);
+  UC := FDBContext.CreateUpdate(ObjectMappingTableName);
   try
     UC.AddParameter(TIntegerParameter.Create('ObjectID', ToPersonID));
     UC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID', PersonArea.ID));
@@ -497,6 +499,7 @@ begin
   FPeoples := nil;
   FIsInitialized := False;
   FSync := TCriticalSection.Create;
+  FDBContext := DBKernel.DBContext;
   RegisterManager;
 end;
 
@@ -506,7 +509,7 @@ var
 begin
   Result := 0;
 
-  IC := TInsertCommand.Create(ObjectTableName);
+  IC := FDBContext.CreateInsert(ObjectTableName);
   try
     IC.AddParameter(TStringParameter.Create('ObjectName', Person.Name));
     IC.AddParameter(TStringParameter.Create('RelatedGroups', Person.Groups));
@@ -553,7 +556,8 @@ var
   DC: TDeleteCommand;
 begin
   Result := False;
-  DC := TDeleteCommand.Create(ObjectTableName);
+
+  DC := FDBContext.CreateDelete(ObjectTableName);
   try
     DC.AddWhereParameter(TIntegerParameter.Create('ObjectId', PersonID));
     DC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
@@ -607,7 +611,7 @@ var
   P: TPerson;
   Key: string;
 begin
-  Key := FormatEx('FaceDetection\{0}', [ExtractFileName(dbname)]);
+  Key := FormatEx('FaceDetection\{0}', [ExtractFileName(FDBContext.CollectionFileName)]);
 
   Persons.Clear;
 
@@ -680,7 +684,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPersonAreaCollection.Create;
-  SC := TSelectCommand.Create(ObjectMappingTableName);
+  SC := FDBContext.CreateSelect(ObjectMappingTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
@@ -704,7 +708,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPerson.Create;
-  SC := TSelectCommand.Create(ObjectTableName);
+  SC := FDBContext.CreateSelect(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TIntegerParameter.Create('ObjectID', PersonID));
@@ -730,7 +734,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPerson.Create;
-  SC := TSelectCommand.Create(ObjectTableName, True);
+  SC := FDBContext.CreateSelect(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TStringParameter.Create('ObjectName', PersonName));
@@ -757,7 +761,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPersonCollection.Create;
-  SC := TSelectCommand.Create(ObjectTableName);
+  SC := FDBContext.CreateSelect(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('trim(ObjectName) in ({0})', [Persons.Join(',')])));
@@ -782,7 +786,7 @@ var
   SC: TSelectCommand;
 begin
   Result := TPersonCollection.Create;
-  SC := TSelectCommand.Create(ObjectTableName);
+  SC := FDBContext.CreateSelect(ObjectTableName);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
@@ -806,7 +810,7 @@ var
   SC: TSelectCommand;
 begin
   try
-    SC := TSelectCommand.Create(ObjectTableName);
+    SC := FDBContext.CreateSelect(ObjectTableName);
     try
       SC.AddParameter(TAllParameter.Create);
       SC.Order.Add(TOrderParameter.Create('ObjectName', False));
@@ -829,41 +833,35 @@ var
   P: TPerson;
   StopOperation: Boolean;
 begin
+  SC := FDBContext.CreateSelect(ObjectTableName);
   try
-    SC := TSelectCommand.Create(ObjectTableName);
-    try
 
-      SQL := 'SELECT * FROM ( ' +
-              'SELECT First(O.[ObjectID]) as [ObjectID], First(O.[ObjectName]) as [ObjectName], First(O.[RelatedGroups]) as [RelatedGroups], First(O.[BirthDate]) as [BirthDate], ' +
-              ' First(O.[Phone]) as [Phone], First(O.[Address]) as [Address], First(O.[Company]) as [Company], First(O.[JobTitle]) as [JobTitle], First(O.[IMNumber]) as [IMNumber], ' +
-              ' First(O.[Email]) as [Email], First(O.[Sex]) as [Sex], First([O.ObjectComment]) as [ObjectComment], First(O.[CreateDate]) as [CreateDate], First(O.ObjectUniqID) as ObjectUniqID, First(O.Image) as [Image], ' +
-              ' Count(1) AS ObjectsCount FROM Objects O ' +
-              'INNER JOIN ObjectMapping OM on O.ObjectID = OM.ObjectID ' +
-              'GROUP BY O.[ObjectID] ' +
-            ') ORDER BY [ObjectsCount] DESC ';
+    SQL := 'SELECT * FROM ( ' +
+            'SELECT First(O.[ObjectID]) as [ObjectID], First(O.[ObjectName]) as [ObjectName], First(O.[RelatedGroups]) as [RelatedGroups], First(O.[BirthDate]) as [BirthDate], ' +
+            ' First(O.[Phone]) as [Phone], First(O.[Address]) as [Address], First(O.[Company]) as [Company], First(O.[JobTitle]) as [JobTitle], First(O.[IMNumber]) as [IMNumber], ' +
+            ' First(O.[Email]) as [Email], First(O.[Sex]) as [Sex], First([O.ObjectComment]) as [ObjectComment], First(O.[CreateDate]) as [CreateDate], First(O.ObjectUniqID) as ObjectUniqID, First(O.Image) as [Image], ' +
+            ' Count(1) AS ObjectsCount FROM Objects O ' +
+            'INNER JOIN ObjectMapping OM on O.ObjectID = OM.ObjectID ' +
+            'GROUP BY O.[ObjectID] ' +
+          ') ORDER BY [ObjectsCount] DESC ';
 
-      if SC.ExecuteSQL(SQL, True) > 0 then
+    if SC.ExecuteSQL(SQL, True) > 0 then
+    begin
+      StopOperation := False;
+      while not SC.DS.Eof do
       begin
-        StopOperation := False;
-        while not SC.DS.Eof do
-        begin
-          P := TPerson.Create;
-          P.ReadFromDS(SC.DS);
+        P := TPerson.Create;
+        P.ReadFromDS(SC.DS);
 
-          CallBack(P, StopOperation);
-          if StopOperation then
-            Break;
+        CallBack(P, StopOperation);
+        if StopOperation then
+          Break;
 
-          SC.DS.Next;
-        end;
+        SC.DS.Next;
       end;
-    finally
-      F(SC);
     end;
-  except
-    //if database doesn't have any tables could be exception - ignore it
-    on e: Exception do
-      EventLog(e);
+  finally
+    F(SC);
   end;
 end;
 
@@ -873,7 +871,7 @@ var
   List: TList<Integer>;
   Key: string;
 begin
-  Key := FormatEx('FaceDetection\{0}', [ExtractFileName(dbname)]);
+  Key := FormatEx('FaceDetection\{0}', [ExtractFileName(FDBContext.CollectionFileName)]);
 
   List := TList<Integer>.Create;
   try
@@ -914,7 +912,7 @@ begin
   //statistics
   ProgramStatistics.FaceDetectionUsed;
 
-  DC := TDeleteCommand.Create(ObjectMappingTableName);
+  DC := FDBContext.CreateDelete(ObjectMappingTableName);
   try
     DC.AddParameter(TAllParameter.Create);
     DC.AddWhereParameter(TIntegerParameter.Create('ImageID', ImageID));
@@ -948,7 +946,7 @@ begin
         try
           if PTest.Empty then
           begin
-            UC := TUpdateCommand.Create(ObjectTableName);
+            UC := FDBContext.CreateUpdate(ObjectTableName);
             try
               UC.AddParameter(TStringParameter.Create('ObjectName', NewName));
               UC.AddWhereParameter(TIntegerParameter.Create('ObjectID', P.ID));
@@ -1012,7 +1010,7 @@ var
 begin
   Result := False;
 
-  UC := TUpdateCommand.Create(ObjectTableName);
+  UC := FDBContext.CreateUpdate(ObjectTableName);
   try
     UC.AddParameter(TStringParameter.Create('ObjectName', Person.Name));
     UC.AddParameter(TStringParameter.Create('RelatedGroups', Person.Groups));
@@ -1241,12 +1239,12 @@ begin
     Self[I].RotateRight;
 end;
 
-procedure TPersonAreaCollection.UpdateDB;
+procedure TPersonAreaCollection.UpdateDB(DBContext: IDBContext);
 var
   I: Integer;
 begin
   for I := 0 to Count - 1 do
-    Self[I].UpdateDB;
+    Self[I].UpdateDB(DBContext);
 end;
 
 { TPersonArea }
@@ -1355,7 +1353,7 @@ begin
   FY := NY;
 end;
 
-function TPersonArea.UpdateDB: Boolean;
+function TPersonArea.UpdateDB(DBContext: IDBContext): Boolean;
 var
   UC: TUpdateCommand;
 begin
@@ -1363,7 +1361,7 @@ begin
   if FID = 0 then
     Exit;
 
-  UC := TUpdateCommand.Create(ObjectMappingTableName);
+  UC := DBContext.CreateUpdate(ObjectMappingTableName);
   try
     UC.AddParameter(TIntegerParameter.Create('Left', FX));
     UC.AddParameter(TIntegerParameter.Create('Top', FY));

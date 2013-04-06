@@ -436,7 +436,7 @@ var
 begin
   Result := 0;
 
-  SC := TSelectCommand.Create(ImageTable, True, CollectionFile);
+  SC := TSelectCommand.Create(ImageTable, CollectionFile, True);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TCustomConditionParameter.Create('1 = 1'));
@@ -459,7 +459,7 @@ var
   SC: TSelectCommand;
   IC: TInsertCommand;
 begin
-  SC := TSelectCommand.Create(TableSettings, True, CollectionFile);
+  SC := TSelectCommand.Create(TableSettings, CollectionFile, True);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TCustomConditionParameter.Create('1 = 1'));

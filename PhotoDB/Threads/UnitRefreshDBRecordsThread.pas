@@ -14,6 +14,7 @@ uses
   uLogger,
   uMemory,
   uDBUtils,
+  uDBContext,
   uDBPopupMenuInfo,
   uCollectionEvents,
   uDBForm,
@@ -29,6 +30,7 @@ type
   TRefreshDBRecordsThread = class(TDBThread)
   private
     { Private declarations }
+    FContext: IDBContext;
     FInfo: TDBPopupMenuInfo;
     ProgressWindow: TForm;
     BoolParam: Boolean;
@@ -42,7 +44,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(Owner: TDBForm; Options: TRefreshIDRecordThreadOptions);
+    constructor Create(Context: IDBContext; Owner: TDBForm; Options: TRefreshIDRecordThreadOptions);
     destructor Destroy; override;
     procedure InitializeProgress;
     procedure DestroyProgress;
@@ -60,11 +62,12 @@ uses ProgressActionUnit;
 
 { TRefreshDBRecordsThread }
 
-constructor TRefreshDBRecordsThread.Create(Owner: TDBForm; Options: TRefreshIDRecordThreadOptions);
+constructor TRefreshDBRecordsThread.Create(Context: IDBContext; Owner: TDBForm; Options: TRefreshIDRecordThreadOptions);
 var
   I: Integer;
 begin
   inherited Create(Owner, False);
+  FContext := Context;
   DBEvent_Sender := Owner;
   FInfo := TDBPopupMenuInfo.Create;
   FInfo.Assign(Options.Info);
@@ -72,7 +75,7 @@ begin
     if FInfo[I].ID <> 0 then
       if FInfo[I].Selected then
         ProcessedFilesCollection.AddFile(FInfo[I].FileName);
-  DoDBkernelEventRefreshList;
+  DoDBKernelEventRefreshList;
 end;
 
 procedure TRefreshDBRecordsThread.Execute;
@@ -89,6 +92,7 @@ begin
       if FInfo[I].ID <> 0 then
         if FInfo[I].Selected then
           Inc(Count);
+
     SynchronizeEx(InitializeProgress);
     C := 0;
     for I := 0 to FInfo.Count - 1 do
@@ -108,7 +112,7 @@ begin
           Inc(C);
           SetProgressPosition(C);
           try
-            UpdateImageRecord(DBEvent_Sender, FInfo[I].FileName, FInfo[I].ID);
+            UpdateImageRecord(FContext, DBEvent_Sender, FInfo[I].FileName, FInfo[I].ID);
           except
             on E: Exception do
               EventLog(':TRefreshDBRecordsThread::Execute()/UpdateImageRecord throw exception: ' + E.message);

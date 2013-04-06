@@ -47,6 +47,7 @@ uses
   ToolWin,
   GraphicCrypt,
   FormManegerUnit,
+  UnitDBKernel,
   DBCMenu,
   ShellContextMenu,
   GIFImage,
@@ -90,6 +91,7 @@ uses
   uShellNamespaceUtils,
   uThemesUtils,
   uDBIcons,
+  uDBContext,
   uAnimationHelper,
   uImageZoomHelper,
   uPhotoShelf,
@@ -663,7 +665,7 @@ begin
       Result := True;
       ForwardThreadExists := False;
       FForwardThreadReady := False;
-      TViewerThread.Create(Self, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
+      TViewerThread.Create(Self, DBKernel.DBContext, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
 
       if NeedsUpdating then
       begin
@@ -672,7 +674,7 @@ begin
         TbRotateCCW.Enabled := False;
         TbRotateCW.Enabled := False;
         UpdateCrypted;
-        TSlideShowUpdateInfoThread.Create(Self, StateID, Item.FileName);
+        TSlideShowUpdateInfoThread.Create(Self, StateID, DBKernel.DBContext, Item.FileName);
       end;
 
     end else
@@ -1707,12 +1709,15 @@ var
   FileName: string;
   FQuery: TDataSet;
   InfoItem: TDBPopupMenuInfoRecord;
+  Context: IDBContext;
 begin
   if List.Count = 0 then
     Exit;
 
+  Context := DBKernel.DBContext;
+
   CurrentInfo.Clear;
-  FQuery := GetQuery;
+  FQuery := Context.CreateQuery(dbilRead);
   try
     ReadOnlyQuery(FQuery);
     for I := 0 to List.Count - 1 do
@@ -1848,8 +1853,11 @@ procedure TViewer.UpdateRecord(FileNo: integer);
 var
   DS: TDataSet;
   FileName: string;
+  Context: IDBContext;
 begin
-  DS := GetQuery;
+  Context := DBKernel.DBContext;
+
+  DS := Context.CreateQuery(dbilRead);
   try
     ReadOnlyQuery(DS);
     FileName := CurrentInfo[FileNo].FileName;
@@ -2090,7 +2098,7 @@ var
 begin
   NewFormState;
   WaitingList := True;
-  TSlideShowScanDirectoryThread.Create(Self, StateID, FileName);
+  TSlideShowScanDirectoryThread.Create(DBKernel.DBContext, Self, StateID, FileName);
 
   Info := TDBPopupMenuInfo.Create;
   try
@@ -3600,7 +3608,7 @@ begin
       N := 0;
     ForwardThreadExists := True;
     ForwardThreadFileName := CurrentInfo[N].FileName;
-    TViewerThread.Create(Self, CurrentInfo[N], False, 1, ForwardThreadSID, True, 0);
+    TViewerThread.Create(Self, DBKernel.DBContext, CurrentInfo[N], False, 1, ForwardThreadSID, True, 0);
   end;
 end;
 
@@ -3770,6 +3778,7 @@ var
   DeleteID: Integer;
   DItem: IPDItem;
   Device: IPDevice;
+  Context: IDBContext;
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirmation'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
@@ -3777,7 +3786,8 @@ begin
     DeleteID := 0;
     if Item.ID <> 0 then
     begin
-      FQuery := GetQuery;
+      Context := DBKernel.DBContext;
+      FQuery := Context.CreateQuery;
       try
         DeleteID := Item.ID;
         SQL_ := Format('DELETE FROM $DB$ WHERE ID = %d', [Item.ID]);
@@ -3936,13 +3946,16 @@ var
   NewRating: Integer;
   EventInfo: TEventValues;
   FileInfo: TDBPopupMenuInfoRecord;
+  Context: IDBContext;
 begin
+  Context := DBKernel.DBContext;
+
   Str := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
   NewRating := StrToInt(Str);
 
   if Item.ID > 0 then
   begin
-    SetRating(Item.ID, NewRating);
+    SetRating(Context, Item.ID, NewRating);
     EventInfo.Rating := NewRating;
     CollectionEvents.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
   end else
@@ -4362,7 +4375,7 @@ begin
     FileName := LongFileName(FileName);
     Info := TDBPopupMenuInfo.Create;
     try
-      GetFileListByMask(FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
+      GetFileListByMask(DBKernel.DBContext, FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
       if Info.Count > 0 then
       begin
         ShowImages(Self, info);

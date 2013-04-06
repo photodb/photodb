@@ -43,19 +43,6 @@ type
   TDBIsolationLevel = (dbilReadWrite, dbilRead, dbilExclusive);
 
 type
-  TImageDBOptions = class
-  public
-    Version: Integer;
-    DBJpegCompressionQuality: Byte;
-    ThSize: Integer;
-    ThHintSize: Integer;
-    Description: string;
-    Name: string;
-    constructor Create;
-    function Copy: TImageDBOptions;
-  end;
-
-type
   TADODBConnection = class(TObject)
   public
     ADOConnection: TADOConnection;
@@ -173,13 +160,11 @@ const
 procedure FreeDS(var DS: TDataSet);
 function ADOInitialize(Dbname: string; ForseNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TADOConnection;
 
-function GetTable: TDataSet; overload;
 function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet; overload;
 
 function GetConnectionString(ConnectionString: string; Dbname: string; IsolationMode: TDBIsolationLevel): string; overload;
 function GetConnectionString(Dbname: string; IsolationMode: TDBIsolationLevel): string; overload;
 
-function GetQuery(CreateNewConnection: Boolean = False): TDataSet; overload;
 function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet; overload;
 
 procedure SetSQL(SQL: TDataSet; SQLText: String);
@@ -198,11 +183,7 @@ procedure CreateMSAccessDatabase(FileName: string);
 procedure TryRemoveConnection(Dbname: string; Delete: Boolean = False);
 procedure RemoveADORef(ADOConnection: TADOConnection);
 
-function GetRecordsCount(Table: string): Integer;
-function UpdateImageSettings(TableName: string; Settings: TImageDBOptions): Boolean;
-function GetImageSettingsFromTable(TableName: string): TImageDBOptions;
 procedure PackTable(FileName: string);
-function GetDefaultImageDBOptions: TImageDBOptions;
 function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
@@ -557,14 +538,6 @@ begin
   Result := SQL <> nil;
 end;
 
-function GetQuery(CreateNewConnection: Boolean = False): TDataSet;
-begin
-  if CreateNewConnection then
-    Result := GetQuery(dbname, CreateNewConnection, dbilRead)
-  else
-    Result := GetQuery(dbname, CreateNewConnection, dbilReadWrite);
-end;
-
 function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
 begin
   FSync.Enter;
@@ -576,11 +549,6 @@ begin
   finally
     FSync.Leave;
   end;
-end;
-
-function GetTable: TDataSet;
-begin
-  Result := GetTable(dbname, DB_TABLE_IMAGES);
 end;
 
 function GetTable(Table: String; TableID: Integer = DB_TABLE_UNKNOWN) : TDataSet;
@@ -602,97 +570,6 @@ begin
       (Result as TADODataSet).CommandText := 'PersonMapping';
   finally
     FSync.Leave;
-  end;
-end;
-
-function GetRecordsCount(Table: string) : integer;
-var
-  FTable: TDataSet;
-begin
-  Result := 0;
-  try
-    FTable := GetQuery(Table); // ONLY MDB
-    try
-      SetSQL(FTable, 'SELECT COUNT(*) AS RecordsCount FROM ImageTable');
-      FTable.Open;
-      Result := FTable.FieldByName('RecordsCount').AsInteger;
-    finally
-      FreeDS(FTable);
-    end;
-  except
-    on e: Exception do
-      TLogger.Instance.Message('GetRecordsCount throws an exception: ' + e.Message);
-  end;
-end;
-
-function UpdateImageSettings(TableName: string; Settings: TImageDBOptions) : boolean;
-var
-  SQL: string;
-  FQuery: TDataSet;
-begin
-  Result := True;
-  FQuery := GetQuery(TableName, False);
-  try
-    SQL := 'Update DBSettings Set DBJpegCompressionQuality = ' + IntToStr
-      (Settings.DBJpegCompressionQuality) + ', ThSizePanelPreview = 100'
-      + ',' + 'ThImageSize = ' + IntToStr(Settings.ThSize) + ', ThHintSize = ' + IntToStr(Settings.ThHintSize)
-      + ', DBName = ' + NormalizeDBString(Settings.name)  + ', DBDescription = ' + NormalizeDBString(Settings.Description);
-    SetSQL(FQuery, SQL);
-    try
-      ExecSQL(FQuery);
-    except
-      on E: Exception do
-      begin
-        EventLog(':UpdateImageSettings() throw exception: ' + E.message);
-        Result := False;
-      end;
-    end;
-  finally
-    FreeDS(FQuery);
-  end;
-end;
-
-function GetDefaultImageDBOptions: TImageDBOptions;
-begin
-  Result := TImageDBOptions.Create;
-  Result.DBJpegCompressionQuality := 75;
-  Result.ThSize := 200;
-  Result.ThHintSize := 400;
-end;
-
-function GetImageSettingsFromTable(TableName: string): TImageDBOptions;
-var
-  SQL: string;
-  FQuery: TDataSet;
-begin
-  Result := GetDefaultImageDBOptions;
-  if TableName = '' then
-     Exit;
-
-  FQuery := GetQuery(TableName, True);
-  try
-    ReadOnlyQuery(FQuery);
-    SQL := 'SELECT * FROM DBSettings';
-    try
-      SetSQL(FQuery, SQL);
-      ActiveSQL(FQuery, True);
-      if FQuery.Active then
-      begin
-        Result.DBJpegCompressionQuality := FQuery.FieldByName('DBJpegCompressionQuality').AsInteger;
-        Result.ThSize := FQuery.FieldByName('ThImageSize').AsInteger;
-        Result.ThHintSize := FQuery.FieldByName('ThHintSize').AsInteger;
-        Result.Name := FQuery.FieldByName('DBName').AsString;
-        Result.Description := FQuery.FieldByName('DBDescription').AsString;
-      end;
-    except
-      on E: Exception do
-      begin
-        EventLog(':GetImageSettingsFromTable()/Restore throw exception: ' + E.message);
-        raise;
-      end;
-    end;
-  finally
-    FreeDS(FQuery);
   end;
 end;
 
@@ -822,7 +699,7 @@ begin
   end;
 end;
 
-procedure CompactDatabase_JRO(DatabaseName:string;DestDatabaseName:string='';Password:string='');
+procedure CompactDatabase_JRO(DatabaseName:string; DestDatabaseName: string = ''; Password: string = '');
 const
    Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;';
 var
@@ -833,46 +710,47 @@ var
   V : Variant;
 begin
    try
-       Src := Provider + 'Data Source=' + DatabaseName;
-       if DestDatabaseName<>'' then
-           Name:=DestDatabaseName
-       else begin
-           // выходная база не указана - используем временный файл
-           // получаем путь для временного файла
-           TempPath:=ExtractFilePath(DatabaseName);
-           if TempPath='' Then TempPath:=GetCurrentDir;
-           //получаем имя временного файла
-           Winapi.Windows.GetTempFileName(PWideChar(TempPath),'mdb',0,TempName);
-           Name:=StrPas(TempName);
-       end;
-       DeleteFile(Name);// этого файла не должно существовать :))
-       Dest := Provider + 'Data Source=' + Name;
-       if Password<>'' then begin
-           Src := Src + ';Jet OLEDB:Database Password=' + Password;
-           Dest := Dest + ';Jet OLEDB:Database Password=' + Password;
-       end;
+     Src := Provider + 'Data Source=' + DatabaseName;
+     if DestDatabaseName <> '' then
+       Name := DestDatabaseName
+     else
+     begin
+       TempPath := ExtractFilePath(DatabaseName);
+       if TempPath = '' then
+         TempPath:=GetCurrentDir;
 
-       V:=CreateOleObject('jro.JetEngine');
-       try
-           V.CompactDatabase(Src,Dest);// сжимаем
-       finally
-           V:=0;
-       end;
-       if DestDatabaseName='' then begin // т.к. выходная база не указана
-           DeleteFile(DatabaseName); //то удаляем не упакованную базу
-           RenameFile(Name,DatabaseName); // и переименовываем упакованную базу
-       end;
+       Winapi.Windows.GetTempFileName(PWideChar(TempPath), 'mdb' , 0, TempName);
+       Name := StrPas(TempName);
+     end;
+     DeleteFile(Name);
+     Dest := Provider + 'Data Source=' + Name;
+     if Password<>'' then
+     begin
+       Src := Src + ';Jet OLEDB:Database Password=' + Password;
+       Dest := Dest + ';Jet OLEDB:Database Password=' + Password;
+     end;
+
+     V := CreateOleObject('jro.JetEngine');
+     try
+       V.CompactDatabase(Src,Dest);// сжимаем
+     finally
+       V := 0;
+     end;
+     if DestDatabaseName='' then
+     begin
+       DeleteFile(DatabaseName); //то удаляем не упакованную базу
+       RenameFile(Name,DatabaseName); // и переименовываем упакованную базу
+     end;
    except
-    on e : Exception do
+    on e: Exception do
       EventLog(':CompactDatabase_JRO() throw exception: '+e.Message);
-    // выдаем сообщение об исключительной ситуации
    end;
 end;
 
-procedure PackTable(FileName : string);
+procedure PackTable(FileName: string);
 begin
-  CommonDBSupport.TryRemoveConnection(dbname, True);
-  CompactDatabase_JRO(dbname, '', '')
+  CommonDBSupport.TryRemoveConnection(FileName, True);
+  CompactDatabase_JRO(FileName, '', '')
 end;
 
 { TADOConnections }
@@ -1041,24 +919,6 @@ begin
     if Attr and FILE_ATTRIBUTE_READONLY <> 0 then
       Result := True;
   end;
-end;
-
-{ TImageDBOptions }
-
-function TImageDBOptions.Copy: TImageDBOptions;
-begin
-  Result := TImageDBOptions.Create;
-  Result.Version := Version;
-  Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
-  Result.ThSize := ThSize;
-  Result.ThHintSize := ThHintSize;
-  Result.Description := Description;
-  Result.Name := Name;
-end;
-
-constructor TImageDBOptions.Create;
-begin
-  Version := 0;
 end;
 
 initialization

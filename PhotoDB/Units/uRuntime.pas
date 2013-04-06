@@ -7,10 +7,6 @@ uses
   uConstants;
 
 var
-   //TODO: delete it
-   dbname: string = '';
-
-var
   PortableWork: Boolean = False;
   FolderView: Boolean = False;
   DBTerminating: Boolean = False;

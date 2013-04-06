@@ -21,6 +21,7 @@ uses
   Vcl.Imaging.JPEG,
 
   UnitDBDeclare,
+  UnitDBKernel,
   UnitDBFileDialogs,
   UnitPropeccedFilesSupport,
 
@@ -48,6 +49,7 @@ uses
   uResources,
   uLogger,
   uDBThread,
+  uDBContext,
   uPortableDeviceUtils,
   uThemesUtils,
   uProgramStatInfo,
@@ -122,6 +124,7 @@ type
     procedure AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     { Private declarations }
+    FContext: IDBContext;
     FData: TDBPopupMenuInfo;
     FW7TaskBar: ITaskbarList3;
     FDataCount: Integer;
@@ -356,6 +359,8 @@ var
   Ext: TFileAssociation;
   PathImage: TBitmap;
 begin
+  FContext := DBKernel.DBContext;
+
   FCreatingResize := True;
   FIgnoreInput := False;
   FPreviewImage := nil;
@@ -421,6 +426,8 @@ begin
   F(FPreviewImage);
   UnRegisterMainForm(Self);
   SwpMain.SavePosition;
+
+  FContext := nil;
 end;
 
 procedure TFormSizeResizer.FormKeyDown(Sender: TObject; var Key: Word;
@@ -551,7 +558,7 @@ begin
   for I := 1 to Min(FData.Count, ProcessorCount) do
   begin
     Inc(FThreadCount);
-    TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams);
+    TImageConvertThread.Create(Self, StateID, FContext, FData.Extract(0), FProcessingParams);
   end;
 end;
 
@@ -608,7 +615,7 @@ begin
   FillProcessingParams;
   if (FData.Count > 0) and not EndProcessing then
   begin
-    TImageConvertThread.Create(Self, StateID, FData.Extract(0), FProcessingParams);
+    TImageConvertThread.Create(Self, StateID, FContext, FData.Extract(0), FProcessingParams);
     Inc(FThreadCount);
   end else if (FThreadCount = 0) or EndProcessing then
     Close;
@@ -631,7 +638,7 @@ begin
   FProcessingParams.PreviewOptions.GeneratePreview := True;
   FProcessingParams.PreviewOptions.PreviewWidth := R.Right - R.Left + 1;
   FProcessingParams.PreviewOptions.PreviewHeight := R.Bottom - R.Top + 1;
-  TImageConvertThread.Create(Self, StateID, FData[FCurrentPreviewPosition].Copy, FProcessingParams);
+  TImageConvertThread.Create(Self, StateID, FContext, FData[FCurrentPreviewPosition].Copy, FProcessingParams);
   LsMain.Show;
 
   if (FPreviewImage = nil) then

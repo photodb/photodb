@@ -35,6 +35,7 @@ uses
   UnitDBDeclare,
   CommonDBSupport,
   UnitGroupsWork,
+  UnitDBKernel,
 
   uFaceDetection,
   uPeopleSupport,
@@ -44,6 +45,7 @@ uses
   uDBIcons,
   uThreadEx,
   uDBThread,
+  uDBContext,
   uThreadForm,
   u2DUtils,
   uGroupTypes,
@@ -106,6 +108,7 @@ type
     procedure WlPersonNameStatusClick(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     FPicture: TBitmap;
     FDisplayImage: TBitmap;
     FOriginalFace: TFaceDetectionResultItem;
@@ -161,11 +164,12 @@ type
     FNewName: string;
     FPersons: TPathItemCollection;
     FEditPerson: Boolean;
+    FContext: IDBContext;
   protected
     procedure Execute; override;
     procedure UpdateNameData;
   public
-    constructor Create(AOwner: TFormCreatePerson; State: TGuid; Name, NewName: string; EditPerson: Boolean);
+    constructor Create(AOwner: TFormCreatePerson; State: TGuid; Context: IDBContext; Name, NewName: string; EditPerson: Boolean);
     destructor Destroy; override;
   end;
 
@@ -480,6 +484,7 @@ end;
 
 procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
+  FContext := DBKernel.DBContext;
   FInfo := nil;
   FPerson := nil;
   FFormPersonSuggest := nil;
@@ -505,6 +510,7 @@ begin
   F(FFormPersonSuggest);
   F(FDisplayImage);
   F(FInfo);
+  FContext := nil;
 end;
 
 procedure TFormCreatePerson.FormKeyDown(Sender: TObject; var Key: Word;
@@ -798,7 +804,7 @@ begin
     PName := '';
     if FPerson <> nil then
       PName := FPerson.Name;
-    TCheckNameThread.Create(Self, StateID, PName, Trim(WedName.Text), FIsEditMode);
+    TCheckNameThread.Create(Self, StateID, FContext, PName, Trim(WedName.Text), FIsEditMode);
     LsNameCheck.Show;
     WlPersonNameStatus.IconWidth := 0;
     WlPersonNameStatus.Left := LsNameCheck.Left + LsNameCheck.Width + 3;
@@ -858,7 +864,7 @@ begin
     try
       SmallB.PixelFormat := pf24bit;
       SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(FCurrentGroups[I].GroupName, True);
+      Group := GetGroupByGroupName(DBKernel.DBContext, FCurrentGroups[I].GroupName, True);
       if Group.GroupImage <> nil then
         if not Group.GroupImage.Empty then
         begin
@@ -951,9 +957,10 @@ end;
 
 { TCheckNameThread }
 
-constructor TCheckNameThread.Create(AOwner: TFormCreatePerson; State: TGuid; Name, NewName: string; EditPerson: Boolean);
+constructor TCheckNameThread.Create(AOwner: TFormCreatePerson; State: TGuid; Context: IDBContext; Name, NewName: string; EditPerson: Boolean);
 begin
   inherited Create(AOwner, State);
+  FContext := Context;
   FName := Name;
   FNewName := NewName;
   FPersons := TPathItemCollection.Create;
@@ -972,12 +979,14 @@ var
   SC: TSelectCommand;
   PC: TPersonCollection;
   PI: TPersonItem;
+  SQL: string;
 begin
   inherited;
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
-    SC := TSelectCommand.Create(FormatEx('(SELECT *, (UCase(ObjectName) = UCase(:ObjectNameCheck)) AS NameCheck FROM {0})', [ObjectTableName]));
+    SQL := FormatEx('(SELECT *, (UCase(ObjectName) = UCase(:ObjectNameCheck)) AS NameCheck FROM {0})', [ObjectTableName]);
+    SC := FContext.CreateSelect(SQL);
     try
       SC.AddCustomeParameter(TStringParameter.Create('ObjectNameCheck', FNewName));
       SC.AddParameter(TAllParameter.Create);

@@ -18,6 +18,7 @@ uses
   uMemory,
   uLogger,
   uDBUtils,
+  uDBContext,
   uDBForm,
   uDBThread,
   uConstants,
@@ -27,6 +28,7 @@ type
   TWindowsCopyFilesThread = class(TDBThread)
   private
     { Private declarations }
+    FContext: IDBContext;
     FHandle: Hwnd;
     FSrc: TStrings;
     FDest: string;
@@ -54,7 +56,7 @@ type
     procedure UpdateProgressSync;
     procedure CloseProgressSync;
   public
-    constructor Create(Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
+    constructor Create(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean;
       AutoRename: Boolean; OwnerForm: TDBForm; OnDone: TNotifyEvent = nil);
     destructor Destroy; override;
   end;
@@ -65,10 +67,11 @@ uses ExplorerUnit;
 
 { TWindowsCopyFilesThread }
 
-constructor TWindowsCopyFilesThread.Create(Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
+constructor TWindowsCopyFilesThread.Create(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;
    OwnerForm: TDBForm; OnDone: TNotifyEvent = nil);
 begin
   inherited Create(nil, False);
+  FContext := Context;
   FOnDone := OnDone;
   FHandle := Handle;
   FSrc := TStringList.Create;
@@ -103,12 +106,12 @@ begin
     if DirectoryExists(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFolderWithDB(KernelEventCallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress, Src[I], Adest, False);
+      RenameFolderWithDB(FContext, KernelEventCallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress, Src[I], Adest, False);
     end;
     if FileExistsSafe(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFileWithDB(KernelEventCallBack, Src[I], Adest, GetIDByFileName(Src[I]), True);
+      RenameFileWithDB(FContext, KernelEventCallBack, Src[I], Adest, GetIDByFileName(FContext, Src[I]), True);
     end;
   end;
 end;

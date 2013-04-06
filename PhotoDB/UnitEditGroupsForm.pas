@@ -30,11 +30,13 @@ uses
   UnitGroupsWork,
   UnitGroupsTools,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uMemory,
   uGroupTypes,
   uBitmapUtils,
   uDBForm,
+  uDBContext,
   uShellIntegration,
   uVCLHelpers,
   uGraphicUtils,
@@ -111,6 +113,7 @@ type
     procedure TmrFilterTimer(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     FGroups: TGroups;
     FRegGroups: TGroups;
     FShowenRegGroups: TGroups;
@@ -193,6 +196,8 @@ end;
 
 procedure TEditGroupsForm.FormCreate(Sender: TObject);
 begin
+  FContext := DBKernel.DBContext;
+
   SetLength(FGroups, 0);
   SetLength(FRegGroups, 0);
   SetLength(FShowenRegGroups, 0);
@@ -216,6 +221,7 @@ begin
   FreeGroups(FOldGroups);
   FreeGroups(FSetGroups);
   CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataGroups);
+  FContext := nil;
 end;
 
 procedure TEditGroupsForm.BtnCreateGroupClick(Sender: TObject);
@@ -238,7 +244,7 @@ begin
   begin
     SetLength(FGroups, Length(FGroups) + 1);
     FGroups[Length(FGroups) - 1].GroupName := LstSelectedGroups.Items[I - 1];
-    FGroup := GetGroupByGroupName(LstSelectedGroups.Items[I - 1], False);
+    FGroup := GetGroupByGroupName(FContext, LstSelectedGroups.Items[I - 1], False);
     FGroups[Length(FGroups) - 1].GroupCode := FGroup.GroupCode;
     if FGroup.AutoAddKeyWords then
       AddWordsA(FGroup.GroupKeyWords, FNewKeyWords);
@@ -282,7 +288,7 @@ var
         begin
           // добавляем группу и ключевые слова к ней
           LstSelectedGroups.Items.Add(Groups[I].GroupName);
-          TempGroup := GetGroupByGroupCode(Groups[I].GroupCode, False);
+          TempGroup := GetGroupByGroupCode(FContext, Groups[I].GroupCode, False);
           AddWordsA(TempGroup.GroupKeyWords, FNewKeyWords);
         end;
       finally
@@ -338,7 +344,7 @@ procedure TEditGroupsForm.ChangeGroup1Click(Sender: TObject);
 var
   Group: TGroup;
 begin
-  Group := GetGroupByGroupCode(FindGroupCodeByGroupName(LstSelectedGroups.Items[PmGroup.Tag]), False);
+  Group := GetGroupByGroupCode(FContext, FindGroupCodeByGroupName(FContext, LstSelectedGroups.Items[PmGroup.Tag]), False);
   DBChangeGroup(Group);
 end;
 
@@ -394,7 +400,7 @@ var
   SmallB, B: TBitmap;
 begin
   FreeGroups(FRegGroups);
-  FRegGroups := GetRegisterGroupList(True);
+  FRegGroups := GetRegisterGroupList(FContext, True, True);
 
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
@@ -447,7 +453,7 @@ end;
 
 procedure TEditGroupsForm.PmGroupPopup(Sender: TObject);
 begin
-  if GroupWithCodeExists(FSetGroups[PmGroup.Tag].GroupCode) then
+  if GroupWithCodeExists(FContext, FSetGroups[PmGroup.Tag].GroupCode) then
   begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;
@@ -735,7 +741,7 @@ var
 begin
   if SelectGroup(ToGroup) then
   begin
-    MoveGroup(FSetGroups[PmGroup.Tag], ToGroup);
+    MoveGroup(FContext, FSetGroups[PmGroup.Tag], ToGroup);
     MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
   end;
 end;

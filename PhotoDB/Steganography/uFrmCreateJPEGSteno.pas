@@ -30,6 +30,7 @@ uses
   UnitDBDeclare,
   DBCMenu,
   UnitDBFileDialogs,
+  UnitDBKernel,
 
   uFrameWizardBase,
   uDBPopupMenuInfo,
@@ -258,7 +259,7 @@ begin
   Info := TDBPopupMenuInfo.Create;
   try
     Rec := TDBPopupMenuInfoRecord.CreateFromFile(ImageFileName);
-    uDBUtils.GetInfoByFileNameA(ImageFileName, False, Rec);
+    uDBUtils.GetInfoByFileNameA(DBKernel.DBContext, ImageFileName, False, Rec);
     Rec.Selected := True;
 
     Info.IsPlusMenu := False;

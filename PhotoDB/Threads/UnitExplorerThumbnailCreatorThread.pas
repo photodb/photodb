@@ -32,21 +32,24 @@ uses
 
   CCR.Exif,
 
+  ExplorerTypes,
+
   uAssociations,
   uDBThread,
   uBitmapUtils,
-  ExplorerTypes,
   uThemesUtils,
   uConstants,
   uShellThumbnails,
   uAssociatedIcons,
   uImageLoader,
   uExifInfo,
+  uDBContext,
   uDBGraphicTypes;
 
 type
   TExplorerThumbnailCreator = class(TDBThread)
   private
+    FContext: IDBContext;
     FFileSID: TGUID;
     TempBitmap: TBitmap;
     FHistogrammImage: TBitmap;
@@ -64,7 +67,7 @@ type
     procedure DoDrawAttributes;
     procedure UpdatePreviewIcon;
   public
-    constructor Create(Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
+    constructor Create(Context: IDBContext; Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
     destructor Destroy; override;
   end;
 
@@ -75,9 +78,10 @@ uses
 
 { TExplorerThumbnailCreator }
 
-constructor TExplorerThumbnailCreator.Create(Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
+constructor TExplorerThumbnailCreator.Create(Context: IDBContext; Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
 begin
   inherited Create(Owner, False);
+  FContext := Context;
   FHistogrammImage := nil;
   FreeOnTerminate := True;
   FInfo := Item.Copy as TExplorerFileInfo;
@@ -175,7 +179,7 @@ begin
 
             FInfo.Image := TJPEGImage.Create;
             try
-              GetInfoByFileNameA(FInfo.FileName, True, FInfo);
+              GetInfoByFileNameA(FContext, FInfo.FileName, True, FInfo);
 
               if FInfo.HasImage then
               begin

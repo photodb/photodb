@@ -9,15 +9,18 @@ uses
   Graphics,
   Controls,
   Forms,
-  Dialogs,
   StdCtrls,
   ComCtrls,
+  ImgList,
+
+  UnitGroupsWork,
+  UnitDBKernel,
+
   uMemory,
   uMemoryEx,
   uGroupTypes,
-  UnitGroupsWork,
-  ImgList,
   uDBIcons,
+  uDBContext,
   uBitmapUtils,
   uDBForm,
   uConstants;
@@ -35,8 +38,9 @@ type
     procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     ShowResult: Boolean;
@@ -46,13 +50,13 @@ type
     procedure RecreateGroupsList;
   end;
 
-  function SelectGroup(out Group : TGroup) : Boolean;
+function SelectGroup(out Group: TGroup) : Boolean;
 
 implementation
 
 {$R *.dfm}
 
-function SelectGroup(out Group : TGroup) : Boolean;
+function SelectGroup(out Group: TGroup): Boolean;
 var
   FormSelectGroup: TFormSelectGroup;
 begin
@@ -66,7 +70,8 @@ end;
 
 procedure TFormSelectGroup.FormCreate(Sender: TObject);
 begin
-  Groups := UnitGroupsWork.GetRegisterGroupList(True, True);
+  FContext := DBKernel.DBContext;
+  Groups := UnitGroupsWork.GetRegisterGroupList(FContext, True, True);
   RecreateGroupsList;
   ShowResult := False;
   LoadLanguage;
@@ -119,8 +124,8 @@ end;
 
 procedure FillGroupsToImageList(ImageList : TImageList; Groups : TGroups; BackgroundColor : TColor);
 var
-  I : Integer;
-  SmallB, B : TBitmap;
+  I: Integer;
+  SmallB, B: TBitmap;
 begin
   ImageList.Clear;
   for I := -1 to Length(Groups) - 1 do
@@ -157,7 +162,7 @@ end;
 
 procedure TFormSelectGroup.RecreateGroupsList;
 var
-  I : integer;
+  I: Integer;
 begin
   CbeGroupList.Clear;
   FillGroupsToImageList(GroupsImageList, Groups, Theme.PanelColor);
@@ -170,7 +175,7 @@ begin
     end;
 
   if CbeGroupList.Items.Count > 0 then
-    CbeGroupList.ItemIndex:=0;
+    CbeGroupList.ItemIndex := 0;
 end;
 
 end.

@@ -8,33 +8,36 @@ uses
   Classes,
   DB,
   Forms,
+
   CommonDBSupport,
-  uGroupTypes,
   UnitGroupsWork,
   ProgressActionUnit,
+
+  uGroupTypes,
   uConstants,
   uMemoryEx,
   uTranslate,
   uShellIntegration,
-  uRuntime;
+  uRuntime,
+  uDBContext;
 
-procedure MoveGroup(GroupToMove, IntoGroup: TGroup); overload;
-procedure MoveGroup(GroupToMove, IntoGroup: string); overload;
+procedure MoveGroup(Context: IDBContext; GroupToMove, IntoGroup: TGroup); overload;
+procedure MoveGroup(Context: IDBContext; GroupToMove, IntoGroup: string); overload;
 
-procedure RenameGroup(GroupToRename, NewName: string); overload;
-procedure RenameGroup(GroupToRename: TGroup; NewName: string); overload;
+procedure RenameGroup(Context: IDBContext; GroupToRename, NewName: string); overload;
+procedure RenameGroup(Context: IDBContext; GroupToRename: TGroup; NewName: string); overload;
 
-procedure DeleteGroup(GroupToDelete: TGroup); overload;
-procedure DeleteGroup(GroupToDelete: string); overload;
+procedure DeleteGroup(Context: IDBContext; GroupToDelete: TGroup); overload;
+procedure DeleteGroup(Context: IDBContext; GroupToDelete: string); overload;
 
 implementation
 
-procedure DeleteGroup(GroupToDelete: string);
+procedure DeleteGroup(Context: IDBContext; GroupToDelete: string);
 begin
-  DeleteGroup(EncodeGroups(GroupToDelete)[0]);
+  DeleteGroup(Context, EncodeGroups(GroupToDelete)[0]);
 end;
 
-procedure DeleteGroup(GroupToDelete: TGroup);
+procedure DeleteGroup(Context: IDBContext; GroupToDelete: TGroup);
 var
   I: Integer;
   Table: TDataSet;
@@ -44,7 +47,7 @@ var
   ProgressWindow: TProgressActionForm;
 begin
   SGroupToDelete := CodeGroup(GroupToDelete);
-  Table := GetTable(Dbname, DB_TABLE_IMAGES);
+  Table := GetTable(Context.CollectionFileName, DB_TABLE_IMAGES);
   try
     ProgressWindow := GetProgressWindow;
     try
@@ -86,16 +89,16 @@ begin
   end;
 end;
 
-procedure RenameGroup(GroupToRename, NewName: string);
+procedure RenameGroup(Context: IDBContext; GroupToRename, NewName: string);
 var
   Groups: TGroups;
 begin
   Groups := EncodeGroups(GroupToRename);
   if Length(Groups) > 0 then
-    RenameGroup(Groups[0], NewName);
+    RenameGroup(Context, Groups[0], NewName);
 end;
 
-procedure RenameGroup(GroupToRename: TGroup; NewName: string);
+procedure RenameGroup(Context: IDBContext; GroupToRename: TGroup; NewName: string);
 var
   I: Integer;
   Table: TDataSet;
@@ -109,7 +112,7 @@ begin
   GroupToRename.GroupName := NewName;
   SGroupToAdd := CodeGroup(GroupToRename);
 
-  Table := GetQuery;
+  Table := Context.CreateQuery;
   try
     SetSQL(Table, 'Select ID, Groups from $DB$');
 
@@ -130,7 +133,7 @@ begin
           if GroupWithCodeExistsInString(GroupToRename.GroupCode, Groups) then
           begin
             uGroupTypes.ReplaceGroups(SGroupToDelete, SGroupToAdd, Groups);
-            FQuery := GetQuery;
+            FQuery := Context.CreateQuery;
             try
               SetSQL(FQuery, 'UPDATE $DB$ SET Groups=:Groups where ID=' + IntToStr(Table.FieldByName('ID').AsInteger));
               SetStrParam(FQuery, 0, Groups);
@@ -158,12 +161,12 @@ begin
   end;
 end;
 
-procedure MoveGroup(GroupToMove, IntoGroup: string);
+procedure MoveGroup(Context: IDBContext; GroupToMove, IntoGroup: string);
 begin
-  MoveGroup(EncodeGroups(GroupToMove)[0], EncodeGroups(IntoGroup)[0]);
+  MoveGroup(Context, EncodeGroups(GroupToMove)[0], EncodeGroups(IntoGroup)[0]);
 end;
 
-procedure MoveGroup(GroupToMove, IntoGroup: TGroup);
+procedure MoveGroup(Context: IDBContext; GroupToMove, IntoGroup: TGroup);
 var
   I: Integer;
   Table: TDataSet;
@@ -176,7 +179,7 @@ begin
   SGroupToMove := CodeGroup(GroupToMove);
   SIntoGroup := CodeGroup(IntoGroup);
 
-  Table := GetQuery;
+  Table := Context.CreateQuery;
   SetSQL(Table, 'Select ID, Groups from $DB$');
 
   ProgressWindow := GetProgressWindow;
@@ -195,7 +198,7 @@ begin
       begin
         uGroupTypes.ReplaceGroups(SGroupToMove, SIntoGroup, Groups);
 
-        FQuery := GetQuery;
+        FQuery := Context.CreateQuery;
         try
           SetSQL(FQuery, 'UPDATE $DB$ SET Groups=:Groups where ID=' + IntToStr(Table.FieldByName('ID').AsInteger));
           SetStrParam(FQuery, 0, Groups);

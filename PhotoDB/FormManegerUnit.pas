@@ -23,6 +23,7 @@ uses
   UnitDBDeclare,
   UnitDBCommon,
   UnitBackUpTableInCMD,
+  UnitDBKernel,
 
   uAppUtils,
   uLogger,
@@ -38,6 +39,7 @@ uses
   uShellIntegration,
   uRuntime,
   uDBUtils,
+  uDBContext,
   uSettings,
   uAssociations,
   uDBCustomThread,
@@ -426,7 +428,7 @@ begin
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
 
   DBThreadManager.WaitForAllThreads(60000);
-  TryRemoveConnection(DBName, True);
+  TryRemoveConnection(DBKernel.DBContext.CollectionFileName, True);
 
   FormManager := nil;
 
@@ -505,11 +507,11 @@ begin
   if Params * [EventID_Param_DB_Changed] <> [] then
   begin
     Settings.ClearCache;
-    UpdaterStorage.CleanUpDatabase(dbname);
+    UpdaterStorage.CleanUpDatabase(DBKernel.DBContext);
     UpdaterStorage.SaveStorage;
-    UpdaterStorage.RestoreStorage(dbname);
+    UpdaterStorage.RestoreStorage(DBKernel.DBContext);
     if FDirectoryWatcher <> nil then
-      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBKernel.DBContext);
   end;
 
   if ID <= 0 then
@@ -526,12 +528,13 @@ begin
     SetNewIDFileData];
 
   if UpdateInfoParams * Params <> [] then
-    ExifPatchManager.AddPatchInfo(ID, Params, Value);
+    ExifPatchManager.AddPatchInfo(DBKernel.DBContext, ID, Params, Value);
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
-{$IFDEF LICENCE}
 var
+  Context: IDBContext;
+{$IFDEF LICENCE}
   FReg: TBDRegistry;
   InstallDate: TDateTime;
 {$ENDIF}
@@ -549,7 +552,7 @@ begin
     if (FCheckCount = 5) and not FolderView then
     begin
       FDirectoryWatcher := TUserDirectoriesWatcher.Create;
-      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute;
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBKernel.DBContext);
     end;
 
     if (FCheckCount = 10) then // after 1sec. set normal priority
@@ -585,13 +588,13 @@ begin
 
     if (FCheckCount = 50) and not FolderView then // after 4 sec.
     begin
-      TW.I.Start('FM -> DBCheck');
-      // checking RecordCount
-      if Settings.ReadboolW('DBCheck', ExtractFileName(Dbname), True) = True then
+      //todo: restart it when db has changed
+      Context := DBKernel.DBContext;
+      if Settings.ReadboolW('DBCheck', ExtractFileName(Context.CollectionFileName), True) = True then
       begin
-        Settings.WriteBoolW('DBCheck', ExtractFileName(Dbname), False);
-        if (CommonDBSupport.GetRecordsCount(Dbname) = 0) and not FolderView then
-          UpdateCurrentCollectionDirectories(Dbname);
+        Settings.WriteBoolW('DBCheck', ExtractFileName(Context.CollectionFileName), False);
+        if (GetRecordsCount(Context.CollectionFileName) = 0) and not FolderView then
+          UpdateCurrentCollectionDirectories(Context.CollectionFileName);
       end;
     end;
 

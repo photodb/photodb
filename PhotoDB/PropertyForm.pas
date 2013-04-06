@@ -47,6 +47,7 @@ uses
   UnitLinksSupport,
   CommonDBSupport,
   RAWImage,
+  UnitDBKernel,
 
   DropTarget,
   DropSource,
@@ -81,6 +82,7 @@ uses
   uRuntime,
   uDBUtils,
   uDBTypes,
+  uDBContext,
   uActivationUtils,
   uSettings,
   uAssociations,
@@ -308,6 +310,7 @@ type
     procedure TmrFilterTimer(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     FShowInfoType: TShowInfoType;
     LinkDropFiles: TStrings;
     EditLinkForm: TForm;
@@ -599,7 +602,7 @@ begin
     DBitem1.Visible := True;
     CommentMemo.Cursor := crDefault;
     CommentMemo.PopupMenu := nil;
-    WorkQuery := GetQuery;
+    WorkQuery := FContext.CreateQuery;
     DA := TImageTableAdapter.Create(WorkQuery);
     try
       ReadOnlyQuery(WorkQuery);
@@ -792,6 +795,7 @@ end;
 procedure TPropertiesForm.FormCreate(Sender: TObject);
 begin
   EditLinkForm := nil;
+  FContext := DBKernel.DBContext;
   FFilesInfo := TDBPopupMenuInfo.Create;
   DestroyCounter := 0;
   GistogrammData.Loaded := False;
@@ -1099,7 +1103,7 @@ var
 begin
   if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
-    Pr := GetImageIDW(FileName, True);
+    Pr := GetImageIDW(DBKernel.DBContext, FileName, True);
     if Pr.Count <> 0 then
       Execute(Pr.Ids[0])
     else
@@ -1274,7 +1278,7 @@ var
   PR : TImageDBRecordA;
 begin
   Adding_now := False;
-  Pr := GetimageIDW(FileName, False);
+  Pr := GetimageIDW(DBKernel.DBContext, FileName, False);
   if Pr.Count <> 0 then
     Execute(Pr.Ids[0])
   else
@@ -1335,7 +1339,7 @@ begin
 
           if (AnsiLowerCase(EventFileName) = AnsiLowerCase(FileName)) and FileExistsSafe(EventFileName) then
           begin
-            NewFileID := GetIdByFileName(FileName);
+            NewFileID := GetIdByFileName(DBKernel.DBContext, FileName);
             if NewFileID = 0 then
               ExecuteFileNoEx(Value.NewName)
             else
@@ -1434,7 +1438,7 @@ begin
 
   FInfo := TDBPopupMenuInfo.Create;
   try
-    WorkQuery := GetQuery;
+    WorkQuery := FContext.CreateQuery;
     try
       N := Trunc(Length(IDs) / AllocBy);
       if Length(IDs) / AllocBy - N > 0 then
@@ -1513,7 +1517,7 @@ begin
   end;
   FFilesInfo.Assign(Data);
 
-  UpdateDataFromDB(Data);
+  UpdateDataFromDB(FContext, Data);
 
   for I := 0 to FFilesInfo.Count - 1 do
     if FFilesInfo[I].ID = 0 then
@@ -2039,10 +2043,10 @@ begin
   LI := CopyLinksInfo(FPropertyLinks);
   case LI[N].LinkType of
     LINK_TYPE_ID:
-      ViewFile(GetFileNameById(StrToIntDef(LI[N].LinkValue, 0)));
+      ViewFile(GetFileNameById(FContext, StrToIntDef(LI[N].LinkValue, 0)));
     LINK_TYPE_ID_EXT:
       begin
-        TIRA := GetimageIDTh(DeCodeExtID(LI[N].LinkValue));
+        TIRA := GetimageIDTh(FContext, DeCodeExtID(LI[N].LinkValue));
         if TIRA.Count > 0 then
           ViewFile(TIRA.FileNames[0]);
       end;
@@ -2151,7 +2155,7 @@ begin
     begin
       IDMenu1.Visible := True;
       ID := StrToIntDef(LI[N].LinkValue, 0);
-      MenuInfo := GetMenuInfoByID(ID);
+      MenuInfo := GetMenuInfoByID(FContext, ID);
       try
         MenuInfo.IsPlusMenu := False;
         MenuInfo.IsListItem := False;
@@ -2167,7 +2171,7 @@ begin
     if LI[N].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
     begin
       IDMenu1.Visible := True;
-      MenuInfo := GetMenuInfoByStrTh(DeCodeExtID(LI[N].LinkValue));
+      MenuInfo := GetMenuInfoByStrTh(FContext, DeCodeExtID(LI[N].LinkValue));
       try
         MenuInfo.IsPlusMenu := False;
         MenuInfo.IsListItem := False;
@@ -2249,10 +2253,10 @@ begin
   FN := '';
   case FPropertyLinks[N].LinkType of
     LINK_TYPE_ID:
-      FN := GetFileNameById(StrToIntDef(FPropertyLinks[N].LinkValue, 0));
+      FN := GetFileNameById(FContext, StrToIntDef(FPropertyLinks[N].LinkValue, 0));
     LINK_TYPE_ID_EXT:
       begin
-        TIRA := GetImageIDTh(DeCodeExtID(FPropertyLinks[N].LinkValue));
+        TIRA := GetImageIDTh(FContext, DeCodeExtID(FPropertyLinks[N].LinkValue));
         if TIRA.Count > 0 then
           FN := TIRA.FileNames[0];
       end;
@@ -2332,7 +2336,7 @@ var
 
 begin
   FreeGroups(RegGroups);
-  RegGroups := GetRegisterGroupList(True);
+  RegGroups := GetRegisterGroupList(FContext, True, True);
   RegGroupsImageList.Clear;
   B := TBitmap.Create;
   try
@@ -2522,7 +2526,7 @@ begin
   for I := 0 to (Sender as TListBox).Items.Count - 1 do
     if (Sender as TListBox).Selected[I] then
     begin
-      Group := GetGroupByGroupCode(FNowGroups[I].GroupCode, False);
+      Group := GetGroupByGroupCode(FContext, FNowGroups[I].GroupCode, False);
       GroupInfoForm.Execute(nil, Group, False);
       Break;
     end;
@@ -2551,7 +2555,7 @@ var
     for I := 0 to Length(Groups) - 1 do
     begin
       LstCurrentGroups.Items.Add(Groups[I].GroupName);
-      TempGroup := GetGroupByGroupCode(Groups[I].GroupCode, False);
+      TempGroup := GetGroupByGroupCode(FContext, Groups[I].GroupCode, False);
       KeyWords := KeyWordsMemo.Text;
       AddWordsA(TempGroup.GroupKeyWords, KeyWords);
       KeyWordsMemo.Text := KeyWords;
@@ -2673,7 +2677,7 @@ procedure TPropertiesForm.ChangeGroup1Click(Sender: TObject);
 var
   Group : TGroup;
 begin
-  Group := GetGroupByGroupCode(FNowGroups[PopupMenuGroups.Tag].GroupCode, False);
+  Group := GetGroupByGroupCode(FContext, FNowGroups[PopupMenuGroups.Tag].GroupCode, False);
   DBChangeGroup(Group);
 end;
 
@@ -2717,7 +2721,7 @@ end;
 
 procedure TPropertiesForm.PopupMenuGroupsPopup(Sender: TObject);
 begin
- if GroupWithCodeExists(FNowGroups[PopupMenuGroups.Tag].GroupCode) then
+ if GroupWithCodeExists(FContext, FNowGroups[PopupMenuGroups.Tag].GroupCode) then
   begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;
@@ -2741,7 +2745,7 @@ var
 begin
   if SelectGroup(ToGroup) then
   begin
-    MoveGroup(FNowGroups[PopupMenuGroups.Tag], ToGroup);
+    MoveGroup(FContext, FNowGroups[PopupMenuGroups.Tag], ToGroup);
     MessageBoxDB(Handle, L('Reload info'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
   end;
 end;
@@ -2820,12 +2824,11 @@ var
   I: Integer;
   B: Boolean;
 begin
-
   Info := TDBPopupMenuInfoRecord.Create;
   try
-    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Processing');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2850,16 +2853,16 @@ end;
 
 procedure TPropertiesForm.AddOriginalImTh1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfoRecord;
+  Info: TDBPopupMenuInfoRecord;
   LinkInfo: TLinkInfo;
   I: Integer;
   B: Boolean;
 begin
   Info := TDBPopupMenuInfoRecord.Create;
   try
-    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Original');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2894,9 +2897,9 @@ var
 begin
   Info := TDBPopupMenuInfoRecord.Create;
   try
-    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Processing');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2917,7 +2920,7 @@ begin
     LinksInfo[0].LinkName := L('Original');
     LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
     ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.Links);
-    Query := GetQuery;
+    Query := FContext.CreateQuery;
     try
       SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ID]));
       SetStrParam(Query, 0, Info.Links);
@@ -2944,9 +2947,9 @@ var
 begin
   Info := TDBPopupMenuInfoRecord.Create;
   try
-    GetInfoByFileNameA(LinkDropFiles[0], False, Info);
+    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Original');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2968,7 +2971,7 @@ begin
     // TODO:[0]
     LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
     ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.Links);
-    Query := GetQuery;
+    Query := FContext.CreateQuery;
     try
       SetSQL(Query, Format('UPDATE $DB$ Set Links = :Links where ID = %d', [Info.ID]));
       SetStrParam(Query, 0, Info.Links);
@@ -3030,11 +3033,9 @@ begin
 end;
 
 initialization
-
   PropertyManager := TPropertyManager.Create;
 
 finalization
-
   F(PropertyManager);
 
 end.

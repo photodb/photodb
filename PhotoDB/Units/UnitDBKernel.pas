@@ -56,17 +56,16 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    class procedure AddDB(DBName, DBFile, DBIco: string);
-    class procedure LoadDBs(Collections: TList<TDatabaseInfo>);
-    class procedure SaveDBs(Collections: TList<TDatabaseInfo>);
 
     function CreateDBbyName(FileName: string): Integer;
     procedure SetDataBase(DatabaseFileName: string);
-    procedure ReadDBOptions;
     function LoadDefaultCollection: Boolean;
     function CreateSampleDefaultCollection: string;
     function SelectDB(Caller: TDBForm; DB: string): Boolean;
-    procedure CreateExampleDB(FileName: string);
+
+    class procedure CreateExampleDB(FileName: string);
+
+    property DBContext: IDBContext read FDBContext;
   end;
 
 var
@@ -110,12 +109,15 @@ begin
   ProgramStatistics.DBUsed;
 end;
 
-procedure TDBKernel.CreateExampleDB(FileName: string);
+class procedure TDBKernel.CreateExampleDB(FileName: string);
 var
   NewGroup: TGroup;
   ImagesDir: string;
+  DBContext: IDBContext;
 begin
   DBKernel.CreateDBbyName(FileName);
+
+  DBContext := TDBContext.Create(FileName);
 
   ImagesDir := ExtractFilePath(Application.ExeName) + 'Images\';
   if FileExists(ImagesDir + 'Me.jpg') then
@@ -134,7 +136,7 @@ begin
         NewGroup.AutoAddKeyWords := True;
         NewGroup.RelatedGroups := '';
         NewGroup.IncludeInQuickList := True;
-        AddGroupW(NewGroup, FileName);
+        AddGroup(DBContext, NewGroup);
       finally
         NewGroup.GroupImage.Free;
       end;
@@ -160,7 +162,7 @@ begin
         NewGroup.AutoAddKeyWords := True;
         NewGroup.RelatedGroups := '';
         NewGroup.IncludeInQuickList := True;
-        AddGroupW(NewGroup, FileName);
+        AddGroup(DBContext, NewGroup);
       finally
         NewGroup.GroupImage.Free;
       end;
@@ -186,7 +188,7 @@ begin
         NewGroup.AutoAddKeyWords := True;
         NewGroup.RelatedGroups := '';
         NewGroup.IncludeInQuickList := True;
-        AddGroupW(NewGroup, FileName);
+        AddGroup(DBContext, NewGroup);
       finally
         NewGroup.GroupImage.Free;
       end;
@@ -212,9 +214,7 @@ begin
   begin
     if TDBScheme.IsValidCollectionFile(DB) then
     begin
-      dbname := DB;
       DBKernel.SetDataBase(DB);
-      EventInfo.FileName := dbname;
       CollectionEvents.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
       Result := True;
       Exit;
@@ -234,11 +234,10 @@ begin
     Reg.OpenKey(RegRoot, True);
     Reg.WriteString('DBDefaultName', DatabaseFileName);
 
-    dbname := DatabaseFileName;
+    FDBContext := TDBContext.Create(DatabaseFileName);
   finally
     F(Reg);
   end;
-  ReadDBOptions;
 end;
 
 function TDBKernel.LoadDefaultCollection: Boolean;
@@ -261,8 +260,6 @@ begin
 
   FDBContext := TDBContext.Create(CollectionFileName);
   Result := FDBContext.IsValid;
-
-  dbname := FDBContext.CollectionFileName;
 end;
 
 function TDBKernel.CreateSampleDefaultCollection: string;
@@ -272,121 +269,8 @@ begin
   if not FileExistsSafe(Result) then
     CreateExampleDB(Result);
 
-  DBKernel.AddDB(TA('My collection'), Result, Application.ExeName + ',0');
+  //TODOL DBKernel.AddDB(TA('My collection'), Result, Application.ExeName + ',0');
   DBKernel.SetDataBase(Result);
-end;
-
-class procedure TDBKernel.LoadDBs(Collections: TList<TDatabaseInfo>);
-var
-  Reg: TBDRegistry;
-  List: TStrings;
-  I: Integer;
-  Icon, FileName, Description: string;
-begin
-  List := TStringList.Create;
-  try
-    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    try
-      Reg.OpenKey(RegRoot + 'dbs', True);
-      Reg.GetKeyNames(List);
-      for I := 0 to List.Count - 1 do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(RegRoot + 'dbs\' + List[I], True);
-        if Reg.ValueExists('Icon') and Reg.ValueExists('FileName') then
-        begin
-          Icon := Reg.ReadString('Icon');
-          FileName := Reg.ReadString('FileName');
-          Description := Reg.ReadString('Description');
-          Collections.Add(TDatabaseInfo.Create(List[I], FileName, Icon, Description, Reg.ReadInteger('Order')));
-        end;
-      end;
-    finally
-      F(Reg);
-    end;
-  finally
-    F(List);
-  end;
-
-  Collections.Sort(TComparer<TDatabaseInfo>.Construct(
-     function (const L, R: TDatabaseInfo): Integer
-     begin
-       Result := L.Order - R.Order;
-     end
-  ));
-end;
-
-class procedure TDBKernel.SaveDBs(Collections: TList<TDatabaseInfo>);
-var
-  Reg: TBDRegistry;
-  List: TStrings;
-  I: Integer;
-  DB: TDatabaseInfo;
-  Settings: TImageDBOptions;
-begin
-  List := TStringList.Create;
-  try
-    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    try
-      Reg.OpenKey(RegRoot + 'dbs', True);
-      Reg.GetKeyNames(List);
-      for I := 0 to List.Count - 1 do
-        Reg.DeleteKey(List[I]);
-
-      for DB in Collections do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(RegRoot + 'dbs\' + DB.Title, True);
-        Reg.WriteString('FileName', DB.Path);
-        Reg.WriteString('Icon', DB.Icon);
-        Reg.WriteString('Description', DB.Description);
-        Reg.WriteInteger('Order', Collections.IndexOf(DB));
-
-        Settings := CommonDBSupport.GetImageSettingsFromTable(DB.Path);
-        try
-          Settings.Name := DB.Title;
-          Settings.Description := DB.Description;
-          CommonDBSupport.UpdateImageSettings(DB.Path, Settings);
-        finally
-          F(Settings);
-        end;
-      end;
-
-    finally
-      F(Reg);
-    end;
-  finally
-    F(List);
-  end;
-end;
-
-class procedure TDBKernel.AddDB(DBName, DBFile, DBIco: string);
-var
-  Collections: TList<TDatabaseInfo>;
-begin
-  Collections := TList<TDatabaseInfo>.Create;
-  try
-    LoadDBs(Collections);
-    Collections.Add(TDatabaseInfo.Create(DBName, DBFile, DBIco, ''));
-    SaveDBs(Collections);
-  finally
-    FreeList(Collections);
-  end;
-end;
-
-procedure TDBKernel.ReadDBOptions;
-var
-  FImageOptions: TImageDBOptions;
-begin
-  FImageOptions := CommonDBSupport.GetImageSettingsFromTable(DBName);
-  try
-    DBJpegCompressionQuality := FImageOptions.DBJpegCompressionQuality;
-    ThSize := FImageOptions.ThSize + 2;
-    ThImageSize := FImageOptions.ThSize;
-    ThHintSize := FImageOptions.ThHintSize;
-  finally
-    F(FImageOptions);
-  end;
 end;
 
 procedure TDBKernel.HandleError(E: Exception);

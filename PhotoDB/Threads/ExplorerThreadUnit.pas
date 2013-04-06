@@ -37,6 +37,7 @@ uses
   EasyListview,
   UnitDBCommon,
   CommonDBSupport,
+  UnitDBKernel,
   UnitBitmapImageList,
 
   uGraphicUtils,
@@ -62,6 +63,7 @@ uses
   uPrivateHelper,
   uRuntime,
   uDBUtils,
+  uDBContext,
   uAssociations,
   uJpegUtils,
   uShellThumbnails,
@@ -202,13 +204,14 @@ type
     function IsVirtualTerminate: Boolean; override;
     function GetThreadID: string; override;
   public
+    FContext: IDBContext;
     ExplorerInfo: TExplorerViewInfo;
     FInfo: TDBPopupMenuInfoRecord;
     IsCryptedFile: Boolean;
     FFileID: TGUID;
     FSender: TExplorerForm;
     LoadingAllBigImages: Boolean;
-    constructor Create(Folder, Mask: string; ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
+    constructor Create(Context: IDBContext; Folder, Mask: string; ThreadType: Integer; Info: TExplorerViewInfo; Sender: TExplorerForm;
       UpdaterInfo: TUpdaterInfo; SID: TGUID);
     destructor Destroy; override;
     property OwnerThreadType: Integer read FOwnerThreadType write FOwnerThreadType;
@@ -294,10 +297,11 @@ end;
 
 { TExplorerThread }
 
-constructor TExplorerThread.Create(Folder, Mask: string; ThreadType: Integer; Info: TExplorerViewInfo;
+constructor TExplorerThread.Create(Context: IDBContext; Folder, Mask: string; ThreadType: Integer; Info: TExplorerViewInfo;
   Sender: TExplorerForm; UpdaterInfo: TUpdaterInfo; SID: TGUID);
 begin
   inherited Create(Sender, SID);
+  FContext := Context;
   FInfo := TDBPopupMenuInfoRecord.Create;
   CurrentFileInfo := nil;
   FPacketImages := nil;
@@ -332,6 +336,7 @@ var
   NotifyInfo: TExplorerNotifyInfo;
   P: TPathItem;
   COMMode: Integer;
+  Context: IDBContext;
 
   procedure LoadDBContent;
   begin
@@ -390,7 +395,7 @@ begin
       LV_TITLES     : begin FIcoSize := 16; end;
       LV_GRID       : begin FIcoSize := 16; end;
     end;
-                                      //if thread is valid worker - dont run updater
+                                      //if thread is valid worker - don't run updater
     if FUpdaterInfo.IsUpdater and not Self.Valid then
     begin
       ProcessNotifys(AddFile, UPDATE_MODE_ADD);
@@ -488,9 +493,9 @@ begin
 
       if (FThreadType = THREAD_TYPE_MY_COMPUTER) then
       begin
-       LoadMyComputerFolder;
-       SynchronizeEx(DoStopSearch);
-       Exit;
+        LoadMyComputerFolder;
+        SynchronizeEx(DoStopSearch);
+        Exit;
       end;
       if (FThreadType = THREAD_TYPE_NETWORK) then
       begin
@@ -512,33 +517,33 @@ begin
       end;
       if (FThreadType = THREAD_TYPE_GROUPS) then
       begin
-       LoadGroups;
-       SynchronizeEx(DoStopSearch);
-       Exit;
+        LoadGroups;
+        SynchronizeEx(DoStopSearch);
+        Exit;
       end;
       if (FThreadType = THREAD_TYPE_PERSONS) then
       begin
-       LoadPersons;
-       SynchronizeEx(DoStopSearch);
-       Exit;
+        LoadPersons;
+        SynchronizeEx(DoStopSearch);
+        Exit;
       end;
       if (FThreadType = THREAD_TYPE_CAMERA) or (FThreadType = THREAD_TYPE_CAMERAITEM) then
       begin
-       LoadDeviceItems;
-       SynchronizeEx(DoStopSearch);
-       Exit;
+        LoadDeviceItems;
+        SynchronizeEx(DoStopSearch);
+        Exit;
       end;
       if (FThreadType = THREAD_TYPE_SHELF) then
       begin
-       LoadShelf;
-       SynchronizeEx(DoStopSearch);
-       Exit;
+        LoadShelf;
+        SynchronizeEx(DoStopSearch);
+        Exit;
       end;
       if (FThreadType = THREAD_TYPE_PATH_ITEM) then
       begin
-       LoadPathItem;
-       SynchronizeEx(DoStopSearch);
-       Exit;
+        LoadPathItem;
+        SynchronizeEx(DoStopSearch);
+        Exit;
       end;
       FFolder := ExcludeTrailingBackslash(FFolder);
       if not DirectoryExists(FFolder) then
@@ -567,7 +572,10 @@ begin
         IsPrivateDirectory := TPrivateHelper.Instance.IsPrivateDirectory(DBFolderToSearch);
 
         DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
-        FQuery := GetQuery(True);
+
+        Context := DBKernel.DBContext;
+
+        FQuery := Context.CreateQuery(dbilRead);
         try
           ReadOnlyQuery(FQuery);
           TW.I.Start('IsPrivateDirectory');
@@ -986,7 +994,7 @@ begin
         if ExplorerInfo.ShowThumbNailsForImages and (Info.FileType = EXPLORER_ITEM_IMAGE) then
         begin
           //info for refresh items
-          UpdaterInfo := TUpdaterInfo.Create(Info);
+          UpdaterInfo := TUpdaterInfo.Create(FContext, Info);
           UpdaterInfo.DisableLoadingOfBigImage := (FThreadType = THREAD_TYPE_SHELF);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_IMAGE,
             Info.FileName, GUIDToString(Info.SID));
@@ -995,7 +1003,7 @@ begin
         if ExplorerInfo.ShowThumbNailsForFolders and (Info.FileType = EXPLORER_ITEM_FOLDER) then
         begin
           //info for refresh items
-          UpdaterInfo := TUpdaterInfo.Create(Info);
+          UpdaterInfo := TUpdaterInfo.Create(FContext, Info);
           UpdaterInfo.DisableLoadingOfBigImage := (FThreadType = THREAD_TYPE_SHELF);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FOLDER,
             Info.FileName, GUIDToString(Info.SID));
@@ -1004,7 +1012,7 @@ begin
         if (Info.FileType = EXPLORER_ITEM_FILE) and (Info.Tag = 1) then
         begin
           //info for refresh items
-          UpdaterInfo := TUpdaterInfo.Create(Info);
+          UpdaterInfo := TUpdaterInfo.Create(FContext, Info);
           NotifyInfo := TExplorerNotifyInfo.Create(FSender, StateID, UpdaterInfo, ExplorerInfo, UPDATE_MODE_REFRESH_FILE,
             Info.FileName, GUIDToString(Info.SID));
           RefreshQueue.Add(NotifyInfo);
@@ -1424,7 +1432,7 @@ begin
   end;
 end;
 
-procedure TExplorerThread.ReplaceImageItemImage(FileName : string; FileSize : Int64; FileID : TGUID);
+procedure TExplorerThread.ReplaceImageItemImage(FileName: string; FileSize: Int64; FileID: TGUID);
 var
   FBS: TStream;
   CryptedFile: Boolean;
@@ -1467,7 +1475,7 @@ begin
       end;
     end;
   end else
-    GetInfoByFileNameA(CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
+    GetInfoByFileNameA(FContext, CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
 
   FInfo.InfoLoaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;
@@ -1532,6 +1540,7 @@ var
   S: string;
   P: Integer;
   Crc: Cardinal;
+  Context: IDBContext;
 
   Info: TDBPopupMenuInfoRecord;
   Graphic: TGraphic;
@@ -1594,7 +1603,9 @@ begin
           CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
           DBFolder := IncludeTrailingBackslash(DBFolder);
 
-          Query := GetQuery(True);
+          Context := DBKernel.DBContext;
+
+          Query := Context.CreateQuery(dbilRead);
           ReadOnlyQuery(Query);
 
           if TPrivateHelper.Instance.IsPrivateDirectory(DBFolder) then
@@ -2518,9 +2529,9 @@ var
 begin
   try
     if FUpdaterInfo.UpdateDB and (FUpdaterInfo.ID > 0) then
-      UpdateImageRecord(FSender, FUpdaterInfo.FileName, FUpdaterInfo.ID);
+      UpdateImageRecord(FUpdaterInfo.Context, FSender, FUpdaterInfo.FileName, FUpdaterInfo.ID);
 
-    FQuery := GetQuery;
+    FQuery := FContext.CreateQuery(dbilRead);
     try
       ReadOnlyQuery(FQuery);
       UnProcessPath(FFolder);
@@ -2652,7 +2663,7 @@ end;
 
 procedure TExplorerThread.UpdateSimpleFile;
 begin
-  StringParam := Fmask;
+  StringParam := FMask;
   CurrentFile := FFolder;
   GUIDParam := FUpdaterInfo.SID;
   MakeIconForFile;
@@ -3152,13 +3163,13 @@ begin
     begin
 
       if Info.FMode = UPDATE_MODE_ADD then
-        TExplorerThread.Create('', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
+        TExplorerThread.Create(Info.FUpdaterInfo.Context, '', TFileAssociations.Instance.ExtensionList, 0, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_IMAGE then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
+        TExplorerThread.Create(Info.FUpdaterInfo.Context, Info.FFileName, Info.FGUID, THREAD_TYPE_IMAGE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_FOLDER then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
+        TExplorerThread.Create(Info.FUpdaterInfo.Context, Info.FFileName, Info.FGUID, THREAD_TYPE_FOLDER_UPDATE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState)
       else if Info.FMode = UPDATE_MODE_REFRESH_FILE then
-        TExplorerThread.Create(Info.FFileName, Info.FGUID, THREAD_TYPE_FILE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState);
+        TExplorerThread.Create(Info.FUpdaterInfo.Context, Info.FFileName, Info.FGUID, THREAD_TYPE_FILE, Info.FExplorerViewInfo, Info.FOwner, Info.FUpdaterInfo.Copy, Info.FState);
 
       ExplorerUpdateManager.RegisterThread(Info.FOwner, Info.FMode);
       F(Info);

@@ -22,11 +22,13 @@ uses
   UnitCDMappingSupport,
   CommonDBSupport,
   UnitDBDeclare,
+  UnitDBKernel,
 
   uLogger,
   uDBForm,
   uMemory,
   uDBIcons,
+  uDBContext,
   uDBPopupMenuInfo,
   uShellIntegration,
   uConstants,
@@ -63,6 +65,7 @@ type
     procedure RefreshDBFilesOnCD1Click(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
     procedure LoadLanguage;
   protected
     function GetFormID: string; override;
@@ -99,6 +102,7 @@ procedure TFormCDMapper.FormCreate(Sender: TObject);
 var
   Icon : TIcon;
 begin
+  FContext := DBKernel.DBContext;
   PopupMenuCDActions.Images := Icons.ImageList;
   Icon := TIcon.Create;
   try
@@ -269,7 +273,7 @@ begin
       CD := CDMapper.GetCDByName(TCDClass(CDMappingListView.Selected.Data).Name);
       if CD <> nil then
       begin
-        DS := GetQuery;
+        DS := FContext.CreateQuery;
         try
           SetSQL(DS,
             'Select ID,FFileName from $DB$ where FFileName Like "%::' + AnsiLowerCase
@@ -300,7 +304,7 @@ begin
                 info.Add(InfoRecord);
                 DS.Next;
               end;
-              TRefreshDBRecordsThread.Create(Self, Options);
+              TRefreshDBRecordsThread.Create(FContext, Self, Options);
             finally
               F(Info);
             end;

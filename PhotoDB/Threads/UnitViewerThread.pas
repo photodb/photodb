@@ -30,6 +30,7 @@ uses
   uJpegUtils,
   uBitmapUtils,
   uSettings,
+  uDBContext,
   uFaceDetection,
   uConstants,
   uImageLoader,
@@ -44,6 +45,7 @@ type
   private
     { Private declarations }
     FViewer: TViewerForm;
+    FContext: IDBContext;
     FFullImage: Boolean;
     FBeginZoom: Extended;
     FSID: TGUID;
@@ -75,7 +77,7 @@ type
     procedure ShowLoadingSign;
     procedure FinishDetectionFaces;
   public
-    constructor Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended;
+    constructor Create(Viewer: TViewerForm; Context: IDBContext; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended;
       SID: TGUID; IsForward: Boolean; Page: Word);
     destructor Destroy; override;
   end;
@@ -88,9 +90,10 @@ uses
 
 { TViewerThread }
 
-constructor TViewerThread.Create(Viewer: TViewerForm; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended; SID : TGUID; IsForward: Boolean; Page: Word);
+constructor TViewerThread.Create(Viewer: TViewerForm; Context: IDBContext; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended; SID : TGUID; IsForward: Boolean; Page: Word);
 begin
   inherited Create(Viewer, False);
+  FContext := Context;
   Priority := tpHigher;
   FPage := Page;
   FTransparent := False;
@@ -481,7 +484,7 @@ begin
   CoInitializeEx(nil, COM_MODE);
   try
     FileName := FInfo.FileName;
-    Query := GetQuery;
+    Query := FContext.CreateQuery(dbilRead);
     try
       ReadOnlyQuery(Query);
       Query.Active := False;

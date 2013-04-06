@@ -3,6 +3,8 @@ unit uExifPatchThread;
 interface
 
 uses
+  SyncObjs,
+  ActiveX,
   Classes,
 
   Dmitry.Utils.Files,
@@ -11,9 +13,8 @@ uses
   UnitDBDeclare,
   uDBThread,
   uExifUtils,
-  SyncObjs,
-  ActiveX,
   uDBUtils,
+  uDBContext,
   uRuntime,
   uConstants;
 
@@ -37,7 +38,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure AddPatchInfo(ID: Integer; Params: TEventFields; Value: TEventValues);
+    procedure AddPatchInfo(Context: IDBContext; ID: Integer; Params: TEventFields; Value: TEventValues);
   end;
 
 function ExifPatchManager: TExifPatchManager;
@@ -76,7 +77,7 @@ begin
           LastUpdateTime := GetTickCount;
           FileName := Info.Value.FileName;
           if not FileExistsSafe(FileName) then
-            FileName := uDBUtils.GetFileNameById(Info.ID);
+            FileName := uDBUtils.GetFileNameById(Info.Context, Info.ID);
 
           UpdateFileExif(FileName, Info);
           F(Info);
@@ -98,7 +99,7 @@ end;
 
 { TExifPatchManager }
 
-procedure TExifPatchManager.AddPatchInfo(ID: Integer; Params: TEventFields; Value: TEventValues);
+procedure TExifPatchManager.AddPatchInfo(Context: IDBContext; ID: Integer; Params: TEventFields; Value: TEventValues);
 var
   Info: TExifPatchInfo;
 begin
@@ -108,6 +109,7 @@ begin
     Info.ID := ID;
     Info.Params := Params;
     Info.Value := Value;
+    Info.Context := Context;
     FData.Add(Info);
     StartThread;
   finally

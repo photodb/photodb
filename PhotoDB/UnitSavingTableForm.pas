@@ -15,6 +15,7 @@ uses
 
   Dmitry.Controls.DmProgress,
 
+  uDBContext,
   uThreadForm;
 
 type
@@ -29,19 +30,17 @@ type
     { Private declarations }
     procedure LoadLanguage;
   protected
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     FTerminating: Boolean;
-    procedure Execute(DestinationPath: String; SubFolders: Boolean;
-      FileList: TStrings);
+    procedure Execute(Context: IDBContext; DestinationPath: String; SubFolders: Boolean; FileList: TStrings);
     procedure SetMaxValue(Value: Integer);
     procedure SetProgress(Value: Integer);
     procedure SetText(Value: String);
   end;
 
-procedure SaveQuery(DestinationPath: String; SubFolders: Boolean;
-  FileList: TStrings);
+procedure SaveQuery(Context: IDBContext; DestinationPath: String; SubFolders: Boolean; FileList: TStrings);
 
 implementation
 
@@ -49,22 +48,21 @@ uses UnitSaveQueryThread;
 
 {$R *.dfm}
 
-procedure SaveQuery(DestinationPath: String; SubFolders: Boolean;
-  FileList: TStrings);
+procedure SaveQuery(Context: IDBContext; DestinationPath: String; SubFolders: Boolean; FileList: TStrings);
 var
   SavingTableForm: TSavingTableForm;
 begin
   Application.CreateForm(TSavingTableForm, SavingTableForm);
   try
-    SavingTableForm.Execute(DestinationPath, SubFolders, FileList);
+    SavingTableForm.Execute(Context, DestinationPath, SubFolders, FileList);
   finally
     SavingTableForm.Release;
   end;
 end;
 
-procedure TSavingTableForm.Execute(DestinationPath: string; SubFolders: Boolean; FileList: TStrings);
+procedure TSavingTableForm.Execute(Context: IDBContext; DestinationPath: string; SubFolders: Boolean; FileList: TStrings);
 begin
-  TSaveQueryThread.Create(DestinationPath, Self, SubFolders, FileList, StateID);
+  TSaveQueryThread.Create(Context, DestinationPath, Self, SubFolders, FileList, StateID);
   ShowModal;
 end;
 

@@ -14,6 +14,7 @@ uses
   Dmitry.PathProviders.MyComputer,
 
   UnitDBDeclare,
+  UnitDBKernel,
 
   uPeopleSupport,
   uBitmapUtils,
@@ -27,6 +28,7 @@ uses
   uShellIntegration,
   uDBForm,
   uDBClasses,
+  uDBContext,
   uCollectionEvents;
 
 type
@@ -110,6 +112,7 @@ var
   EventValues: TEventValues;
   Form: TDBForm;
   Item: TPersonItem;
+  Context: IDBContext;
 begin
   Result := False;
 
@@ -130,7 +133,8 @@ begin
   try
     if not P.Empty then
     begin
-      SC := TSelectCommand.Create(ObjectMappingTableName);
+      Context := DBKernel.DBContext;
+      SC := Context.CreateSelect(ObjectMappingTableName);
       try
         SC.AddParameter(TCustomFieldParameter.Create('Count(1) as RecordCount'));
         SC.AddWhereParameter(TIntegerParameter.Create('ObjectID', P.ID));

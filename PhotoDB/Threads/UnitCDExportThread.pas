@@ -6,18 +6,19 @@ uses
   Windows,
   Classes,
   Forms,
-  UnitCDMappingSupport,
-  UnitDBKernel,
   DB,
+  Graphics,
   ActiveX,
-  uGroupTypes,
-  UnitGroupsWork,
-  CommonDBSupport,
+  SysUtils,
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
 
-  SysUtils,
+  UnitCDMappingSupport,
+  UnitDBKernel,
+  UnitGroupsWork,
+  CommonDBSupport,
+
   uLogger,
   uConstants,
   uShellIntegration,
@@ -27,10 +28,11 @@ uses
   uMobileUtils,
   uMemory,
   uDBUtils,
+  uDBContext,
+  uGroupTypes,
   uCDMappingTypes,
   uTranslate,
   uResourceUtils,
-  Graphics,
   uDBShellUtils,
   uRuntime;
 
@@ -47,6 +49,7 @@ type
   TCDExportThread = class(TDBThread)
   private
     { Private declarations }
+    FContext: IDBContext;
     Mapping: TCDIndexMapping;
     Options: TCDExportOptions;
     DBRemapping: TDBFilePathArray;
@@ -60,15 +63,15 @@ type
     StrParam: string;
     ProgressWindow: TForm;
     IsClosedParam: Boolean;
-    FOwner : TDBForm;
+    FOwner: TDBForm;
     procedure CreateAutorunFile(Directory: string);
   protected
     { Protected declarations }
     procedure Execute; override;
-    function GetThreadID : string; override;
+    function GetThreadID: string; override;
   public
     { Public declarations }
-    constructor Create(Owner: TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
+    constructor Create(Owner: TDBForm; Context: IDBContext; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
     procedure DoErrorDeletingFiles;
     procedure ShowError;
     procedure DoOnEnd;
@@ -87,13 +90,15 @@ type
 implementation
 
 uses
-  UnitSaveQueryThread, ProgressActionUnit;
+  UnitSaveQueryThread,
+  ProgressActionUnit;
 
 { TCDExportThread }
 
-constructor TCDExportThread.Create(Owner: TDBForm; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
+constructor TCDExportThread.Create(Owner: TDBForm; Context: IDBContext; AMapping: TCDIndexMapping; AOptions: TCDExportOptions);
 begin
   inherited Create(Owner, False);
+  FContext := Context;
   FOwner := Owner;
   Mapping := AMapping;
   Options := AOptions;
@@ -192,9 +197,9 @@ end;
 procedure TCDExportThread.Execute;
 var
   I, J: Integer;
-  S, Directory, DBPath: string;
+  S, Directory, DestinationCollectionPath: string;
   ImageSettings: TImageDBOptions;
-
+  FDestination: IDBContext;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -236,19 +241,20 @@ begin
         begin
           StrParam := Directory;
           Synchronize(CreatePortableDB);
-          DBPath := Directory + Mapping.CDLabel + '.photodb';
-          if DBKernel.CreateDBbyName(DBPath) = 0 then
+          DestinationCollectionPath := Directory + Mapping.CDLabel + '.photodb';
+          if DBKernel.CreateDBbyName(DestinationCollectionPath) = 0 then
           begin
+            FDestination := TDBContext.Create(DestinationCollectionPath);
 
-            ImageSettings := CommonDBSupport.GetImageSettingsFromTable(DBName);
+            ImageSettings := GetImageSettingsFromTable(FContext);
             try
-              CommonDBSupport.UpdateImageSettings(DBPath, ImageSettings);
+              UpdateImageSettings(FDestination, ImageSettings);
             finally
               F(ImageSettings);
             end;
 
             DBRemapping := Mapping.GetDBRemappingArray;
-            ExtDS := GetTable(DBPath, DB_TABLE_IMAGES);
+            ExtDS := GetTable(DestinationCollectionPath, DB_TABLE_IMAGES);
 
             try
               ExtDS.Open;
@@ -262,7 +268,7 @@ begin
             end;
             if ExtDS.Active then
             begin
-              DS := GetQuery;
+              DS := FContext.CreateQuery;
               DBUpdated := True;
 
               IntParam := Length(DBRemapping) - 1;
@@ -302,7 +308,7 @@ begin
           Directory := ExtractFilePath(Options.ToDirectory);
           Directory := Directory + Mapping.CDLabel + '\';
 
-          FRegGroups := GetRegisterGroupList(True);
+          FRegGroups := GetRegisterGroupList(FContext, True, True);
           try
             IntParam := Length(FGroupsFounded) - 1;
             Synchronize(SetMaxPosition);
@@ -316,7 +322,7 @@ begin
               for J := 0 to Length(FRegGroups) - 1 do
                 if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
                 begin
-                  AddGroupW(FRegGroups[J], Directory + Mapping.CDLabel + '.photodb');
+                  AddGroup(FDestination, FRegGroups[J]);
                   Break;
                 end;
             end;
@@ -331,7 +337,7 @@ begin
         if not IsClosedParam and Options.ModifyDB then
         begin
           DBRemapping := Mapping.GetDBRemappingArray;
-          DS := GetQuery;
+          DS := FContext.CreateQuery;
           try
             DBUpdated := True;
             IntParam := Length(DBRemapping) - 1;
@@ -361,7 +367,7 @@ begin
           end;
         end;
 
-        TryRemoveConnection(DBPath, True);
+        TryRemoveConnection(DestinationCollectionPath, True);
       finally
         Synchronize(DestroyProgress);
       end;

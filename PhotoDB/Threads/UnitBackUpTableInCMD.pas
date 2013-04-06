@@ -10,10 +10,12 @@ uses
   Dmitry.Utils.Files,
 
   UnitDBDeclare,
+  UnitDBKernel,
 
   uMemory,
   uDBThread,
   uDBForm,
+  uDBContext,
   uRuntime,
   uConstants,
   uTranslate,
@@ -57,7 +59,7 @@ begin
     Options.WriteLineProc := nil;
     Options.WriteLnLineProc := nil;
     Options.OnEnd := nil;
-    Options.FileName := DBName;
+    Options.FileName := DBKernel.DBContext.CollectionFileName;
     Options.OwnerForm := nil;
     BackUpTableInCMD.Create(Options);
   end;
@@ -81,15 +83,18 @@ procedure BackUpTableInCMD.Execute;
 var
   FSIn, FSOut: TFileStream;
   Directory : string;
+  Context: IDBContext;
 begin
   inherited;
   FreeOnTerminate := True;
+
+  Context := DBKernel.DBContext;
   Directory := ExcludeTrailingBackslash(GetAppDataDirectory + BackUpFolder);
   CreateDirA(Directory);
   try
-    FSOut := TFileStream.Create(Dbname, FmOpenRead or FmShareDenyNone);
+    FSOut := TFileStream.Create(Context.CollectionFileName, FmOpenRead or FmShareDenyNone);
     try
-      FSIn := TFileStream.Create(IncludeTrailingBackslash(Directory) + ExtractFileName(Dbname), FmOpenWrite or FmCreate);
+      FSIn := TFileStream.Create(IncludeTrailingBackslash(Directory) + ExtractFileName(Context.CollectionFileName), FmOpenWrite or FmCreate);
       try
         FSIn.CopyFrom(FSOut, FSOut.Size);
       finally

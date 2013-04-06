@@ -20,12 +20,14 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   UnitGroupsWork,
+  UnitDBKernel,
 
   uRuntime,
   uMemoryEx,
   uConstants,
   uGroupTypes,
   uDBForm,
+  uDBContext,
   uSettings,
   uShellIntegration,
   uFormInterfaces;
@@ -73,7 +75,7 @@ type
     Working: Boolean;
     FAction: TGroupAction;
     RegGroups: TGroups;
-    FGroupFileName: string;
+    FDBContext: IDBContext;
     procedure LoadLanguage;
     procedure SetText(GroupName : string);
     procedure RecreateGroupsList;
@@ -82,8 +84,8 @@ type
     function GetFormID : string; override;
   public
     { Public declarations }
-    procedure ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions; FileName: string);
-    procedure ExecuteWithDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions; FileName: string);
+    procedure ExecuteNoDBGroupsIn(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
+    procedure ExecuteWithDBGroupsIn(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
   end;
 
 Const
@@ -93,35 +95,32 @@ Const
   GROUP_ACTION_NO_ADD        = 3;
   GROUP_ACTION_ADD           = 4;
 
-procedure GroupReplaceExists(Group: TGroup;
-  out Action: TGroupAction; Options: GroupReplaceOptions; FileName: String);
-procedure GroupReplaceNotExists(Group: TGroup;
-  out Action: TGroupAction; Options: GroupReplaceOptions; FileName: String);
+procedure GroupReplaceExists(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
+procedure GroupReplaceNotExists(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
 
 implementation
 
 {$R *.dfm}
 
-procedure GroupReplaceExists(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions; FileName: string);
+procedure GroupReplaceExists(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
 var
   FormGroupReplace: TFormGroupReplace;
 begin
   Application.CreateForm(TFormGroupReplace, FormGroupReplace);
   try
-    FormGroupReplace.ExecuteWithDBGroupsIn(Group, Action, Options, FileName);
+    FormGroupReplace.ExecuteWithDBGroupsIn(DBContext, Group, Action, Options);
   finally
     R(FormGroupReplace);
   end;
 end;
 
-procedure GroupReplaceNotExists(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
-  FileName: string);
+procedure GroupReplaceNotExists(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
 var
   FormGroupReplace: TFormGroupReplace;
 begin
   Application.CreateForm(TFormGroupReplace, FormGroupReplace);
   try
-    FormGroupReplace.ExecuteNoDBGroupsIn(Group, Action, Options, FileName);
+    FormGroupReplace.ExecuteNoDBGroupsIn(DBContext, Group, Action, Options);
   finally
     R(FormGroupReplace);
   end;
@@ -158,7 +157,8 @@ end;
 procedure TFormGroupReplace.FormCreate(Sender: TObject);
 begin
   SetLength(RegGroups, 0);
-  FGroupFileName := Dbname;
+  FDBContext := DBKernel.DBContext;
+
   RecreateGroupsList;
   LoadLanguage;
 end;
@@ -180,12 +180,12 @@ begin
   if RbMergeWith.Checked then
   begin
     FAction.Action := GROUP_ACTION_ADD_IN_EXISTS;
-    FAction.InGroup := GetGroupByGroupNameW(CbExistedGroups.Text, True, FGroupFileName);
+    FAction.InGroup := GetGroupByGroupName(FDBContext, CbExistedGroups.Text, True);
   end;
   if RbAddWithAnotherName.Checked then
   begin
     FAction.Action := GROUP_ACTION_ADD_IN_NEW;
-    FAction.InGroup := GetGroupByGroupNameW(NewGroupNameBox.Text, True, FGroupFileName);
+    FAction.InGroup := GetGroupByGroupName(FDBContext, NewGroupNameBox.Text, True);
   end;
   if RbSkipGroup.Checked then
     FAction.Action := GROUP_ACTION_NO_ADD;
@@ -204,7 +204,7 @@ begin
   FreeGroups(RegGroups);
 
   SortGroupsByName := Settings.Readbool('Options', 'SortGroupsByName', True);
-  RegGroups := GetRegisterGroupListW(FGroupFileName, False, SortGroupsByName);
+  RegGroups := GetRegisterGroupList(FDBContext, False, SortGroupsByName);
   CbExistedGroups.Clear;
   for I := 0 to Length(RegGroups) - 1 do
     CbExistedGroups.Items.Add(RegGroups[I].GroupName);
@@ -227,10 +227,10 @@ begin
   CbExistedGroups.Enabled := False;
 end;
 
-procedure TFormGroupReplace.ExecuteNoDBGroupsIn(Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions;
-  FileName: string);
+procedure TFormGroupReplace.ExecuteNoDBGroupsIn(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
 begin
-  FGroupFileName := FileName;
+  FDBContext := DBContext;
+
   RecreateGroupsList;
   if CbExistedGroups.Items.Count = 0 then
     RbMergeWith.Enabled := False;
@@ -254,7 +254,7 @@ begin
     RbSkipGroup.Checked := True;
   end;
 
-  if GroupNameExistsW(Group.GroupName, FileName) then
+  if GroupNameExists(DBContext, Group.GroupName) then
   begin
     RbMergeWith.Checked := True;
     CbExistedGroups.Text := Group.GroupName;
@@ -271,10 +271,10 @@ begin
   Action := Faction;
 end;
 
-procedure TFormGroupReplace.ExecuteWithDBGroupsIn(Group: TGroup;
-  out Action: TGroupAction; Options : GroupReplaceOptions; FileName : String);
+procedure TFormGroupReplace.ExecuteWithDBGroupsIn(DBContext: IDBContext; Group: TGroup;
+  out Action: TGroupAction; Options : GroupReplaceOptions);
 begin
-  FGroupFileName := FileName;
+  FDBContext := DBContext;
   RecreateGroupsList;
   if CbExistedGroups.Items.Count = 0 then
     RbMergeWith.Enabled := False;
@@ -293,7 +293,7 @@ begin
     RbSkipGroup.Checked := True;
   end;
 
-  if GroupNameExistsW(Group.GroupName, FileName) then
+  if GroupNameExists(FDBContext, Group.GroupName) then
   begin
     RbMergeWith.Checked := True;
     CbExistedGroups.Text := Group.GroupName;
