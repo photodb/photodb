@@ -19,8 +19,8 @@ procedure AddUptimeSecs(Secs: Integer);
 var
   Time: Integer;
 begin
-  Time := Settings.ReadInteger('Options', 'UpTime', 0);
-  Settings.WriteInteger('Options', 'UpTime', Time + Secs);
+  Time := AppSettings.ReadInteger('Options', 'UpTime', 0);
+  AppSettings.WriteInteger('Options', 'UpTime', Time + Secs);
 end;
 
 procedure PermanentlySaveUpTime;
@@ -39,7 +39,7 @@ begin
       SW := TStreamWriter.Create(FS);
       try
         SW.Write(IntToStr(Time));
-        Settings.WriteInteger('Options', 'UpTime', 0);
+        AppSettings.WriteInteger('Options', 'UpTime', 0);
       finally
         F(SW);
       end;
@@ -58,7 +58,7 @@ var
   FileName, S: string;
 begin
   FileName := GetAppDataDirectory + '\uptime.dat';
-  Result := Settings.ReadInteger('Options', 'UpTime', 0);
+  Result := AppSettings.ReadInteger('Options', 'UpTime', 0);
   try
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
     try

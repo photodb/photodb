@@ -1624,7 +1624,7 @@ begin
   Name := PresentComboBox.Text;
   if Name = '' then
     Exit;
-  Settings.DeleteKey('Editor\CustomEffect\' + Name);
+  AppSettings.DeleteKey('Editor\CustomEffect\' + Name);
   ReloadUserPresents;
 end;
 
@@ -1837,9 +1837,9 @@ begin
   for I := -2 to 2 do
     for J := -2 to 2 do
     begin
-      E[3 + I, 3 + J].Text := Settings.ReadString('Editor\CustomEffect\' + name, InttoStr((I + 2) * 5 + J + 2));
+      E[3 + I, 3 + J].Text := AppSettings.ReadString('Editor\CustomEffect\' + name, InttoStr((I + 2) * 5 + J + 2));
     end;
-  DeviderEdit.Text := Settings.ReadString('Editor\CustomEffect\' + name, 'Divider');
+  DeviderEdit.Text := AppSettings.ReadString('Editor\CustomEffect\' + name, 'Divider');
 end;
 
 procedure TCustomMatrixEffect.MakeImage(Sender: TObject);
@@ -1902,7 +1902,7 @@ var
   List: TStrings;
 begin
   PresentComboBox.Clear;
-  List := Settings.ReadKeys('Editor\CustomEffect');
+  List := AppSettings.ReadKeys('Editor\CustomEffect');
   for I := 1 to List.Count do
     PresentComboBox.Items.Add(List[I - 1]);
 
@@ -1922,9 +1922,9 @@ begin
   end;
   for I := -2 to 2 do
     for J := -2 to 2 do
-      Settings.WriteString('Editor\CustomEffect\' + name, IntToStr((I + 2) * 5 + J + 2), E[3 + I, 3 + J].Text);
+      AppSettings.WriteString('Editor\CustomEffect\' + name, IntToStr((I + 2) * 5 + J + 2), E[3 + I, 3 + J].Text);
 
-  Settings.WriteString('Editor\CustomEffect\' + name, 'Divider', DeviderEdit.Text);
+  AppSettings.WriteString('Editor\CustomEffect\' + name, 'Divider', DeviderEdit.Text);
 
   ReloadUserPresents;
 end;

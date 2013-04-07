@@ -56,7 +56,7 @@ procedure InitGraphic(G: TGraphic);
 begin
   if G is TAnimatedJPEG then
   begin
-    if Settings.ReadString('Options', 'StereoMode', '') <> '' then
+    if AppSettings.ReadString('Options', 'StereoMode', '') <> '' then
       TAnimatedJPEG(G).IsRedCyan := True;
   end;
 end;
@@ -67,7 +67,7 @@ var
   IsAniJpeg: Boolean;
 begin
   IsAniGIF := (G is TGifImage) and (TGifImage(G).Images.Count > 1);
-  IsAniJpeg := (G is TAnimatedJPEG) and (Settings.ReadString('Options', 'StereoMode', '') = '');
+  IsAniJpeg := (G is TAnimatedJPEG) and (AppSettings.ReadString('Options', 'StereoMode', '') = '');
   Result := IsAniGIF or IsAniJpeg;
 end;
 

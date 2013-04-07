@@ -113,10 +113,10 @@ begin
   Result := False;
   M := nil;
 
-  if Settings.ReadBool('Options', 'DontAddSmallImages', True) then
+  if AppSettings.ReadBool('Options', 'DontAddSmallImages', True) then
   begin
-    if (Settings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64) > Res.ImageWidth) or
-       (Settings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64) > Res.ImageHeight) then
+    if (AppSettings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64) > Res.ImageWidth) or
+       (AppSettings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64) > Res.ImageHeight) then
       // small images are no photos
       Exit;
   end;

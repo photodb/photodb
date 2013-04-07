@@ -203,7 +203,7 @@ var
 begin
   FreeGroups(RegGroups);
 
-  SortGroupsByName := Settings.Readbool('Options', 'SortGroupsByName', True);
+  SortGroupsByName := AppSettings.Readbool('Options', 'SortGroupsByName', True);
   RegGroups := GetRegisterGroupList(FDBContext, False, SortGroupsByName);
   CbExistedGroups.Clear;
   for I := 0 to Length(RegGroups) - 1 do

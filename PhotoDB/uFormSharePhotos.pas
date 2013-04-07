@@ -351,7 +351,7 @@ end;
 
 procedure TFormSharePhotos.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Settings.WriteInteger('Share', 'AlbumsSplitterPos', PnAlbums.Width);
+  AppSettings.WriteInteger('Share', 'AlbumsSplitterPos', PnAlbums.Width);
   SaveWindowPos1.SavePosition;
   Action := caFree;
 end;
@@ -384,7 +384,7 @@ begin
   LoadLanguage;
   EnableControls(False);
 
-  AccessIndex := Settings.ReadInteger('Share', 'AlbumAccess', 0);
+  AccessIndex := AppSettings.ReadInteger('Share', 'AlbumAccess', 0);
   case AccessIndex of
     1:
     begin
@@ -402,7 +402,7 @@ begin
     end;
   end;
 
-  PnAlbums.Width := Settings.ReadInteger('Share', 'AlbumsSplitterPos', 250);
+  PnAlbums.Width := AppSettings.ReadInteger('Share', 'AlbumsSplitterPos', 250);
   FProvider := nil;
 end;
 

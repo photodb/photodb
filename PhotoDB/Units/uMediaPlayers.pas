@@ -206,7 +206,7 @@ begin
   VideoFileExtensions := uConstants.cVideoFileExtensions.ToUpper.Split([',']);
 
   for Ext in VideoFileExtensions do
-    Settings.WriteString(cMediaAssociationsData + '\' + Ext, '', Player);
+    AppSettings.WriteString(cMediaAssociationsData + '\' + Ext, '', Player);
 end;
 
 end.

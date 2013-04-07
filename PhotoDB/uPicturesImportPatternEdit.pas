@@ -56,7 +56,7 @@ procedure TPicturesImportPatternEdit.BtnOkClick(Sender: TObject);
 begin
   if WmPatterns.Lines.Count > 0 then
   begin
-    Settings.WriteString('ImportPictures', 'PatternList', WmPatterns.Text);
+    AppSettings.WriteString('ImportPictures', 'PatternList', WmPatterns.Text);
     Close;
     ModalResult := mrOk;
   end;
@@ -72,7 +72,7 @@ end;
 procedure TPicturesImportPatternEdit.FormCreate(Sender: TObject);
 begin
   LoadLanguage;
-  WmPatterns.Lines.Text := Settings.ReadString('ImportPictures', 'PatternList', DefaultImportPatternList);
+  WmPatterns.Lines.Text := AppSettings.ReadString('ImportPictures', 'PatternList', DefaultImportPatternList);
 end;
 
 function TPicturesImportPatternEdit.GetFormID: string;

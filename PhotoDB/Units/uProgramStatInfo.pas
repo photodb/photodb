@@ -278,12 +278,12 @@ var
   Value: Integer;
 begin
   //format: PROPNAME1(COUNT)PROPNAME2(COUNT)
-  Info := Settings.ReadValues(cStatisticsRegistryKey);
+  Info := AppSettings.ReadValues(cStatisticsRegistryKey);
   try
     Result := '';
     for Key in Info do
     begin
-      Value := Settings.ReadInteger(cStatisticsRegistryKey, Key, 0);
+      Value := AppSettings.ReadInteger(cStatisticsRegistryKey, Key, 0);
       if Value > 0 then
       begin
         Value := ProcessCount(Value);
@@ -298,7 +298,7 @@ end;
 procedure TProgramStatInfo.UpdateProperty(PropertyAlias: string);
 begin
   try
-    Settings.IncrementInteger(cStatisticsRegistryKey, PropertyAlias);
+    AppSettings.IncrementInteger(cStatisticsRegistryKey, PropertyAlias);
   except
     //this is OK, this methoud should never affect program flow
   end;

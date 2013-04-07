@@ -119,11 +119,11 @@ procedure TFormFastFileRenamer.SaveSettings;
 var
   I: Integer;
 begin
-  Settings.DeleteValues('Renamer');
+  AppSettings.DeleteValues('Renamer');
   for I := 0 to CmMaskList.Items.Count - 1 do
-    Settings.WriteString('Renamer', 'val' + IntToStr(I + 1), CmMaskList.Items[I]);
+    AppSettings.WriteString('Renamer', 'val' + IntToStr(I + 1), CmMaskList.Items[I]);
 
-  Settings.WriteString('Options', 'RenameText', CmMaskList.Text);
+  AppSettings.WriteString('Options', 'RenameText', CmMaskList.Text);
 end;
 
 procedure TFormFastFileRenamer.SetFiles(Files: TStrings; IDS: TArInteger);
@@ -145,13 +145,13 @@ var
   I: Integer;
 begin
   LoadLanguage;
-  List := Settings.ReadValues('Renamer');
+  List := AppSettings.ReadValues('Renamer');
   try
     CmMaskList.Items.Clear;
     for I := 0 to List.Count - 1 do
-      CmMaskList.Items.Add(Settings.ReadString('Renamer', List[I]));
+      CmMaskList.Items.Add(AppSettings.ReadString('Renamer', List[I]));
 
-    CmMaskList.Text := Settings.ReadString('Options', 'RenameText');
+    CmMaskList.Text := AppSettings.ReadString('Options', 'RenameText');
   finally
     F(List);
   end;

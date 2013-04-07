@@ -242,7 +242,7 @@ end;
 
 procedure TFormShareLink.CbShortUrlClick(Sender: TObject);
 begin
-  Settings.WriteBool('Share', 'ShowrtLink', CbShortUrl.Checked);
+  AppSettings.WriteBool('Share', 'ShowrtLink', CbShortUrl.Checked);
 
   if CbShortUrl.Checked then
   begin
@@ -336,7 +336,7 @@ begin
   FShortUrl := '';
   FShortUrlInProgress := False;
   FProgressCount := 0;
-  CbShortUrl.Checked := Settings.ReadBool('Share', 'ShowrtLink', True);
+  CbShortUrl.Checked := AppSettings.ReadBool('Share', 'ShowrtLink', True);
 
   Providers := TList<IPhotoShareProvider>.Create;
   try

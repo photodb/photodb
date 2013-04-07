@@ -252,7 +252,7 @@ begin
       CollectionFileName := ExtractFilePath(Application.ExeName) + AnsiLowerCase(GetFileNameWithoutExt(Application.ExeName)) + '.photodb';
   end else
   begin
-    CollectionFileName := Settings.DataBase;
+    CollectionFileName := AppSettings.DataBase;
 
     if not FileExistsSafe(CollectionFileName) then
       CreateSampleDefaultCollection;

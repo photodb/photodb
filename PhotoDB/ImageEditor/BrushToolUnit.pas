@@ -125,7 +125,7 @@ begin
   BrushSizeTrackBar.OnChange := BrushSizeChanged;
   BrushSizeTrackBar.Min := 1;
   BrushSizeTrackBar.Max := 500;
-  BrushSizeTrackBar.Position := Settings.ReadInteger('Editor', 'BrushToolSize', 30);
+  BrushSizeTrackBar.Position := AppSettings.ReadInteger('Editor', 'BrushToolSize', 30);
   BrushSizeTrackBar.Parent := Self;
 
   BrusTransparencyCaption := TStaticText.Create(AOwner);
@@ -141,7 +141,7 @@ begin
   BrusTransparencyTrackBar.OnChange := BrushTransparencyChanged;
   BrusTransparencyTrackBar.Min := 1;
   BrusTransparencyTrackBar.Max := 100;
-  BrusTransparencyTrackBar.Position := Settings.ReadInteger('Editor', 'BrushTransparency', 100);
+  BrusTransparencyTrackBar.Position := AppSettings.ReadInteger('Editor', 'BrushTransparency', 100);
   BrusTransparencyTrackBar.Parent := Self;
 
   BrusTransparencyCaption.Caption := Format(L('Transparency [%d]'), [BrusTransparencyTrackBar.Position]);
@@ -162,7 +162,7 @@ begin
 
   MethodDrawChooser.Items.Add(L('Normal'));
   MethodDrawChooser.Items.Add(L('Color replace'));
-  MethodDrawChooser.ItemIndex := Settings.ReadInteger('Editor', 'BrushToolStyle', 0);
+  MethodDrawChooser.ItemIndex := AppSettings.ReadInteger('Editor', 'BrushToolStyle', 0);
   MethodDrawChooser.OnChange := BrushTransparencyChanged;
 
   BrushColorChooser := TShape.Create(AOwner);
@@ -170,7 +170,7 @@ begin
   BrushColorChooser.Left := 10;
   BrushColorChooser.Width := 20;
   BrushColorChooser.Height := 20;
-  BrushColorChooser.Brush.Color := Settings.ReadInteger('Editor', 'BrushToolColor', 0);
+  BrushColorChooser.Brush.Color := AppSettings.ReadInteger('Editor', 'BrushToolColor', 0);
   BrushColorChooser.OnMouseDown := ColorClick;
   BrushColorChooser.Parent := Self;
 
@@ -409,10 +409,10 @@ end;
 
 procedure TBrushToolClass.DoSaveSettings(Sender: TObject);
 begin
-  Settings.WriteInteger('Editor', 'BrushToolStyle', MethodDrawChooser.ItemIndex);
-  Settings.WriteInteger('Editor', 'BrushToolColor', BrushColorChooser.Brush.Color);
-  Settings.WriteInteger('Editor', 'BrushToolSize', BrushSizeTrackBar.Position);
-  Settings.WriteInteger('Editor', 'BrushTransparency', BrusTransparencyTrackBar.Position);
+  AppSettings.WriteInteger('Editor', 'BrushToolStyle', MethodDrawChooser.ItemIndex);
+  AppSettings.WriteInteger('Editor', 'BrushToolColor', BrushColorChooser.Brush.Color);
+  AppSettings.WriteInteger('Editor', 'BrushToolSize', BrushSizeTrackBar.Position);
+  AppSettings.WriteInteger('Editor', 'BrushTransparency', BrusTransparencyTrackBar.Position);
 end;
 
 procedure TBrushToolClass.BrushTransparencyChanged(Sender: TObject);

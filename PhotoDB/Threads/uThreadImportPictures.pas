@@ -688,7 +688,7 @@ begin
               end;
             end;
 
-            if (Settings.ReadBool('ImportPictures', 'OpenDestination', True)) then
+            if (AppSettings.ReadBool('ImportPictures', 'OpenDestination', True)) then
             begin
               SynchronizeEx(
                 procedure

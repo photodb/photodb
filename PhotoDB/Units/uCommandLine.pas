@@ -82,12 +82,12 @@ begin
 
   if not FolderView and not DBTerminating then
     if not GetParamStrDBBool('/NoFaultCheck') then
-      if (Settings.ReadProperty('Starting', 'ApplicationStarted') = '1') then
+      if (AppSettings.ReadProperty('Starting', 'ApplicationStarted') = '1') then
       begin
         CloseSplashWindow;
         if ID_OK = MessageBoxDB(Application.MainFormHandle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
         begin
-          Settings.WriteBool('StartUp', 'Pack', False);
+          AppSettings.WriteBool('StartUp', 'Pack', False);
           Application.CreateForm(TCMDForm, CMDForm);
           CMDForm.PackPhotoTable(Context.CollectionFileName);
           R(CMDForm);
@@ -95,22 +95,22 @@ begin
       end;
 
   if not FolderView and not DBTerminating then
-    if GetParamStrDBBool('/PACKTABLE') or Settings.ReadBool('StartUp', 'Pack', False) then
+    if GetParamStrDBBool('/PACKTABLE') or AppSettings.ReadBool('StartUp', 'Pack', False) then
     begin
       CloseSplashWindow;
       EventLog('Packing...');
-      Settings.WriteBool('StartUp', 'Pack', False);
+      AppSettings.WriteBool('StartUp', 'Pack', False);
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.PackPhotoTable(Context.CollectionFileName);
       R(CMDForm);
     end;
 
   if not FolderView and not DBTerminating then
-    if GetParamStrDBBool('/BACKUP') or Settings.ReadBool('StartUp', 'BackUp', False) then
+    if GetParamStrDBBool('/BACKUP') or AppSettings.ReadBool('StartUp', 'BackUp', False) then
     begin
       CloseSplashWindow;
       EventLog('BackUp...');
-      Settings.WriteBool('StartUp', 'BackUp', False);
+      AppSettings.WriteBool('StartUp', 'BackUp', False);
       Application.CreateForm(TCMDForm, CMDForm);
       CMDForm.BackUpTable(Context.CollectionFileName);
       R(CMDForm);

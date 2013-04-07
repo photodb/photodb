@@ -23,6 +23,7 @@ uses
   uFrameWizardBase,
   uMemory,
   uDBUtils,
+  uDBEntities,
   uJpegUtils,
   uBItmapUtils,
   uResources,
@@ -51,7 +52,7 @@ type
   private
     { Private declarations }
     Image: TJpegImage;
-    function GetImageOptions: TImageDBOptions;
+    function GetImageOptions: TSettings;
     function HintCheck(Info: TDBPopupMenuInfoRecord): Boolean;
     procedure FillImageSize(Combo: TcomboBox);
     procedure FillImageQuality(Combo: TcomboBox);
@@ -67,7 +68,7 @@ type
     procedure Init(Manager: TWizardManagerBase; FirstInitialization: Boolean); override;
     procedure Unload; override;
     function InitNextStep: Boolean; override;
-    property ImageOptions: TImageDBOptions read GetImageOptions;
+    property ImageOptions: TSettings read GetImageOptions;
   end;
 
 implementation
@@ -129,7 +130,7 @@ begin
   Combo.Items.Add('450');
 end;
 
-function TFrmConvertationSettings.GetImageOptions: TImageDBOptions;
+function TFrmConvertationSettings.GetImageOptions: TSettings;
 begin
   Result := (Manager.Owner as IDBImageSettings).GetImageOptions;
 end;

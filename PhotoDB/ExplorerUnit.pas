@@ -1285,7 +1285,7 @@ end;
 procedure TExplorerForm.PcRightPreviewChange(Sender: TObject);
 begin
   FActiveRightTab := TExplorerRightTab(PcRightPreview.ActivePageIndex);
-  Settings.WriteInteger('Explorer', 'RightPanelTabIndex', PcRightPreview.ActivePageIndex);
+  AppSettings.WriteInteger('Explorer', 'RightPanelTabIndex', PcRightPreview.ActivePageIndex);
   if PcRightPreview.ActivePageIndex = Integer(ertsPreview) then
   begin
     CreatePreview;
@@ -1305,7 +1305,7 @@ end;
 procedure TExplorerForm.PcTasksChange(Sender: TObject);
 begin
   FActiveLeftTab := TExplorerLeftTab(PcTasks.ActivePageIndex);
-  Settings.WriteInteger('Explorer', 'LeftPanelTabIndex', PcTasks.ActivePageIndex);
+  AppSettings.WriteInteger('Explorer', 'LeftPanelTabIndex', PcTasks.ActivePageIndex);
   if PcTasks.ActivePageIndex = Integer(eltsExplorer) then
     TreeViewSelectCurrentPath;
   if PcTasks.ActivePageIndex = Integer(eltsSearch) then
@@ -1396,7 +1396,7 @@ begin
   FExtendedSearchParams := nil;
   FExtendedSearchPersons := nil;
   FDatabases := TList<TDatabaseInfo>.Create;
-  LoadDbs(FDatabases);
+  ReadUserCollections(FDatabases);
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1463,7 +1463,7 @@ begin
   ElvMain.Groups.Add;
   ElvMain.Groups[0].Visible := True;
 
-  ElvMain.Scrollbars.SmoothScrolling := Settings.Readbool('Options', 'SmoothScrolling', True);
+  ElvMain.Scrollbars.SmoothScrolling := AppSettings.Readbool('Options', 'SmoothScrolling', True);
 
   RefreshIDList := TStringList.Create;
 
@@ -1483,8 +1483,8 @@ begin
   DropFileTargetFake.Register(Self);
   DropFileTargetMain.Register(ElvMain);
 
-  FShowStatusBar := Settings.Readbool('Options', 'ShowStatusBar', False);
-  ElvMain.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
+  FShowStatusBar := AppSettings.Readbool('Options', 'ShowStatusBar', False);
+  ElvMain.HotTrack.Enabled := AppSettings.Readbool('Options', 'UseHotSelect', True);
   RegisterMainForm(Self);
   FStatusProgress := StatusBarMain.CreateProgressBar(0);
   FStatusProgress.Visible := False;
@@ -1494,14 +1494,14 @@ begin
   CollectionEvents.RegisterChangesID(Sender, ChangedDBDataByID);
 
   NewFormState;
-  MainPanel.Width := Settings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
-  PnSearch.Width := Settings.ReadInteger('Explorer', 'SearchPanel', 210);
-  VleExif.ColWidths[0] := Settings.ReadInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
+  MainPanel.Width := AppSettings.ReadInteger('Explorer', 'LeftPanelWidth', 165);
+  PnSearch.Width := AppSettings.ReadInteger('Explorer', 'SearchPanel', 210);
+  VleExif.ColWidths[0] := AppSettings.ReadInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
 
-  TbSearch.Down := Settings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
+  TbSearch.Down := AppSettings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
   TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
 
-  if Settings.ReadBool('Explorer', 'RightPanelVisible', True) then
+  if AppSettings.ReadBool('Explorer', 'RightPanelVisible', True) then
     ShowRightPanel(ertsPreview)
   else
     SetResizeListViewMode;
@@ -1571,9 +1571,9 @@ begin
   RequestAlign;
 
   if PnRight.Align = alClient then
-    PnListView.Width := IIF(WindowState = wsMaximized, Monitor.Width - (Width - ClientWidth) - MainPanel.Width + SplLeftPanel.Width, PnContent.Width) - Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width)
+    PnListView.Width := IIF(WindowState = wsMaximized, Monitor.Width - (Width - ClientWidth) - MainPanel.Width + SplLeftPanel.Width, PnContent.Width) - AppSettings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width)
   else
-    PnRight.Width := Settings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
+    PnRight.Width := AppSettings.ReadInteger('Explorer', 'RightPanelWidth', PnRight.Width);
 
   TW.I.Start('FormLoadEnd - true');
   FormLoadEnd := True;
@@ -1985,7 +1985,7 @@ begin
   for I := DBitem1.MenuIndex + 1 to N8.MenuIndex - 1 do
     PmItemPopup.Items.Delete(DBitem1.MenuIndex + 1);
 
-  if Settings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
+  if AppSettings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
     if Info.FileType = EXPLORER_ITEM_IMAGE then
     begin
       if Info.ID = 0 then
@@ -2206,11 +2206,11 @@ begin
   DropFileTargetMain.Unregister;
   CollectionEvents.UnRegisterChangesID(Sender, ChangedDBDataByID);
 
-  Settings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
-  Settings.WriteInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
-  Settings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
-  Settings.WriteString('Explorer', 'Path', GetCurrentPathW.Path);
-  Settings.WriteInteger('Explorer', 'PathType', GetCurrentPathW.PType);
+  AppSettings.WriteInteger('Explorer', 'RightPanelWidth', PnRight.Width);
+  AppSettings.WriteInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
+  AppSettings.WriteInteger('Explorer', 'LeftPanelWidth', MainPanel.Width);
+  AppSettings.WriteString('Explorer', 'Path', GetCurrentPathW.Path);
+  AppSettings.WriteInteger('Explorer', 'PathType', GetCurrentPathW.PType);
   F(FStatusProgress);
   UnRegisterMainForm(Self);
   F(FFilesInfo);
@@ -2411,7 +2411,7 @@ begin
     Exit;
 
   if not(CtrlKeyDown or ShiftKeyDown) then
-    if Settings.Readbool('Options', 'UseHotSelect', True) then
+    if AppSettings.Readbool('Options', 'UseHotSelect', True) then
       if not LastMouseItem.Selected then
       begin
         if not(CtrlKeyDown or ShiftKeyDown) then
@@ -2537,7 +2537,7 @@ begin
     HintTimer.Enabled := False;
     if Active then
     begin
-      if Settings.Readbool('Options', 'AllowPreview', True) then
+      if AppSettings.Readbool('Options', 'AllowPreview', True) then
         HintTimer.Enabled := True;
       ItemWithHint := LastMouseItem;
     end;
@@ -2778,7 +2778,7 @@ begin
     BeginScreenUpdate(TsMediaPreview.Handle);
     try
       WllPersonsPreview.Clear;
-      if (FImageViewer.Text = '') and not Settings.ReadBool('FaceDetection', 'AutoHidePanel', False) and not FImageViewer.IsAnimatedImage then
+      if (FImageViewer.Text = '') and not AppSettings.ReadBool('FaceDetection', 'AutoHidePanel', False) and not FImageViewer.IsAnimatedImage then
       begin
         WllPersonsPreview.Visible := True;
         LblInfo := TStaticText.Create(WllGroups);
@@ -3324,7 +3324,7 @@ procedure TExplorerForm.FormClose(Sender: TObject;
 begin
   THintManager.Instance.CloseHint;
   HintTimer.Enabled := False;
-  Settings.WriteInteger('Explorer', 'SearchPanel', PnSearch.Width);
+  AppSettings.WriteInteger('Explorer', 'SearchPanel', PnSearch.Width);
   Release;
 end;
 
@@ -3492,7 +3492,7 @@ begin
   else
     HideRightPanel;
 
-  Settings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down);
+  AppSettings.WriteBool('Explorer', 'RightPanelVisible', TbPreview.Down);
 end;
 
 procedure TExplorerForm.TbPreviewInfoClick(Sender: TObject);
@@ -4597,8 +4597,8 @@ end;
 
 procedure TExplorerForm.ApplySettings;
 begin
-  FShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-  FShowEXIFAttributes := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+  FShowAttributes := AppSettings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  FShowEXIFAttributes := AppSettings.ReadBool('Options', 'ShowEXIFMarker', False);
 end;
 
 procedure TExplorerForm.ApplyStyle;
@@ -4616,13 +4616,13 @@ begin
     FLeftTabs := FLeftTabs + [eltsSearch];
 
   FActiveLeftTab := eltsExplorer;
-  ShowActiveLeftTab(TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
+  ShowActiveLeftTab(TExplorerLeftTab(AppSettings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(eltsExplorer))));
 
   ApplyLeftTabs;
 
   FRightTabs := [ertsPreview, ertsMap];
   FActiveRightTab := ertsPreview;
-  ShowActiveRightTab(TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(ertsPreview))));
+  ShowActiveRightTab(TExplorerRightTab(AppSettings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(ertsPreview))));
   ApplyRightTabs;
 
   if (StyleServices.Enabled and TStyleManager.IsCustomStyleActive) then
@@ -5132,7 +5132,7 @@ begin
     begin
       SaveCurrentImageInfoToMap;
 
-      if Settings.ReadInteger('Explorer', 'MapZoom', 1) <= 1 then
+      if AppSettings.ReadInteger('Explorer', 'MapZoom', 1) <= 1 then
       begin
         TThreadTask.Create(Self, nil,
           procedure(Thread: TThreadTask; Data: Pointer)
@@ -5179,9 +5179,9 @@ procedure TExplorerForm.ZoomPan(Lat, Lng: Double; Zoom: SYSINT);
 begin
   if FIsMapLoaded then
   begin
-    Settings.WriteInteger('Explorer', 'MapZoom', Zoom);
-    Settings.WriteString('Explorer', 'MapLat', DoubleToStringPoint(Lat));
-    Settings.WriteString('Explorer', 'MapLng', DoubleToStringPoint(Lng));
+    AppSettings.WriteInteger('Explorer', 'MapZoom', Zoom);
+    AppSettings.WriteString('Explorer', 'MapLat', DoubleToStringPoint(Lat));
+    AppSettings.WriteString('Explorer', 'MapLng', DoubleToStringPoint(Lng));
   end;
 end;
 
@@ -5295,7 +5295,7 @@ var
 begin
   if FGeoHTMLWindow = nil then
   begin
-    WedGeoSearch.Text := Settings.ReadString('Explorer', 'LastGeoSearch', '');
+    WedGeoSearch.Text := AppSettings.ReadString('Explorer', 'LastGeoSearch', '');
     FMapLocationLat := 0;
     FMapLocationLng := 0;
 
@@ -5336,9 +5336,9 @@ begin
         S := StringReplace(S, '%ZOOM_TEXT%', L('Zoom in'), []);
         S := StringReplace(S, '%SAVE_TEXT%', L('Save current location for the image?'), []);
 
-        Lt := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLat', ''));
-        Ln := StringToDoublePoint(Settings.ReadString('Explorer', 'MapLng', ''));
-        Zoom := Settings.ReadInteger('Explorer', 'MapZoom', 1);
+        Lt := StringToDoublePoint(AppSettings.ReadString('Explorer', 'MapLat', ''));
+        Ln := StringToDoublePoint(AppSettings.ReadString('Explorer', 'MapLng', ''));
+        Zoom := AppSettings.ReadInteger('Explorer', 'MapZoom', 1);
 
         S := StringReplace(S, '%START_LT%', DoubleToStringPoint(Lt), []);
         S := StringReplace(S, '%START_LN%', DoubleToStringPoint(Ln), []);
@@ -5372,7 +5372,7 @@ end;
 
 procedure TExplorerForm.SbDoSearchLocationClick(Sender: TObject);
 begin
-  Settings.WriteString('Explorer', 'LastGeoSearch', WedGeoSearch.Text);
+  AppSettings.WriteString('Explorer', 'LastGeoSearch', WedGeoSearch.Text);
   if FIsMapLoaded then
     if FGeoHTMLWindow <> nil then
       FGeoHTMLWindow.execScript(FormatEx('FindLocation("{0}");', [WedGeoSearch.Text]), 'JavaScript');
@@ -6779,19 +6779,19 @@ end;
 
 procedure TExplorerForm.Searchfiles1Click(Sender: TObject);
 begin
-  Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES);
+  AppSettings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_FILES);
   LoadSearchMode(EXPLORER_SEARCH_FILES);
 end;
 
 procedure TExplorerForm.SearchfileswithEXIF1Click(Sender: TObject);
 begin
-  Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_IMAGES);
+  AppSettings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_IMAGES);
   LoadSearchMode(EXPLORER_SEARCH_IMAGES);
 end;
 
 procedure TExplorerForm.Searchincollection1Click(Sender: TObject);
 begin
-  Settings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_DATABASE);
+  AppSettings.WriteInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_DATABASE);
   LoadSearchMode(EXPLORER_SEARCH_DATABASE);
 end;
 
@@ -6832,7 +6832,7 @@ procedure TExplorerForm.InitSearch;
 begin
   TW.I.Start('LoadSpeedButtonFromResourcePNG - SEARCH');
   LoadSpeedButtonFromResourcePNG(sbDoSearch, 'SEARCH');
-  LoadSearchMode(Settings.ReadInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_DATABASE));
+  LoadSearchMode(AppSettings.ReadInteger('Explorer', 'SearchMode', EXPLORER_SEARCH_DATABASE));
 end;
 
 procedure TExplorerForm.PmSearchModePopup(Sender: TObject);
@@ -6914,7 +6914,7 @@ procedure TExplorerForm.ShowLeftTabIfWasActive(Tab: TExplorerLeftTab);
 var
   TabToShow: Integer;
 begin
-  TabToShow := Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0);
+  TabToShow := AppSettings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0);
   if TabToShow = Integer(Tab) then
     ShowActiveLeftTab(Tab);
 end;
@@ -6926,7 +6926,7 @@ begin
   TabToShow := Tab;
   if not (TabToShow in FLeftTabs) then
   begin
-    TabToShow := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(FActiveLeftTab)));
+    TabToShow := TExplorerLeftTab(AppSettings.ReadInteger('Explorer', 'LeftPanelTabIndex', Integer(FActiveLeftTab)));
     if not (TabToShow in FLeftTabs) then
       TabToShow := eltsExplorer;
   end;
@@ -6944,7 +6944,7 @@ begin
   TabToShow := Tab;
   if not (TabToShow in FRightTabs) then
   begin
-    TabToShow := TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(FActiveLeftTab)));
+    TabToShow := TExplorerRightTab(AppSettings.ReadInteger('Explorer', 'RightPanelTabIndex', Integer(FActiveLeftTab)));
     if not (TabToShow in FRightTabs) then
       TabToShow := ertsPreview;
   end;
@@ -6959,7 +6959,7 @@ procedure TExplorerForm.ShowLastActiveLeftTab(Tab: TExplorerLeftTab);
 var
   LastActiveTab: TExplorerLeftTab;
 begin
-  LastActiveTab := TExplorerLeftTab(Settings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0));
+  LastActiveTab := TExplorerLeftTab(AppSettings.ReadInteger('Explorer', 'LeftPanelTabIndex', 0));
   if (Tab = eltsAny) or (LastActiveTab = Tab) then
     ShowActiveLeftTab(LastActiveTab);
 end;
@@ -6968,7 +6968,7 @@ procedure TExplorerForm.ShowLastActiveRightTab(Tab: TExplorerRightTab);
 var
   LastActiveTab: TExplorerRightTab;
 begin
-  LastActiveTab := TExplorerRightTab(Settings.ReadInteger('Explorer', 'RightPanelTabIndex', 0));
+  LastActiveTab := TExplorerRightTab(AppSettings.ReadInteger('Explorer', 'RightPanelTabIndex', 0));
   if (Tab = ertsAny) or (LastActiveTab = Tab) then
     ShowActiveRightTab(LastActiveTab);
 end;
@@ -7456,8 +7456,8 @@ procedure TExplorerForm.LoadLastPath;
 begin
   SetNewPathW(
     ExplorerPath(
-      Settings.ReadString('Explorer', 'Path', GetMyPicturesPath),
-      Settings.ReadInteger('Explorer', 'PathType', EXPLORER_ITEM_FOLDER)), False);
+      AppSettings.ReadString('Explorer', 'Path', GetMyPicturesPath),
+      AppSettings.ReadInteger('Explorer', 'PathType', EXPLORER_ITEM_FOLDER)), False);
 end;
 
 procedure TExplorerForm.HandleEncryptionError(FileName, ErrorMessage: string);
@@ -10797,15 +10797,15 @@ end;
 
 function TExplorerForm.GetViewInfo: TExplorerViewInfo;
 begin
-  Result.ShowFolders := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-  Result.ShowSimpleFiles := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-  Result.ShowImageFiles := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-  Result.ShowHiddenFiles := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-  Result.ShowAttributes := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-  Result.ShowThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-  Result.SaveThumbNailsForFolders := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-  Result.ShowThumbNailsForImages := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-  Result.ShowThumbNailsForVideo := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
+  Result.ShowFolders := AppSettings.Readbool('Options', 'Explorer_ShowFolders', True);
+  Result.ShowSimpleFiles := AppSettings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+  Result.ShowImageFiles := AppSettings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+  Result.ShowHiddenFiles := AppSettings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+  Result.ShowAttributes := AppSettings.Readbool('Options', 'Explorer_ShowAttributes', True);
+  Result.ShowThumbNailsForFolders := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+  Result.SaveThumbNailsForFolders := AppSettings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+  Result.ShowThumbNailsForImages := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+  Result.ShowThumbNailsForVideo := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
   Result.View := ListView;
   Result.PictureSize := FPictureSize;
 end;
@@ -11029,7 +11029,7 @@ var
   end;
 
 begin
-  UseSmallIcons := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
+  UseSmallIcons := AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
   ToolBarNormalImageList.Clear;
 
   if UseSmallIcons then
@@ -11074,7 +11074,7 @@ var
 begin
   ToolBarDisabledImageList.Clear;
 
-  UseSmallIcons := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
+  UseSmallIcons := AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
   if UseSmallIcons then
   begin
     ToolBarDisabledImageList.Width := 16;
@@ -11174,7 +11174,7 @@ begin
   end;
   ApplyLeftTabs;
 
-  Settings.WriteBool('Explorer', 'LeftPanelSearchVisible', TbSearch.Down);
+  AppSettings.WriteBool('Explorer', 'LeftPanelSearchVisible', TbSearch.Down);
 end;
 
 procedure TExplorerForm.TbStopClick(Sender: TObject);
@@ -12652,7 +12652,7 @@ begin
   Context := DBKernel.DBContext;
 
   FreeList(FDatabases, False);
-  LoadDbs(FDatabases);
+  ReadUserCollections(FDatabases);
 
   IconFileName := '';
   TbDatabase.Visible := FDatabases.Count > 1;
@@ -12690,7 +12690,7 @@ begin
 
   if TbDatabase.Visible then
   begin
-    Ico := ExtractSmallIconByPath(IconFileName, not Settings.Readbool('Options', 'UseSmallToolBarButtons', False));
+    Ico := ExtractSmallIconByPath(IconFileName, not AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False));
     try
       LB := TLayeredBitmap.Create;
       try
@@ -12729,7 +12729,7 @@ begin
   Editor := TLinkListEditorDatabases.Create(Self);
   try
     if LinkItemSelectForm.Execute(450, L('List of collections'), TList<TDataObject>(FDatabases), Editor) then
-      SaveDBs(FDatabases);
+      SaveUserCollections(FDatabases);
 
     LoadDBList;
   finally

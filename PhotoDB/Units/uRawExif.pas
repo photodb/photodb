@@ -71,9 +71,8 @@ const
   MAX_TEXT_EXTENT	= 512;
 var
   Buffer: AnsiString;
-  I: Integer;
   tag_type: FREE_IMAGE_MDTYPE;
-  tag_count: Cardinal;
+  //tag_count: Cardinal;
 
   max_size: Integer;
   TagValue: Pointer;
@@ -85,7 +84,7 @@ begin
 
 	// convert the tag value to a string buffer
   tag_type := FreeImage_GetTagType(tag);
-	tag_count := FreeImage_GetTagCount(tag);
+	//tag_count := FreeImage_GetTagCount(tag);
 
 	case (tag_type) of
 		FIDT_BYTE:		// N x 8-bit unsigned integer

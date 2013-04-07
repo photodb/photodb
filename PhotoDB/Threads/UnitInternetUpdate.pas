@@ -73,7 +73,7 @@ begin
 
     if FIsBackground then
     begin
-      LastCheckDate := Settings.ReadDateTime('Updater', 'LastTime', Now - 365);
+      LastCheckDate := AppSettings.ReadDateTime('Updater', 'LastTime', Now - 365);
 
       if not (Now - LastCheckDate > 7) then
         Exit;
@@ -91,7 +91,7 @@ begin
 
     ParceReply(UpdateText);
     if not Terminated and FIsBackground then
-      Settings.WriteDateTime('Updater', 'LastTime', Now);
+      AppSettings.WriteDateTime('Updater', 'LastTime', Now);
 
   finally
     CoUninitialize;

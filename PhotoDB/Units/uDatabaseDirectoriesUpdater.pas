@@ -461,8 +461,8 @@ begin
   DirectoriesScanID := FThreadID;
   FRescanDirectory := RescanDirectory;
 
-  FSkipExtensions := AnsiLowerCase(Settings.ReadString('Updater', 'SkipExtensions'));
-  FAddRawFiles := Settings.ReadBool('Updater', 'AddRawFiles', False);
+  FSkipExtensions := AnsiLowerCase(AppSettings.ReadString('Updater', 'SkipExtensions'));
+  FAddRawFiles := AppSettings.ReadBool('Updater', 'AddRawFiles', False);
 
   FQuery := DBContext.CreateQuery(dbilRead);
 end;

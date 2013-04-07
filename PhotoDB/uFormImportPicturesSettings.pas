@@ -77,11 +77,11 @@ end;
 
 procedure TFormImportPicturesSettings.BtnOkClick(Sender: TObject);
 begin
-  Settings.WriteString('ImportPictures', 'Pattern', CbFormatCombo.Value);
-  Settings.WriteBool('ImportPictures', 'OnlyImages', CbOnlyImages.Checked);
-  Settings.WriteBool('ImportPictures', 'DeleteFiles', CbDeleteAfterImport.Checked);
-  Settings.WriteBool('ImportPictures', 'AddToCollection', CbAddToCollection.Checked);
-  Settings.WriteBool('ImportPictures', 'OpenDestination', CbOpenDestination.Checked);
+  AppSettings.WriteString('ImportPictures', 'Pattern', CbFormatCombo.Value);
+  AppSettings.WriteBool('ImportPictures', 'OnlyImages', CbOnlyImages.Checked);
+  AppSettings.WriteBool('ImportPictures', 'DeleteFiles', CbDeleteAfterImport.Checked);
+  AppSettings.WriteBool('ImportPictures', 'AddToCollection', CbAddToCollection.Checked);
+  AppSettings.WriteBool('ImportPictures', 'OpenDestination', CbOpenDestination.Checked);
   Close;
   ModalResult := mrOk;
 end;
@@ -121,18 +121,18 @@ end;
 procedure TFormImportPicturesSettings.ReadOptions;
 begin
   ReadPatternList;
-  CbOnlyImages.Checked := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
-  CbDeleteAfterImport.Checked := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
-  CbAddToCollection.Checked := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
-  CbOpenDestination.Checked := Settings.ReadBool('ImportPictures', 'OpenDestination', True);
+  CbOnlyImages.Checked := AppSettings.ReadBool('ImportPictures', 'OnlyImages', False);
+  CbDeleteAfterImport.Checked := AppSettings.ReadBool('ImportPictures', 'DeleteFiles', True);
+  CbAddToCollection.Checked := AppSettings.ReadBool('ImportPictures', 'AddToCollection', True);
+  CbOpenDestination.Checked := AppSettings.ReadBool('ImportPictures', 'OpenDestination', True);
 end;
 
 procedure TFormImportPicturesSettings.ReadPatternList;
 begin
-  CbFormatCombo.Items.Text := Settings.ReadString('ImportPictures', 'PatternList', DefaultImportPatternList);
+  CbFormatCombo.Items.Text := AppSettings.ReadString('ImportPictures', 'PatternList', DefaultImportPatternList);
   if CbFormatCombo.Items.Count > 0 then
     CbFormatCombo.ItemIndex := 0;
-  CbFormatCombo.Value := Settings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
+  CbFormatCombo.Value := AppSettings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
 end;
 
 end.

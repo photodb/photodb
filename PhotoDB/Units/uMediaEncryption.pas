@@ -33,7 +33,7 @@ var
   Extension: string;
 begin
   Extension := ExtractFileExt(FileName);
-  Result := Settings.ReadString(cMediaAssociationsData + '\' + Extension, '');
+  Result := AppSettings.ReadString(cMediaAssociationsData + '\' + Extension, '');
   if Result = cMediaPlayerDefaultId then
     Result := GetPlayerInternalPath;
 end;

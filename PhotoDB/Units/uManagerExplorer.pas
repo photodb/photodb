@@ -51,7 +51,7 @@ end;
 
 procedure TManagerExplorer.AddExplorer(Explorer: TCustomExplorerForm);
 begin
-  FShowEXIF := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+  FShowEXIF := AppSettings.ReadBool('Options', 'ShowEXIFMarker', False);
 
   if FExplorers.IndexOf(Explorer) = -1 then
     FExplorers.Add(Explorer);

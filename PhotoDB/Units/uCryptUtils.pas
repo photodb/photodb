@@ -139,7 +139,7 @@ begin
   FWebLink.OnClick := WblMethodClick;
   FIsChiperSelected := False;
   StrongCryptInit;
-  FSelectedChiper := Settings.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity));
+  FSelectedChiper := AppSettings.ReadInteger('Options', 'DefaultCryptClass', Integer(TCipher_Blowfish.Identity));
 
   DECEnumClasses(@DoEnumClasses, Self);
 
@@ -163,7 +163,7 @@ begin
   FWebLink.Text := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
   FWebLink.Tag := TMenuItem(Sender).Tag;
 
-  Settings.WriteInteger('Options', 'DefaultCryptClass', TMenuItem(Sender).Tag);
+  AppSettings.WriteInteger('Options', 'DefaultCryptClass', TMenuItem(Sender).Tag);
   SetDefaultCipherClass(CipherByIdentity(Cardinal(TMenuItem(Sender).Tag)));
 end;
 

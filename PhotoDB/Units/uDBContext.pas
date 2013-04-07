@@ -14,11 +14,13 @@ uses
   uConstants,
   uDBClasses,
   uSettings,
-  uDBScheme;
+  uDBScheme,
+  uDBEntities;
 
 type
-  ISettingsProvider = interface
-
+  ISettingsRepository = interface
+    function Get: TSettings;
+    function Update(Options: TSettings): Boolean;
   end;
 
   IDBContext = interface
@@ -37,6 +39,15 @@ type
 
     //todo: high-level
     //repositories
+    function Settings: ISettingsRepository;
+  end;
+
+  TBaseRepository<T: TBaseEntity> = class(TInterfacedObject)
+  private
+    FContext: IDBContext;
+  public
+    constructor Create(Context: IDBContext); virtual;
+    property Context: IDBContext read FContext;
   end;
 
   TDBContext = class(TInterfacedObject, IDBContext)
@@ -62,9 +73,13 @@ type
 
     //todo: high-level
     //repositories
+    function Settings: ISettingsRepository;
   end;
 
 implementation
+
+uses
+  uSettingsRepository;
 
 { TDBContext }
 
@@ -80,7 +95,7 @@ var
   Version: Integer;
 begin
   Result := False;
-  Section := Settings.GetSection(RegRoot + 'CollectionSettings\' + IntToHex(Integer(StringCRC(FCollectionFile)), 8), False);
+  Section := uSettings.AppSettings.GetSection(RegRoot + 'CollectionSettings\' + IntToHex(Integer(StringCRC(FCollectionFile)), 8), False);
 
   Version := Section.ReadInteger('Version');
   if Version < CURRENT_DB_SCHEME_VERSION then
@@ -100,6 +115,11 @@ end;
 function TDBContext.IsValid: Boolean;
 begin
   Result := FIsValid;
+end;
+
+function TDBContext.Settings: ISettingsRepository;
+begin
+  //Result := TSettingsRepository.Create(Self);
 end;
 
 function TDBContext.GetCollectionFileName: string;
@@ -130,6 +150,13 @@ end;
 function TDBContext.CreateDelete(TableName: string): TDeleteCommand;
 begin
   Result := TDeleteCommand.Create(TableName, FCollectionFile);
+end;
+
+{ TBaseRepository<T> }
+
+constructor TBaseRepository<T>.Create(Context: IDBContext);
+begin
+  FContext := Context;
 end;
 
 end.

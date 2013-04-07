@@ -265,9 +265,9 @@ begin
   FCustomColor := $0;
   FCustomColorDialog := TColorDialog.Create(AOwner);
 
-  EffectSizeScroll.Position := Settings.ReadInteger('Editor', 'RedEyeToolSize', 50);
-  FEyeColor.ItemIndex := Settings.ReadInteger('Editor', 'RedEyeColor', 0);
-  FCustomColor := Settings.ReadInteger('Editor', 'RedEyeColorCustom', 0);
+  EffectSizeScroll.Position := AppSettings.ReadInteger('Editor', 'RedEyeToolSize', 50);
+  FEyeColor.ItemIndex := AppSettings.ReadInteger('Editor', 'RedEyeColor', 0);
+  FCustomColor := AppSettings.ReadInteger('Editor', 'RedEyeColorCustom', 0);
 
   SaveSettingsLink.Top := FEyeColor.Top + FEyeColor.Height + 15;
   MakeItLink.Top := SaveSettingsLink.Top + SaveSettingsLink.Height + 5;
@@ -400,9 +400,9 @@ end;
 
 procedure TRedEyeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  Settings.WriteInteger('Editor', 'RedEyeToolSize', EffectSizeScroll.Position);
-  Settings.WriteInteger('Editor', 'RedEyeColor', FEyeColor.ItemIndex);
-  Settings.WriteInteger('Editor', 'RedEyeColorCustom', FCustomColor);
+  AppSettings.WriteInteger('Editor', 'RedEyeToolSize', EffectSizeScroll.Position);
+  AppSettings.WriteInteger('Editor', 'RedEyeColor', FEyeColor.ItemIndex);
+  AppSettings.WriteInteger('Editor', 'RedEyeColorCustom', FCustomColor);
 end;
 
 class function TRedEyeToolPanelClass.ID: string;

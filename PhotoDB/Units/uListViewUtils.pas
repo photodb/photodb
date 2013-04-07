@@ -718,7 +718,7 @@ begin
 
   ListView.PaintInfoItem.ShowBorder := False;
   ListView.HotTrack.Cursor := CrArrow;
-  ListView.HotTrack.Enabled := Settings.Readbool('Options', 'UseHotSelect', True);
+  ListView.HotTrack.Enabled := AppSettings.Readbool('Options', 'UseHotSelect', True);
 end;
 
 procedure SetLVThumbnailSize(ListView: TEasyListView; ImageSize: Integer);

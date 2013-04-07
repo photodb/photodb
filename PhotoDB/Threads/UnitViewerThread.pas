@@ -246,7 +246,7 @@ begin
         end;
       end;
     finally
-      if CanDetectFaces and Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
+      if CanDetectFaces and AppSettings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
       begin
         if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
         begin

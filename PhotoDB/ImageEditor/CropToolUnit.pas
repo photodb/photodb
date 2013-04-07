@@ -286,10 +286,10 @@ begin
   CloseLink.LoadFromResource('CANCELACTION');
   CloseLink.RefreshBuffer(True);
 
-  ComboBoxProp.ItemIndex := Settings.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
-  EditPrWidth.Text := IntToStr(Settings.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));
-  EditPrHeight.Text := IntToStr(Settings.ReadInteger('Editor', 'Crop_Tool_Prop_H', 10));
-  CheckProportions.Checked := Settings.ReadBool('Editor', 'Crop_Tool_Save_Prop', False);
+  ComboBoxProp.ItemIndex := AppSettings.ReadInteger('Editor', 'Crop_Tool_PropSelect', 0);
+  EditPrWidth.Text := IntToStr(AppSettings.ReadInteger('Editor', 'Crop_Tool_Prop_W', 15));
+  EditPrHeight.Text := IntToStr(AppSettings.ReadInteger('Editor', 'Crop_Tool_Prop_H', 10));
+  CheckProportions.Checked := AppSettings.ReadBool('Editor', 'Crop_Tool_Save_Prop', False);
 end;
 
 destructor TCropToolPanelClass.Destroy;
@@ -734,10 +734,10 @@ end;
 
 procedure TCropToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  Settings.WriteInteger('Editor', 'Crop_Tool_PropSelect', ComboBoxProp.ItemIndex);
-  Settings.WriteInteger('Editor', 'Crop_Tool_Prop_W', StrToIntDef(EditPrWidth.Text, 15));
-  Settings.WriteInteger('Editor', 'Crop_Tool_Prop_H', StrToIntDef(EditPrHeight.Text, 10));
-  Settings.WriteBool('Editor', 'Crop_Tool_Save_Prop', CheckProportions.Checked);
+  AppSettings.WriteInteger('Editor', 'Crop_Tool_PropSelect', ComboBoxProp.ItemIndex);
+  AppSettings.WriteInteger('Editor', 'Crop_Tool_Prop_W', StrToIntDef(EditPrWidth.Text, 15));
+  AppSettings.WriteInteger('Editor', 'Crop_Tool_Prop_H', StrToIntDef(EditPrHeight.Text, 10));
+  AppSettings.WriteBool('Editor', 'Crop_Tool_Save_Prop', CheckProportions.Checked);
 end;
 
 procedure TCropToolPanelClass.ChangeSize(Sender: TObject);

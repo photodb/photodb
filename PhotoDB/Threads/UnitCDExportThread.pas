@@ -27,6 +27,7 @@ uses
   uDBThread,
   uMobileUtils,
   uMemory,
+  uDBEntities,
   uDBUtils,
   uDBContext,
   uGroupTypes,
@@ -198,8 +199,9 @@ procedure TCDExportThread.Execute;
 var
   I, J: Integer;
   S, Directory, DestinationCollectionPath: string;
-  ImageSettings: TImageDBOptions;
+  ImageSettings: TSettings;
   FDestination: IDBContext;
+  SettingsRSrc, SettingsRDest: ISettingsRepository;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -246,9 +248,12 @@ begin
           begin
             FDestination := TDBContext.Create(DestinationCollectionPath);
 
-            ImageSettings := GetImageSettingsFromTable(FContext);
+            SettingsRSrc := FContext.Settings;
+            SettingsRDest := FDestination.Settings;
+
+            ImageSettings := SettingsRSrc.Get;
             try
-              UpdateImageSettings(FDestination, ImageSettings);
+              SettingsRDest.Update(ImageSettings);
             finally
               F(ImageSettings);
             end;

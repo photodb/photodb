@@ -151,7 +151,7 @@ begin
   EffectsChooser.DoubleBuffered := True;
   EffectsChooser.EditManager.Enabled := False;
   EffectsChooser.OnKeyAction := EffectChooserPress;
-  EffectsChooser.Scrollbars.SmoothScrolling := Settings.Readbool('Options', 'SmoothScrolling', True);
+  EffectsChooser.Scrollbars.SmoothScrolling := AppSettings.Readbool('Options', 'SmoothScrolling', True);
   if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
     EffectsChooser.ShowThemedBorder := False;
   EffectsChooser.OnItemThumbnailDraw := ListViewItemThumbnailDraw;

@@ -26,6 +26,7 @@ uses
   uTranslate,
   uDBThread,
   uDBContext,
+  uDBEntities,
   uResourceUtils,
   uThreadForm,
   uThreadEx,
@@ -161,10 +162,11 @@ var
   I, J: Integer;
   FDBFileName,
   FExeFileName: string;
-  ImageSettings: TImageDBOptions;
+  ImageSettings: TSettings;
   FQuery: TDataSet;
   FTable: TDataSet;
   Destination: IDBContext;
+  SettingsRSrc, SettingsRDest: ISettingsRepository;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -187,9 +189,11 @@ begin
 
         Destination := TDBContext.Create(FDBFileName);
 
-        ImageSettings := GetImageSettingsFromTable(FDBContext);
+        SettingsRSrc := FDBContext.Settings;
+        SettingsRDest := Destination.Settings;
+        ImageSettings := SettingsRSrc.Get;
         try
-          UpdateImageSettings(Destination, ImageSettings);
+          SettingsRDest.Update(ImageSettings);
         finally
           F(ImageSettings);
         end;

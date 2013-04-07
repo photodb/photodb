@@ -314,7 +314,7 @@ function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExi
 begin
   Result := False;
 
-  if not Settings.Exif.ReadInfoFromExif then
+  if not AppSettings.Exif.ReadInfoFromExif then
     Exit;
 
   if not ExifData.Empty then
@@ -334,7 +334,7 @@ begin
   try
     Result := False;
 
-    if not Settings.Exif.ReadInfoFromExif then
+    if not AppSettings.Exif.ReadInfoFromExif then
       Exit;
 
     try
@@ -369,7 +369,7 @@ begin
   if (Info.Rating > 0) and (Info.Rotation <> DB_IMAGE_ROTATE_0) then
     Exit; //nothing to update
 
-  if not Settings.Exif.ReadInfoFromExif then
+  if not AppSettings.Exif.ReadInfoFromExif then
     Exit;
 
   Result := True;

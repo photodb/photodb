@@ -91,7 +91,7 @@ end;
 procedure TFormInternetUpdating.BtnOkClick(Sender: TObject);
 begin
   if CbRemindMeLater.Checked then
-    Settings.WriteDateTime('Updater', 'LastTime', Now);
+    AppSettings.WriteDateTime('Updater', 'LastTime', Now);
   Close;
 end;
 

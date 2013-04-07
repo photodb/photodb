@@ -141,12 +141,12 @@ var
   I: Integer;
   FontName: string;
 begin
-  EdWatermarkText.Text := Settings.ReadString(Settings_Watermark, 'Text', L('Sample text'));
-  SeBlocksX.Value := Settings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
-  SeBlocksY.Value := Settings.ReadInteger(Settings_Watermark, 'BlocksY', 3);
-  CbColor.Selected := Settings.ReadInteger(Settings_Watermark, 'Color', clWhite);
-  SeTransparency.Value := Settings.ReadInteger(Settings_Watermark, 'Transparency', 25);
-  FontName := AnsiLowerCase(Settings.ReadString(Settings_Watermark, 'Font', 'Arial'));
+  EdWatermarkText.Text := AppSettings.ReadString(Settings_Watermark, 'Text', L('Sample text'));
+  SeBlocksX.Value := AppSettings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
+  SeBlocksY.Value := AppSettings.ReadInteger(Settings_Watermark, 'BlocksY', 3);
+  CbColor.Selected := AppSettings.ReadInteger(Settings_Watermark, 'Color', clWhite);
+  SeTransparency.Value := AppSettings.ReadInteger(Settings_Watermark, 'Transparency', 25);
+  FontName := AnsiLowerCase(AppSettings.ReadString(Settings_Watermark, 'Font', 'Arial'));
   for I := 0 to CbFonts.Items.Count - 1 do
     if AnsiLowerCase(CbFonts.Items[I]) = FontName then
       CbFonts.ItemIndex := I;
@@ -162,12 +162,12 @@ end;
 
 procedure TFrmWatermarkOptions.SaveSettings;
 begin
-  Settings.WriteString(Settings_Watermark, 'Text', EdWatermarkText.Text);
-  Settings.WriteInteger(Settings_Watermark, 'BlocksX', SeBlocksX.Value);
-  Settings.WriteInteger(Settings_Watermark, 'BlocksY', SeBlocksY.Value);
-  Settings.WriteInteger(Settings_Watermark, 'Color', CbColor.Selected);
-  Settings.WriteInteger(Settings_Watermark, 'Transparency', SeTransparency.Value);
-  Settings.WriteString(Settings_Watermark, 'Font', CbFonts.Items[CbFonts.ItemIndex]);
+  AppSettings.WriteString(Settings_Watermark, 'Text', EdWatermarkText.Text);
+  AppSettings.WriteInteger(Settings_Watermark, 'BlocksX', SeBlocksX.Value);
+  AppSettings.WriteInteger(Settings_Watermark, 'BlocksY', SeBlocksY.Value);
+  AppSettings.WriteInteger(Settings_Watermark, 'Color', CbColor.Selected);
+  AppSettings.WriteInteger(Settings_Watermark, 'Transparency', SeTransparency.Value);
+  AppSettings.WriteString(Settings_Watermark, 'Font', CbFonts.Items[CbFonts.ItemIndex]);
 end;
 
 end.

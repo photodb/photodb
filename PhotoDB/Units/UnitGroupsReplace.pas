@@ -141,7 +141,7 @@ var
   end;
 
 begin
-  SortGroupsByName := Settings.Readbool('Options', 'SortGroupsByName', True);
+  SortGroupsByName := AppSettings.Readbool('Options', 'SortGroupsByName', True);
 
   Pi := @I;
   for I := 0 to Length(Groups) - 1 do

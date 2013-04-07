@@ -177,8 +177,8 @@ begin
   if TActivationManager.Instance.IsDemoMode then
     SetDefaultCipherClass(TCipher_2DES);
 
-  CbSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
-  CbSavePasswordPermanent.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
+  CbSavePasswordForSession.Checked := AppSettings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+  CbSavePasswordPermanent.Checked := AppSettings.Readbool('Options', 'AutoSaveINIPasswords', False);
   CryptFileName := False;
   Password := '';
   LoadLanguage;

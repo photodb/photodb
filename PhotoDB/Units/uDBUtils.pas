@@ -61,23 +61,7 @@ type
   TProgressValueHandler = procedure(Count: Integer) of object;
   TOnDBKernelEventProcedure = procedure(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues) of object;
 
-type
-  TImageDBOptions = class
-  public
-    Version: Integer;
-    DBJpegCompressionQuality: Byte;
-    ThSize: Integer;
-    ThHintSize: Integer;
-    Description: string;
-    Name: string;
-    constructor Create;
-    function Copy: TImageDBOptions;
-  end;
-
 function GetRecordsCount(Table: string): Integer;
-function UpdateImageSettings(Context: IDBContext; Settings: TImageDBOptions): Boolean;
-function GetImageSettingsFromTable(Context: IDBContext): TImageDBOptions;
-function GetDefaultImageDBOptions: TImageDBOptions;
 
 procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
@@ -202,79 +186,6 @@ begin
   except
     on e: Exception do
       TLogger.Instance.Message('GetRecordsCount throws an exception: ' + e.Message);
-  end;
-end;
-
-function UpdateImageSettings(Context: IDBContext; Settings: TImageDBOptions) : boolean;
-var
-  SQL: string;
-  FQuery: TDataSet;
-begin
-  Result := True;
-  FQuery := Context.CreateQuery;
-  try
-    SQL := 'Update DBSettings Set DBJpegCompressionQuality = ' + IntToStr
-      (Settings.DBJpegCompressionQuality) +
-      ', ThSizePanelPreview = 100' + ',' +
-      'ThImageSize = ' + IntToStr(Settings.ThSize) +
-      ', ThHintSize = ' + IntToStr(Settings.ThHintSize) +
-      ', DBName = ' + NormalizeDBString(Settings.name) +
-      ', DBDescription = ' + NormalizeDBString(Settings.Description);
-
-    SetSQL(FQuery, SQL);
-    try
-      ExecSQL(FQuery);
-    except
-      on E: Exception do
-      begin
-        EventLog(':UpdateImageSettings() throw exception: ' + E.message);
-        Result := False;
-      end;
-    end;
-  finally
-    FreeDS(FQuery);
-  end;
-end;
-
-function GetDefaultImageDBOptions: TImageDBOptions;
-begin
-  Result := TImageDBOptions.Create;
-  Result.DBJpegCompressionQuality := 75;
-  Result.ThSize := 200;
-  Result.ThHintSize := 400;
-end;
-
-function GetImageSettingsFromTable(Context: IDBContext): TImageDBOptions;
-var
-  SQL: string;
-  FQuery: TDataSet;
-begin
-  Result := GetDefaultImageDBOptions;
-
-  FQuery := Context.CreateQuery(dbilRead);
-  try
-    ReadOnlyQuery(FQuery);
-    SQL := 'SELECT * FROM DBSettings';
-    try
-      SetSQL(FQuery, SQL);
-      FQuery.Active := True;
-      if FQuery.Active then
-      begin
-        Result.DBJpegCompressionQuality := FQuery.FieldByName('DBJpegCompressionQuality').AsInteger;
-        Result.ThSize := FQuery.FieldByName('ThImageSize').AsInteger;
-        Result.ThHintSize := FQuery.FieldByName('ThHintSize').AsInteger;
-        Result.Name := FQuery.FieldByName('DBName').AsString;
-        Result.Description := FQuery.FieldByName('DBDescription').AsString;
-      end;
-    except
-      on E: Exception do
-      begin
-        EventLog(':GetImageSettingsFromTable()/Restore throw exception: ' + E.message);
-        raise;
-      end;
-    end;
-  finally
-    FreeDS(FQuery);
   end;
 end;
 
@@ -697,7 +608,7 @@ begin
           ExifData := TExifData.Create;
           try
             ExifData.LoadFromGraphic(FileName);
-            if Settings.ReadBool('Options', 'FixDateAndTime', True) then
+            if AppSettings.ReadBool('Options', 'FixDateAndTime', True) then
             begin
               if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
               begin
@@ -714,7 +625,7 @@ begin
                 UC.AddParameter(TBooleanParameter.Create('IsTime', EventInfo.IsTime));
               end;
             end;
-            if Settings.Exif.ReadInfoFromExif then
+            if AppSettings.Exif.ReadInfoFromExif then
             begin
               Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
               try
@@ -1183,7 +1094,7 @@ var
 begin
   if OldImageTh = NewImageTh then
     Exit;
-  if not Settings.ReadBool('Options', 'CheckUpdateLinks', False) then
+  if not AppSettings.ReadBool('Options', 'CheckUpdateLinks', False) then
     Exit;
 
   FQuery := Context.CreateQuery(dbilRead);
@@ -1645,24 +1556,6 @@ procedure CopyFiles(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: stri
   ExplorerForm: TDBForm);
 begin
   TWindowsCopyFilesThread.Create(Context, Handle, Src, Dest, Move, AutoRename, ExplorerForm);
-end;
-
-{ TImageDBOptions }
-
-function TImageDBOptions.Copy: TImageDBOptions;
-begin
-  Result := TImageDBOptions.Create;
-  Result.Version := Version;
-  Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
-  Result.ThSize := ThSize;
-  Result.ThHintSize := ThHintSize;
-  Result.Description := Description;
-  Result.Name := Name;
-end;
-
-constructor TImageDBOptions.Create;
-begin
-  Version := 0;
 end;
 
 end.

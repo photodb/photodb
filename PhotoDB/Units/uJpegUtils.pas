@@ -43,13 +43,13 @@ var
 begin
   if Graphic is TJPEGImage then
   begin
-    OptimizeToSize := Settings.ReadInteger(Section, 'JPEGOptimizeSize', 250) * 1024;
-    Progressive := Settings.ReadBool(Section, 'JPEGProgressiveMode', False);
+    OptimizeToSize := AppSettings.ReadInteger(Section, 'JPEGOptimizeSize', 250) * 1024;
+    Progressive := AppSettings.ReadBool(Section, 'JPEGProgressiveMode', False);
 
-    if Settings.ReadBool(Section, 'JPEGOptimizeMode', False) then
+    if AppSettings.ReadBool(Section, 'JPEGOptimizeMode', False) then
       CompresJPEGToSize(Graphic, OptimizeToSize, Progressive, Compression)
     else
-      Compression := Settings.ReadInteger(Section, 'JPEGCompression', 85);
+      Compression := AppSettings.ReadInteger(Section, 'JPEGCompression', 85);
 
    (Graphic as TJPEGImage).CompressionQuality := Compression;
    (Graphic as TJPEGImage).ProgressiveEncoding := Progressive;

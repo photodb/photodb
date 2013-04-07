@@ -359,7 +359,7 @@ procedure TFormManager.Run;
 begin
   try
     EventLog(':TFormManager::Run()...');
-    Settings.WriteProperty('Starting', 'ApplicationStarted', '1');
+    AppSettings.WriteProperty('Starting', 'ApplicationStarted', '1');
 
     ProcessCommandLine(GetCommandLine);
 
@@ -437,7 +437,7 @@ begin
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
   if not GetParamStrDBBool('/uninstall') then
-    Settings.WriteProperty('Starting', 'ApplicationStarted', '0');
+    AppSettings.WriteProperty('Starting', 'ApplicationStarted', '0');
 
   EventLog(':TFormManager::ExitApplication()/OK...');
 end;
@@ -506,7 +506,7 @@ var
 begin
   if Params * [EventID_Param_DB_Changed] <> [] then
   begin
-    Settings.ClearCache;
+    AppSettings.ClearCache;
     UpdaterStorage.CleanUpDatabase(DBKernel.DBContext);
     UpdaterStorage.SaveStorage;
     UpdaterStorage.RestoreStorage(DBKernel.DBContext);
@@ -520,7 +520,7 @@ begin
   if Params * [EventID_No_EXIF] <> [] then
     Exit;
 
-  if not Settings.Exif.SaveInfoToExif then
+  if not AppSettings.Exif.SaveInfoToExif then
     Exit;
 
   UpdateInfoParams := [EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Groups, EventID_Param_Links,
@@ -590,9 +590,9 @@ begin
     begin
       //todo: restart it when db has changed
       Context := DBKernel.DBContext;
-      if Settings.ReadboolW('DBCheck', ExtractFileName(Context.CollectionFileName), True) = True then
+      if AppSettings.ReadboolW('DBCheck', ExtractFileName(Context.CollectionFileName), True) = True then
       begin
-        Settings.WriteBoolW('DBCheck', ExtractFileName(Context.CollectionFileName), False);
+        AppSettings.WriteBoolW('DBCheck', ExtractFileName(Context.CollectionFileName), False);
         if (GetRecordsCount(Context.CollectionFileName) = 0) and not FolderView then
           UpdateCurrentCollectionDirectories(Context.CollectionFileName);
       end;

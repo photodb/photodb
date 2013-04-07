@@ -170,11 +170,11 @@ begin
   CbOutputFormat.Items.Add(TA(TFileAssociations.Instance.Exts['.png'].Description, 'Associations'));
   CbOutputFormat.ItemIndex := 0;
 
-  FormatIndex := Settings.ReadInteger('Share', 'ImageFormat', 0);
+  FormatIndex := AppSettings.ReadInteger('Share', 'ImageFormat', 0);
   if FormatIndex = 1 then
     CbOutputFormat.ItemIndex := 1;
 
-  CbResizeToSize.Checked := Settings.ReadBool('Share', 'ResizeImage', True);
+  CbResizeToSize.Checked := AppSettings.ReadBool('Share', 'ResizeImage', True);
   CbResizeToSizeClick(Self);
 
   CbImageSize.Items.Add(L('Full HD (1920x1080)'));
@@ -185,39 +185,39 @@ begin
   CbImageSize.Items.Add(L('Custom size:'));
   CbImageSize.ItemIndex := 0;
 
-  SizeIndex := Settings.ReadInteger('Share', 'ImageSize', 0);
+  SizeIndex := AppSettings.ReadInteger('Share', 'ImageSize', 0);
   if (SizeIndex > -1) and (SizeIndex < CbImageSize.Items.Count)  then
     CbImageSize.ItemIndex := SizeIndex;
 
   CbImageSizeChange(Self);
 
-  CbPreviewForRAW.Checked := Settings.ReadBool('Share', 'RAWPreview', True);
+  CbPreviewForRAW.Checked := AppSettings.ReadBool('Share', 'RAWPreview', True);
 
   LbAccess.Caption := L('Access');
   CbDefaultAlbumAccess.Items.Add(L('Public on web'));
   CbDefaultAlbumAccess.Items.Add(L('Limited, anyone with the link'));
   CbDefaultAlbumAccess.Items.Add(L('Only you'));
 
-  AccessIndex := Settings.ReadInteger('Share', 'AlbumAccess', 0);
+  AccessIndex := AppSettings.ReadInteger('Share', 'AlbumAccess', 0);
   if (AccessIndex > -1) and (AccessIndex < CbDefaultAlbumAccess.Items.Count)  then
     CbDefaultAlbumAccess.ItemIndex := AccessIndex;
 
-  SeWidth.Value := Settings.ReadInteger('Share', 'ImageWidth', 1920);
-  SeHeight.Value := Settings.ReadInteger('Share', 'ImageHeight', 1080);
+  SeWidth.Value := AppSettings.ReadInteger('Share', 'ImageWidth', 1920);
+  SeHeight.Value := AppSettings.ReadInteger('Share', 'ImageHeight', 1080);
 end;
 
 procedure TFormShareSettings.SaveSettings;
 begin
-  Settings.WriteInteger('Share', 'ImageFormat', CbOutputFormat.ItemIndex);
-  Settings.WriteBool('Share', 'ResizeImage', CbResizeToSize.Checked);
-  Settings.WriteInteger('Share', 'ImageSize', CbImageSize.ItemIndex);
+  AppSettings.WriteInteger('Share', 'ImageFormat', CbOutputFormat.ItemIndex);
+  AppSettings.WriteBool('Share', 'ResizeImage', CbResizeToSize.Checked);
+  AppSettings.WriteInteger('Share', 'ImageSize', CbImageSize.ItemIndex);
 
-  Settings.WriteBool('Share', 'RAWPreview', CbPreviewForRAW.Checked);
+  AppSettings.WriteBool('Share', 'RAWPreview', CbPreviewForRAW.Checked);
 
-  Settings.WriteInteger('Share', 'ImageWidth', SeWidth.Value);
-  Settings.WriteInteger('Share', 'ImageHeight', SeHeight.Value);
+  AppSettings.WriteInteger('Share', 'ImageWidth', SeWidth.Value);
+  AppSettings.WriteInteger('Share', 'ImageHeight', SeHeight.Value);
 
-  Settings.WriteInteger('Share', 'AlbumAccess', CbDefaultAlbumAccess.ItemIndex);
+  AppSettings.WriteInteger('Share', 'AlbumAccess', CbDefaultAlbumAccess.ItemIndex);
 end;
 
 procedure TFormShareSettings.WlJpegSettingsClick(Sender: TObject);

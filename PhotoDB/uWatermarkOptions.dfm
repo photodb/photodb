@@ -55,6 +55,10 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     object TsImage: TTabSheet
       Caption = 'TsImage'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object PaintBox1: TPaintBox
         Left = 3
         Top = 3
@@ -105,6 +109,10 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     end
     object TsText: TTabSheet
       Caption = 'TsText'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         296
         298)

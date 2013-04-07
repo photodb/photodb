@@ -130,7 +130,7 @@ implementation
 
 function DisplayProfileName: string;
 begin
-  Result := Settings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
+  Result := AppSettings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
   if Result = '-' then
     Result := '';
 end;

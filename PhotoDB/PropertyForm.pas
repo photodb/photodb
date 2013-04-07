@@ -851,8 +851,8 @@ begin
 
   LoadLanguage;
 
-  CbRemoveKeywordsForGroups.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
-  CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
+  CbRemoveKeywordsForGroups.Checked := AppSettings.ReadBool('Propetry', 'DeleteKeyWords', True);
+  CbShowAllGroups.Checked := AppSettings.ReadBool('Propetry', 'ShowAllGroups', False);
 
   //statistics
   ProgramStatistics.PropertiesUsed;
@@ -2645,7 +2645,7 @@ end;
 procedure TPropertiesForm.CbShowAllGroupsClick(Sender: TObject);
 begin
   RecreateGroupsList;
-  Settings.WriteBool('Propetry', 'ShowAllGroups', CbShowAllGroups.Checked);
+  AppSettings.WriteBool('Propetry', 'ShowAllGroups', CbShowAllGroups.Checked);
 end;
 
 procedure TPropertiesForm.LstAvaliableGroupsDblClick(Sender: TObject);
@@ -2736,7 +2736,7 @@ end;
 
 procedure TPropertiesForm.CbRemoveKeywordsForGroupsClick(Sender: TObject);
 begin
-  Settings.WriteBool('Propetry', 'DeleteKeyWords', CbRemoveKeywordsForGroups.Checked);
+  AppSettings.WriteBool('Propetry', 'DeleteKeyWords', CbRemoveKeywordsForGroups.Checked);
 end;
 
 procedure TPropertiesForm.MoveToGroup1Click(Sender: TObject);

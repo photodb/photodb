@@ -281,7 +281,7 @@ begin
   end;
   Result := FOAuth.Access_token <> '';
   if Result then
-    Settings.WriteString('PhotoShare', 'RefreshToken', FOAuth.Refresh_token);
+    AppSettings.WriteString('PhotoShare', 'RefreshToken', FOAuth.Refresh_token);
 end;
 
 constructor TPicasaProvider.Create;
@@ -558,7 +558,7 @@ begin
       FOAuth.ClientID := GOOGLE_APP_CLIENT_ID;
       FOAuth.ClientSecret := GOOGLE_APP_CLIENT_SECRET;
       FOAuth.Scope := GOOGLE_PICASAWEB_ACCESS_POINT;
-      FOAuth.Refresh_token := Settings.ReadString('PhotoShare', 'RefreshToken', '');
+      FOAuth.Refresh_token := AppSettings.ReadString('PhotoShare', 'RefreshToken', '');
     end;
     Result := True;
   finally
@@ -577,7 +577,7 @@ procedure TPicasaProvider.ResetAuth;
 begin
   if InitializeService then
   begin
-    Settings.WriteString('PhotoShare', 'RefreshToken', '');
+    AppSettings.WriteString('PhotoShare', 'RefreshToken', '');
     FOAuth.Refresh_token := '';
     FOAuth.Access_token := '';
   end;

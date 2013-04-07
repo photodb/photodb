@@ -190,8 +190,8 @@ procedure TPassWordForm.FormCreate(Sender: TObject);
 begin
   FOpenedList := False;
   ClientHeight := BtOk.Top + BtOk.Height + 5;
-  CbSavePassToSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
-  CbSavePassPermanent.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
+  CbSavePassToSession.Checked := AppSettings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+  CbSavePassPermanent.Checked := AppSettings.Readbool('Options', 'AutoSaveINIPasswords', False);
   LoadLanguage;
   Password := '';
   PassIcon := TIcon.Create;

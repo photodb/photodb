@@ -653,6 +653,8 @@
         <DCCReference Include="Units\uDBIcons.pas"/>
         <DCCReference Include="Units\uDBScheme.pas"/>
         <DCCReference Include="Units\uDBContext.pas"/>
+        <DCCReference Include="Units\Database\uSettingsRepository.pas"/>
+        <DCCReference Include="Units\Database\uDBEntities.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

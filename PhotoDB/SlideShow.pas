@@ -525,7 +525,7 @@ begin
   FImageExists := False;
   DoubleBuffered := True;
   DBCanDrag := False;
-  SlideTimer.Interval := Min(Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
+  SlideTimer.Interval := Min(Max(AppSettings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100) * 100;
   FullScreenNow := False;
   SlideShowNow := False;
   Drawimage := TBitmap.Create;
@@ -755,7 +755,7 @@ begin
     ProportionalSize(Monitor.Width, Monitor.Height, FW, FH);
     if ImageExists then
     begin
-      if Settings.ReadboolW('Options','SlideShow_UseCoolStretch', True) then
+      if AppSettings.ReadboolW('Options','SlideShow_UseCoolStretch', True) then
       begin
         if ZoomerOn then
           Z := RealZoomInc * Zoom
@@ -856,7 +856,7 @@ begin
 
   if ImageExists or Loading then
   begin
-    if Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+    if AppSettings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
     begin
       if ZoomerOn and not FIsWaiting then
       begin
@@ -1153,7 +1153,7 @@ var
   FileName: string;
 begin
   FileName := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
-  Settings.WriteString('Face', 'DetectionMethod', FileName);
+  AppSettings.WriteString('Face', 'DetectionMethod', FileName);
   ReloadCurrent;
 end;
 
@@ -1280,7 +1280,7 @@ end;
 
 procedure TViewer.RefreshFaceDetestionState;
 begin
-  if Settings.ReadBool('FaceDetection', 'Enabled', True) then
+  if AppSettings.ReadBool('FaceDetection', 'Enabled', True) then
     MiFaceDetectionStatus.Caption := L('Disable face detection')
   else
     MiFaceDetectionStatus.Caption := L('Enable face detection');
@@ -1299,7 +1299,7 @@ begin
   MiDetectionMethod.Caption := L('Detection method');
   MiRefreshFaces.Caption := L('Refresh faces');
 
-  DetectionMethod := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
+  DetectionMethod := AppSettings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
   FileList := TStringList.Create;
   try
     Directory := IncludeTrailingBackslash(ProgramDir) + CascadesDirectory;
@@ -1365,7 +1365,7 @@ begin
       DBItem1.Visible := False;
     end;
 
-    if Settings.ReadBool('Options', 'UseUserMenuForViewer', True) then
+    if AppSettings.ReadBool('Options', 'UseUserMenuForViewer', True) then
       if not(SlideShowNow or FullScreenNow) then
       begin
         if Item.ID = 0 then
@@ -2491,8 +2491,8 @@ procedure TViewer.MiFaceDetectionStatusClick(Sender: TObject);
 var
   IsActive: Boolean;
 begin
-  IsActive := Settings.ReadBool('FaceDetection', 'Enabled', True);
-  Settings.WriteBool('FaceDetection', 'Enabled', not IsActive);
+  IsActive := AppSettings.ReadBool('FaceDetection', 'Enabled', True);
+  AppSettings.WriteBool('FaceDetection', 'Enabled', not IsActive);
   ReloadCurrent;
 end;
 
@@ -2910,7 +2910,7 @@ begin
 
   if Cursor = crDefault then
   begin
-    if Settings.Readbool('Options', 'NextOnClick', False) then
+    if AppSettings.Readbool('Options', 'NextOnClick', False) then
     begin
       NextImageClick(Sender);
       Exit;
@@ -3651,7 +3651,7 @@ var
 begin
   IsDevice := IsDevicePath(Item.FileName);
   WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < TbrActions.Left) and StaticImage and FaceDetectionManager.IsActive and not IsDevice;
-  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < TbrActions.Left) and not FFaceDetectionComplete) and StaticImage and Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive and not IsDevice;
+  LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < TbrActions.Left) and not FFaceDetectionComplete) and StaticImage and AppSettings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive and not IsDevice;
 end;
 
 procedure TViewer.UpdateFaceDetectionState;
@@ -3663,7 +3663,7 @@ begin
 
   BeginScreenUpdate(Handle);
   try
-    IsDetectionActive := Settings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive;
+    IsDetectionActive := AppSettings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive;
     if not FFaceDetectionComplete and IsDetectionActive then
     begin
       WlFaceCount.Text := L('Detecting faces') + '...';

@@ -919,7 +919,7 @@ begin
     W := FBitmap.Width;
     H := FBitmap.Height;
     RMp := W * H;
-    AMp := Settings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
+    AMp := AppSettings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
 
     if RMp > AMp then
     begin

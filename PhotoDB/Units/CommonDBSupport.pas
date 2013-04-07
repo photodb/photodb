@@ -229,7 +229,7 @@ begin
   CloseSplashWindow;
 
   //reset provider
-  Settings.WriteString('Settings', 'DatabaseProvider', '');
+  AppSettings.WriteString('Settings', 'DatabaseProvider', '');
 
   //create error message
 
@@ -296,7 +296,7 @@ var
   S: TStrings;
   I, J: Integer;
 begin
-  Result := Settings.ReadString('Settings', 'DatabaseProvider');
+  Result := AppSettings.ReadString('Settings', 'DatabaseProvider');
   if Result <> '' then
     Exit(Result);
 
@@ -319,7 +319,7 @@ begin
         if AnsiLowerCase(S[J]) = AnsiLowerCase(ProviderList[I]) then
           if IsProviderValidAndCanBeUsed(ProviderList[I]) then
           begin
-            Settings.WriteString('Settings', 'DatabaseProvider', ProviderList[I]);
+            AppSettings.WriteString('Settings', 'DatabaseProvider', ProviderList[I]);
             Exit(ProviderList[I]);
           end;
       end;

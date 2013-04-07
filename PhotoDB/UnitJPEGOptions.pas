@@ -105,10 +105,10 @@ end;
 
 procedure TFormJpegOptions.BtOKClick(Sender: TObject);
 begin
-  Settings.WriteInteger(FSection, 'JPEGCompression', TbCompressionRate.Position * 5);
-  Settings.WriteBool(FSection, 'JPEGProgressiveMode', CbProgressiveMove.Checked);
-  Settings.WriteInteger(FSection, 'JPEGOptimizeSize', StrToIntDef(Edit1.Text, 100));
-  Settings.WriteBool(FSection, 'JPEGOptimizeMode', CbOptimizeToSize.Checked);
+  AppSettings.WriteInteger(FSection, 'JPEGCompression', TbCompressionRate.Position * 5);
+  AppSettings.WriteBool(FSection, 'JPEGProgressiveMode', CbProgressiveMove.Checked);
+  AppSettings.WriteInteger(FSection, 'JPEGOptimizeSize', StrToIntDef(Edit1.Text, 100));
+  AppSettings.WriteBool(FSection, 'JPEGOptimizeMode', CbOptimizeToSize.Checked);
   Close;
 end;
 
@@ -137,10 +137,10 @@ end;
 procedure TFormJpegOptions.Execute(Section: String);
 begin
   SetSection(Section);
-  TbCompressionRate.Position := Settings.ReadInteger(FSection, 'JPEGCompression', 75) div 5;
-  CbProgressiveMove.Checked := Settings.ReadBool(FSection, 'JPEGProgressiveMode', False);
-  Edit1.Text := IntToStr(Settings.ReadInteger(FSection, 'JPEGOptimizeSize', 100));
-  CbOptimizeToSize.Checked := Settings.ReadBool(FSection, 'JPEGOptimizeMode', False);
+  TbCompressionRate.Position := AppSettings.ReadInteger(FSection, 'JPEGCompression', 75) div 5;
+  CbProgressiveMove.Checked := AppSettings.ReadBool(FSection, 'JPEGProgressiveMode', False);
+  Edit1.Text := IntToStr(AppSettings.ReadInteger(FSection, 'JPEGOptimizeSize', 100));
+  CbOptimizeToSize.Checked := AppSettings.ReadBool(FSection, 'JPEGOptimizeMode', False);
   CbOptimizeToSizeClick(nil);
   ShowModal;
 end;

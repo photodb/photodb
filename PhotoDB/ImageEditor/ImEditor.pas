@@ -439,7 +439,7 @@ begin
   Zoom := 0.5;
   SaveWindowPos1.SetPosition;
 
-  VirtualBrushCursor := Settings.ReadBool('Editor', 'VirtualCursor', False);
+  VirtualBrushCursor := AppSettings.ReadBool('Editor', 'VirtualCursor', False);
   RegisterMainForm(Self);
   PmMain.Images := Icons.ImageList;
   Exit1.ImageIndex := DB_IC_EXIT;

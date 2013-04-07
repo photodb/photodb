@@ -248,7 +248,7 @@ begin
   try
     FItems.Delimiter := '|';
     try
-      FItems.DelimitedText := Settings.ReadString('Settings', 'Shelf', '');
+      FItems.DelimitedText := AppSettings.ReadString('Settings', 'Shelf', '');
     except
       on e: Exception do
         EventLog(e);
@@ -264,7 +264,7 @@ begin
   try
     FItems.Delimiter := '|';
     try
-      Settings.WriteString('Settings', 'Shelf', FItems.DelimitedText);
+      AppSettings.WriteString('Settings', 'Shelf', FItems.DelimitedText);
     except
       on e: Exception do
         EventLog(e);

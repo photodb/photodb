@@ -303,7 +303,7 @@ begin
 
   AlphaCount := 0;
   XAlphaCount := PI / 2;
-  DelayTimer.Interval := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100) * 50;
+  DelayTimer.Interval := Min(Max(AppSettings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100) * 50;
 
   // show before creating surface because of DDSCL_SETFOCUSWINDOW flsg
   Show;
@@ -646,7 +646,7 @@ end;
 
 function TDirectShowForm.GetAlphaSteps: Integer;
 begin
-  Result := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
+  Result := Min(Max(AppSettings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
 end;
 
 function TDirectShowForm.GetFormID: string;

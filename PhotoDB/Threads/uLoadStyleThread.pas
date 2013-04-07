@@ -41,7 +41,7 @@ begin
     TW.I.Start('TLoadStyleThread - START');
     if not FolderView then
     begin
-      StyleFileName := Settings.ReadString('Style', 'FileName', DefaultThemeName);
+      StyleFileName := AppSettings.ReadString('Style', 'FileName', DefaultThemeName);
       if StyleFileName <> '' then
       begin
         if Pos(':', StyleFileName) = 0 then

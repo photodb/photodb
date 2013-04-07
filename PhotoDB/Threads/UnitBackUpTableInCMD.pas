@@ -54,7 +54,7 @@ procedure CreateBackUpForCollection;
 var
    Options: TBackUpTableThreadOptions;
 begin
-  if Now - Settings.ReadDateTime('Options', 'BackUpDateTime', 0) > Settings.ReadInteger('Options', 'BackUpdays', 7) then
+  if Now - AppSettings.ReadDateTime('Options', 'BackUpDateTime', 0) > AppSettings.ReadInteger('Options', 'BackUpdays', 7) then
   begin
     Options.WriteLineProc := nil;
     Options.WriteLnLineProc := nil;
@@ -117,7 +117,7 @@ begin
   FIntParam := LINE_INFO_OK;
   SynchronizeEx(TextOut);
   SynchronizeEx(DoExit);
-  Settings.WriteDateTime('Options', 'BackUpDateTime', Now)
+  AppSettings.WriteDateTime('Options', 'BackUpDateTime', Now)
 end;
 
 procedure BackUpTableInCMD.TextOut;

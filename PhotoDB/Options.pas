@@ -331,40 +331,40 @@ begin
   end;
   if NewTab = 2 then
   begin
-    CbExplorerShowFolders.Checked := Settings.Readbool('Options', 'Explorer_ShowFolders', True);
-    CbExplorerShowSimpleFiles.Checked := Settings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
-    CbExplorerShowImages.Checked := Settings.Readbool('Options', 'Explorer_ShowImageFiles', True);
-    CbExplorerShowHidden.Checked := Settings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
-    CbExplorerShowAttributes.Checked := Settings.Readbool('Options', 'Explorer_ShowAttributes', True);
-    CbExplorerShowThumbsForFolders.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
-    CbExplorerSaveThumbsForFolders.Checked := Settings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
-    CbExplorerShowThumbsForImages.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
-    CbExplorerShowThumbsForVideo.Checked := Settings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
-    CbExplorerShowEXIF.Checked := Settings.ReadBool('Options', 'ShowEXIFMarker', False);
+    CbExplorerShowFolders.Checked := AppSettings.Readbool('Options', 'Explorer_ShowFolders', True);
+    CbExplorerShowSimpleFiles.Checked := AppSettings.Readbool('Options', 'Explorer_ShowSimpleFiles', True);
+    CbExplorerShowImages.Checked := AppSettings.Readbool('Options', 'Explorer_ShowImageFiles', True);
+    CbExplorerShowHidden.Checked := AppSettings.Readbool('Options', 'Explorer_ShowHiddenFiles', False);
+    CbExplorerShowAttributes.Checked := AppSettings.Readbool('Options', 'Explorer_ShowAttributes', True);
+    CbExplorerShowThumbsForFolders.Checked := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForFolders', True);
+    CbExplorerSaveThumbsForFolders.Checked := AppSettings.Readbool('Options', 'Explorer_SaveThumbnailsForFolders', True);
+    CbExplorerShowThumbsForImages.Checked := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
+    CbExplorerShowThumbsForVideo.Checked := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
+    CbExplorerShowEXIF.Checked := AppSettings.ReadBool('Options', 'ShowEXIFMarker', False);
 
   end;
   if NewTab = 3 then
   begin
-    CbViewerNextOnClick.Checked := Settings.Readbool('Options', 'NextOnClick', False);
-    TrackBar1.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
-    TrackBar2.Position := Min(Max(Settings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100);
-    TrackBar4.Position := Min(Max(Settings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100);
-    CbViewerUseCoolStretch.Checked := Settings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True);
+    CbViewerNextOnClick.Checked := AppSettings.Readbool('Options', 'NextOnClick', False);
+    TrackBar1.Position := Min(Max(AppSettings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
+    TrackBar2.Position := Min(Max(AppSettings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100);
+    TrackBar4.Position := Min(Max(AppSettings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100);
+    CbViewerUseCoolStretch.Checked := AppSettings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True);
     TrackBar1Change(Sender);
     TrackBar2Change(Sender);
     TrackBar4Change(Sender);
 
-    CbViewerFaceDetection.Checked := Settings.Readbool('Options', 'ViewerFaceDetection', True);
+    CbViewerFaceDetection.Checked := AppSettings.Readbool('Options', 'ViewerFaceDetection', True);
 
     CbDetectionSize.ItemIndex := 0;
-    Size := Settings.ReadInteger('Options', 'FaceDetectionSize', 3);
+    Size := AppSettings.ReadInteger('Options', 'FaceDetectionSize', 3);
     for I := 0 to CbDetectionSize.Items.Count - 1 do
       if Integer(CbDetectionSize.Items.Objects[I]) = Size then
         CbDetectionSize.ItemIndex := I;
 
-    CbRedCyanStereo.Checked := Settings.ReadString('Options', 'StereoMode', '') <> '';
+    CbRedCyanStereo.Checked := AppSettings.ReadString('Options', 'StereoMode', '') <> '';
 
-    DisplayICCProfile := Settings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
+    DisplayICCProfile := AppSettings.ReadString('Options', 'DisplayICCProfileName', DEFAULT_ICC_DISPLAY_PROFILE);
 
     CbDisplayICCProfile.Items.Add(L('Don''t use ICC profile'));
     FillDisplayProfileList(CbDisplayICCProfile.Items);
@@ -373,38 +373,38 @@ begin
   end;
   if NewTab = 4 then
   begin
-    CbAutoSavePasswordForSession.Checked := Settings.Readbool('Options', 'AutoSaveSessionPasswords', True);
-    CbAutoSavePasswordInSettings.Checked := Settings.Readbool('Options', 'AutoSaveINIPasswords', False);
-    SedBackupDays.Value := Settings.ReadInteger('Options', 'BackUpdays', 7);
+    CbAutoSavePasswordForSession.Checked := AppSettings.Readbool('Options', 'AutoSaveSessionPasswords', True);
+    CbAutoSavePasswordInSettings.Checked := AppSettings.Readbool('Options', 'AutoSaveINIPasswords', False);
+    SedBackupDays.Value := AppSettings.ReadInteger('Options', 'BackUpdays', 7);
 
-    WebProxyUserName.Text := Settings.ReadString('Options', 'ProxyUser');
-    WebProxyPassword.Text := Settings.ReadString('Options', 'ProxyPassword');
-    CbUseProxyServer.Checked := Settings.ReadBool('Options', 'UseProxyServer', False);
+    WebProxyUserName.Text := AppSettings.ReadString('Options', 'ProxyUser');
+    WebProxyPassword.Text := AppSettings.ReadString('Options', 'ProxyPassword');
+    CbUseProxyServer.Checked := AppSettings.ReadBool('Options', 'UseProxyServer', False);
     CbUseProxyServerClick(Self);
   end;
 
   if NewTab = 5 then
   begin
 
-    CbListViewShowPreview.Checked := Settings.Readbool('Options', 'AllowPreview', True);
-    CbSmallToolBars.Checked := Settings.Readbool('Options', 'UseSmallToolBarButtons', False);
-    CbSortGroups.Checked := Settings.Readbool('Options', 'SortGroupsByName', True);
-    CbListViewHotSelect.Checked := Settings.Readbool('Options', 'UseHotSelect', True);
-    CblEditorVirtuaCursor.Checked := Settings.ReadBool('Editor', 'VirtualCursor', False);
-    CbCheckLinksOnUpdate.Checked := Settings.ReadBool('Options', 'CheckUpdateLinks', False);
+    CbListViewShowPreview.Checked := AppSettings.Readbool('Options', 'AllowPreview', True);
+    CbSmallToolBars.Checked := AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
+    CbSortGroups.Checked := AppSettings.Readbool('Options', 'SortGroupsByName', True);
+    CbListViewHotSelect.Checked := AppSettings.Readbool('Options', 'UseHotSelect', True);
+    CblEditorVirtuaCursor.Checked := AppSettings.ReadBool('Editor', 'VirtualCursor', False);
+    CbCheckLinksOnUpdate.Checked := AppSettings.ReadBool('Options', 'CheckUpdateLinks', False);
 
-    CbDontAddSmallFiles.Checked := Settings.ReadBool('Options', 'DontAddSmallImages', True);
-    SedMinWidth.Value := Settings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64);
-    SedMinHeight.Value := Settings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64);
+    CbDontAddSmallFiles.Checked := AppSettings.ReadBool('Options', 'DontAddSmallImages', True);
+    SedMinWidth.Value := AppSettings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64);
+    SedMinHeight.Value := AppSettings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64);
     SedMinWidth.Enabled := CbDontAddSmallFiles.Checked;
     SedMinHeight.Enabled := CbDontAddSmallFiles.Checked;
 
-    CbReadInfoFromExif.Checked := Settings.Exif.ReadInfoFromExif;
-    CbSaveInfoToExif.Checked := Settings.Exif.SaveInfoToExif;
-    CbUpdateExifInfoInBackground.Checked := Settings.Exif.UpdateExifInfoInBackground;
+    CbReadInfoFromExif.Checked := AppSettings.Exif.ReadInfoFromExif;
+    CbSaveInfoToExif.Checked := AppSettings.Exif.SaveInfoToExif;
+    CbUpdateExifInfoInBackground.Checked := AppSettings.Exif.UpdateExifInfoInBackground;
 
-    CbShowStatusBar.Checked :=  Settings.ReadBool('Options', 'ShowStatusBar', False);
-    CbSmoothScrolling.Checked :=  Settings.ReadBool('Options', 'SmoothScrolling', True);
+    CbShowStatusBar.Checked :=  AppSettings.ReadBool('Options', 'ShowStatusBar', False);
+    CbSmoothScrolling.Checked :=  AppSettings.ReadBool('Options', 'SmoothScrolling', True);
   end;
 
   if NewTab = 6 then
@@ -497,7 +497,7 @@ procedure TOptionsForm.OkButtonClick(Sender: TObject);
 var
   EventInfo: TEventValues;
 begin
-  Settings.ClearCache;
+  AppSettings.ClearCache;
 
   if ReloadData then
   begin
@@ -514,65 +514,65 @@ begin
   // 1:
   if FLoadedPages[2] then
   begin
-    Settings.WriteBool('Options', 'Explorer_ShowFolders', CbExplorerShowFolders.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowSimpleFiles', CbExplorerShowSimpleFiles.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowImageFiles', CbExplorerShowImages.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowHiddenFiles', CbExplorerShowHidden.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowAttributes', CbExplorerShowAttributes.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CbExplorerShowThumbsForFolders.Checked);
-    Settings.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CbExplorerSaveThumbsForFolders.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CbExplorerShowThumbsForImages.Checked);
-    Settings.WriteBool('Options', 'Explorer_ShowThumbnailsForVideo', CbExplorerShowThumbsForVideo.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowFolders', CbExplorerShowFolders.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowSimpleFiles', CbExplorerShowSimpleFiles.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowImageFiles', CbExplorerShowImages.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowHiddenFiles', CbExplorerShowHidden.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowAttributes', CbExplorerShowAttributes.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowThumbnailsForFolders', CbExplorerShowThumbsForFolders.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_SaveThumbnailsForFolders', CbExplorerSaveThumbsForFolders.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowThumbnailsForImages', CbExplorerShowThumbsForImages.Checked);
+    AppSettings.WriteBool('Options', 'Explorer_ShowThumbnailsForVideo', CbExplorerShowThumbsForVideo.Checked);
 
-    Settings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
+    AppSettings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
   end;
   // 2 :
   if FLoadedPages[3] then
   begin
-    Settings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
-    Settings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
-    Settings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
-    Settings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
-    Settings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
+    AppSettings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
+    AppSettings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
+    AppSettings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
+    AppSettings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
+    AppSettings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
 
-    Settings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
-    Settings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
-    Settings.WriteString('Options', 'StereoMode', IIF(CbRedCyanStereo.Checked, 'RedCyan', ''));
+    AppSettings.WriteBool('Options', 'ViewerFaceDetection', CbViewerFaceDetection.Checked);
+    AppSettings.WriteInteger('Options', 'FaceDetectionSize', Integer(CbDetectionSize.Items.Objects[CbDetectionSize.ItemIndex]));
+    AppSettings.WriteString('Options', 'StereoMode', IIF(CbRedCyanStereo.Checked, 'RedCyan', ''));
 
-    Settings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
+    AppSettings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
   end;
   // 3 :
   if FLoadedPages[4] then
   begin
-    Settings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
-    Settings.WriteBool('Options', 'AutoSaveINIPasswords', CbAutoSavePasswordInSettings.Checked);
-    Settings.WriteInteger('Options', 'BackUpdays', SedBackupDays.Value);
+    AppSettings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
+    AppSettings.WriteBool('Options', 'AutoSaveINIPasswords', CbAutoSavePasswordInSettings.Checked);
+    AppSettings.WriteInteger('Options', 'BackUpdays', SedBackupDays.Value);
 
-    Settings.WriteString('Options', 'ProxyUser', WebProxyUserName.Text);
-    Settings.WriteString('Options', 'ProxyPassword', WebProxyPassword.Text);
-    Settings.WriteBool('Options', 'UseProxyServer', CbUseProxyServer.Checked);
+    AppSettings.WriteString('Options', 'ProxyUser', WebProxyUserName.Text);
+    AppSettings.WriteString('Options', 'ProxyPassword', WebProxyPassword.Text);
+    AppSettings.WriteBool('Options', 'UseProxyServer', CbUseProxyServer.Checked);
   end;
   // 4 :
   if FLoadedPages[5] then
   begin
-    Settings.WriteBool('Options', 'AllowPreview', CbListViewShowPreview.Checked);
-    Settings.WriteBool('Options', 'UseSmallToolBarButtons', CbSmallToolBars.Checked);
+    AppSettings.WriteBool('Options', 'AllowPreview', CbListViewShowPreview.Checked);
+    AppSettings.WriteBool('Options', 'UseSmallToolBarButtons', CbSmallToolBars.Checked);
 
-    Settings.WriteBool('Options', 'SortGroupsByName', CbSortGroups.Checked);
-    Settings.WriteBool('Options', 'UseHotSelect', CbListViewHotSelect.Checked);
-    Settings.WriteBool('Editor', 'VirtualCursor', CblEditorVirtuaCursor.Checked);
-    Settings.WriteBool('Options', 'CheckUpdateLinks', CbCheckLinksOnUpdate.Checked);
+    AppSettings.WriteBool('Options', 'SortGroupsByName', CbSortGroups.Checked);
+    AppSettings.WriteBool('Options', 'UseHotSelect', CbListViewHotSelect.Checked);
+    AppSettings.WriteBool('Editor', 'VirtualCursor', CblEditorVirtuaCursor.Checked);
+    AppSettings.WriteBool('Options', 'CheckUpdateLinks', CbCheckLinksOnUpdate.Checked);
 
-    Settings.WriteBool('Options', 'DontAddSmallImages', CbDontAddSmallFiles.Checked);
-    Settings.WriteInteger('Options', 'DontAddSmallImagesWidth', SedMinWidth.Value);
-    Settings.WriteInteger('Options', 'DontAddSmallImagesHeight', SedMinHeight.Value);
+    AppSettings.WriteBool('Options', 'DontAddSmallImages', CbDontAddSmallFiles.Checked);
+    AppSettings.WriteInteger('Options', 'DontAddSmallImagesWidth', SedMinWidth.Value);
+    AppSettings.WriteInteger('Options', 'DontAddSmallImagesHeight', SedMinHeight.Value);
 
-    Settings.Exif.ReadInfoFromExif := CbReadInfoFromExif.Checked;
-    Settings.Exif.SaveInfoToExif := CbSaveInfoToExif.Checked;
-    Settings.Exif.UpdateExifInfoInBackground := CbUpdateExifInfoInBackground.Checked;
+    AppSettings.Exif.ReadInfoFromExif := CbReadInfoFromExif.Checked;
+    AppSettings.Exif.SaveInfoToExif := CbSaveInfoToExif.Checked;
+    AppSettings.Exif.UpdateExifInfoInBackground := CbUpdateExifInfoInBackground.Checked;
 
-    Settings.WriteBool('Options', 'ShowStatusBar', CbShowStatusBar.Checked);
-    Settings.WriteBool('Options', 'SmoothScrolling', CbSmoothScrolling.Checked);
+    AppSettings.WriteBool('Options', 'ShowStatusBar', CbShowStatusBar.Checked);
+    AppSettings.WriteBool('Options', 'SmoothScrolling', CbSmoothScrolling.Checked);
   end;
 
   if FLoadedPages[6] then
@@ -841,11 +841,11 @@ var
   Extension,
   Player: string;
 begin
-  Associations := Settings.ReadKeys(cMediaAssociationsData);
+  Associations := AppSettings.ReadKeys(cMediaAssociationsData);
   try
     for I := 0 to Associations.Count - 1 do
     begin
-      Player := Settings.ReadString(cMediaAssociationsData + '\' + Associations[I], '');
+      Player := AppSettings.ReadString(cMediaAssociationsData + '\' + Associations[I], '');
 
       if Player = cMediaPlayerDefaultId then
         Player := GetPlayerInternalPath;
@@ -917,11 +917,11 @@ var
   Player: string;
   Pair: TPair<string, string>;
 begin
-  Settings.DeleteKey(cMediaAssociationsData);
+  AppSettings.DeleteKey(cMediaAssociationsData);
   for Pair in FPlayerExtensions do
   begin
     Player := Pair.Value;
-    Settings.WriteString(cMediaAssociationsData + '\' + Pair.Key, '', Player);
+    AppSettings.WriteString(cMediaAssociationsData + '\' + Pair.Key, '', Player);
   end;
 end;
 
@@ -952,7 +952,7 @@ var
 begin
   IsStyleSelected := False;
 
-  CurrentStyle := Settings.ReadString('Style', 'FileName', DefaultThemeName);
+  CurrentStyle := AppSettings.ReadString('Style', 'FileName', DefaultThemeName);
 
   LbStyles.Items.Clear;
   FThemeList.Clear;
@@ -1169,7 +1169,7 @@ begin
     begin
       ProgramStatistics.StyleUsed;
 
-      Settings.WriteString('Style', 'FileName', FThemeList[I]);
+      AppSettings.WriteString('Style', 'FileName', FThemeList[I]);
       if MessageBoxDB(Handle, L('Restart of application is required for applying new style! Restart application now?'), L('Information'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) = ID_OK then
       begin
         ShellExecuteInfo.cbSize := SizeOf(TShellExecuteInfo);

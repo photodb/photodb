@@ -615,10 +615,10 @@ begin
 
   Persons.Clear;
 
-  Count := Settings.ReadInteger(Key, 'LatestCount', 0);
+  Count := AppSettings.ReadInteger(Key, 'LatestCount', 0);
   for I := 1 to Count do
   begin
-    PersonID := Settings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
+    PersonID := AppSettings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
     if PersonID <> 0 then
     begin
       P := TPerson.Create;
@@ -875,10 +875,10 @@ begin
 
   List := TList<Integer>.Create;
   try
-    Count := Settings.ReadInteger(Key, 'LatestCount', 0);
+    Count := AppSettings.ReadInteger(Key, 'LatestCount', 0);
     for I := 1 to Count do
     begin
-      ID := Settings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
+      ID := AppSettings.ReadInteger(Key + '\LatestPersons', 'Person' + IntToStr(I), 0);
       if ID > 0 then
         List.Add(ID);
     end;
@@ -892,12 +892,12 @@ begin
 
     List.Insert(0, PersonID);
 
-    MaxCount := Settings.ReadInteger(Key, 'LatestMaxCount', 10);
+    MaxCount := AppSettings.ReadInteger(Key, 'LatestMaxCount', 10);
 
     ItemCount := Min(List.Count, MaxCount);
-    Settings.WriteInteger(Key, 'LatestCount', ItemCount);
+    AppSettings.WriteInteger(Key, 'LatestCount', ItemCount);
     for I := 0 to ItemCount - 1 do
-      Settings.WriteInteger(Key + '\LatestPersons', 'Person' + IntToStr(I + 1), List[I]);
+      AppSettings.WriteInteger(Key + '\LatestPersons', 'Person' + IntToStr(I + 1), List[I]);
   finally
     F(List);
   end;

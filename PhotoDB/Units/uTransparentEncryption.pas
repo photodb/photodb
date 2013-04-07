@@ -1045,7 +1045,7 @@ begin
   try
     FFileExtensionList := '';
     {$IFDEF PHOTODB}
-    Associations := Settings.ReadKeys(cMediaAssociationsData);
+    Associations := AppSettings.ReadKeys(cMediaAssociationsData);
     try
       for I := 0 to Associations.Count - 1 do
         FFileExtensionList := FFileExtensionList + ':' + AnsiUpperCase(Associations[I]);

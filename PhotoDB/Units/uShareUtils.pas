@@ -57,11 +57,11 @@ begin
   try
     Width := 0;
     Height := 0;
-    ResizeImage := Settings.ReadBool('Share', 'ResizeImage', True);
+    ResizeImage := AppSettings.ReadBool('Share', 'ResizeImage', True);
     if ResizeImage then
     begin
-      Width := Settings.ReadInteger('Share', 'ImageWidth', 1920);
-      Height := Settings.ReadInteger('Share', 'ImageWidth', 1920);
+      Width := AppSettings.ReadInteger('Share', 'ImageWidth', 1920);
+      Height := AppSettings.ReadInteger('Share', 'ImageWidth', 1920);
     end;
     if IsPreview then
     begin
@@ -69,8 +69,8 @@ begin
       Height := 32;
     end;
 
-    UsePreviewForRAW := Settings.ReadBool('Share', 'RAWPreview', True);
-    IsJpegImageFormat := Settings.ReadInteger('Share', 'ImageFormat', 0) = 0;
+    UsePreviewForRAW := AppSettings.ReadBool('Share', 'RAWPreview', True);
+    IsJpegImageFormat := AppSettings.ReadInteger('Share', 'ImageFormat', 0) = 0;
 
     Flags := [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword, ilfThrowError];
     if not (UsePreviewForRAW or IsPreview) then

@@ -4,7 +4,8 @@ interface
 
 uses
   UnitDBDeclare,
-  uDBUtils,
+
+  uDBEntities,
   uFaceDetection;
 
 type
@@ -14,7 +15,7 @@ type
 
   IDBImageSettings = interface(IInterface)
   ['{97343698-242E-4EB5-8972-5C443A97E1EA}']
-    function GetImageOptions: TImageDBOptions;
+    function GetImageOptions: TSettings;
   end;
 
   IFaceResultForm = interface(IObjectSource)

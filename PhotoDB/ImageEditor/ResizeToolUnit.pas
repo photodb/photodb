@@ -350,16 +350,16 @@ begin
   CloseLink.LoadFromResource('CANCELACTION');
   CloseLink.RefreshBuffer(True);
 
-  ComboBoxPercent.Text := IntToStr(Settings.ReadInteger('Editor', 'PercentValue', 100)) + '%';
-  WidthEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'CustomWidth', 100));
-  HeightEdit.Text := IntToStr(Settings.ReadInteger('Editor', 'CustomHeight', 100));
-  RadioButton100x100.Checked := Settings.ReadBool('Editor', 'ResizeTo100x100', False);
-  RadioButton200x200.Checked := Settings.ReadBool('Editor', 'ResizeTo200x200', False);
-  RadioButton600x800.Checked := Settings.ReadBool('Editor', 'ResizeTo600x800', True);
-  RadioButton_Custom.Checked := Settings.ReadBool('Editor', 'ResizeToCustom', False);
-  CheckBoxSaveProportions.Checked := Settings.ReadBool('Editor', 'SaveProportions', True);
-  RadioButtonPercent.Checked := Settings.ReadBool('Editor', 'ResizeToPercent', False);
-  ComboBoxMethod.ItemIndex := Settings.ReadInteger('Editor', 'ResizeMethod', 0);
+  ComboBoxPercent.Text := IntToStr(AppSettings.ReadInteger('Editor', 'PercentValue', 100)) + '%';
+  WidthEdit.Text := IntToStr(AppSettings.ReadInteger('Editor', 'CustomWidth', 100));
+  HeightEdit.Text := IntToStr(AppSettings.ReadInteger('Editor', 'CustomHeight', 100));
+  RadioButton100x100.Checked := AppSettings.ReadBool('Editor', 'ResizeTo100x100', False);
+  RadioButton200x200.Checked := AppSettings.ReadBool('Editor', 'ResizeTo200x200', False);
+  RadioButton600x800.Checked := AppSettings.ReadBool('Editor', 'ResizeTo600x800', True);
+  RadioButton_Custom.Checked := AppSettings.ReadBool('Editor', 'ResizeToCustom', False);
+  CheckBoxSaveProportions.Checked := AppSettings.ReadBool('Editor', 'SaveProportions', True);
+  RadioButtonPercent.Checked := AppSettings.ReadBool('Editor', 'ResizeToPercent', False);
+  ComboBoxMethod.ItemIndex := AppSettings.ReadInteger('Editor', 'ResizeMethod', 0);
   Loading := False;
 end;
 
@@ -406,16 +406,16 @@ end;
 
 procedure TResizeToolPanelClass.DoSaveSettings(Sender: TObject);
 begin
-  Settings.WriteBool('Editor', 'ResizeTo100x100', RadioButton100x100.Checked);
-  Settings.WriteBool('Editor', 'ResizeTo200x200', RadioButton200x200.Checked);
-  Settings.WriteBool('Editor', 'ResizeTo600x800', RadioButton600x800.Checked);
-  Settings.WriteBool('Editor', 'ResizeToCustom', RadioButton_Custom.Checked);
-  Settings.WriteBool('Editor', 'SaveProportions', CheckBoxSaveProportions.Checked);
-  Settings.WriteBool('Editor', 'ResizeToPercent', RadioButtonPercent.Checked);
-  Settings.WriteInteger('Editor', 'ResizeMethod', ComboBoxMethod.ItemIndex);
-  Settings.WriteInteger('Editor', 'CustomWidth', StrToIntDef(WidthEdit.Text, 100));
-  Settings.WriteInteger('Editor', 'CustomHeight', StrToIntDef(HeightEdit.Text, 100));
-  Settings.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
+  AppSettings.WriteBool('Editor', 'ResizeTo100x100', RadioButton100x100.Checked);
+  AppSettings.WriteBool('Editor', 'ResizeTo200x200', RadioButton200x200.Checked);
+  AppSettings.WriteBool('Editor', 'ResizeTo600x800', RadioButton600x800.Checked);
+  AppSettings.WriteBool('Editor', 'ResizeToCustom', RadioButton_Custom.Checked);
+  AppSettings.WriteBool('Editor', 'SaveProportions', CheckBoxSaveProportions.Checked);
+  AppSettings.WriteBool('Editor', 'ResizeToPercent', RadioButtonPercent.Checked);
+  AppSettings.WriteInteger('Editor', 'ResizeMethod', ComboBoxMethod.ItemIndex);
+  AppSettings.WriteInteger('Editor', 'CustomWidth', StrToIntDef(WidthEdit.Text, 100));
+  AppSettings.WriteInteger('Editor', 'CustomHeight', StrToIntDef(HeightEdit.Text, 100));
+  AppSettings.WriteInteger('Editor','PercentValue',Round(GetZoom*100));
 end;
 
 procedure TResizeToolPanelClass.EditChange(Sender: TObject);

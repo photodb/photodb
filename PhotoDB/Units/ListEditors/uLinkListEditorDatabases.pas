@@ -30,8 +30,9 @@ uses
   uRuntime,
   uStringUtils,
   uDBForm,
+  uDBTypes,
   uDBScheme,
-  uDBUtils,
+  uDBEntities,
   uDBContext,
   uVclHelpers,
   uIconUtils,
@@ -66,8 +67,8 @@ type
   end;
 
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
-procedure LoadDBs(Collections: TList<TDatabaseInfo>);
-procedure SaveDBs(Collections: TList<TDatabaseInfo>);
+procedure ReadUserCollections(Collections: TList<TDatabaseInfo>);
+procedure SaveUserCollections(Collections: TList<TDatabaseInfo>);
 
 implementation
 
@@ -80,6 +81,15 @@ const
   CHANGE_DB_DESC_LABEL      = 6;
   CHANGE_DB_UPDATE_OPTIONS  = 7;
   CHANGE_DB_PREVIEW_OPTIONS = 7;
+
+function UpdateDatabaseQuery(FileName: string): Boolean;
+var
+  Msg: string;
+begin
+  Msg := FormatEx(TA('Collection &quot;{0}&quot; should be updated to work with this program version. After updating this collection may not work with previous program versions. Update now?', 'Explorer'), [FileName]);
+
+  Result := ID_YES = MessageBoxDB(Screen.ActiveFormHandle, Msg, TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
+end;
 
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 var
@@ -103,7 +113,7 @@ begin
   end;
 end;
 
-procedure LoadDBs(Collections: TList<TDatabaseInfo>);
+procedure ReadUserCollections(Collections: TList<TDatabaseInfo>);
 var
   Reg: TBDRegistry;
   List: TStrings;
@@ -143,13 +153,15 @@ begin
   ));
 end;
 
-procedure SaveDBs(Collections: TList<TDatabaseInfo>);
+procedure SaveUserCollections(Collections: TList<TDatabaseInfo>);
 var
   Reg: TBDRegistry;
   List: TStrings;
   I: Integer;
   DB: TDatabaseInfo;
-  Settings: TImageDBOptions;
+  Settings: TSettings;
+  Context: IDBContext;
+  SettingsRepository: ISettingsRepository;
 begin
   List := TStringList.Create;
   try
@@ -169,15 +181,26 @@ begin
         Reg.WriteString('Description', DB.Description);
         Reg.WriteInteger('Order', Collections.IndexOf(DB));
 
-        //TODO:
-        {Settings := GetImageSettingsFromTable(DB.Path);
-        try
-          Settings.Name := DB.Title;
-          Settings.Description := DB.Description;
-          UpdateImageSettings(DB.Path, Settings);
-        finally
-          F(Settings);
-        end; }
+        if TDBScheme.IsOldColectionFile(DB.Path) then
+        begin
+          if UpdateDatabaseQuery(DB.Path) then
+            TDBScheme.UpdateCollection(DB.Path);
+        end;
+
+        if TDBScheme.IsValidCollectionFile(DB.Path) then
+        begin
+          Context := TDBContext.Create(DB.Path);
+          SettingsRepository := Context.Settings;
+
+          Settings := SettingsRepository.Get;
+          try
+            Settings.Name := DB.Title;
+            Settings.Description := DB.Description;
+            SettingsRepository.Update(Settings);
+          finally
+            F(Settings);
+          end;
+        end;
       end;
 
     finally
@@ -187,20 +210,6 @@ begin
     F(List);
   end;
 end;
-        {
-class procedure AddDB(DBName, DBFile, DBIco: string);
-var
-  Collections: TList<TDatabaseInfo>;
-begin
-  Collections := TList<TDatabaseInfo>.Create;
-  try
-    LoadDBs(Collections);
-    Collections.Add(TDatabaseInfo.Create(DBName, DBFile, DBIco, ''));
-    SaveDBs(Collections);
-  finally
-    FreeList(Collections);
-  end;
-end;      }
 
 { TLinkListEditorDatabases }
 
@@ -389,10 +398,10 @@ var
 
   procedure OpenDB;
   var
-    DialogResult: Integer;
     OpenDialog: DBOpenDialog;
     FileName: string;
-    Settings: TImageDBOptions;
+    Settings: TSettings;
+    SettingsRepository: ISettingsRepository;
   begin
     OpenDialog := DBOpenDialog.Create;
     try
@@ -407,15 +416,14 @@ var
 
         if TDBScheme.IsOldColectionFile(FileName) then
         begin
-          DialogResult := MessageBoxDB(FOwner.Handle,
-            L('This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?'), L('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
-          if ID_YES = DialogResult then
-            //TODO: ConvertDB(FileName);
+          if UpdateDatabaseQuery(FileName) then
+            TDBScheme.UpdateCollection(FileName);
         end;
 
         if TDBScheme.IsValidCollectionFile(FileName) then
         begin
-          Settings := GetImageSettingsFromTable(Context);
+          SettingsRepository := Context.Settings;
+          Settings := SettingsRepository.Get;
           try
             Data := TDatabaseInfo.Create(IIF(Length(Trim(Settings.Name)) > 0, Trim(Settings.Name), GetFileNameWithoutExt(OpenDialog.FileName)), OpenDialog.FileName, Application.ExeName + ',0', Trim(Settings.Description));
           finally

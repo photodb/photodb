@@ -470,7 +470,7 @@
 	<translate name="Description" value="Описание" />
 	<translate name="List of collections" value="Список коллекций" />
 	<translate name="PhotoDB files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
-	<translate name="This database may not be used without conversion, ie it is designed to work with older versions of the program. Run the wizard to convert database?" value="Данная БД не может быть использована без конвертирования, т.е. она создана для работы со старыми версиями программы. Запустить мастер конвертации баз?" />
+	<translate name="Collection &quot;{0}&quot; should be updated to work with this program version. After updating this collection may not work with previous program versions. Update now?" value="Коллекция &quot;{0}&quot; должна быть обновлена для работы с этой версией программы. После обновления эта коллекция может не работать с предыдущими версиями программы. Обновить коллекцию?" />
 	<translate name="Do you want to delete files below for deleted collections?" value="Вы хотите удалить файлы удалённых коллекций?" />
 	<translate name="Change advanced options for this collection" value="Изменить расширенные настройки" />
 	<translate name="Edit" value="Редактировать" />

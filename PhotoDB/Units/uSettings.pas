@@ -14,7 +14,7 @@ uses
 type
   TExifSettings = class;
 
-  TSettings = class(TObject)
+  TAppSettings = class(TObject)
   private
     FRegistryCache: TDBRegistryCache;
     FExifSettings: TExifSettings;
@@ -77,33 +77,33 @@ type
     property UpdateExifInfoInBackground: Boolean read GetUpdateExifInfoInBackground write SetUpdateExifInfoInBackground;
   end;
 
-function Settings: TSettings;
+function AppSettings: TAppSettings;
 function GetAppDataDirectoryFromSettings: string;
 
 implementation
 
 var
-  FSettings: TSettings = nil;
+  FSettings: TAppSettings = nil;
 
-function Settings: TSettings;
+function AppSettings: TAppSettings;
 begin
   if FSettings = nil then
-    FSettings := TSettings.Create;
+    FSettings := TAppSettings.Create;
 
   Result := FSettings;
 end;
 
 function GetAppDataDirectoryFromSettings: string;
 begin
-  Result := Settings.ReadString('Settings', 'AppData');
+  Result := AppSettings.ReadString('Settings', 'AppData');
   if Result = '' then
   begin
     Result :=GetAppDataDirectory;
-    Settings.WriteString('Settings', 'AppData', Result);
+    AppSettings.WriteString('Settings', 'AppData', Result);
   end;
 end;
 
-function TSettings.Readbool(Key, Name: string; Default: Boolean): Boolean;
+function TAppSettings.Readbool(Key, Name: string; Default: Boolean): Boolean;
 var
   Reg: TBDRegistry;
   Value: string;
@@ -117,7 +117,7 @@ begin
     Result := False;
 end;
 
-function TSettings.ReadRealBool(Key, Name: string; Default: Boolean): Boolean;
+function TAppSettings.ReadRealBool(Key, Name: string; Default: Boolean): Boolean;
 var
   Reg : TBDRegistry;
 begin
@@ -125,7 +125,7 @@ begin
   Result := Reg.ReadBool(Name);
 end;
 
-function TSettings.ReadboolW(Key, Name: string; Default: Boolean): Boolean;
+function TAppSettings.ReadboolW(Key, Name: string; Default: Boolean): Boolean;
 var
   Reg: TBDRegistry;
   Value : string;
@@ -139,7 +139,7 @@ begin
     Result := False;
 end;
 
-function TSettings.ReadInteger(Key, Name: string; Default: Integer): Integer;
+function TAppSettings.ReadInteger(Key, Name: string; Default: Integer): Integer;
 var
   Reg: TBDRegistry;
 begin
@@ -147,7 +147,7 @@ begin
   Result := StrToIntDef(Reg.ReadString(Name), Default);
 end;
 
-function TSettings.ReadDateTime(Key, Name : string; Default: TDateTime): TDateTime;
+function TAppSettings.ReadDateTime(Key, Name : string; Default: TDateTime): TDateTime;
 var
   Reg: TBDRegistry;
 begin
@@ -157,7 +157,7 @@ begin
     Result:=Reg.ReadDateTime(Name);
 end;
 
-function TSettings.ReadProperty(Key, Name: string): string;
+function TAppSettings.ReadProperty(Key, Name: string): string;
 var
   Reg: TBDRegistry;
 begin
@@ -166,7 +166,7 @@ begin
   Result := Reg.ReadString(Name);
 end;
 
-function TSettings.ReadKeys(Key: string): TStrings;
+function TAppSettings.ReadKeys(Key: string): TStrings;
 var
   Reg: TBDRegistry;
 begin
@@ -175,7 +175,7 @@ begin
   Reg.GetKeyNames(Result);
 end;
 
-function TSettings.ReadValues(Key: string): TStrings;
+function TAppSettings.ReadValues(Key: string): TStrings;
 var
   Reg: TBDRegistry;
 begin
@@ -184,7 +184,7 @@ begin
   Reg.GetValueNames(Result);
 end;
 
-procedure TSettings.DeleteValues(Key: string);
+procedure TAppSettings.DeleteValues(Key: string);
 var
   Reg: TBDRegistry;
   I: Integer;
@@ -206,26 +206,26 @@ begin
   end;
 end;
 
-procedure TSettings.ClearCache;
+procedure TAppSettings.ClearCache;
 begin
   FRegistryCache.Clear;
   FExifSettings.Init(True);
 end;
 
-constructor TSettings.Create;
+constructor TAppSettings.Create;
 begin
   FRegistryCache := TDBRegistryCache.Create;
   FExifSettings := TExifSettings.Create;
 end;
 
-destructor TSettings.Destroy;
+destructor TAppSettings.Destroy;
 begin
   F(FRegistryCache);
   F(FExifSettings);
   inherited;
 end;
 
-procedure TSettings.DeleteKey(Key: string);
+procedure TAppSettings.DeleteKey(Key: string);
 var
   Reg: TBDRegistry;
 begin
@@ -237,7 +237,7 @@ begin
   end;
 end;
 
-function TSettings.ReadString(Key, Name: string; Default: string = ''): string;
+function TAppSettings.ReadString(Key, Name: string; Default: string = ''): string;
 var
   Reg: TBDRegistry;
 begin
@@ -247,7 +247,7 @@ begin
     Result := Default;
 end;
 
-function TSettings.ReadStringW(Key, Name: string; Default: string = ''): string;
+function TAppSettings.ReadStringW(Key, Name: string; Default: string = ''): string;
 var
   Reg: TBDRegistry;
 begin
@@ -257,7 +257,7 @@ begin
     Result := Default;
 end;
 
-procedure TSettings.WriteBool(Key, name: string; Value: Boolean);
+procedure TAppSettings.WriteBool(Key, name: string; Value: Boolean);
 var
   Reg: TBDRegistry;
 begin
@@ -268,7 +268,7 @@ begin
     Reg.WriteString(name, 'False');
 end;
 
-procedure TSettings.WriteBoolW(Key, Name: string; Value: Boolean);
+procedure TAppSettings.WriteBoolW(Key, Name: string; Value: Boolean);
 var
   Reg: TBDRegistry;
 begin
@@ -279,7 +279,7 @@ begin
     Reg.WriteString(Name, 'False');
 end;
 
-procedure TSettings.WriteInteger(Key, Name: string; Value: Integer);
+procedure TAppSettings.WriteInteger(Key, Name: string; Value: Integer);
 var
   Reg: TBDRegistry;
 begin
@@ -287,7 +287,7 @@ begin
   Reg.WriteString(Name, IntToStr(Value));
 end;
 
-procedure TSettings.WriteProperty(Key, Name, Value: string);
+procedure TAppSettings.WriteProperty(Key, Name, Value: string);
 var
   Reg: TBDRegistry;
 begin
@@ -295,7 +295,7 @@ begin
   Reg.WriteString(Name, Value);
 end;
 
-procedure TSettings.WriteString(Key, Name, Value: string);
+procedure TAppSettings.WriteString(Key, Name, Value: string);
 var
   Reg: TBDRegistry;
 begin
@@ -303,7 +303,7 @@ begin
   Reg.WriteString(Name, Value);
 end;
 
-procedure TSettings.WriteStringW(Key, Name, value: string);
+procedure TAppSettings.WriteStringW(Key, Name, value: string);
 var
   Reg: TBDRegistry;
 begin
@@ -311,7 +311,7 @@ begin
   Reg.WriteString(Name, Value);
 end;
 
-procedure TSettings.WriteDateTime(Key, Name : String; Value: TDateTime);
+procedure TAppSettings.WriteDateTime(Key, Name : String; Value: TDateTime);
 var
   Reg: TBDRegistry;
 begin
@@ -319,7 +319,7 @@ begin
   Reg.WriteDateTime(Name, Value);
 end;
 
-function TSettings.GetDataBase: string;
+function TAppSettings.GetDataBase: string;
 var
   Reg: TBDRegistry;
 begin
@@ -327,12 +327,12 @@ begin
   Result := Reg.ReadString('DBDefaultName');
 end;
 
-function TSettings.GetSection(Key: string; ReadOnly: Boolean): TBDRegistry;
+function TAppSettings.GetSection(Key: string; ReadOnly: Boolean): TBDRegistry;
 begin
   Result := FRegistryCache.GetSection(REGISTRY_CURRENT_USER, RegRoot, ReadOnly);
 end;
 
-procedure TSettings.IncrementInteger(Key, Name: string);
+procedure TAppSettings.IncrementInteger(Key, Name: string);
 var
   Reg: TBDRegistry;
   SValue: string;
@@ -356,7 +356,7 @@ end;
 procedure TExifSettings.SetReadInfoFromExif(const Value: Boolean);
 begin
   FReadInfoFromExif := Value;
-  Settings.WriteBool('EXIF', 'ReadInfoFromExif', Value);
+  AppSettings.WriteBool('EXIF', 'ReadInfoFromExif', Value);
 end;
 
 function TExifSettings.GetSaveInfoToExif: Boolean;
@@ -368,7 +368,7 @@ end;
 procedure TExifSettings.SetSaveInfoToExif(const Value: Boolean);
 begin
   FSaveInfoToExif := Value;
-  Settings.WriteBool('EXIF', 'SaveInfoToExif', Value);
+  AppSettings.WriteBool('EXIF', 'SaveInfoToExif', Value);
 end;
 
 function TExifSettings.GetUpdateExifInfoInBackground: Boolean;
@@ -380,14 +380,14 @@ end;
 procedure TExifSettings.SetUpdateExifInfoInBackground(const Value: Boolean);
 begin
   FUpdateExifInfoInBackground := Value;
-  Settings.WriteBool('EXIF', 'UpdateExifInfoInBackground', Value);
+  AppSettings.WriteBool('EXIF', 'UpdateExifInfoInBackground', Value);
 end;
 
 procedure TExifSettings.ReadSettings;
 begin
-  FReadInfoFromExif := Settings.ReadBool('EXIF', 'ReadInfoFromExif', True);
-  FSaveInfoToExif := Settings.ReadBool('EXIF', 'SaveInfoToExif', True);
-  FUpdateExifInfoInBackground := Settings.ReadBool('EXIF', 'UpdateExifInfoInBackground', True);
+  FReadInfoFromExif := AppSettings.ReadBool('EXIF', 'ReadInfoFromExif', True);
+  FSaveInfoToExif := AppSettings.ReadBool('EXIF', 'SaveInfoToExif', True);
+  FUpdateExifInfoInBackground := AppSettings.ReadBool('EXIF', 'UpdateExifInfoInBackground', True);
 end;
 
 { TSettingsNode }

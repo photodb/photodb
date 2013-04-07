@@ -208,8 +208,8 @@ begin
   RecreateGroupsList;
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataGroups);
   LoadLanguage;
-  CbRemoveKeywords.Checked := Settings.ReadBool('Propetry', 'DeleteKeyWords', True);
-  CbShowAllGroups.Checked := Settings.ReadBool('Propetry', 'ShowAllGroups', False);
+  CbRemoveKeywords.Checked := AppSettings.ReadBool('Propetry', 'DeleteKeyWords', True);
+  CbShowAllGroups.Checked := AppSettings.ReadBool('Propetry', 'ShowAllGroups', False);
 
   FixFormPosition;
 end;
@@ -561,12 +561,12 @@ end;
 procedure TEditGroupsForm.CbShowAllGroupsClick(Sender: TObject);
 begin
   RecreateGroupsList;
-  Settings.WriteBool('Propetry','ShowAllGroups', CbShowAllGroups.Checked);
+  AppSettings.WriteBool('Propetry','ShowAllGroups', CbShowAllGroups.Checked);
 end;
 
 procedure TEditGroupsForm.CbRemoveKeywordsClick(Sender: TObject);
 begin
-  Settings.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywords.Checked);
+  AppSettings.WriteBool('Propetry','DeleteKeyWords', CbRemoveKeywords.Checked);
 end;
 
 procedure TEditGroupsForm.LstAvaliableGroupsDrawItem(Control: TWinControl;

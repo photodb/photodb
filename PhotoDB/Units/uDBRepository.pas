@@ -198,7 +198,7 @@ begin
 
 end;
 
-function TDBitemRepository.WithKey: TDBFields<TDBItem>;
+function TDBItemRepository.WithKey: TDBFields<TDBItem>;
 begin
   Result := Fields.SetOf([DBItemFields.Id]);
 end;

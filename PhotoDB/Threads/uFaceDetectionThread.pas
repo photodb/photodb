@@ -217,7 +217,7 @@ begin
               W := FBitmap.Width;
               H := FBitmap.Height;
               RMp := W * H;
-              AMp := Settings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
+              AMp := AppSettings.ReadInteger('Options', 'FaceDetectionSize', 3) * 100000;
 
               if RMp > AMp then
               begin
@@ -343,7 +343,7 @@ end;
 
 function TFaceDetectionDataManager.GetDetectionMethod: string;
 begin
-  Result := Settings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
+  Result := AppSettings.ReadString('Face', 'DetectionMethod', DefaultCascadeFileName);
 end;
 
 function TFaceDetectionDataManager.GetFaceDataFromCache(CacheFileName: string;

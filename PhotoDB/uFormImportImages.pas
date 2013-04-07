@@ -530,7 +530,7 @@ begin
   TSelectDateItem(SDI).FItemsCount := 1;
   TSelectDateItem(SDI).FItemsSize := Size;
   TSelectDateItem(SDI).Items.Add(Item.Copy);
-  SDI.ItemLabel := Settings.ReadString('ImportPicturesSeries', FormatDateTimeShortDate(Date), '');
+  SDI.ItemLabel := AppSettings.ReadString('ImportPicturesSeries', FormatDateTimeShortDate(Date), '');
 
   Index := -1;
 
@@ -947,7 +947,7 @@ begin
     else
       LnkLabel.Text := TPath.CleanUp(Edit.Text);
 
-    Settings.WriteString('ImportPicturesSeries', FormatDateTimeShortDate(Item.Date), Item.ItemLabel);
+    AppSettings.WriteString('ImportPicturesSeries', FormatDateTimeShortDate(Item.Date), Item.ItemLabel);
 
     LnkOk.Hide;
     Edit.Hide;
@@ -1458,13 +1458,13 @@ var
   end;
 
 begin
-  Pattern := Settings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
+  Pattern := AppSettings.ReadString('ImportPictures', 'Pattern', DefaultImportPattern);
 
   Options := TImportPicturesOptions.Create;
   Options.NamePattern := Pattern;
-  Options.OnlySupportedImages := Settings.ReadBool('ImportPictures', 'OnlyImages', False);
-  Options.DeleteFilesAfterImport := Settings.ReadBool('ImportPictures', 'DeleteFiles', True);
-  Options.AddToCollection := Settings.ReadBool('ImportPictures', 'AddToCollection', True);
+  Options.OnlySupportedImages := AppSettings.ReadBool('ImportPictures', 'OnlyImages', False);
+  Options.DeleteFilesAfterImport := AppSettings.ReadBool('ImportPictures', 'DeleteFiles', True);
+  Options.AddToCollection := AppSettings.ReadBool('ImportPictures', 'AddToCollection', True);
   Options.Source := PeImportFromPath.PathEx;
   Options.Destination := PeImportToPath.PathEx;
   Task := TImportPicturesTask.Create;
@@ -1529,8 +1529,8 @@ begin
 
   TThreadImportPictures.Create(Options);
 
-  Settings.WriteString('ImportPictures', 'Source', PeImportFromPath.Path);
-  Settings.WriteString('ImportPictures', 'Destination', PeImportToPath.Path);
+  AppSettings.WriteString('ImportPictures', 'Source', PeImportFromPath.Path);
+  AppSettings.WriteString('ImportPictures', 'Destination', PeImportToPath.Path);
 
   Close;
 
@@ -1901,16 +1901,16 @@ begin
     FIsDisplayingPreviews := False;
     FIsReady := False;
     SwitchMode;
-    TImportScanThread.Create(Self, PeImportFromPath.PathEx, Settings.ReadBool('ImportPictures', 'OnlyImages', False));
+    TImportScanThread.Create(Self, PeImportFromPath.PathEx, AppSettings.ReadBool('ImportPictures', 'OnlyImages', False));
   end;
 end;
 
 procedure TFormImportImages.ReadOptions;
 begin
-  PeImportToPath.Path := Settings.ReadString('ImportPictures', 'Destination', GetMyPicturesPath);
-  PeImportFromPath.Path := Settings.ReadString('ImportPictures', 'Source', '');
+  PeImportToPath.Path := AppSettings.ReadString('ImportPictures', 'Destination', GetMyPicturesPath);
+  PeImportFromPath.Path := AppSettings.ReadString('ImportPictures', 'Source', '');
 
-  FMode := TImportPicturesMode(Settings.ReadInteger('ImportPictures', 'Source', Integer(piModeSimple)));
+  FMode := TImportPicturesMode(AppSettings.ReadInteger('ImportPictures', 'Source', Integer(piModeSimple)));
 end;
 
 procedure TFormImportImages.SbSeriesResize(Sender: TObject);
@@ -2023,7 +2023,7 @@ begin
     FMode := piModeExtended;
 
   FIsDisplayingPreviews := False;
-  Settings.WriteInteger('ImportPictures', 'Mode', Integer(FMode));
+  AppSettings.WriteInteger('ImportPictures', 'Mode', Integer(FMode));
   SwitchMode;
   FinishScan;
 end;

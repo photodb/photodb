@@ -330,12 +330,12 @@ begin
   FProcessingParams.AddWatermark := CbWatermark.Checked;
   if CbWatermark.Checked then
   begin
-    FProcessingParams.WatermarkOptions.Text := Settings.ReadString(Settings_Watermark, 'Text', L('Sample text'));
-    FProcessingParams.WatermarkOptions.Color := Settings.ReadInteger(Settings_Watermark, 'Color', clWhite);
-    FProcessingParams.WatermarkOptions.Transparenty := Settings.ReadInteger(Settings_Watermark, 'Transparency', 25);
-    FProcessingParams.WatermarkOptions.BlockCountX := Settings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
-    FProcessingParams.WatermarkOptions.BlockCountY := Settings.ReadInteger(Settings_Watermark, 'BlocksY', 3);
-    FProcessingParams.WatermarkOptions.FontName := Settings.ReadString(Settings_Watermark, 'Font', 'Arial');
+    FProcessingParams.WatermarkOptions.Text := AppSettings.ReadString(Settings_Watermark, 'Text', L('Sample text'));
+    FProcessingParams.WatermarkOptions.Color := AppSettings.ReadInteger(Settings_Watermark, 'Color', clWhite);
+    FProcessingParams.WatermarkOptions.Transparenty := AppSettings.ReadInteger(Settings_Watermark, 'Transparency', 25);
+    FProcessingParams.WatermarkOptions.BlockCountX := AppSettings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
+    FProcessingParams.WatermarkOptions.BlockCountY := AppSettings.ReadInteger(Settings_Watermark, 'BlocksY', 3);
+    FProcessingParams.WatermarkOptions.FontName := AppSettings.ReadString(Settings_Watermark, 'Font', 'Arial');
   end;
 
   FProcessingParams.SaveAspectRation := CbAspectRatio.Checked;
@@ -744,13 +744,13 @@ end;
 
 procedure TFormSizeResizer.BtSaveAsDefaultClick(Sender: TObject);
 begin
-  Settings.WriteInteger(Settings_ConvertForm, 'Convert', DdConvert.ItemIndex);
-  Settings.WriteInteger(Settings_ConvertForm, 'Rotate', DdRotate.ItemIndex);
-  Settings.WriteInteger(Settings_ConvertForm, 'Resize', DdResizeAction.ItemIndex);
-  Settings.WriteString(Settings_ConvertForm, 'ResizeW', EdWidth.Text);
-  Settings.WriteString(Settings_ConvertForm, 'ResizeH', Edheight.Text);
-  Settings.WriteBool(Settings_ConvertForm, 'SaveAspectRatio', CbAspectRatio.Checked);
-  Settings.WriteBool(Settings_ConvertForm, 'AddSuffix', CbAddSuffix.Checked);
+  AppSettings.WriteInteger(Settings_ConvertForm, 'Convert', DdConvert.ItemIndex);
+  AppSettings.WriteInteger(Settings_ConvertForm, 'Rotate', DdRotate.ItemIndex);
+  AppSettings.WriteInteger(Settings_ConvertForm, 'Resize', DdResizeAction.ItemIndex);
+  AppSettings.WriteString(Settings_ConvertForm, 'ResizeW', EdWidth.Text);
+  AppSettings.WriteString(Settings_ConvertForm, 'ResizeH', Edheight.Text);
+  AppSettings.WriteBool(Settings_ConvertForm, 'SaveAspectRatio', CbAspectRatio.Checked);
+  AppSettings.WriteBool(Settings_ConvertForm, 'AddSuffix', CbAddSuffix.Checked);
 end;
 
 procedure TFormSizeResizer.BtWatermarkOptionsClick(Sender: TObject);
@@ -1033,15 +1033,15 @@ end;
 procedure TFormSizeResizer.ReadSettings;
 begin
   try
-    DdConvert.ItemIndex := Settings.ReadInteger(Settings_ConvertForm, 'Convert', 0);
-    DdRotate.ItemIndex := Settings.ReadInteger(Settings_ConvertForm, 'Rotate', 0);
+    DdConvert.ItemIndex := AppSettings.ReadInteger(Settings_ConvertForm, 'Convert', 0);
+    DdRotate.ItemIndex := AppSettings.ReadInteger(Settings_ConvertForm, 'Rotate', 0);
 
-    EdWidth.Text := IntToStr(Settings.ReadInteger(Settings_ConvertForm, 'ResizeW', 1024));
-    EdHeight.Text := IntToStr(Settings.ReadInteger(Settings_ConvertForm, 'ResizeH', 768));
-    DdResizeAction.ItemIndex := Settings.ReadInteger(Settings_ConvertForm, 'Resize', 0);
+    EdWidth.Text := IntToStr(AppSettings.ReadInteger(Settings_ConvertForm, 'ResizeW', 1024));
+    EdHeight.Text := IntToStr(AppSettings.ReadInteger(Settings_ConvertForm, 'ResizeH', 768));
+    DdResizeAction.ItemIndex := AppSettings.ReadInteger(Settings_ConvertForm, 'Resize', 0);
 
-    CbAspectRatio.Checked := Settings.ReadBool(Settings_ConvertForm, 'SaveAspectRatio', True);
-    CbAddSuffix.Checked := Settings.ReadBool(Settings_ConvertForm, 'AddSuffix', True);
+    CbAspectRatio.Checked := AppSettings.ReadBool(Settings_ConvertForm, 'SaveAspectRatio', True);
+    CbAddSuffix.Checked := AppSettings.ReadBool(Settings_ConvertForm, 'AddSuffix', True);
   except
     on e: Exception do
       EventLog(e);

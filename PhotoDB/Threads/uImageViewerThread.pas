@@ -223,7 +223,7 @@ begin
           end;
         end;
       finally
-        if Settings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
+        if AppSettings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
         begin
           if CanDetectFacesOnImage(FInfo.FileName, FGraphic) then
             FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, FGraphic, FInfo)

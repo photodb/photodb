@@ -383,7 +383,9 @@ uses
   uCollectionEvents in 'Units\uCollectionEvents.pas',
   uDBIcons in 'Units\uDBIcons.pas',
   uDBScheme in 'Units\uDBScheme.pas',
-  uDBContext in 'Units\uDBContext.pas';
+  uDBContext in 'Units\uDBContext.pas',
+  uSettingsRepository in 'Units\Database\uSettingsRepository.pas',
+  uDBEntities in 'Units\Database\uDBEntities.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -501,7 +503,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

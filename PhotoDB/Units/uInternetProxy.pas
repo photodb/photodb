@@ -144,7 +144,7 @@ begin
   // initialize the result
   Result := 0;
 
-  if not Settings.ReadBool('Options', 'UseProxyServer', False) then
+  if not AppSettings.ReadBool('Options', 'UseProxyServer', False) then
     Exit;
 
   // initialize auto-detection to off
@@ -301,8 +301,8 @@ begin
       begin
         HTTP.ProxyParams.ProxyServer := GetHostName(ProxyInfo.ProxyURL);
         HTTP.ProxyParams.ProxyPort := GetHostPort(ProxyInfo.ProxyURL);
-        HTTP.ProxyParams.ProxyUsername := Settings.ReadString('Options', 'ProxyUser');
-        HTTP.ProxyParams.ProxyPassword := Settings.ReadString('Options', 'ProxyPassword');
+        HTTP.ProxyParams.ProxyUsername := AppSettings.ReadString('Options', 'ProxyUser');
+        HTTP.ProxyParams.ProxyPassword := AppSettings.ReadString('Options', 'ProxyPassword');
       end;
       Exit;
     end;
@@ -313,8 +313,8 @@ begin
       begin
         HTTP.ProxyParams.ProxyServer := GetHostName(ProxyInfo.ProxyURL);
         HTTP.ProxyParams.ProxyPort := GetHostPort(ProxyInfo.ProxyURL);
-        HTTP.ProxyParams.ProxyUsername := Settings.ReadString('Options', 'ProxyUser');
-        HTTP.ProxyParams.ProxyPassword := Settings.ReadString('Options', 'ProxyPassword');
+        HTTP.ProxyParams.ProxyUsername := AppSettings.ReadString('Options', 'ProxyUser');
+        HTTP.ProxyParams.ProxyPassword := AppSettings.ReadString('Options', 'ProxyPassword');
       end;
       //12166, //ShowMessage('Error in proxy auto-config script code');
       //12167, //ShowMessage('Unable to download proxy auto-config script');

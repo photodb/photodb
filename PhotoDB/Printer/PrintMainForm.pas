@@ -737,8 +737,8 @@ begin
             try
               Image.Assign(FastScrollingImage1.Picture);
               (Image as TJPEGImage).ProgressiveEncoding := True;
-              (Image as TJPEGImage).CompressionQuality := Settings.ReadInteger('', 'JPEGCompression', 75);
-              (Image as TJPEGImage).ProgressiveEncoding := Settings.ReadBool('', 'JPEGProgressiveMode', False);
+              (Image as TJPEGImage).CompressionQuality := AppSettings.ReadInteger('', 'JPEGCompression', 75);
+              (Image as TJPEGImage).ProgressiveEncoding := AppSettings.ReadBool('', 'JPEGProgressiveMode', False);
               Image.SaveToFile(FileName);
             finally
               F(Image);
