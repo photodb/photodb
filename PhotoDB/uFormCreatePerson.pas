@@ -34,7 +34,6 @@ uses
 
   UnitDBDeclare,
   CommonDBSupport,
-  UnitGroupsWork,
   UnitDBKernel,
 
   uFaceDetection,
@@ -46,6 +45,7 @@ uses
   uThreadEx,
   uDBThread,
   uDBContext,
+  uDBEntities,
   uThreadForm,
   u2DUtils,
   uGroupTypes,
@@ -765,7 +765,7 @@ begin
   FillImageList;
   WllGroups.Clear;
 
-  if Length(FCurrentGroups) = 0 then
+  if FCurrentGroups.Count = 0 then
   begin
     LblInfo := TStaticText.Create(WllGroups);
     LblInfo.Parent := WllGroups;
@@ -780,7 +780,7 @@ begin
   WL.Tag := -1;
   WL.OnClick := GroupClick;
 
-  for I := 0 to Length(FCurrentGroups) - 1 do
+  for I := 0 to FCurrentGroups.Count - 1 do
   begin
     WL := WllGroups.AddLink;
     WL.Text := FCurrentGroups[I].GroupName;
@@ -840,9 +840,11 @@ procedure TFormCreatePerson.FillImageList;
 var
   I: Integer;
   Group: TGroup;
-  SmallB, B: TBitmap;
+  SmallB: TBitmap;
   FCurrentGroups: TGroups;
+  FGroupsRepository: IGroupsRepository;
 begin
+  FGroupsRepository := FContext.Groups;
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
   try
@@ -858,32 +860,33 @@ begin
     F(SmallB);
   end;
   FCurrentGroups := EncodeGroups(FRelatedGroups);
-  for I := 0 to Length(FCurrentGroups) - 1 do
-  begin
-    SmallB := TBitmap.Create;
-    try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(DBKernel.DBContext, FCurrentGroups[I].GroupName, True);
-      if Group.GroupImage <> nil then
-        if not Group.GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := pf24bit;
-            B.Assign(Group.GroupImage);
-            FreeGroup(Group);
-            DoResize(15, 15, B, SmallB);
-            SmallB.Height := 16;
-            SmallB.Width := 16;
-          finally
-            F(B);
+  try
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      SmallB := TBitmap.Create;
+      try
+        SmallB.PixelFormat := pf24bit;
+        SmallB.Canvas.Brush.Color := Theme.PanelColor;
+        SmallB.SetSize(16, 16);
+        Group := FGroupsRepository.GetByName(FCurrentGroups[I].GroupName, True);
+        try
+
+          if (Group <> nil) and (Group.GroupImage <> nil) and not Group.GroupImage.Empty then
+          begin
+            SmallB.Assign(Group.GroupImage);
+            CenterBitmap24To32ImageList(SmallB, 16);
           end;
+
+          GroupsImageList.Add(SmallB, nil);
+        finally
+          F(Group);
         end;
-      GroupsImageList.Add(SmallB, nil);
-    finally
-      F(SmallB);
+      finally
+        F(SmallB);
+      end;
     end;
+  finally
+    F(FCurrentGroups);
   end;
 end;
 

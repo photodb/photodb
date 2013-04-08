@@ -64,6 +64,7 @@ uses
   uRuntime,
   uDBUtils,
   uDBContext,
+  uDBEntities,
   uAssociations,
   uJpegUtils,
   uShellThumbnails,
@@ -1217,8 +1218,12 @@ var
                     if ExifData.XMPPacket.Groups <> '' then
                     begin
                       Groups := EncodeGroups(ExifData.XMPPacket.Groups);
-                      for J := 0 to Length(Groups) - 1 do
-                        SearchKey := SearchKey + ' ' + Groups[J].GroupName;
+                      try
+                        for J := 0 to Groups.Count - 1 do
+                          SearchKey := SearchKey + ' ' + Groups[J].GroupName;
+                      finally
+                        F(Groups);
+                      end;
                     end;
                   finally
                     F(ExifData);

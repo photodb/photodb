@@ -5,12 +5,11 @@ interface
 uses
   System.SysUtils,
 
-  UnitGroupsWork,
-
-  uRuntime,
+  uMemory,
   uDBContext,
   uTranslate,
   uGroupTypes,
+  uDBEntities,
   uConstants,
   uSettings,
   uShellIntegration;
@@ -69,19 +68,20 @@ end;
 procedure FilterGroups(DBContext: IDBContext; var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 var
   I: Integer;
-  Pi: PInteger;
+  PI: PInteger;
   Action: TGroupAction;
   TempGroups, Temp: TGroups;
   GrNameIn, GrNameOut: string;
   Options: GroupReplaceOptions;
   SortGroupsByName: Boolean;
+  GroupsRepository: IGroupsRepository;
 
   function GroupExistsIn(GroupCode: string): string;
   var
     J: Integer;
   begin
     Result := '';
-    for J := 0 to Length(InRegGroups) - 1 do
+    for J := 0 to InRegGroups.Count - 1 do
       if InRegGroups[J].GroupCode = GroupCode then
       begin
         Result := InRegGroups[J].GroupName;
@@ -93,7 +93,7 @@ var
   var
     J: Integer;
   begin
-    for J := 0 to Length(InRegGroups) - 1 do
+    for J := 0 to InRegGroups.Count - 1 do
       if InRegGroups[J].GroupName = GroupName then
       begin
         Result := InRegGroups[J];
@@ -106,7 +106,7 @@ var
     J: Integer;
   begin
     Result := False;
-    for J := 0 to Length(InRegGroups) - 1 do
+    for J := 0 to InRegGroups.Count - 1 do
       if InRegGroups[J].GroupCode = GroupCode then
       begin
         Result := True;
@@ -119,7 +119,7 @@ var
     J: Integer;
   begin
     Result := '';
-    for J := 0 to Length(OutRegGroups) - 1 do
+    for J := 0 to OutRegGroups.Count - 1 do
       if OutRegGroups[J].GroupCode = GroupCode then
       begin
         Result := OutRegGroups[J].GroupName;
@@ -132,7 +132,7 @@ var
     J: Integer;
   begin
     Result := default;
-    for J := 0 to Length(OutRegGroups) - 1 do
+    for J := 0 to OutRegGroups.Count - 1 do
       if OutRegGroups[J].GroupName = GroupName then
       begin
         Result := OutRegGroups[J];
@@ -140,14 +140,35 @@ var
       end;
   end;
 
+  procedure ReplaceGroup(GroupToRemove, GroupToAdd: TGroup; Groups: TGroups);
+  var
+    GroupsToRemove, GroupsToAdd: TGroups;
+  begin
+    GroupsToRemove := TGroups.Create;
+    GroupsToAdd := TGroups.Create;
+    try
+      GroupsToRemove.Add(GroupToRemove);
+      GroupsToAdd.Add(GroupToAdd);
+
+      ReplaceGroupsW(GroupsToRemove, GroupsToAdd, Groups);
+    finally
+      GroupsToRemove.Clear;
+      GroupsToAdd.Clear;
+      F(GroupsToRemove);
+      F(GroupsToAdd);
+    end;
+  end;
+
 begin
+  GroupsRepository := DBContext.Groups;
   SortGroupsByName := AppSettings.Readbool('Options', 'SortGroupsByName', True);
 
-  Pi := @I;
-  for I := 0 to Length(Groups) - 1 do
+  PI := @I;
+  for I := 0 to Groups.Count - 1 do
   begin
-    if Length(Groups) <= I then
+    if Groups.Count <= I then
       Break;
+
     if not ExistsActionForGroup(Actions.Actions, Groups[I]) then
     begin
       GrNameIn := GroupExistsIn(Groups[I].GroupCode);
@@ -163,6 +184,7 @@ begin
       end;
       Options.MaxAuto := Actions.MaxAuto;
       Options.AllowAdd := True;
+
       if GrNameOut = '' then
         GroupReplaceNotExists(DBContext, Groups[I], Action, Options)
       else
@@ -172,39 +194,29 @@ begin
         AddGroupsAction(Actions.Actions, Action);
 
       if Action.Action = GROUP_ACTION_ADD_IN_EXISTS then
-      begin
-        SetLength(TempGroups, 1);
-        TempGroups[0] := Action.InGroup;
-        SetLength(Temp, 1);
-        Temp[0] := Action.OutGroup;
-        ReplaceGroupsW(Temp, TempGroups, Groups);
-      end;
+        ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
+
       if Action.Action = GROUP_ACTION_ADD_IN_NEW then
-      begin
-        SetLength(TempGroups, 1);
-        TempGroups[0] := Action.InGroup;
-        SetLength(Temp, 1);
-        Temp[0] := Action.OutGroup;
-        ReplaceGroupsW(Temp, TempGroups, Groups);
-      end;
+        ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
+
       if Action.Action = GROUP_ACTION_NO_ADD then
       begin
         RemoveGroupFromGroups(Groups, Action.InGroup);
         Pi^ := I - 1;
       end;
+
       if Action.Action = GROUP_ACTION_ADD then
       begin
-        if AddGroup(DBContext, GroupByNameOut(Groups[I].GroupName, Groups[I])) then
+        if GroupsRepository.Add(GroupByNameOut(Groups[I].GroupName, Groups[I])) then
         begin
-          SetLength(TempGroups, 1);
-          TempGroups[0] := Action.InGroup;
-          SetLength(Temp, 1);
-          Temp[0] := Action.OutGroup;
-          ReplaceGroupsW(Groups, Temp, TempGroups);
-          Action.InGroup := GetGroupByGroupName(DBContext, Groups[I].GroupName, False);
+          ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
+
+          Action.InGroup := GroupsRepository.GetByName(Groups[I].GroupName, False);
           Action.Action := GROUP_ACTION_ADD_IN_EXISTS;
           AddGroupsAction(Actions.Actions, Action);
-          InRegGroups := GetRegisterGroupList(DBContext, True, SortGroupsByName);
+
+          F(InRegGroups);
+          InRegGroups := GroupsRepository.GetAll(True, SortGroupsByName);
         end else
         begin
           MessageBoxDB(0, Format(TA('An error occurred while adding a group', 'Groups'),
@@ -215,21 +227,11 @@ begin
     begin
       Action := GetGroupAction(Actions.Actions, Groups[I]);
       if Action.Action = GROUP_ACTION_ADD_IN_EXISTS then
-      begin
-        SetLength(TempGroups, 1);
-        TempGroups[0] := Action.InGroup;
-        SetLength(Temp, 1);
-        Temp[0] := Action.OutGroup;
-        ReplaceGroupsW(Temp, TempGroups, Groups);
-      end;
+        ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
+
       if Action.Action = GROUP_ACTION_ADD_IN_NEW then
-      begin
-        SetLength(TempGroups, 1);
-        TempGroups[0] := Action.InGroup;
-        SetLength(Temp, 1);
-        Temp[0] := Action.OutGroup;
-        ReplaceGroupsW(Temp, TempGroups, Groups);
-      end;
+        ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
+
       if Action.Action = GROUP_ACTION_NO_ADD then
       begin
         RemoveGroupFromGroups(Groups, Action.InGroup);

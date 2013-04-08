@@ -24,7 +24,7 @@ uses
   uDBForm,
   uRuntime,
   uDBPopupMenuInfo,
-  uGroupTypes;
+  uDBEntities;
 
 type
   IFormInterface = interface

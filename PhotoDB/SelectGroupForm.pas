@@ -13,7 +13,6 @@ uses
   ComCtrls,
   ImgList,
 
-  UnitGroupsWork,
   UnitDBKernel,
 
   uMemory,
@@ -21,6 +20,7 @@ uses
   uGroupTypes,
   uDBIcons,
   uDBContext,
+  uDBEntities,
   uBitmapUtils,
   uDBForm,
   uConstants;
@@ -39,6 +39,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
   protected
     function GetFormID: string; override;
   public
@@ -71,7 +72,9 @@ end;
 procedure TFormSelectGroup.FormCreate(Sender: TObject);
 begin
   FContext := DBKernel.DBContext;
-  Groups := UnitGroupsWork.GetRegisterGroupList(FContext, True, True);
+  FGroupsRepository := FContext.Groups;
+
+  Groups := FGroupsRepository.GetAll(True, True);
   RecreateGroupsList;
   ShowResult := False;
   LoadLanguage;
@@ -101,7 +104,7 @@ begin
   ShowModal;
   if ShowResult and (CbeGroupList.ItemIndex > -1) then
   begin
-    Group := CopyGroup(Groups[CbeGroupList.ItemIndex]);
+    Group := Groups[CbeGroupList.ItemIndex].Clone;
     Result := True;
   end;
 end;
@@ -114,7 +117,7 @@ end;
 
 procedure TFormSelectGroup.FormDestroy(Sender: TObject);
 begin
-  FreeGroups(Groups);
+  F(Groups);
 end;
 
 function TFormSelectGroup.GetFormID: string;
@@ -128,7 +131,7 @@ var
   SmallB, B: TBitmap;
 begin
   ImageList.Clear;
-  for I := -1 to Length(Groups) - 1 do
+  for I := -1 to Groups.Count - 1 do
   begin
     SmallB := TBitmap.Create;
     try
@@ -167,7 +170,7 @@ begin
   CbeGroupList.Clear;
   FillGroupsToImageList(GroupsImageList, Groups, Theme.PanelColor);
 
-  for I := 0 to Length(Groups) - 1 do
+  for I := 0 to Groups.Count - 1 do
     with CbeGroupList.ItemsEx.Add do
     begin
       ImageIndex := I + 1;

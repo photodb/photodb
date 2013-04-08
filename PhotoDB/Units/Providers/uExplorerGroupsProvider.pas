@@ -12,7 +12,6 @@ uses
   Dmitry.PathProviders,
   Dmitry.PathProviders.MyComputer,
 
-  UnitGroupsWork,
   uBitmapUtils,
   UnitDBDeclare,
   UnitDBKernel,
@@ -24,6 +23,7 @@ uses
   uShellIntegration,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uFormInterfaces,
   uCollectionEvents,
   uTranslate,
@@ -122,6 +122,7 @@ var
   GroupItem: TGroupItem;
   Form: TDBForm;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   Result := False;
   Form := TDBForm(Sender);
@@ -141,12 +142,13 @@ begin
     Exit;
 
   Context := DBKernel.DBContext;
+  GroupsRepository := Context.Groups;
 
-  Group := GetGroupByGroupName(Context, GroupItem.GroupName, False);
+  Group := GroupsRepository.GetByName(GroupItem.GroupName, False);
   try
     EventInfo.Data := GroupItem;
     if ID_OK = MessageBoxDB(Form.Handle, Format(L('Do you really want to delete group "%s"?'), [Group.GroupName]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-      if UnitGroupsWork.DeleteGroup(Context, Group) then
+      if GroupsRepository.Delete(Group) then
       begin
         if ID_OK = MessageBoxDB(Form.Handle, Format(L('Scan collection and remove all pointers to group "%s"?'), [Group.GroupName]),
           L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
@@ -160,7 +162,7 @@ begin
         CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
       end;
   finally
-    FreeGroup(Group);
+    F(Group);
   end;
 end;
 
@@ -184,22 +186,24 @@ function TGroupProvider.ExtractPreview(Item: TPathItem; MaxWidth,
 var
   Group: TGroup;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   Result := False;
 
   Context := DBKernel.DBContext;
+  GroupsRepository := Context.Groups;
 
-  Group := GetGroupByGroupName(Context, ExtractGroupName(Item.Path), True);
-
-  if Group.GroupImage = nil then
-    Exit;
+  Group := GroupsRepository.GetByName(ExtractGroupName(Item.Path), True);
 
   try
+    if (Group = nil) or (Group.GroupImage = nil) then
+      Exit;
+
     Bitmap.Assign(Group.GroupImage);
     KeepProportions(Bitmap, MaxWidth, MaxHeight);
     Result := True;
   finally
-    FreeGroup(Group);
+    F(Group);
   end;
 end;
 
@@ -218,6 +222,7 @@ var
   Cancel: Boolean;
   Groups: TGroups;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   inherited;
   Result := True;
@@ -235,10 +240,11 @@ begin
   if Item is TGroupsItem then
   begin
     Context := DBKernel.DBContext;
+    GroupsRepository := Context.Groups;
 
-    Groups := GetRegisterGroupList(Context, True, True);
+    Groups := GroupsRepository.GetAll(True, True);
     try
-      for I := 0 to Length(Groups) - 1 do
+      for I := 0 to Groups.Count - 1 do
       begin
         G := TGroupItem.CreateFromPath(cGroupsPath + '\' + Groups[I].GroupName, PATH_LOAD_NO_IMAGE, 0);
         G.ReadFromGroup(Groups[I], Options, ImageSize);
@@ -253,7 +259,7 @@ begin
         end;
       end;
     finally
-      FreeGroups(Groups);
+      F(Groups);
     end;
   end;
 
@@ -269,6 +275,7 @@ var
   EventInfo: TEventValues;
   Item: TGroupItem;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   Result := False;
 
@@ -276,15 +283,17 @@ begin
     Exit;
 
   Context := DBKernel.DBContext;
+  GroupsRepository := Context.Groups;
+
   Item := Items[0] as TGroupItem;
 
-  Group := GetGroupByGroupName(Context, Item.GroupName, False);
+  Group := GroupsRepository.GetByName(Item.GroupName, False);
   try
     Form := TDBForm(Sender);
 
     if Group.GroupName <> Options.NewName then
     begin
-      if GroupNameExists(Context, Options.NewName) then
+      if GroupsRepository.HasGroupWithName(Options.NewName) then
       begin
         MessageBoxDB(Form.Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         Exit;
@@ -294,7 +303,7 @@ begin
         Exit;
 
       Group.GroupName := Options.NewName;
-      if UpdateGroup(Context, Group) then
+      if GroupsRepository.Update(Group) then
       begin
         RenameGroup(Context, Group, Options.NewName);
         MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
@@ -310,7 +319,7 @@ begin
 
     end;
   finally
-    FreeGroup(Group);
+    F(Group);
   end;
 end;
 
@@ -428,16 +437,18 @@ function TGroupItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Group: TGroup;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   F(FImage);
 
   Context := DBKernel.DBContext;
-  Group := GetGroupByGroupName(Context, GroupName, True);
+  GroupsRepository := Context.Groups;
+  Group := GroupsRepository.GetByName(GroupName, True);
   try
     ReadFromGroup(Group, Options, ImageSize);
     Result := True;
   finally
-    FreeGroup(Group);
+    F(Group);
   end;
 end;
 

@@ -15,7 +15,6 @@ uses
   Dmitry.PathProviders.MyComputer,
 
   CommonDBSupport,
-  UnitGroupsWork,
   UnitDBKernel,
 
   uConstants,
@@ -25,6 +24,7 @@ uses
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
   uDBContext,
+  uDBEntities,
   uDateUtils;
 
 type
@@ -273,7 +273,7 @@ begin
       ForwardOnlyQuery(FDateRangeDS);
 
       Filter := ImagesFilter;
-      Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
+      Filter := Filter + ' AND (Groups like "' + TGroup.GroupSearchByGroupName(GI.GroupName) + '")';
       SetSQL(FDateRangeDS, 'SELECT Year(DateToAdd) as "GroupYear", Count(1) as ItemCount FROM (select DateToAdd from ImageTable where ' + Filter + ' ) Group BY Year(DateToAdd) Order by Year(DateToAdd) desc');
 
       OpenDS(FDateRangeDS);
@@ -340,7 +340,7 @@ begin
       if (YI.Parent is TGroupItem) then
       begin
         GI := TGroupItem(YI.Parent);
-        Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
+        Filter := Filter + ' AND (Groups like "' + TGroup.GroupSearchByGroupName(GI.GroupName) + '")';
       end;
 
       Table := FromTable(False);
@@ -387,7 +387,7 @@ begin
       if (MI.Parent <> nil) and (MI.Parent.Parent is TGroupItem) then
       begin
         GI := TGroupItem(MI.Parent.Parent);
-        Filter := Filter + ' AND (Groups like "' + GroupSearchByGroupName(GI.GroupName) + '")';
+        Filter := Filter + ' AND (Groups like "' + TGroup.GroupSearchByGroupName(GI.GroupName) + '")';
       end;
 
       Table := FromTable(False);

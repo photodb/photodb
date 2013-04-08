@@ -18,6 +18,20 @@ uses
   uDBEntities;
 
 type
+  IGroupsRepository = interface
+    function GetAll(LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
+    function Add(Group: TGroup): Boolean;
+    function Update(Group: TGroup): Boolean;
+    function Delete(Group: TGroup): Boolean;
+
+    function GetByCode(GroupCode: string; LoadImage: Boolean): TGroup;
+    function GetByName(GroupName: string; LoadImage: Boolean): TGroup;
+    function FindCodeByName(GroupName: string): string;
+    function FindNameByCode(GroupCode: string): string;
+    function HasGroupWithCode(GroupCode: string): Boolean;
+    function HasGroupWithName(GroupName: string): Boolean;
+  end;
+
   ISettingsRepository = interface
     function Get: TSettings;
     function Update(Options: TSettings): Boolean;
@@ -40,6 +54,7 @@ type
     //todo: high-level
     //repositories
     function Settings: ISettingsRepository;
+    function Groups: IGroupsRepository;
   end;
 
   TBaseRepository<T: TBaseEntity> = class(TInterfacedObject)
@@ -74,11 +89,13 @@ type
     //todo: high-level
     //repositories
     function Settings: ISettingsRepository;
+    function Groups: IGroupsRepository;
   end;
 
 implementation
 
 uses
+  uGroupsRepository,
   uSettingsRepository;
 
 { TDBContext }
@@ -117,14 +134,19 @@ begin
   Result := FIsValid;
 end;
 
-function TDBContext.Settings: ISettingsRepository;
-begin
-  //Result := TSettingsRepository.Create(Self);
-end;
-
 function TDBContext.GetCollectionFileName: string;
 begin
   Result := FCollectionFile;
+end;
+
+function TDBContext.Settings: ISettingsRepository;
+begin
+  Result := TSettingsRepository.Create(Self);
+end;
+
+function TDBContext.Groups: IGroupsRepository;
+begin
+  Result := TGroupsRepository.Create(Self);
 end;
 
 function TDBContext.CreateQuery(IsolationLevel: TDBIsolationLevel): TDataSet;

@@ -20,7 +20,7 @@ uses
   uRuntime;
 
 type
-  TParameterAction = (paNone, paGrateThan, paGrateOrEq, paLessThan, paLessOrEq, paEquals, paNotEquals);
+  TParameterAction = (paNone, paGrateThan, paGrateOrEq, paLessThan, paLessOrEq, paEquals, paNotEquals, paLike);
 
   TParameter = class
   private
@@ -78,7 +78,7 @@ type
   protected
     function GetValue: Variant; override;
   public
-    constructor Create(Name: string; Value: TDateTime; Action: TParameterAction = paEquals);
+    constructor Create(Name: string; Value: TDateTime = 0; Action: TParameterAction = paEquals);
   end;
 
   TStringParameter = class(TParameter)
@@ -396,16 +396,18 @@ begin
     //paNone:
     paGrateThan:
       Result := '>';
-     paGrateOrEq:
+    paGrateOrEq:
       Result := '>=';
-     paLessThan:
+    paLessThan:
       Result := '<';
-     paLessOrEq:
+    paLessOrEq:
       Result := '<=';
-     paEquals:
+    paEquals:
       Result := '=';
-     paNotEquals:
+    paNotEquals:
       Result := '<>';
+    paLike:
+      Result := 'LIKE';
   end;
 
 end;
@@ -572,7 +574,7 @@ end;
 
 { TDateTimeParameter }
 
-constructor TDateTimeParameter.Create(Name: string; Value: TDateTime; Action: TParameterAction = paEquals);
+constructor TDateTimeParameter.Create(Name: string; Value: TDateTime = 0; Action: TParameterAction = paEquals);
 begin
   inherited Create(Name, Action);
   FValue := Value;

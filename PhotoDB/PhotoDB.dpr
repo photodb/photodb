@@ -117,7 +117,6 @@ uses
   CmpUnit in 'Units\CmpUnit.pas',
   DBCMenu in 'Units\DBCMenu.pas',
   ExplorerTypes in 'Units\ExplorerTypes.pas',
-  UnitGroupsWork in 'Units\UnitGroupsWork.pas',
   UnitGroupsReplace in 'Units\UnitGroupsReplace.pas',
   UnitBitmapImageList in 'Units\UnitBitmapImageList.pas',
   GraphicCrypt in 'Units\GraphicCrypt.pas',
@@ -385,7 +384,8 @@ uses
   uDBScheme in 'Units\uDBScheme.pas',
   uDBContext in 'Units\uDBContext.pas',
   uSettingsRepository in 'Units\Database\uSettingsRepository.pas',
-  uDBEntities in 'Units\Database\uDBEntities.pas';
+  uDBEntities in 'Units\Database\uDBEntities.pas',
+  uGroupsRepository in 'Units\Database\uGroupsRepository.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

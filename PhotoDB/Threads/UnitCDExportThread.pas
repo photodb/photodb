@@ -16,7 +16,6 @@ uses
 
   UnitCDMappingSupport,
   UnitDBKernel,
-  UnitGroupsWork,
   CommonDBSupport,
 
   uLogger,
@@ -109,9 +108,9 @@ end;
 
 procedure TCDExportThread.CreatePortableDB;
 var
-  NewIcon : TIcon;
-  IcoTempName, ExeFileName : string;
-  Language : Integer;
+  NewIcon: TIcon;
+  IcoTempName, ExeFileName: string;
+  Language: Integer;
 begin
   StrParam := IncludeTrailingBackslash(StrParam);
   ExeFileName := StrParam + Mapping.CDLabel + '.exe';
@@ -202,6 +201,7 @@ var
   ImageSettings: TSettings;
   FDestination: IDBContext;
   SettingsRSrc, SettingsRDest: ISettingsRepository;
+  GroupsRSrc, GroupsRDest: IGroupsRepository;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -313,26 +313,29 @@ begin
           Directory := ExtractFilePath(Options.ToDirectory);
           Directory := Directory + Mapping.CDLabel + '\';
 
-          FRegGroups := GetRegisterGroupList(FContext, True, True);
+          GroupsRSrc := FContext.Groups;
+          GroupsRDest := FDestination.Groups;
+
+          FRegGroups := GroupsRSrc.GetAll(True, True);
           try
-            IntParam := Length(FGroupsFounded) - 1;
+            IntParam := FGroupsFounded.Count - 1;
             Synchronize(SetMaxPosition);
-            for I := 0 to Length(FGroupsFounded) - 1 do
+            for I := 0 to FGroupsFounded.Count - 1 do
             begin
               IntParam := I;
               Synchronize(SetPosition);
               if IsClosedParam then
                 Break;
 
-              for J := 0 to Length(FRegGroups) - 1 do
+              for J := 0 to FRegGroups.Count - 1 do
                 if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
                 begin
-                  AddGroup(FDestination, FRegGroups[J]);
+                  GroupsRDest.Add(FRegGroups[J]);
                   Break;
                 end;
             end;
           finally
-            FreeGroups(FRegGroups);
+            F(FRegGroups);
           end;
         end;
 

@@ -24,7 +24,6 @@ uses
   Dmitry.Utils.Files,
   Dmitry.PathProviders,
 
-  UnitGroupsWork,
   CommonDBSupport,
   ProgressActionUnit,
   PrintMainForm,
@@ -60,6 +59,7 @@ uses
   uDBForm,
   uDBUtils,
   uDBContext,
+  uDBEntities,
   uDBAdapter,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
@@ -319,7 +319,6 @@ begin
         Break;
       end;
 
-  SetLength(MenuGroups, 0);
   IsStaticFile := StaticPath(DBItem.FileName);
 
   GroupsList := TStringList.Create;
@@ -332,8 +331,6 @@ begin
   finally
     F(GroupsList);
   end;
-
-  MenuGroups := EnCodeGroups(StrGroups);
 
   TTranslateManager.Instance.BeginTranslate;
   try
@@ -407,12 +404,16 @@ begin
 
       MI := CreateMenuItem('Groups', DB_IC_GROUPS);
 
-      for I := 0 to Length(MenuGroups) - 1 do
-        CreateMenuItemEx(MI, MenuGroups[I].GroupName, GetGroupImageInImageList(MenuGroups[I].GroupCode)).OnClick := QuickGroupInfoPopUpMenu;
+      MenuGroups := EnCodeGroups(StrGroups);
+      try
+        for I := 0 to MenuGroups.Count - 1 do
+          CreateMenuItemEx(MI, MenuGroups[I].GroupName, GetGroupImageInImageList(MenuGroups[I].GroupCode)).OnClick := QuickGroupInfoPopUpMenu;
 
-      CreateMenuItemEx(MI, '-');
-      CreateMenuItemEx(MI, 'Edit groups', DB_IC_GROUPS).OnClick := GroupsPopUpMenu;
-
+        CreateMenuItemEx(MI, '-');
+        CreateMenuItemEx(MI, 'Edit groups', DB_IC_GROUPS).OnClick := GroupsPopUpMenu;
+      finally
+        F(MenuGroups);
+      end;
     end;
 
     KeyWords := DBItem.KeyWords.Split([' '], TStringSplitOptions.ExcludeEmpty);
@@ -1225,43 +1226,46 @@ var
   B, SmallB: TBitmap;
   Size: Integer;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
+  Result := DB_IC_GROUPS;
   Context := DBKernel.DBContext;
+  GroupsRepository := Context.Groups;
 
-  FGroup := GetGroupByGroupCode(Context, GroupCode, True);
-  if FGroup.GroupImage <> nil then
-  begin
-    if not FGroup.GroupImage.Empty then
-    begin
-      Inc(FExtImagesInImageList);
-      B := TBitmap.Create;
+  FGroup := GroupsRepository.GetByCode(GroupCode, True);
+  try
+    if (FGroup = nil) or (FGroup.GroupImage = nil) then
+      Exit;
+    if FGroup.GroupImage.Empty then
+      Exit;
+
+    Inc(FExtImagesInImageList);
+    B := TBitmap.Create;
+    try
+      B.PixelFormat := Pf24bit;
+      SmallB := TBitmap.Create;
       try
-        B.PixelFormat := Pf24bit;
-        SmallB := TBitmap.Create;
-        try
-          SmallB.PixelFormat := pf24bit;
-          B.Canvas.Brush.Color := clMenu;
-          B.Canvas.Pen.Color := clMenu;
-          Size := Max(FGroup.GroupImage.Width, FGroup.GroupImage.Height);
-          B.Width := Size;
-          B.Height := Size;
-          B.Canvas.Rectangle(0, 0, Size, Size);
-          B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2, FGroup.GroupImage);
-          DoResize(16, 16, B, SmallB);
+        SmallB.PixelFormat := pf24bit;
+        B.Canvas.Brush.Color := clMenu;
+        B.Canvas.Pen.Color := clMenu;
+        Size := Max(FGroup.GroupImage.Width, FGroup.GroupImage.Height);
+        B.Width := Size;
+        B.Height := Size;
+        B.Canvas.Rectangle(0, 0, Size, Size);
+        B.Canvas.Draw(B.Width div 2 - FGroup.GroupImage.Width div 2, B.Height div 2 - FGroup.GroupImage.Height div 2, FGroup.GroupImage);
+        DoResize(16, 16, B, SmallB);
 
-          ImageList_Add(Icons.ImageList.Handle, SmallB.Handle, 0);
-        finally
-          F(SmallB);
-        end;
+        ImageList_Add(Icons.ImageList.Handle, SmallB.Handle, 0);
       finally
-        F(B);
+        F(SmallB);
       end;
-      Result := Icons.ImageList.Count - 1;
-    end else
-      Result := DB_IC_GROUPS;
-  end else
-    Result := DB_IC_GROUPS;
-  FreeGroup(FGroup);
+    finally
+      F(B);
+    end;
+    Result := Icons.ImageList.Count - 1;
+  finally
+    F(FGroup);
+  end;
 end;
 
 procedure TDBPopupMenu.GroupsPopUpMenu(Sender: TObject);

@@ -16,7 +16,6 @@ uses
   Dmitry.Utils.System,
 
   UnitDBKernel,
-  UnitGroupsWork,
   UnitDBDeclare,
   CmpUnit,
 
@@ -24,6 +23,7 @@ uses
   uStringUtils,
   uDBClasses,
   uDBContext,
+  uDBEntities,
   uGUIDUtils,
   uFaceDetection,
   uSettings,
@@ -371,6 +371,7 @@ var
   IC: TInsertCommand;
   SC: TSelectCommand;
   UC: TUpdateCommand;
+  GroupRepository: IGroupsRepository;
   Groups, Keywords: string;
   GS: TGroups;
   G: TGroup;
@@ -415,11 +416,16 @@ begin
               Keywords := SC.DS.FieldByName('Keywords').AsString;
               AddGroupsToGroups(Groups, P.Groups);
 
+              GroupRepository := FDBContext.Groups;
               GS := EncodeGroups(P.Groups);
-              for I := 0 to Length(GS) - 1 do
-              begin
-                G := GetGroupByGroupName(FDBContext, GS[I].GroupName, False);
-                AddWordsA(G.GroupKeyWords, KeyWords);
+              try
+                for I := 0 to GS.Count - 1 do
+                begin
+                  G := GroupRepository.GetByName(GS[I].GroupName, False);
+                  AddWordsA(G.GroupKeyWords, KeyWords);
+                end;
+              finally
+                F(GS);
               end;
               AddWordsA(P.Name, KeyWords);
 

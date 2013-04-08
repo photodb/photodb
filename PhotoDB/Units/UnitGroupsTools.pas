@@ -10,7 +10,6 @@ uses
   Forms,
 
   CommonDBSupport,
-  UnitGroupsWork,
   ProgressActionUnit,
 
   uGroupTypes,
@@ -19,7 +18,8 @@ uses
   uTranslate,
   uShellIntegration,
   uRuntime,
-  uDBContext;
+  uDBContext,
+  uDBEntities;
 
 procedure MoveGroup(Context: IDBContext; GroupToMove, IntoGroup: TGroup); overload;
 procedure MoveGroup(Context: IDBContext; GroupToMove, IntoGroup: string); overload;
@@ -94,7 +94,7 @@ var
   Groups: TGroups;
 begin
   Groups := EncodeGroups(GroupToRename);
-  if Length(Groups) > 0 then
+  if Groups.Count > 0 then
     RenameGroup(Context, Groups[0], NewName);
 end;
 

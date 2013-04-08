@@ -15,7 +15,6 @@ uses
   Dmitry.Utils.System,
 
   CommonDBSupport,
-  UnitGroupsWork,
   UnitDBDeclare,
   GraphicCrypt,
   UnitDBKernel,
@@ -25,6 +24,7 @@ uses
   uDBBaseTypes,
   uDBUtils,
   uDBContext,
+  uDBEntities,
   uStringUtils,
   uTranslate,
   uJpegUtils,
@@ -241,7 +241,7 @@ begin
       if AnsiLowerCase(Copy(Sysaction, 1, 5)) = AnsiLowerCase('Group') then
       begin
         SystemQuery := True;
-        Stemp := GroupSearchByGroupName(Copy(Sysaction, 7, Length(Sysaction) - 7));
+        Stemp := TGroup.GroupSearchByGroupName(Copy(Sysaction, 7, Length(Sysaction) - 7));
         Result.Query := Format('SELECT %s FROM $DB$', [FIELDS]);
         Result.Query := Result.Query + ' WHERE (Groups LIKE "' + Stemp + '")';
         ApplyFilter(Result, Db_attr_norm);

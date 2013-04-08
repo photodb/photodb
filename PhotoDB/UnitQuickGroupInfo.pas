@@ -24,7 +24,6 @@ uses
   Dmitry.Controls.WebLinkList,
   Dmitry.Controls.WebLink,
 
-  UnitGroupsWork,
   UnitDBKernel,
 
   uMemory,
@@ -33,6 +32,7 @@ uses
   uBitmapUtils,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uShellIntegration,
   uThemesUtils,
   uVCLHelpers,
@@ -75,6 +75,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
     FGroup: TGroup;
     FCloseOwner: Boolean;
     FOwner: TForm;
@@ -105,8 +106,12 @@ procedure TFormQuickGroupInfo.Execute(AOwner: TForm; GroupName: string;
 var
   Group: TGroup;
 begin
-  Group.GroupCode := FindGroupCodeByGroupName(FContext, GroupName);
-  Execute(AOwner, Group, CloseOwner);
+  Group := FGroupsRepository.GetByName(GroupName, False);
+  try
+    Execute(AOwner, Group, CloseOwner);
+  finally
+    F(Group);
+  end;
 end;
 
 procedure TFormQuickGroupInfo.Execute(AOwner: TForm; Group: TGroup; CloseOwner: Boolean);
@@ -114,66 +119,63 @@ const
   Otstup = 3;
   Otstupa = 2;
 var
-  FPrGroup: TGroup;
   FineDate: array [0 .. 255] of Char;
   TempSysTime: TSystemTime;
 begin
   FCloseOwner := CloseOwner;
   FOwner := AOwner;
-  FGroup := GetGroupByGroupCode(FContext, Group.GroupCode, True);
+
+  FGroup := FGroupsRepository.GetByCode(Group.GroupCode, True);
   try
-    if FGroup.GroupName = '' then
+    if FGroup = nil then
     begin
       MessageBoxDB(Handle, L('Group not found!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
       Close;
       Exit;
     end;
-    FPrGroup := CopyGroup(FGroup);
-    try
-      GroupNameEdit.Text := FGroup.GroupName;
-      FNewRelatedGroups := FGroup.RelatedGroups;
-      CbInclude.Checked := FGroup.IncludeInQuickList;
-      if FPrGroup.GroupImage <> nil then
-        GroupImage.Picture.Graphic := FPrGroup.GroupImage;
 
-      CommentLabel.Top := Max(GroupImage.Top + GroupImage.Height, GroupNameEdit.Top + GroupNameEdit.Height) + 3;
-      CommentMemo.Top := CommentLabel.Top + CommentLabel.Height + 3;
-      CommentMemo.Text := FPrGroup.GroupComment;
-      CommentMemo.Height := (CommentMemo.Lines.Count + 1) * (Abs(CommentMemo.Font.Height) + 2) + Otstup;
-      KeyWordsLabel.Top := CommentMemo.Top + CommentMemo.Height + Otstup;
-      KeyWordsMemo.Top := KeyWordsLabel.Top + KeyWordsLabel.Height + Otstup;
-      KeyWordsMemo.Text := FPrGroup.GroupKeyWords;
-      CbAddKeywords.Top := KeyWordsMemo.Top + KeyWordsMemo.Height + Otstup;
-      CbAddKeywords.Checked := FPrGroup.AutoAddKeyWords;
+    GroupNameEdit.Text := FGroup.GroupName;
+    FNewRelatedGroups := FGroup.RelatedGroups;
+    CbInclude.Checked := FGroup.IncludeInQuickList;
+    if FGroup.GroupImage <> nil then
+      GroupImage.Picture.Graphic := FGroup.GroupImage;
 
-      Label3.Top := CbAddKeywords.Top + CbAddKeywords.Height + Otstup;
-      WllGroups.Top := Label3.Top + Label3.Height + Otstup;
-      CbInclude.Top := WllGroups.Top + WllGroups.Height + Otstup;
+    CommentLabel.Top := Max(GroupImage.Top + GroupImage.Height, GroupNameEdit.Top + GroupNameEdit.Height) + 3;
+    CommentMemo.Top := CommentLabel.Top + CommentLabel.Height + 3;
+    CommentMemo.Text := FGroup.GroupComment;
+    CommentMemo.Height := (CommentMemo.Lines.Count + 1) * (Abs(CommentMemo.Font.Height) + 2) + Otstup;
+    KeyWordsLabel.Top := CommentMemo.Top + CommentMemo.Height + Otstup;
+    KeyWordsMemo.Top := KeyWordsLabel.Top + KeyWordsLabel.Height + Otstup;
+    KeyWordsMemo.Text := FGroup.GroupKeyWords;
+    CbAddKeywords.Top := KeyWordsMemo.Top + KeyWordsMemo.Height + Otstup;
+    CbAddKeywords.Checked := FGroup.AutoAddKeyWords;
 
-      DateLabel.Top := CbInclude.Top + CbInclude.Height + Otstup;
-      DateEdit.Top := DateLabel.Top + DateLabel.Height + Otstupa;
-      AccessLabel.Top := DateEdit.Top + DateEdit.Height + Otstupa;
-      AccessEdit.Top := AccessLabel.Top + AccessLabel.Height + Otstup;
-      BtnOk.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
-      BtnEdit.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
-      ClientHeight := BtnOk.Top + BtnOk.Height + Otstup;
-      DateTimeToSystemTime(FPrGroup.GroupDate, TempSysTime);
-      GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
+    Label3.Top := CbAddKeywords.Top + CbAddKeywords.Height + Otstup;
+    WllGroups.Top := Label3.Top + Label3.Height + Otstup;
+    CbInclude.Top := WllGroups.Top + WllGroups.Height + Otstup;
 
-      DateEdit.Text := Format(L('Created %s'), [FineDate]);
-      if FPrGroup.GroupAccess = GROUP_ACCESS_COMMON then
-        AccessEdit.Text := L('Public group');
-      if FPrGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
-        AccessEdit.Text := L('Private group');
+    DateLabel.Top := CbInclude.Top + CbInclude.Height + Otstup;
+    DateEdit.Top := DateLabel.Top + DateLabel.Height + Otstupa;
+    AccessLabel.Top := DateEdit.Top + DateEdit.Height + Otstupa;
+    AccessEdit.Top := AccessLabel.Top + AccessLabel.Height + Otstup;
+    BtnOk.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
+    BtnEdit.Top := AccessEdit.Top + AccessEdit.Height + Otstup;
+    ClientHeight := BtnOk.Top + BtnOk.Height + Otstup;
+    DateTimeToSystemTime(FGroup.GroupDate, TempSysTime);
+    GetDateFormat(LOCALE_USER_DEFAULT, DATE_USE_ALT_CALENDAR, @TempSysTime, 'd MMMM yyyy ', @FineDate, 255);
 
-      ReloadGroups;
-      FixFormPosition;
-      ShowModal;
-    finally
-      FreeGroup(FPrGroup);
-    end;
+    DateEdit.Text := Format(L('Created %s'), [FineDate]);
+    if FGroup.GroupAccess = GROUP_ACCESS_COMMON then
+      AccessEdit.Text := L('Public group');
+    if FGroup.GroupAccess = GROUP_ACCESS_PRIVATE then
+      AccessEdit.Text := L('Private group');
+
+    ReloadGroups;
+    FixFormPosition;
+    ShowModal;
+
   finally
-    FreeGroup(FGroup);
+    F(FGroup);
   end;
 end;
 
@@ -198,12 +200,14 @@ end;
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
 begin
   FContext := DBKernel.DBContext;
+  FGroupsRepository := FContext.Groups;
   Loadlanguage;
   BtnEdit.AdjustButtonWidth;
 end;
 
 procedure TFormQuickGroupInfo.FormDestroy(Sender: TObject);
 begin
+  FGroupsRepository := nil;
   FContext := nil;
 end;
 
@@ -286,23 +290,28 @@ var
   WL: TWebLink;
   LblInfo: TStaticText;
 begin
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
   FillImageList;
-  for I := 0 to Length(FCurrentGroups) - 1 do
-  begin
-    WL := WllGroups.AddLink;
-    WL.Text := FCurrentGroups[I].GroupName;
-    WL.ImageList := GroupsImageList;
-    WL.ImageIndex := I;
-    WL.Tag := I;
-    WL.OnClick := GroupClick;
-  end;
-  if Length(FCurrentGroups) = 0 then
-  begin
-    LblInfo := TStaticText.Create(WllGroups);
-    LblInfo.Parent := WllGroups;
-    WllGroups.AddControl(LblInfo);
-    LblInfo.Caption := L('There are no related groups');
+
+  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  try
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      WL := WllGroups.AddLink;
+      WL.Text := FCurrentGroups[I].GroupName;
+      WL.ImageList := GroupsImageList;
+      WL.ImageIndex := I;
+      WL.Tag := I;
+      WL.OnClick := GroupClick;
+    end;
+    if FCurrentGroups.Count = 0 then
+    begin
+      LblInfo := TStaticText.Create(WllGroups);
+      LblInfo.Parent := WllGroups;
+      WllGroups.AddControl(LblInfo);
+      LblInfo.Caption := L('There are no related groups');
+    end;
+  finally
+    F(FCurrentGroups);
   end;
   WllGroups.ReallignList;
 end;
@@ -311,40 +320,39 @@ procedure TFormQuickGroupInfo.FillImageList;
 var
   I: Integer;
   Group: TGroup;
-  SmallB, B: TBitmap;
+  SmallB: TBitmap;
   FCurrentGroups: TGroups;
 begin
   GroupsImageList.Clear;
 
   FCurrentGroups := EncodeGroups(FNewRelatedGroups);
-  for I := 0 to Length(FCurrentGroups) - 1 do
-  begin
-    SmallB := TBitmap.Create;
-    try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(FContext, FCurrentGroups[I].GroupName, True);
-      if Group.GroupImage <> nil then
-      begin
-        if not Group.GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := pf24bit;
-            B.Assign(Group.GroupImage);
-            DoResize(15, 15, B, SmallB);
-            SmallB.Height := 16;
-            SmallB.Width := 16;
-          finally
-            F(B);
+  try
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      SmallB := TBitmap.Create;
+      try
+        SmallB.PixelFormat := pf24bit;
+        SmallB.Canvas.Brush.Color := Theme.PanelColor;
+        SmallB.SetSize(16, 16);
+
+        Group := FGroupsRepository.GetByName(FCurrentGroups[I].GroupName, True);
+        try
+          if (Group <> nil) and (Group.GroupImage <> nil) and not Group.GroupImage.Empty then
+          begin
+            SmallB.Assign(Group.GroupImage);
+            CenterBitmap24To32ImageList(SmallB, 16);
           end;
+        finally
+          F(Group);
         end;
-        FreeGroup(Group);
+
+        GroupsImageList.Add(SmallB, nil);
+      finally
+        F(SmallB);
       end;
-      GroupsImageList.Add(SmallB, nil);
-    finally
-      F(SmallB);
     end;
+  finally
+    F(FCurrentGroups);
   end;
 end;
 

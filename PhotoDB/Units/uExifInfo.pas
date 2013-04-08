@@ -22,6 +22,7 @@ uses
   uRawExif,
   uExifUtils,
   uImageLoader,
+  uDBEntities,
   uGroupTypes,
   uAssociations,
   uICCProfile,
@@ -281,13 +282,14 @@ begin
         Groups := EncodeGroups(ExifData.XMPPacket.Groups);
         SL := TStringList.Create;
         try
-          for I := 0 to Length(Groups) - 1 do
+          for I := 0 to Groups.Count - 1 do
             if Groups[I].GroupName <> '' then
               SL.Add(Groups[I].GroupName);
 
           XInsert('Groups', L('Groups'), SL.Join(', '));
         finally
           F(SL);
+          F(Groups);
         end;
       end;
 

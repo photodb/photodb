@@ -8,9 +8,9 @@ uses
   Dmitry.Utils.System,
 
   CommonDBSupport,
-  UnitGroupsWork,
 
   uMemory,
+  uDBEntities,
   uStringUtils;
 
 type
@@ -86,7 +86,7 @@ begin
     try
       for I := 0 to Groups.Count - 1 do
         if Groups[I] <> '' then
-          SList.Add(FormatEx('Groups like {0}', [NormalizeDBString(NormalizeDBStringLike(GroupSearchByGroupName(Groups[I])))]));
+          SList.Add(FormatEx('Groups like {0}', [NormalizeDBString(NormalizeDBStringLike(TGroup.GroupSearchByGroupName(Groups[I])))]));
 
       Result := SList.Join(IIF(GroupsAnd, ' AND ', ' OR '));
     finally

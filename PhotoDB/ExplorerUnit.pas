@@ -76,7 +76,6 @@ uses
   ExplorerTypes,
   DBCMenu,
   UnitINI,
-  UnitGroupsWork,
   UnitLinksSupport,
   UnitBitmapImageList,
   GraphicCrypt,
@@ -164,6 +163,7 @@ uses
   uInterfaces,
   uInternetUtils,
   uDBContext,
+  uDBEntities,
   uDatabaseDirectoriesUpdater,
   uPathProvideTreeView,
   uDBInfoEditorUtils,
@@ -5680,19 +5680,27 @@ var
   Group: TGroup;
   Groups: TGroups;
   Context: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   Context := DBKernel.DBContext;
   WL := TWebLink(PmInfoGroup.Tag);
 
   KeyWords := MemKeyWords.Text;
+
   Groups := EncodeGroups(FSelectedInfo.Groups);
+  Group := GroupsRepository.GetByName(WL.Text, False);
+  try
+    if Group <> nil then
+    begin
+      RemoveGroupFromGroups(Groups, Group);
+      DeleteWords(KeyWords, Group.GroupKeyWords);
+    end;
 
-  Group := GetGroupByGroupName(Context, WL.Text, False);
-
-  RemoveGroupFromGroups(Groups, Group);
-  DeleteWords(KeyWords, Group.GroupKeyWords);
-
-  FSelectedInfo.Groups := CodeGroups(Groups);
+    FSelectedInfo.Groups := CodeGroups(Groups);
+  finally
+    F(Group);
+    F(Groups);
+  end;
   MemKeyWords.Text := KeyWords;
   InitEditGroups;
 
@@ -9568,8 +9576,12 @@ begin
 
       FExtendedSearchParams.Groups.Clear;
       Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
-      for I := 0 to Length(Groups) - 1 do
-        FExtendedSearchParams.Groups.Add(Groups[I].GroupName);
+      try
+        for I := 0 to Groups.Count - 1 do
+          FExtendedSearchParams.Groups.Add(Groups[I].GroupName);
+      finally
+        F(Groups);
+      end;
 
       FExtendedSearchParams.Persons.Clear;
       for I := 0 to FExtendedSearchPersons.Count - 1 do
@@ -9766,8 +9778,12 @@ begin
     if Info.Groups <> '' then
     begin
       Groups := EncodeGroups(Info.Groups);
-      for J := 0 to Length(Groups) - 1 do
-        ItemKey := ItemKey + Groups[J].GroupName + ' ';
+      try
+        for J := 0 to Groups.Count - 1 do
+          ItemKey := ItemKey + Groups[J].GroupName + ' ';
+      finally
+        F(Groups);
+      end;
     end;
     if not CbFilterMatchCase.Checked then
       ItemKey := AnsiLowerCase(ItemKey);
@@ -11323,18 +11339,21 @@ end;
 procedure CreateGroupImage(Context: IDBContext; GroupName: string; var B: TBitmap);
 var
   Group: TGroup;
+  GroupsRepository: IGroupsRepository;
 begin
+  GroupsRepository := Context.Groups;
+
   B.PixelFormat := pf24bit;
-  Group := GetGroupByGroupName(Context, GroupName, True);
+  Group := GroupsRepository.GetByName(GroupName, True);
   try
-    if (Group.GroupImage <> nil) and not Group.GroupImage.Empty  then
+    if (Group <> nil) and (Group.GroupImage <> nil) and not Group.GroupImage.Empty  then
     begin
       AssignGraphic(B, Group.GroupImage);
       CenterBitmap24To32ImageList(B, 16);
     end else
       CreteDefaultGroupImage(B);
   finally
-    FreeGroup(Group);
+    F(Group);
   end;
 end;
 
@@ -11354,7 +11373,6 @@ var
   LoadGroupInfo: TGroupLoadInfo;
   B: TBitmap;
 begin
-  FCurrentGroups := EncodeGroups(FSelectedInfo.Groups);
 
   ImGroups.Clear;
   B := TBitmap.Create;
@@ -11367,32 +11385,37 @@ begin
 
   WllGroups.Clear;
 
-  if Length(FCurrentGroups) = 0 then
-  begin
-    LblInfo := TStaticText.Create(WllGroups);
-    LblInfo.Parent := WllGroups;
-    WllGroups.AddControl(LblInfo, True);
-    LblInfo.Caption := L('There are no groups');
-  end;
+  FCurrentGroups := EncodeGroups(FSelectedInfo.Groups);
+  try
+    if FCurrentGroups.Count = 0 then
+    begin
+      LblInfo := TStaticText.Create(WllGroups);
+      LblInfo.Parent := WllGroups;
+      WllGroups.AddControl(LblInfo, True);
+      LblInfo.Caption := L('There are no groups');
+    end;
 
-  if not DBReadOnly then
-  begin
-    WL := WllGroups.AddLink(True);
-    WL.Text := L('Edit groups');
-    WL.ImageList := ImGroups;
-    WL.ImageIndex := 0;
-    WL.Tag := -1;
-    WL.OnClick := GroupClick;
-  end;
+    if not DBReadOnly then
+    begin
+      WL := WllGroups.AddLink(True);
+      WL.Text := L('Edit groups');
+      WL.ImageList := ImGroups;
+      WL.ImageIndex := 0;
+      WL.Tag := -1;
+      WL.OnClick := GroupClick;
+    end;
 
-  for I := 0 to Length(FCurrentGroups) - 1 do
-  begin
-    WL := WllGroups.AddLink;
-    WL.Text := FCurrentGroups[I].GroupName;
-    WL.ImageList := ImGroups;
-    WL.ImageIndex := 0;
-    WL.Tag := I;
-    WL.OnClick := GroupClick;
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      WL := WllGroups.AddLink;
+      WL.Text := FCurrentGroups[I].GroupName;
+      WL.ImageList := ImGroups;
+      WL.ImageIndex := 0;
+      WL.Tag := I;
+      WL.OnClick := GroupClick;
+    end;
+  finally
+    F(FCurrentGroups);
   end;
 
   LoadGroupInfo := TGroupLoadInfo.Create;
@@ -11414,41 +11437,44 @@ begin
         Info := TGroupLoadInfo(Data);
         try
           Groups := EncodeGroups(Info.Groups);
+          try
+            for J := 0 to Groups.Count - 1 do
+            begin
 
-          for J := 0 to Length(Groups) - 1 do
-          begin
+              B := TBitmap.Create;
+              try
+                CreateGroupImage(Info.Context, Groups[J].GroupName, B);
 
-            B := TBitmap.Create;
-            try
-              CreateGroupImage(Info.Context, Groups[J].GroupName, B);
-
-              IsTerminated := not Thread.SynchronizeTask(
-                procedure
-                var
-                  I: Integer;
-                  WL: TWebLink;
-                begin
-                  if (Info.Owner.FSelectedInfo.Groups <> Info.Groups) then
+                IsTerminated := not Thread.SynchronizeTask(
+                  procedure
+                  var
+                    I: Integer;
+                    WL: TWebLink;
                   begin
-                    Thread.Terminate;
-                    Exit;
-                  end;
-
-                  for I := 0 to WllGroups.ControlCount - 1 do
-                    if WllGroups.Controls[I] is TWebLink then
+                    if (Info.Owner.FSelectedInfo.Groups <> Info.Groups) then
                     begin
-                      WL := TWebLink(WllGroups.Controls[I]);
-                      if WL.Text = Groups[J].GroupName then
-                        WL.ImageIndex := Info.Owner.ImGroups.Add(B, nil);
+                      Thread.Terminate;
+                      Exit;
                     end;
-                end
-              );
 
-              if IsTerminated then
-                Exit;
-            finally
-              F(B);
+                    for I := 0 to WllGroups.ControlCount - 1 do
+                      if WllGroups.Controls[I] is TWebLink then
+                      begin
+                        WL := TWebLink(WllGroups.Controls[I]);
+                        if WL.Text = Groups[J].GroupName then
+                          WL.ImageIndex := Info.Owner.ImGroups.Add(B, nil);
+                      end;
+                  end
+                );
+
+                if IsTerminated then
+                  Exit;
+              finally
+                F(B);
+              end;
             end;
+          finally
+            F(Groups);
           end;
         finally
          F(Info);
@@ -11612,24 +11638,27 @@ begin
     WlExtendedSearchAddGroup.Tag := -1;
 
     ESGroups := EncodeGroups(WllExtendedSearchGroups.TagEx);
-
-    for I := 0 to Length(ESGroups) - 1 do
-    begin
-      WL := WllExtendedSearchGroups.AddLink;
-      WL.Text := ESGroups[I].GroupName;
-      WL.ImageList := ImExtendedSearchGroups;
-      WL.ImageIndex := 0;
-      WL.Tag := I;
-      WL.OnClick := ExtendedSearchGroupClick;
-
-      if I < Length(ESGroups) - 1 then
+    try
+      for I := 0 to ESGroups.Count - 1 do
       begin
         WL := WllExtendedSearchGroups.AddLink;
-        WL.Text := IIF(FExtendedSearchParams.GroupsAnd, L('and'), L('or'));
-        WL.IconWidth := 0;
-        WL.IconHeight := 16;
-        WL.OnClick := ExtendedSearchGroupModeClick;
+        WL.Text := ESGroups[I].GroupName;
+        WL.ImageList := ImExtendedSearchGroups;
+        WL.ImageIndex := 0;
+        WL.Tag := I;
+        WL.OnClick := ExtendedSearchGroupClick;
+
+        if I < ESGroups.Count - 1 then
+        begin
+          WL := WllExtendedSearchGroups.AddLink;
+          WL.Text := IIF(FExtendedSearchParams.GroupsAnd, L('and'), L('or'));
+          WL.IconWidth := 0;
+          WL.IconHeight := 16;
+          WL.OnClick := ExtendedSearchGroupModeClick;
+        end;
       end;
+    finally
+      F(ESGroups);
     end;
 
     LoadGroupInfo := TGroupLoadInfo.Create;
@@ -11651,44 +11680,47 @@ begin
           Info := TGroupLoadInfo(Data);
           try
             Groups := EncodeGroups(Info.Groups);
+            try
+              for J := 0 to Groups.Count - 1 do
+              begin
 
-            for J := 0 to Length(Groups) - 1 do
-            begin
+                B := TBitmap.Create;
+                try
+                  CreateGroupImage(Info.Context, Groups[J].GroupName, B);
 
-              B := TBitmap.Create;
-              try
-                CreateGroupImage(Info.Context, Groups[J].GroupName, B);
-
-                IsTerminated := not Thread.SynchronizeTask(
-                  procedure
-                  var
-                    I: Integer;
-                    WL: TWebLink;
-                  begin
-                    if (Info.Owner.WllExtendedSearchGroups.TagEx <> Info.Groups) then
+                  IsTerminated := not Thread.SynchronizeTask(
+                    procedure
+                    var
+                      I: Integer;
+                      WL: TWebLink;
                     begin
-                      Thread.Terminate;
-                      Exit;
-                    end;
-
-                    for I := 0 to WllExtendedSearchGroups.ControlCount - 1 do
-                      if WllExtendedSearchGroups.Controls[I] is TWebLink then
+                      if (Info.Owner.WllExtendedSearchGroups.TagEx <> Info.Groups) then
                       begin
-                        WL := TWebLink(WllExtendedSearchGroups.Controls[I]);
-                        if WL.Text = Groups[J].GroupName then
-                        begin
-                          WL.ImageIndex := Info.Owner.ImExtendedSearchGroups.Add(B, nil);
-                          Exit;
-                        end;
+                        Thread.Terminate;
+                        Exit;
                       end;
-                  end
-                );
 
-                if IsTerminated then
-                  Exit;
-              finally
-                F(B);
+                      for I := 0 to WllExtendedSearchGroups.ControlCount - 1 do
+                        if WllExtendedSearchGroups.Controls[I] is TWebLink then
+                        begin
+                          WL := TWebLink(WllExtendedSearchGroups.Controls[I]);
+                          if WL.Text = Groups[J].GroupName then
+                          begin
+                            WL.ImageIndex := Info.Owner.ImExtendedSearchGroups.Add(B, nil);
+                            Exit;
+                          end;
+                        end;
+                    end
+                  );
+
+                  if IsTerminated then
+                    Exit;
+                finally
+                  F(B);
+                end;
               end;
+            finally
+              F(Groups);
             end;
           finally
            F(Info);
@@ -12072,7 +12104,7 @@ begin
   if PmESGroup.Tag < 0 then
     Exit;
 
-  if PmESGroup.Tag > Length(Groups) - 1 then
+  if PmESGroup.Tag > Groups.Count - 1 then
     Exit;
 
   Group := Groups[PmESGroup.Tag];
@@ -12092,7 +12124,7 @@ begin
   if PmESGroup.Tag < 0 then
     Exit;
 
-  if PmESGroup.Tag > Length(Groups) - 1 then
+  if PmESGroup.Tag > Groups.Count - 1 then
     Exit;
 
   Group := Groups[PmESGroup.Tag];
@@ -12124,7 +12156,7 @@ begin
   if PmESGroup.Tag < 0 then
     Exit;
 
-  if PmESGroup.Tag > Length(Groups) - 1 then
+  if PmESGroup.Tag > Groups.Count - 1 then
     Exit;
 
   Group := Groups[PmESGroup.Tag];

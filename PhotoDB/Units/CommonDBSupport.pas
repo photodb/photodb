@@ -49,7 +49,7 @@ type
     FileName: string;
     RefCount: Integer;
     ThreadID: THandle;
-    Isolated: Boolean;
+    IsolatationLevel: TDBIsolationLevel;
   end;
 
   TADOConnections = class(TObject)
@@ -595,7 +595,7 @@ procedure TryRemoveConnection(dbname: string; Delete: Boolean = false);
 var
   I: Integer;
 begin
-  Dbname := AnsiLowerCase(Dbname);
+  dbname := AnsiLowerCase(dbname);
   for I := ADOConnections.Count - 1 downto 0 do
   begin
     if ADOConnections[I].FileName = Dbname then
@@ -611,62 +611,79 @@ begin
 end;
 
 procedure RemoveADORef(ADOConnection: TADOConnection);
+const
+  MaxConnectionPoolByLevel = 0; //don't use connection pool - changes betwen connections could be visible after 1-2 sec
+
 var
-  I, J, Count: Integer;
+  I: Integer;
+  Conection: TADODBConnection;
+
+  function GetConnectionsCount(IsolationLevel: TDBIsolationLevel): Integer;
+  var
+    I: Integer;
+  begin
+    Result := 0;
+    for I := 0 to ADOConnections.Count - 1 do
+      if (ADOConnections[I].RefCount = 0) and (ADOConnections[I].IsolatationLevel = IsolationLevel) then
+        Inc(Result);
+  end;
+
 begin
   if ADOConnections = nil then
     Exit;
 
   for I := 0 to ADOConnections.Count - 1 do
-  begin
     if ADOConnections[I].ADOConnection = ADOConnection then
     begin
       Dec(ADOConnections[I].RefCount);
-      //and try to keep one opened connection
+      Break;
+    end;
 
-      Count := 0;
-      for J := 0 to ADOConnections.Count - 1 do
-        if not ADOConnections[J].Isolated then
-          Inc(Count);
-
-      if (ADOConnections[I].RefCount = 0) and ((Count > 1) or ADOConnections[I].Isolated) then
-      begin
-        ADOConnections[I].ADOConnection.Free;
-        ADOConnections[I].Free;
-        ADOConnections.RemoveAt(I);
-      end;
-      Exit;
+  for I := ADOConnections.Count - 1 downto 0 do
+  begin
+    Conection := ADOConnections[I];
+    if (Conection.RefCount = 0) and (GetConnectionsCount(Conection.IsolatationLevel) > MaxConnectionPoolByLevel) then
+    begin
+      Conection.ADOConnection.Free;
+      Conection.Free;
+      ADOConnections.RemoveAt(I);
     end;
   end;
 end;
 
-function ADOInitialize(dbname: String; ForseNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TADOConnection;
+function ADOInitialize(dbname: string; ForseNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TADOConnection;
 var
   I: Integer;
   DBConnection: TADODBConnection;
-  ThreadId: THandle;
+  CurrentThreadId: THandle;
 begin
   dbname := AnsiLowerCase(dbname);
-  ThreadId := GetCurrentThreadId;
+  CurrentThreadId := GetCurrentThreadId;
   if not ForseNewConnection then
     for I := 0 to ADOConnections.Count - 1 do
     begin
-      if (ADOConnections[I].FileName = dbname) and not ADOConnections[I].Isolated then
+      DBConnection := ADOConnections[I];
+      if (DBConnection.FileName = dbname)
+        and (DBConnection.IsolatationLevel = IsolationLevel)
+        and ((DBConnection.ThreadID = CurrentThreadId) or (DBConnection.RefCount = 0)) then
       begin
-        Result := ADOConnections[I].ADOConnection;
-        Inc(ADOConnections[I].RefCount);
+        Inc(DBConnection.RefCount);
+        DBConnection.ThreadID := CurrentThreadId;
+
+        Result := DBConnection.ADOConnection;
         Exit;
       end;
     end;
+
   DBConnection := ADOConnections.Add;
   DBConnection.FileName := AnsiLowerCase(dbname);
   DBConnection.RefCount := 1;
-  DBConnection.Isolated := ForseNewConnection;
-  DBConnection.ThreadID := ThreadId;
+  DBConnection.IsolatationLevel := IsolationLevel;
+  DBConnection.ThreadID := CurrentThreadId;
   DBConnection.ADOConnection := TADOConnection.Create(nil);
   DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname, IsolationLevel);
   DBConnection.ADOConnection.LoginPrompt := False;
-  if ForseNewConnection then
+  if IsolationLevel = dbilRead then
     DBConnection.ADOConnection.IsolationLevel := ilReadCommitted;
 
   Result := DBConnection.ADOConnection;
@@ -678,6 +695,7 @@ var
 begin
   if DS = nil then
     Exit;
+
   FSync.Enter;
   try
     if DS is TADOQuery then

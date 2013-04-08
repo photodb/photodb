@@ -27,7 +27,7 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   CmpUnit,
-  UnitGroupsWork,
+  //UnitGroupsWork,
   UnitGroupsTools,
   UnitDBDeclare,
   UnitDBKernel,
@@ -37,6 +37,7 @@ uses
   uBitmapUtils,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uShellIntegration,
   uVCLHelpers,
   uGraphicUtils,
@@ -114,6 +115,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
     FGroups: TGroups;
     FRegGroups: TGroups;
     FShowenRegGroups: TGroups;
@@ -152,8 +154,12 @@ var
   FGroups: TGroups;
 begin
   FGroups := EncodeGroups(Groups);
-  Execute(FGroups, KeyWords, CanNew);
-  Groups := CodeGroups(FGroups);
+  try
+    Execute(FGroups, KeyWords, CanNew);
+    Groups := CodeGroups(FGroups);
+  finally
+    F(FGroups);
+  end;
 end;
 
 procedure TEditGroupsForm.Execute(var Groups: TGroups; var KeyWords: String; CanNew: Boolean = True);
@@ -170,11 +176,11 @@ begin
   FGroups := CopyGroups(Groups);
   FSetGroups := CopyGroups(Groups);
   LstSelectedGroups.Clear;
-  for I := 0 to Length(Groups) - 1 do
+  for I := 0 to Groups.Count - 1 do
     LstSelectedGroups.Items.Add(Groups[I].GroupName);
 
   ShowModal;
-  FreeGroups(Groups);
+  F(Groups);
   if FResult then
   begin
     Groups := CopyGroups(FSetGroups);
@@ -184,7 +190,6 @@ begin
     Groups := CopyGroups(FOldGroups);
     KeyWords := FOldKeyWords;
   end;
-  FreeGroups(FSetGroups);
   Close;
 end;
 
@@ -197,10 +202,11 @@ end;
 procedure TEditGroupsForm.FormCreate(Sender: TObject);
 begin
   FContext := DBKernel.DBContext;
+  FGroupsRepository := FContext.Groups;
 
-  SetLength(FGroups, 0);
-  SetLength(FRegGroups, 0);
-  SetLength(FShowenRegGroups, 0);
+  FGroups := nil;
+  FRegGroups := TGroups.Create;
+  FShowenRegGroups := TGroups.Create;
 
   LstAvaliableGroups.Color := Theme.ListColor;
   LstSelectedGroups.Color := Theme.ListColor;
@@ -216,10 +222,11 @@ end;
 
 procedure TEditGroupsForm.FormDestroy(Sender: TObject);
 begin
-  FreeGroups(FRegGroups);
-  FreeGroups(FShowenRegGroups);
-  FreeGroups(FOldGroups);
-  FreeGroups(FSetGroups);
+  F(FSetGroups);
+  F(FRegGroups);
+  F(FShowenRegGroups);
+  F(FOldGroups);
+  F(FSetGroups);
   CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataGroups);
   FContext := nil;
 end;
@@ -232,24 +239,25 @@ end;
 procedure TEditGroupsForm.BtnOkClick(Sender: TObject);
 var
   I: Integer;
-  FGroup: TGroup;
+  Group: TGroup;
 begin
   FResult := True;
 
   //statistics
   ProgramStatistics.GroupUsed;
 
-  FreeGroups(FGroups);
+  FreeList(FGroups, False);
   for I := 1 to LstSelectedGroups.Items.Count do
   begin
-    SetLength(FGroups, Length(FGroups) + 1);
-    FGroups[Length(FGroups) - 1].GroupName := LstSelectedGroups.Items[I - 1];
-    FGroup := GetGroupByGroupName(FContext, LstSelectedGroups.Items[I - 1], False);
-    FGroups[Length(FGroups) - 1].GroupCode := FGroup.GroupCode;
-    if FGroup.AutoAddKeyWords then
-      AddWordsA(FGroup.GroupKeyWords, FNewKeyWords);
+    Group := FGroupsRepository.GetByName(LstSelectedGroups.Items[I - 1], False);
+    if Group <> nil then
+    begin
+      FGroups.Add(Group);
+      if Group.AutoAddKeyWords then
+        AddWordsA(Group.GroupKeyWords, FNewKeyWords);
+    end;
   end;
-  FreeGroups(FSetGroups);
+  F(FSetGroups);
   FSetGroups := CopyGroups(FGroups);
   Close;
 end;
@@ -279,23 +287,28 @@ var
         AddGroupsToGroups(Groups, FRelatedGroups);
 
         // занесли это всё в FSetGroups - результат
-        FreeGroups(FSetGroups);
+        F(FSetGroups);
         FSetGroups := CopyGroups(Groups);
 
         // получили все новые группы путём вычитания со старым
         RemoveGroupsFromGroups(Groups, OldGroups);
-        for I := 0 to Length(Groups) - 1 do
+        for I := 0 to Groups.Count - 1 do
         begin
           // добавляем группу и ключевые слова к ней
           LstSelectedGroups.Items.Add(Groups[I].GroupName);
-          TempGroup := GetGroupByGroupCode(FContext, Groups[I].GroupCode, False);
-          AddWordsA(TempGroup.GroupKeyWords, FNewKeyWords);
+          TempGroup := FGroupsRepository.GetByCode(Groups[I].GroupCode, False);
+          try
+            AddWordsA(TempGroup.GroupKeyWords, FNewKeyWords);
+          finally
+            F(TempGroup);
+          end;
         end;
       finally
-        FreeGroups(Groups);
+        F(Groups);
       end;
     finally
-      FreeGroups(OldGroups);
+      F(OldGroups);
+      F(FRelatedGroups);
     end;
   end;
 
@@ -323,7 +336,7 @@ var
   I: integer;
 begin
   ItemNo := LstSelectedGroups.ItemAtPos(MousePos, True);
-  if ItemNo<>-1 then
+  if ItemNo <> -1 then
   begin
     if not LstSelectedGroups.Selected[ItemNo] then
     begin
@@ -344,8 +357,12 @@ procedure TEditGroupsForm.ChangeGroup1Click(Sender: TObject);
 var
   Group: TGroup;
 begin
-  Group := GetGroupByGroupCode(FContext, FindGroupCodeByGroupName(FContext, LstSelectedGroups.Items[PmGroup.Tag]), False);
-  DBChangeGroup(Group);
+  Group := FGroupsRepository.GetByName(LstSelectedGroups.Items[PmGroup.Tag], False);
+  try
+    DBChangeGroup(Group);
+  finally
+    F(Group);
+  end;
 end;
 
 function TEditGroupsForm.GetFormID: string;
@@ -376,14 +393,14 @@ var
   I: Integer;
   Filter, Key: string;
 begin
-  FreeGroups(FShowenRegGroups);
+  FreeList(FShowenRegGroups, False);
   LstAvaliableGroups.Clear;
   Filter := AnsiLowerCase(WedGroupsFilter.Text);
 
   if Pos('*', Filter) = 0 then
     Filter := '*' + Filter + '*';
 
-  for I := 0 to Length(FRegGroups) - 1 do
+  for I := 0 to FRegGroups.Count - 1 do
   begin
     Key := AnsiLowerCase(FRegGroups[I].GroupName + ' ' + FRegGroups[I].GroupComment + ' ' + FRegGroups[I].GroupKeyWords);
     if (FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
@@ -399,8 +416,8 @@ var
   I, Size: Integer;
   SmallB, B: TBitmap;
 begin
-  FreeGroups(FRegGroups);
-  FRegGroups := GetRegisterGroupList(FContext, True, True);
+  F(FRegGroups);
+  FRegGroups := FGroupsRepository.GetAll(True, True);
 
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
@@ -417,7 +434,7 @@ begin
   finally
     F(SmallB);
   end;
-  for I := 0 to Length(FRegGroups) - 1 do
+  for I := 0 to FRegGroups.Count - 1 do
   begin
     SmallB := TBitmap.Create;
     try
@@ -453,7 +470,7 @@ end;
 
 procedure TEditGroupsForm.PmGroupPopup(Sender: TObject);
 begin
-  if GroupWithCodeExists(FContext, FSetGroups[PmGroup.Tag].GroupCode) then
+  if FGroupsRepository.HasGroupWithCode(FSetGroups[PmGroup.Tag].GroupCode) then
   begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;
@@ -474,7 +491,7 @@ end;
 procedure TEditGroupsForm.Clear1Click(Sender: TObject);
 begin
   LstSelectedGroups.Clear;
-  FreeGroups(FSetGroups);
+  FreeList(FSetGroups, False);
   LstSelectedGroups.Invalidate;
   LstAvaliableGroups.Invalidate;
 end;
@@ -535,7 +552,7 @@ begin
   if (Msg.Hwnd = LstSelectedGroups.Handle)
     and (Msg.message = WM_KEYDOWN)
     and (Msg.wParam = VK_DELETE) then
-  BtnRemoveGroupClick(Self);
+    BtnRemoveGroupClick(Self);
 end;
 
 procedure TEditGroupsForm.SearchForGroup1Click(Sender: TObject);
@@ -583,8 +600,8 @@ var
   var
     J: Integer;
   begin
-   Result:=false;
-   for J := 0 to Length(xNewGroups) - 1 do
+    Result:=false;
+    for J := 0 to xNewGroups.Count - 1 do
       if XNewGroups[J].GroupCode = GroupCode then
       begin
         Result := True;
@@ -597,7 +614,7 @@ var
     J: Integer;
   begin
     Result := False;
-    for J := 0 to Length(FSetGroups) - 1 do
+    for J := 0 to FSetGroups.Count - 1 do
       if FSetGroups[J].GroupCode = GroupCode then
       begin
         Result := True;
@@ -614,7 +631,7 @@ begin
   end else
   begin
     XNewGroups := CopyGroups(FOldGroups);
-    RemoveGroupsFromGroups(xNewGroups,FSetGroups);
+    RemoveGroupsFromGroups(xNewGroups, FSetGroups);
   end;
   try
     LB := TListBox(Control);
@@ -627,7 +644,7 @@ begin
       N := -1;
       if Control = LstSelectedGroups then
       begin
-        for I := 0 to Length(FRegGroups)-1 do
+        for I := 0 to FRegGroups.Count - 1 do
         begin
           if FRegGroups[I].GroupCode = FSetGroups[Index].GroupCode then
           begin
@@ -637,7 +654,7 @@ begin
         end
       end else
       begin
-        for I := 0 to Length(FRegGroups) - 1 do
+        for I := 0 to FRegGroups.Count - 1 do
         begin
           if FRegGroups[I].GroupName = (Control as TListBox).Items[Index] then
           begin
@@ -654,7 +671,7 @@ begin
       IsChoosed := False;
       if Control = LstSelectedGroups then
         IsChoosed := NewGroup(FSetGroups[Index].GroupCode)
-      else if (N > -1) and (N < Length(FRegGroups)) then
+      else if (N > -1) and (N < FRegGroups.Count) then
         IsChoosed := NewGroup(FRegGroups[N - 1].GroupCode);
 
       if IsChoosed then
@@ -683,7 +700,7 @@ begin
       ACanvas.TextOut(Rect.Left + 32 + 5, Rect.Top + 3, LB.Items[index]);
 
   finally
-    FreeGroups(XNewGroups);
+    F(XNewGroups);
   end;
 end;
 
@@ -692,7 +709,7 @@ var
   I: Integer;
 begin
   Result := -1;
-  for I := 0 to Length(FRegGroups) - 1 do
+  for I := 0 to FRegGroups.Count - 1 do
     if FRegGroups[I].GroupCode = GroupCode then
     begin
     Result := I;
@@ -707,30 +724,27 @@ var
 begin
   for I := LstSelectedGroups.Items.Count - 1 downto 0 do
   if LstSelectedGroups.Selected[I] then
-  // смотрим выделенный группы для удаления
   begin
-  // если удаление ключевых слов ненужных то удаляем их
-      if CbRemoveKeywords.Checked then
-      begin
-        AllGroupsKeyWords := '';
-        for J := LstSelectedGroups.Items.Count - 1 downto 0 do
-          if I <> J then
-          begin
-            if AGetGroupByCode(FSetGroups[J].GroupCode) > -1 then
-              AddWordsA(FRegGroups[AGetGroupByCode(FSetGroups[J].GroupCode)].GroupKeyWords, AllGroupsKeyWords);
-          end;
-        KeyWords := FNewKeyWords;
-        if AGetGroupByCode(FSetGroups[I].GroupCode) > -1 then
-          GroupKeyWords := FRegGroups[AGetGroupByCode(FSetGroups[I].GroupCode)].GroupKeyWords;
-        DeleteWords(GroupKeyWords, AllGroupsKeyWords);
-        DeleteWords(KeyWords, GroupKeyWords);
-        FNewKeyWords := KeyWords;
-      end;
-
-      // удаляем группу изтекущих
-      RemoveGroupFromGroups(FSetGroups, FSetGroups[I]);
-      LstSelectedGroups.Items.Delete(I);
+    if CbRemoveKeywords.Checked then
+    begin
+      AllGroupsKeyWords := '';
+      for J := LstSelectedGroups.Items.Count - 1 downto 0 do
+        if I <> J then
+        begin
+          if AGetGroupByCode(FSetGroups[J].GroupCode) > -1 then
+            AddWordsA(FRegGroups[AGetGroupByCode(FSetGroups[J].GroupCode)].GroupKeyWords, AllGroupsKeyWords);
+        end;
+      KeyWords := FNewKeyWords;
+      if AGetGroupByCode(FSetGroups[I].GroupCode) > -1 then
+        GroupKeyWords := FRegGroups[AGetGroupByCode(FSetGroups[I].GroupCode)].GroupKeyWords;
+      DeleteWords(GroupKeyWords, AllGroupsKeyWords);
+      DeleteWords(KeyWords, GroupKeyWords);
+      FNewKeyWords := KeyWords;
     end;
+
+    RemoveGroupFromGroups(FSetGroups, FSetGroups[I]);
+    LstSelectedGroups.Items.Delete(I);
+  end;
   LstSelectedGroups.Invalidate;
   LstAvaliableGroups.Invalidate;
 end;

@@ -67,7 +67,7 @@ begin
     Info.KeyWords := UserInput.KeyWords;
   if (UserInput.Rating  > 0) and UserInput.IsRatingChanged then
     Info.Rating := UserInput.Rating;
-  if Length(EncodeGroups(UserInput.Groups)) > 0 then
+  if Length(UserInput.Groups) > 0 then
     Info.Groups := UserInput.Groups;
   Info.Include := UserInput.Include;
   if UserInput.IsDateChecked then

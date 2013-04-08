@@ -44,7 +44,8 @@ procedure SaveQuery(Context: IDBContext; DestinationPath: String; SubFolders: Bo
 
 implementation
 
-uses UnitSaveQueryThread;
+uses
+  UnitSaveQueryThread;
 
 {$R *.dfm}
 

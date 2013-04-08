@@ -19,15 +19,16 @@ uses
 
   Dmitry.Controls.WatermarkedEdit,
 
-  UnitGroupsWork,
   UnitDBKernel,
 
+  uMemory,
   uRuntime,
   uMemoryEx,
   uConstants,
   uGroupTypes,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uSettings,
   uShellIntegration,
   uFormInterfaces;
@@ -66,7 +67,6 @@ type
     procedure RbMergeWithClick(Sender: TObject);
     procedure RbSkipGroupClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CbExistedGroupsKeyPress(Sender: TObject; var Key: Char);
     procedure FormDestroy(Sender: TObject);
   private
@@ -76,6 +76,7 @@ type
     FAction: TGroupAction;
     RegGroups: TGroups;
     FDBContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
     procedure LoadLanguage;
     procedure SetText(GroupName : string);
     procedure RecreateGroupsList;
@@ -156,8 +157,9 @@ end;
 
 procedure TFormGroupReplace.FormCreate(Sender: TObject);
 begin
-  SetLength(RegGroups, 0);
+  RegGroups := TGroups.Create;
   FDBContext := DBKernel.DBContext;
+  FGroupsRepository := FDBContext.Groups;
 
   RecreateGroupsList;
   LoadLanguage;
@@ -165,7 +167,9 @@ end;
 
 procedure TFormGroupReplace.FormDestroy(Sender: TObject);
 begin
-  FreeGroups(RegGroups);
+  F(RegGroups);
+  FGroupsRepository := nil;
+  FDBContext := nil;
 end;
 
 function TFormGroupReplace.GetFormID: string;
@@ -180,12 +184,12 @@ begin
   if RbMergeWith.Checked then
   begin
     FAction.Action := GROUP_ACTION_ADD_IN_EXISTS;
-    FAction.InGroup := GetGroupByGroupName(FDBContext, CbExistedGroups.Text, True);
+    FAction.InGroup := FGroupsRepository.GetByName(CbExistedGroups.Text, True);
   end;
   if RbAddWithAnotherName.Checked then
   begin
     FAction.Action := GROUP_ACTION_ADD_IN_NEW;
-    FAction.InGroup := GetGroupByGroupName(FDBContext, NewGroupNameBox.Text, True);
+    FAction.InGroup := FGroupsRepository.GetByName(NewGroupNameBox.Text, True);
   end;
   if RbSkipGroup.Checked then
     FAction.Action := GROUP_ACTION_NO_ADD;
@@ -201,12 +205,12 @@ var
   I: Integer;
   SortGroupsByName: Boolean;
 begin
-  FreeGroups(RegGroups);
+  F(RegGroups);
 
   SortGroupsByName := AppSettings.Readbool('Options', 'SortGroupsByName', True);
-  RegGroups := GetRegisterGroupList(FDBContext, False, SortGroupsByName);
+  RegGroups := FGroupsRepository.GetAll(False, SortGroupsByName);
   CbExistedGroups.Clear;
-  for I := 0 to Length(RegGroups) - 1 do
+  for I := 0 to RegGroups.Count - 1 do
     CbExistedGroups.Items.Add(RegGroups[I].GroupName);
 end;
 
@@ -254,7 +258,7 @@ begin
     RbSkipGroup.Checked := True;
   end;
 
-  if GroupNameExists(DBContext, Group.GroupName) then
+  if FGroupsRepository.HasGroupWithName(Group.GroupName) then
   begin
     RbMergeWith.Checked := True;
     CbExistedGroups.Text := Group.GroupName;
@@ -262,7 +266,7 @@ begin
     RbSkipGroup.Checked := False;
   end;
 
-  FAction.OutGroup := CopyGroup(Group);
+  FAction.OutGroup := Group.Clone;
   SetText(Group.GroupName);
   if Options.MaxAuto then
     BtnOkClick(Self)
@@ -293,7 +297,7 @@ begin
     RbSkipGroup.Checked := True;
   end;
 
-  if GroupNameExists(FDBContext, Group.GroupName) then
+  if FGroupsRepository.HasGroupWithName(Group.GroupName) then
   begin
     RbMergeWith.Checked := True;
     CbExistedGroups.Text := Group.GroupName;
@@ -303,7 +307,7 @@ begin
 
   TmGroupImage.Picture.Graphic := FGroup.GroupImage;
   GroupNameBox.Text := FGroup.GroupName;
-  FAction.OutGroup := CopyGroup(Group);
+  FAction.OutGroup := Group.Clone;
   CbReplaceImage.Enabled := False;
   CbAllUnknownGroups.Enabled := False;
   CbAllKnownGroups.Enabled := False;
@@ -321,12 +325,6 @@ procedure TFormGroupReplace.FormCloseQuery(Sender: TObject;
 begin
   if Working then
     CanClose := False;
-end;
-
-procedure TFormGroupReplace.FormClose(Sender: TObject;
-  var Action: TCloseAction);
-begin
-  FreeGroups(RegGroups);
 end;
 
 procedure TFormGroupReplace.LoadLanguage;

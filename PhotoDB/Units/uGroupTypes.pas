@@ -3,28 +3,13 @@ unit uGroupTypes;
 interface
 
 uses
+  Generics.Collections,
   System.Classes,
   Vcl.Imaging.Jpeg,
+
+  uMemory,
+  uDBEntities,
   uConstants;
-
-type
-  TGroup = record
-    GroupID: Integer;
-    GroupName: string;
-    GroupCode: string;
-    GroupImage: TJpegImage;
-    GroupDate: TDateTime;
-    GroupComment: string;
-    GroupFaces: string;
-    GroupAccess: Integer;
-    GroupKeyWords: string;
-    AutoAddKeyWords: Boolean;
-    RelatedGroups: string;
-    IncludeInQuickList: Boolean;
-  end;
-
-  TGroups = array of TGroup;
-  TArGroups = array of TGroups;
 
 const
   GROUP_ACCESS_COMMON = 0;
@@ -57,56 +42,28 @@ function CreateNewGroupCode: string;
 function CreateNewGroupCodeA: string;
 function CreateNewGroup(GroupName: string): string;
 function EncodeGroups(Groups: string): TGroups;
-procedure FreeGroup(var Group: TGroup);
-procedure FreeGroups(var Groups: TGroups);
+
 function CodeGroups(Groups: TGroups): string;
 function CodeGroup(Group: TGroup): string;
+
 function CopyGroups(Groups: TGroups): TGroups;
-function CopyGroup(Group: TGroup): TGroup;
+
 procedure RemoveGroupsFromGroups(var Groups: TGroups; GroupsToRemove: TGroups);
 procedure RemoveGroupFromGroups(var Groups: TGroups; Group: TGroup);
 procedure AddGroupsToGroups(var Groups: TGroups; GroupsToAdd: TGroups); overload;
 procedure AddGroupsToGroups(var Groups: string; GroupsToAdd: string); overload;
-procedure AddGroupToGroups(var Groups: TGroups; Group: TGroup);
+procedure AddGroupToGroups(Groups: TGroups; Group: TGroup);
 
 function GetCommonGroups(GroupsList: TStringList): string; overload;
-function GetCommonGroups(ArGroups: TArGroups): TGroups; overload;
+function GetCommonGroups(ArGroups: TList<TGroups>): TGroups; overload;
 function CompareGroups(GroupsA, GroupsB: string): Boolean; overload;
 function CompareGroups(GroupsA, GroupsB: TGroups): Boolean; overload;
 procedure ReplaceGroups(GroupsToDelete, GroupsToAdd: string; var Groups: string);
-function GetNilGroup: TGroup;
 function GroupExistsInGroups(Group: TGroup; Groups: TGroups): Boolean;
 procedure ReplaceGroupsW(GroupsToDelete, GroupsToAdd: TGroups; var Groups: TGroups);
 function GroupWithCodeExistsInString(GroupCode, Groups: string): Boolean;
 
 implementation
-
-
-function GetNilGroup: TGroup;
-begin
-  Result.GroupName := '';
-  Result.GroupCode := '';
-  Result.GroupImage := nil;
-  // no reason to free other fields
-end;
-
-procedure FreeGroup(var Group: TGroup);
-begin
-  if Group.GroupImage <> nil then
-  begin
-    Group.GroupImage.Free;
-    Group.GroupImage := nil;
-  end;
-end;
-
-procedure FreeGroups(var Groups : TGroups);
-var
-  I : Integer;
-begin
-  for I := 0 to Length(Groups) - 1 do
-    FreeGroup(Groups[I]);
-  SetLength(Groups, 0);
-end;
 
 function RandomPwd(PWLen: Integer; StrTable: string): string;
 var
@@ -145,7 +102,7 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := 0 to Length(Groups) - 1 do
+  for I := 0 to Groups.Count - 1 do
     if Groups[I].GroupCode = Group.GroupCode then
     begin
       Result := True;
@@ -158,8 +115,9 @@ var
   I, J, N: Integer;
   IsGroupCode, IsGroupName: Boolean;
   S, GroupName, GroupCode: string;
+  Group: TGroup;
 begin
-  SetLength(Result, 0);
+  Result := TGroups.Create;
   S := Groups;
   for I := 1 to Length(Groups) - 4 do
   begin
@@ -193,40 +151,12 @@ begin
           end;
       if IsGroupName and IsGroupCode then
       begin
-        SetLength(Result, Length(Result) + 1);
-        Result[Length(Result) - 1].GroupName := GroupName;
-        Result[Length(Result) - 1].GroupCode := GroupCode;
-        Result[Length(Result) - 1].GroupImage := nil;
+        Group := TGroup.Create;
+        Group.GroupName := GroupName;
+        Group.GroupCode := GroupCode;
+        Result.Add(Group);
       end;
     end;
-  end;
-end;
-
-Function CopyGroup(Group: TGroup): TGroup;
-begin
-  Result := Group;
-  if Group.GroupImage <> nil then
-  begin
-    Result.GroupImage := TJpegImage.Create;
-    Result.GroupImage.Assign(Group.GroupImage);
-  end;
-end;
-
-Function CopyGroups(Groups: TGroups): TGroups;
-var
-  I: Integer;
-begin
-  SetLength(Result, Length(Groups));
-  for I := 0 to Length(Groups) - 1 do
-  begin
-    Result[I] := Groups[I];
-    if Groups[I].GroupImage <> nil then
-    begin
-      Result[I].GroupImage := TJpegImage.Create;
-      Result[I].GroupImage.Assign(Groups[I].GroupImage);
-    end
-    else
-      Result[I].GroupImage := nil;
   end;
 end;
 
@@ -240,41 +170,26 @@ var
   I: Integer;
 begin
   Result := '';
-  for I := 0 to Length(Groups) - 1 do
+  for I := 0 to Groups.Count - 1 do
     Result := Result + CodeGroup(Groups[I]) // '${'+Groups[i].GroupCode+'}[#'+Groups[i].GroupName+'#]';
 end;
 
-procedure AddGroupToGroups(var Groups: TGroups; Group: TGroup);
+procedure AddGroupToGroups(Groups: TGroups; Group: TGroup);
 var
   I: Integer;
-  B: Boolean;
 begin
-  B := False;
-  for I := 0 to Length(Groups) - 1 do
-  begin
+  for I := 0 to Groups.Count - 1 do
     if Groups[I].GroupCode = Group.GroupCode then
-    begin
-      B := True;
-      Break;
-    end;
-  end;
-  if not B then
-  begin
-    SetLength(Groups, Length(Groups) + 1);
-    Groups[Length(Groups) - 1] := Group;
-    if Group.GroupImage <> nil then
-    begin
-      Groups[Length(Groups) - 1].GroupImage := TJpegImage.Create;
-      Groups[Length(Groups) - 1].GroupImage.Assign(Group.GroupImage);
-    end;
-  end;
+      Exit;
+
+  Groups.Add(Group.Clone);
 end;
 
 procedure AddGroupsToGroups(var Groups: TGroups; GroupsToAdd: TGroups);
 var
   I: Integer;
 begin
-  for I := 0 to Length(GroupsToAdd) - 1 do
+  for I := 0 to GroupsToAdd.Count - 1 do
     AddGroupToGroups(Groups, GroupsToAdd[I]);
 end;
 
@@ -284,68 +199,89 @@ var
 begin
   GA := EnCodeGroups(Groups);
   GB := EnCodeGroups(GroupsToAdd);
-  AddGroupsToGroups(GA, GB);
-  Groups := CodeGroups(GA);
+  try
+    AddGroupsToGroups(GA, GB);
+    Groups := CodeGroups(GA);
+  finally
+    F(GA);
+    F(GB);
+  end;
 end;
 
 procedure RemoveGroupFromGroups(var Groups: TGroups; Group: TGroup);
 var
-  I, J: Integer;
+  I: Integer;
 begin
-  for I := 0 to Length(Groups) - 1 do
+  for I := Groups.Count - 1 downto 0  do
     if Groups[I].GroupCode = Group.GroupCode then
-    begin
-      FreeGroup(Groups[I]);
-      for J := I to Length(Groups) - 2 do
-        Groups[J] := Groups[J + 1];
-      SetLength(Groups, Length(Groups) - 1);
-      Break;
-    end;
+      Groups.DeleteGroupAt(I);
 end;
 
 procedure RemoveGroupsFromGroups(var Groups: TGroups; GroupsToRemove: TGroups);
 var
   I: Integer;
 begin
-  for I := 0 to Length(GroupsToRemove) - 1 do
+  for I := GroupsToRemove.Count - 1 downto 0 do
     RemoveGroupFromGroups(Groups, GroupsToRemove[I]);
 end;
 
 function GetCommonGroups(GroupsList: TStringList): string;
 var
   I: Integer;
-  FArGroups: TArGroups;
+  FArGroups: TList<TGroups>;
   Res: TGroups;
 begin
   Result := '';
-  SetLength(Res, 0);
+
   if GroupsList.Count = 0 then
     Exit;
-  SetLength(FArGroups, GroupsList.Count);
-  for I := 0 to GroupsList.Count - 1 do
-    FArGroups[I] := EncodeGroups(GroupsList[I]);
-  Res := GetCommonGroups(FArGroups);
-  Result := CodeGroups(Res);
+
+  FArGroups := TList<TGroups>.Create;
+  try
+    for I := 0 to GroupsList.Count - 1 do
+      FArGroups.Add(EncodeGroups(GroupsList[I]));
+
+    Res := GetCommonGroups(FArGroups);
+    try
+      Result := CodeGroups(Res);
+    finally
+      F(Res);
+    end;
+  finally
+    FreeList(FArGroups);
+  end;
 end;
 
-function GetCommonGroups(ArGroups: TArGroups): TGroups;
+function CopyGroups(Groups: TGroups): TGroups;
+var
+  Group: TGroup;
+begin
+  Result := TGroups.Create;
+  for Group in Groups do
+    Result.Add(Group.Clone);
+end;
+
+function GetCommonGroups(ArGroups: TList<TGroups>): TGroups;
 var
   I, J: Integer;
 begin
-  if Length(ArGroups) = 0 then
+  if ArGroups.Count = 0 then
     Exit;
+
   Result := CopyGroups(ArGroups[0]);
-  for I := 1 to Length(ArGroups) - 1 do
+  for I := 1 to ArGroups.Count - 1 do
   begin
-    if Length(ArGroups[I]) = 0 then
+    if ArGroups[I].Count = 0 then
     begin
-      SetLength(Result, 0);
+      FreeList(Result, False);
       Break;
     end;
-    for J := Length(Result) - 1 downto 0 do
+
+    for J := Result.Count - 1 downto 0 do
       if not GroupExistsInGroups(Result[J], ArGroups[I]) then
         RemoveGroupFromGroups(Result, Result[J]);
-    if Length(Result) = 0 then
+
+    if Result.Count = 0 then
       Exit;
   end;
 end;
@@ -354,23 +290,11 @@ function CompareGroups(GroupsA, GroupsB: TGroups): Boolean;
 var
   I: Integer;
 begin
-  Result := True;
-  for I := 0 to Length(GroupsA) - 1 do
-  begin
-    if not GroupExistsInGroups(GroupsA[I], GroupsB) then
-    begin
-      Result := False;
-      Break;
-    end;
-  end;
-  for I := 0 to Length(GroupsB) - 1 do
-  begin
-    if not GroupExistsInGroups(GroupsB[I], GroupsA) then
-    begin
-      Result := False;
-      Break;
-    end;
-  end;
+  Result := GroupsA.Count = GroupsB.Count;
+  if Result then
+    for I := 0 to GroupsA.Count - 1 do
+      if not GroupExistsInGroups(GroupsA[I], GroupsB) then
+        Exit(False);
 end;
 
 function CompareGroups(GroupsA, GroupsB: string): Boolean;
@@ -379,7 +303,12 @@ var
 begin
   GA := EncodeGroups(GroupsA);
   GB := EncodeGroups(GroupsB);
-  Result := CompareGroups(GA, GB);
+  try
+    Result := CompareGroups(GA, GB);
+  finally
+    F(GA);
+    F(GB);
+  end;
 end;
 
 procedure ReplaceGroupsW(GroupsToDelete, GroupsToAdd: TGroups; var Groups: TGroups);
@@ -395,9 +324,15 @@ begin
   GA := EncodeGroups(GroupsToDelete);
   GB := EncodeGroups(GroupsToAdd);
   GR := EncodeGroups(Groups);
-  RemoveGroupsFromGroups(GR, GA);
-  AddGroupsToGroups(GR, GB);
-  Groups := CodeGroups(GR);
+  try
+    RemoveGroupsFromGroups(GR, GA);
+    AddGroupsToGroups(GR, GB);
+    Groups := CodeGroups(GR);
+  finally
+    F(GA);
+    F(GB);
+    F(GR);
+  end;
 end;
 
 function GroupWithCodeExistsInString(GroupCode, Groups: string): Boolean;
@@ -407,12 +342,16 @@ var
 begin
   Result := False;
   AGroups := EncodeGroups(Groups);
-  for I := 0 to Length(AGroups) - 1 do
-    if AGroups[I].GroupCode = GroupCode then
-    begin
-      Result := True;
-      Break;
-    end;
+  try
+    for I := 0 to AGroups.Count - 1 do
+      if AGroups[I].GroupCode = GroupCode then
+      begin
+        Result := True;
+        Break;
+      end;
+  finally
+    F(AGroups);
+  end;
 end;
 
 end.

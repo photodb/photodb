@@ -28,7 +28,6 @@ uses
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WatermarkedMemo,
 
-  UnitGroupsWork,
   GraphicSelectEx,
   UnitDBDeclare,
   UnitDBKernel,
@@ -45,6 +44,7 @@ uses
   uExplorerGroupsProvider,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uShellIntegration,
   uDialogUtils,
   uThemesUtils,
@@ -93,6 +93,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
     FCreateFixedGroup: Boolean;
     FCreateGroupWithCode: Boolean;
     FNewGroupName, FGroupCode: string;
@@ -191,7 +192,7 @@ var
   EventInfo: TEventValues;
   GroupItem: TGroupItem;
 begin
-  if GroupNameExists(FContext, EdName.Text) then
+  if FGroupsRepository.HasGroupWithName(EdName.Text) then
   begin
     MessageBoxDB(Handle, L('Group with this name already exists!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
@@ -200,39 +201,44 @@ begin
   //statistics
   ProgramStatistics.GroupUsed;
 
-  Group.GroupName := EdName.Text;
-  Group.GroupImage := TJpegImage.Create;
-  if not FCreateFixedGroup then
-    Group.GroupCode := CreateNewGroupCode
-  else
-    Group.GroupCode := FGroupCode;
-  Group.GroupImage.Assign(ImGroup.Picture.Graphic);
-  Group.GroupComment := MemComments.Text;
-  Group.GroupKeyWords := MemKeywords.Text;
-  Group.AutoAddKeyWords := CbAddkeywords.Checked;
-  if CbPrivateGroup.Checked then
-    Group.GroupAccess := GROUP_ACCESS_PRIVATE
-  else
-    Group.GroupAccess := GROUP_ACCESS_COMMON;
-
-  Group.RelatedGroups := FNewRelatedGroups;
-  Group.IncludeInQuickList := CbInclude.Checked;
-  Group.GroupDate := 0;
-  AddGroup(FContext, Group);
-  if GroupNameExists(FContext, EdName.Text) then
-  begin
-    FCreated := True;
-    FNewGroupName := EdName.Text;
-  end;
-  GroupItem := TGroupItem.Create;
+  Group := TGroup.Create;
   try
-    GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
-    EventInfo.Data := GroupItem;
-    CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupAdded], EventInfo);
+    Group.GroupName := EdName.Text;
+    Group.GroupImage := TJpegImage.Create;
+    if not FCreateFixedGroup then
+      Group.GroupCode := CreateNewGroupCode
+    else
+      Group.GroupCode := FGroupCode;
+    Group.GroupImage.Assign(ImGroup.Picture.Graphic);
+    Group.GroupComment := MemComments.Text;
+    Group.GroupKeyWords := MemKeywords.Text;
+    Group.AutoAddKeyWords := CbAddkeywords.Checked;
+    if CbPrivateGroup.Checked then
+      Group.GroupAccess := GROUP_ACCESS_PRIVATE
+    else
+      Group.GroupAccess := GROUP_ACCESS_COMMON;
+
+    Group.RelatedGroups := FNewRelatedGroups;
+    Group.IncludeInQuickList := CbInclude.Checked;
+    Group.GroupDate := 0;
+
+    if FGroupsRepository.Add(Group) then
+    begin
+      FCreated := True;
+      FNewGroupName := EdName.Text;
+
+      GroupItem := TGroupItem.Create;
+      try
+        GroupItem.ReadFromGroup(Group, PATH_LOAD_NORMAL, 48);
+        EventInfo.Data := GroupItem;
+        CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_GroupAdded], EventInfo);
+      finally
+        F(GroupItem);
+      end;
+    end;
   finally
-    F(GroupItem);
+    F(Group);
   end;
-  FreeGroup(Group);
   Close;
 end;
 
@@ -244,6 +250,8 @@ end;
 procedure TNewGroupForm.FormCreate(Sender: TObject);
 begin
   FContext := DBKernel.DBContext;
+  FGroupsRepository := FContext.Groups;
+
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_GROUP_RELOAD_GROUPS');
   LoadLanguage;
   RelodDllNames;
@@ -414,7 +422,7 @@ procedure TNewGroupForm.FillImageList;
 var
   I: Integer;
   Group: TGroup;
-  SmallB, B: TBitmap;
+  SmallB: TBitmap;
   FCurrentGroups: TGroups;
 begin
   GroupsImageList.Clear;
@@ -432,32 +440,32 @@ begin
     F(SmallB);
   end;
   FCurrentGroups := EncodeGroups(FNewRelatedGroups);
-  for I := 0 to Length(FCurrentGroups) - 1 do
-  begin
-    SmallB := TBitmap.Create;
-    try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := Theme.PanelColor;
-      Group := GetGroupByGroupName(FContext, FCurrentGroups[I].GroupName, True);
-      if Group.GroupImage <> nil then
-        if not Group.GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := pf24bit;
-            B.Assign(Group.GroupImage);
-            FreeGroup(Group);
-            DoResize(15, 15, B, SmallB);
-            SmallB.Height := 16;
-            SmallB.Width := 16;
-          finally
-            F(B);
+  try
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      SmallB := TBitmap.Create;
+      try
+        SmallB.PixelFormat := pf24bit;
+        SmallB.Canvas.Brush.Color := Theme.PanelColor;
+
+        Group := FGroupsRepository.GetByName(FCurrentGroups[I].GroupName, True);
+        try
+          if (Group <> nil) and (Group.GroupImage <> nil) and not Group.GroupImage.Empty then
+          begin
+            SmallB.Assign(Group.GroupImage);
+            CenterBitmap24To32ImageList(SmallB, 16);
           end;
+        finally
+          F(Group);
         end;
-      GroupsImageList.Add(SmallB, nil);
-    finally
-      F(SmallB);
+
+        GroupsImageList.Add(SmallB, nil);
+      finally
+        F(SmallB);
+      end;
     end;
+  finally
+    F(FCurrentGroups);
   end;
 end;
 
@@ -488,7 +496,7 @@ begin
   FillImageList;
   WllGroups.Clear;
 
-  if Length(FCurrentGroups) = 0 then
+  if FCurrentGroups.Count = 0 then
   begin
     LblInfo := TStaticText.Create(WllGroups);
     LblInfo.Parent := WllGroups;
@@ -503,7 +511,7 @@ begin
   WL.Tag := -1;
   WL.OnClick := GroupClick;
 
-  for I := 0 to Length(FCurrentGroups) - 1 do
+  for I := 0 to FCurrentGroups.Count - 1 do
   begin
     WL := WllGroups.AddLink;
     WL.Text := FCurrentGroups[I].GroupName;

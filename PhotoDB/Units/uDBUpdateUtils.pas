@@ -20,7 +20,6 @@ uses
   CommonDBSupport,
   GraphicCrypt,
   UnitDBDeclare,
-  UnitGroupsWork,
   CmpUnit,
   UnitLinksSupport,
   UnitDBKernel,
@@ -40,6 +39,7 @@ uses
   uExifUtils,
   uDBClasses,
   uDBContext,
+  uDBEntities,
   uCollectionEvents,
   uDBPopupMenuInfo;
 
@@ -220,11 +220,12 @@ end;
 class procedure TDatabaseUpdateManager.ProcessGroups(Context: IDBContext; Info: TDBPopupMenuInfoRecord; ExifGroups: string);
 var
   RegisteredGroups: TGroups;
+  GroupsRepository: IGroupsRepository;
 begin
   if ExifGroups <> '' then
   begin
-
-    RegisteredGroups := GetRegisterGroupList(Context, False, True);
+    GroupsRepository := Context.Groups;
+    RegisteredGroups := GroupsRepository.GetAll(False, True);
     try
 
       TThread.Synchronize(nil,
@@ -236,17 +237,20 @@ begin
           Groups := EncodeGroups(Info.Groups);
           GExifGroups := EncodeGroups(ExifGroups);
           //in groups are empty because in exif no additional groups information
-          SetLength(InRegGroups, 0);
+          InRegGroups := TGroups.Create;
+          try
+            FilterGroups(Context, GExifGroups, RegisteredGroups, InRegGroups, FGroupReplaceActions);
 
-          FilterGroups(Context, GExifGroups, RegisteredGroups, InRegGroups, FGroupReplaceActions);
-
-          AddGroupsToGroups(Groups, GExifGroups);
-          Info.Groups := CodeGroups(Groups);
+            AddGroupsToGroups(Groups, GExifGroups);
+            Info.Groups := CodeGroups(Groups);
+          finally
+            F(InRegGroups);
+          end;
         end
       );
 
     finally
-      FreeGroups(RegisteredGroups);
+      F(RegisteredGroups);
     end;
 
   end;
@@ -254,10 +258,10 @@ end;
 
 class procedure TDatabaseUpdateManager.CleanUp;
 begin
-  FreeGroup(FGroupReplaceActions.ActionForUnKnown.OutGroup);
-  FreeGroup(FGroupReplaceActions.ActionForUnKnown.InGroup);
-  FreeGroup(FGroupReplaceActions.ActionForKnown.OutGroup);
-  FreeGroup(FGroupReplaceActions.ActionForKnown.InGroup);
+  F(FGroupReplaceActions.ActionForUnKnown.OutGroup);
+  F(FGroupReplaceActions.ActionForUnKnown.InGroup);
+  F(FGroupReplaceActions.ActionForKnown.OutGroup);
+  F(FGroupReplaceActions.ActionForKnown.InGroup);
 end;
 
 class function TDatabaseUpdateManager.MergeWithExistedInfo(Context: IDBContext; ID: Integer;

@@ -41,7 +41,6 @@ uses
   Dmitry.Controls.DmGradient,
 
   DBCMenu,
-  UnitGroupsWork,
   Effects,
   GraphicCrypt,
   UnitLinksSupport,
@@ -83,6 +82,7 @@ uses
   uDBUtils,
   uDBTypes,
   uDBContext,
+  uDBEntities,
   uActivationUtils,
   uSettings,
   uAssociations,
@@ -311,6 +311,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
     FShowInfoType: TShowInfoType;
     LinkDropFiles: TStrings;
     EditLinkForm: TForm;
@@ -739,7 +740,7 @@ begin
       ItemLinks := ParseLinksInfo(DataRecord.Links);
       FPropertyLinks := CopyLinksInfo(ItemLinks);
 
-      FreeGroups(FNowGroups);
+      F(FNowGroups);
       FNowGroups := uGroupTypes.EncodeGroups(DataRecord.Groups);
       FOldGroups := CopyGroups(FNowGroups);
 
@@ -796,6 +797,7 @@ procedure TPropertiesForm.FormCreate(Sender: TObject);
 begin
   EditLinkForm := nil;
   FContext := DBKernel.DBContext;
+  FGroupsRepository := FContext.Groups;
   FFilesInfo := TDBPopupMenuInfo.Create;
   DestroyCounter := 0;
   GistogrammData.Loaded := False;
@@ -805,9 +807,9 @@ begin
   PropertyManager.AddProperty(Self);
   LstCurrentGroups.DoubleBuffered := True;
   LstAvaliableGroups.DoubleBuffered := True;
-  SetLength(RegGroups, 0);
-  SetLength(FShowenRegGroups, 0);
-  SetLength(FNowGroups, 0);
+  RegGroups := TGroups.Create;
+  FShowenRegGroups := TGroups.Create;
+  FNowGroups := TGroups.Create;
 
   SetLength(Links, 0);
   FReadingInfo := False;
@@ -1134,7 +1136,7 @@ begin
 
   DoProcessPath(FileName);
   SetLength(FPropertyLinks, 0);
-  SetLength(FNowGroups, 0);
+  FreeList(FNowGroups, False);
 
   ExifData := TExifData.Create;
   try
@@ -1377,9 +1379,10 @@ begin
   DropFileTarget1.Unregister;
   SaveWindowPos1.SavePosition;
   F(FFilesInfo);
-  FreeGroups(RegGroups);
-  FreeGroups(FNowGroups);
-  FreeGroups(FShowenRegGroups);
+  F(RegGroups);
+  F(FNowGroups);
+  F(FOldGroups);
+  F(FShowenRegGroups);
 end;
 
 procedure TPropertiesForm.ApplicationEvents1Message(var Msg: tagMSG;
@@ -1407,7 +1410,7 @@ var
   I: Integer;
 begin
   LstCurrentGroups.Clear;
-  for I := 0 to Length(FNowGroups) - 1 do
+  for I := 0 to FNowGroups.Count - 1 do
     LstCurrentGroups.Items.Add(FNowGroups[I].GroupName);
 end;
 
@@ -1629,9 +1632,9 @@ begin
       CommentMemo.Text := FFilesInfo.CommonComments;
     end;
 
-    FreeGroups(FNowGroups);
+    F(FNowGroups);
     FNowGroups := uGroupTypes.EncodeGroups(FFilesInfo.CommonGroups);
-    FOldGroups := CopyGroups(FNowGroups);
+    FOldGroups := uGroupTypes.CopyGroups(FNowGroups);
 
     ItemLinks := FFilesInfo.CommonLinks;
     FPropertyLinks := CopyLinksInfo(ItemLinks);
@@ -2335,8 +2338,8 @@ var
   end;
 
 begin
-  FreeGroups(RegGroups);
-  RegGroups := GetRegisterGroupList(FContext, True, True);
+  F(RegGroups);
+  RegGroups := FGroupsRepository.GetAll(True, True);
   RegGroupsImageList.Clear;
   B := TBitmap.Create;
   try
@@ -2346,7 +2349,7 @@ begin
     F(B);
   end;
 
-  for I := 0 to Length(RegGroups) - 1 do
+  for I := 0 to RegGroups.Count - 1 do
   begin
     B := TBitmap.Create;
     try
@@ -2354,7 +2357,6 @@ begin
       begin
         B.PixelFormat := pf24bit;
         AssignGraphic(B, RegGroups[I].GroupImage);
-        B.PixelFormat := pf24bit;
         CenterBitmap24To32ImageList(B, 16);
       end else
         CreateDefaultImage(B);
@@ -2372,7 +2374,8 @@ var
   I: Integer;
   Filter, Key: string;
 begin
-  FreeGroups(FShowenRegGroups);
+  FreeList(FShowenRegGroups, False);
+
   LstAvaliableGroups.Items.BeginUpdate;
   try
     LstAvaliableGroups.Clear;
@@ -2381,7 +2384,7 @@ begin
     if Pos('*', Filter) = 0 then
       Filter := '*' + Filter + '*';
 
-    for I := 0 to Length(RegGroups) - 1 do
+    for I := 0 to RegGroups.Count - 1 do
     begin
       Key := AnsiLowerCase(RegGroups[I].GroupName + ' ' + RegGroups[I].GroupComment + ' ' + RegGroups[I].GroupKeyWords);
       if (RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
@@ -2412,7 +2415,7 @@ var
     J: Integer;
   begin
     Result := False;
-    for J := 0 to Length(XNewGroups) - 1 do
+    for J := 0 to XNewGroups.Count - 1 do
       if XNewGroups[J].GroupCode = GroupCode then
       begin
         Result := True;
@@ -2425,7 +2428,7 @@ var
     J: Integer;
   begin
     Result := False;
-    for J := 0 to Length(FNowGroups) - 1 do
+    for J := 0 to FNowGroups.Count - 1 do
       if FNowGroups[J].GroupCode = GroupCode then
       begin
         Result := True;
@@ -2455,7 +2458,7 @@ begin
     N := -1;
     if Control = LstCurrentGroups then
     begin
-      for I := 0 to Length(RegGroups) - 1 do
+      for I := 0 to RegGroups.Count - 1 do
       begin
         if RegGroups[I].GroupCode = FNowGroups[index].GroupCode then
         begin
@@ -2465,7 +2468,7 @@ begin
       end
     end else
     begin
-      for I := 0 to Length(RegGroups) - 1 do
+      for I := 0 to RegGroups.Count - 1 do
       begin
         if RegGroups[I].GroupName = (Control as TListBox).Items[index] then
         begin
@@ -2482,7 +2485,7 @@ begin
     IsChoosed := False;
     if Control = LstCurrentGroups then
       IsChoosed := NewGroup(FNowGroups[Index].GroupCode)
-    else if (N > -1) and (N < Length(RegGroups)) then
+    else if (N > -1) and (N < RegGroups.Count) then
       IsChoosed := NewGroup(RegGroups[N - 1].GroupCode);
 
     if IsChoosed then
@@ -2502,7 +2505,7 @@ begin
         C := Theme.ListColor;
       end;
 
-      if (Index < Length(FShowenRegGroups)) and GroupExists(FShowenRegGroups[Index].GroupCode) then
+      if (Index < FShowenRegGroups.Count) and GroupExists(FShowenRegGroups[Index].GroupCode) then
         ACanvas.Font.Color := ColorDiv2(FC, C)
       else
         ACanvas.Font.Color := FC;
@@ -2513,7 +2516,7 @@ begin
     on E: Exception do
       EventLog(':TPropertiesForm.ListBox2DrawItem() throw exception: ' + E.message);
   end;
-  FreeGroups(XNewGroups);
+  F(XNewGroups);
 end;
 
 procedure TPropertiesForm.lstCurrentGroupsDblClick(Sender: TObject);
@@ -2526,8 +2529,12 @@ begin
   for I := 0 to (Sender as TListBox).Items.Count - 1 do
     if (Sender as TListBox).Selected[I] then
     begin
-      Group := GetGroupByGroupCode(FContext, FNowGroups[I].GroupCode, False);
-      GroupInfoForm.Execute(nil, Group, False);
+      Group := FGroupsRepository.GetByCode(FNowGroups[I].GroupCode, False);
+      try
+        GroupInfoForm.Execute(nil, Group, False);
+      finally
+        F(Group);
+      end;
       Break;
     end;
 end;
@@ -2547,22 +2554,28 @@ var
     FRelatedGroups := EncodeGroups(Group.RelatedGroups);
     OldGroups := CopyGroups(FNowGroups);
     Groups := CopyGroups(OldGroups);
-    AddGroupToGroups(Groups, Group);
-    AddGroupsToGroups(Groups, FRelatedGroups);
-    FreeGroups(FNowGroups);
-    FNowGroups := CopyGroups(Groups);
-    RemoveGroupsFromGroups(Groups, OldGroups);
-    for I := 0 to Length(Groups) - 1 do
-    begin
-      LstCurrentGroups.Items.Add(Groups[I].GroupName);
-      TempGroup := GetGroupByGroupCode(FContext, Groups[I].GroupCode, False);
-      KeyWords := KeyWordsMemo.Text;
-      AddWordsA(TempGroup.GroupKeyWords, KeyWords);
-      KeyWordsMemo.Text := KeyWords;
-      FreeGroup(TempGroup);
+    try
+      AddGroupToGroups(Groups, Group);
+      AddGroupsToGroups(Groups, FRelatedGroups);
+      F(FNowGroups);
+      FNowGroups := CopyGroups(Groups);
+      RemoveGroupsFromGroups(Groups, OldGroups);
+      for I := 0 to Groups.Count - 1 do
+      begin
+        LstCurrentGroups.Items.Add(Groups[I].GroupName);
+        TempGroup := FGroupsRepository.GetByCode(Groups[I].GroupCode, False);
+        try
+          KeyWords := KeyWordsMemo.Text;
+          AddWordsA(TempGroup.GroupKeyWords, KeyWords);
+          KeyWordsMemo.Text := KeyWords;
+        finally
+          F(TempGroup);
+        end;
+      end;
+    finally
+      F(OldGroups);
+      F(Groups);
     end;
-    FreeGroups(OldGroups);
-    FreeGroups(Groups);
   end;
 
 begin
@@ -2635,8 +2648,8 @@ end;
 
 procedure TPropertiesForm.Clear1Click(Sender: TObject);
 begin
-  lstCurrentGroups.Clear;
-  FreeGroups(FNowGroups);
+  LstCurrentGroups.Clear;
+  F(FNowGroups);
   CommentMemoChange(Sender);
   LstCurrentGroups.Invalidate;
   LstAvaliableGroups.Invalidate;
@@ -2660,7 +2673,7 @@ var
   I: Integer;
 begin
   Result := 0;
-  for I := 0 to Length(RegGroups) - 1 do
+  for I := 0 to RegGroups.Count - 1 do
     if RegGroups[I].GroupCode = GroupCode then
     begin
       Result := I;
@@ -2675,10 +2688,14 @@ end;
 
 procedure TPropertiesForm.ChangeGroup1Click(Sender: TObject);
 var
-  Group : TGroup;
+  Group: TGroup;
 begin
-  Group := GetGroupByGroupCode(FContext, FNowGroups[PopupMenuGroups.Tag].GroupCode, False);
-  DBChangeGroup(Group);
+  Group := FGroupsRepository.GetByCode(FNowGroups[PopupMenuGroups.Tag].GroupCode, False);
+  try
+    DBChangeGroup(Group);
+  finally
+    F(Group);
+  end;
 end;
 
 function TPropertiesForm.GetCurrentImageFileName: string;
@@ -2721,7 +2738,7 @@ end;
 
 procedure TPropertiesForm.PopupMenuGroupsPopup(Sender: TObject);
 begin
- if GroupWithCodeExists(FContext, FNowGroups[PopupMenuGroups.Tag].GroupCode) then
+  if FGroupsRepository.HasGroupWithCode(FNowGroups[PopupMenuGroups.Tag].GroupCode) then
   begin
     CreateGroup1.Visible := False;
     MoveToGroup1.Visible := False;

@@ -37,7 +37,7 @@ uses
   uTranslate,
   uDBForm,
   uGroupTypes,
-  UnitGroupsWork,
+  uDBEntities,
   uRuntime,
   uStringUtils,
   uSettings,
@@ -114,87 +114,77 @@ var
   NewGroup: TGroup;
   ImagesDir: string;
   DBContext: IDBContext;
+  GroupsRepository: IGroupsRepository;
 begin
   DBKernel.CreateDBbyName(FileName);
 
   DBContext := TDBContext.Create(FileName);
+  GroupsRepository := DBContext.Groups;
 
   ImagesDir := ExtractFilePath(Application.ExeName) + 'Images\';
   if FileExists(ImagesDir + 'Me.jpg') then
   begin
+    NewGroup := TGroup.Create;
     try
       NewGroup.GroupName := GetWindowsUserName;
       NewGroup.GroupCode := CreateNewGroupCode;
       NewGroup.GroupImage := TJPEGImage.Create;
-      try
-        NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Me.jpg');
-        NewGroup.GroupDate := Now;
-        NewGroup.GroupComment := '';
-        NewGroup.GroupFaces := '';
-        NewGroup.GroupAccess := 0;
-        NewGroup.GroupKeyWords := NewGroup.GroupName;
-        NewGroup.AutoAddKeyWords := True;
-        NewGroup.RelatedGroups := '';
-        NewGroup.IncludeInQuickList := True;
-        AddGroup(DBContext, NewGroup);
-      finally
-        NewGroup.GroupImage.Free;
-      end;
-    except
-      on E: Exception do
-        EventLog(':CreateExampleDB() throw exception: ' + E.message);
+      NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Me.jpg');
+      NewGroup.GroupDate := Now;
+      NewGroup.GroupComment := '';
+      NewGroup.GroupFaces := '';
+      NewGroup.GroupAccess := 0;
+      NewGroup.GroupKeyWords := NewGroup.GroupName;
+      NewGroup.AutoAddKeyWords := True;
+      NewGroup.RelatedGroups := '';
+      NewGroup.IncludeInQuickList := True;
+      GroupsRepository.Add(NewGroup);
+    finally
+      F(NewGroup);
     end;
   end;
 
   if FileExists(ImagesDir + 'Friends.jpg') then
   begin
+    NewGroup := TGroup.Create;
     try
       NewGroup.GroupName := TA('Friends', 'Setup');
       NewGroup.GroupCode := CreateNewGroupCode;
       NewGroup.GroupImage := TJPEGImage.Create;
-      try
-        NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Friends.jpg');
-        NewGroup.GroupDate := Now;
-        NewGroup.GroupComment := '';
-        NewGroup.GroupFaces := '';
-        NewGroup.GroupAccess := 0;
-        NewGroup.GroupKeyWords := TA('Friends', 'Setup');
-        NewGroup.AutoAddKeyWords := True;
-        NewGroup.RelatedGroups := '';
-        NewGroup.IncludeInQuickList := True;
-        AddGroup(DBContext, NewGroup);
-      finally
-        NewGroup.GroupImage.Free;
-      end;
-    except
-      on E: Exception do
-        EventLog(':CreateExampleDB() throw exception: ' + E.message);
+      NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Friends.jpg');
+      NewGroup.GroupDate := Now;
+      NewGroup.GroupComment := '';
+      NewGroup.GroupFaces := '';
+      NewGroup.GroupAccess := 0;
+      NewGroup.GroupKeyWords := TA('Friends', 'Setup');
+      NewGroup.AutoAddKeyWords := True;
+      NewGroup.RelatedGroups := '';
+      NewGroup.IncludeInQuickList := True;
+      GroupsRepository.Add(NewGroup);
+    finally
+      F(NewGroup);
     end;
   end;
 
   if FileExists(ImagesDir + 'Family.jpg') then
   begin
+    NewGroup := TGroup.Create;
     try
       NewGroup.GroupName := TA('Family', 'Setup');
       NewGroup.GroupCode := CreateNewGroupCode;
       NewGroup.GroupImage := TJPEGImage.Create;
-      try
-        NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Family.jpg');
-        NewGroup.GroupDate := Now;
-        NewGroup.GroupComment := '';
-        NewGroup.GroupFaces := '';
-        NewGroup.GroupAccess := 0;
-        NewGroup.GroupKeyWords := TA('Family', 'Setup');
-        NewGroup.AutoAddKeyWords := True;
-        NewGroup.RelatedGroups := '';
-        NewGroup.IncludeInQuickList := True;
-        AddGroup(DBContext, NewGroup);
-      finally
-        NewGroup.GroupImage.Free;
-      end;
-    except
-      on E: Exception do
-        EventLog(':CreateExampleDB() throw exception: ' + E.message);
+      NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Family.jpg');
+      NewGroup.GroupDate := Now;
+      NewGroup.GroupComment := '';
+      NewGroup.GroupFaces := '';
+      NewGroup.GroupAccess := 0;
+      NewGroup.GroupKeyWords := TA('Family', 'Setup');
+      NewGroup.AutoAddKeyWords := True;
+      NewGroup.RelatedGroups := '';
+      NewGroup.IncludeInQuickList := True;
+      GroupsRepository.Add(NewGroup);
+    finally
+      F(NewGroup);
     end;
   end;
 end;

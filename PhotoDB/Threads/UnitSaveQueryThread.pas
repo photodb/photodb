@@ -6,7 +6,6 @@ uses
   Windows,
   SysUtils,
   uGroupTypes,
-  UnitGroupsWork,
   Classes,
   DB,
   ActiveX,
@@ -46,7 +45,7 @@ type
     FDestinationPath, DBFolder: string;
     FIntParam: Integer;
     FRegGroups: TGroups;
-    FGroupsFounded: TGroups;
+    FGroupsFound: TGroups;
     FSubFolders: Boolean;
     FFileList: TStrings;
     SaveToDBName: string;
@@ -149,7 +148,7 @@ begin
       if IsTerminated then
         Break;
       Dest.Append;
-      CopyRecordsW(Src, Dest, True, False, DBFolder, FGroupsFounded);
+      CopyRecordsW(Src, Dest, True, False, DBFolder, FGroupsFound);
       Dest.Post;
       SetProgress(Src.RecNo);
       Src.Next;
@@ -167,6 +166,7 @@ var
   FTable: TDataSet;
   Destination: IDBContext;
   SettingsRSrc, SettingsRDest: ISettingsRepository;
+  GroupsSrc, GroupsDest: IGroupsRepository;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -198,46 +198,51 @@ begin
           F(ImageSettings);
         end;
 
-        FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
+        GroupsSrc := FDBContext.Groups;
+        GroupsDest := Destination.Groups;
 
+        FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
         try
           FTable.Active := True;
 
           DBFolder := ExtractFilePath(FDBFileName);
 
-          Setlength(FGroupsFounded, 0);
-
-          for I := 0 to FFileList.Count - 1 do
-          begin
-            FQuery := FDBContext.CreateQuery;
-            try
-              LoadLocation(FQuery, FFileList[I], FSubFolders);
-              SaveLocation(FQuery, FTable);
-            finally
-              FreeDS(FQuery);
-            end;
-          end;
-
-          //statistics
-          ProgramStatistics.PortableUsed;
-
-          SetMaxValue(Length(FGroupsFounded));
-          FRegGroups := GetRegisterGroupList(FDBContext, True, True);
+          FGroupsFound := TGroups.Create;
           try
-            for I := 0 to Length(FGroupsFounded) - 1 do
+            for I := 0 to FFileList.Count - 1 do
             begin
-              if IsTerminated then
-                Break;
-              SetProgress(I);
-              for J := 0 to Length(FRegGroups) - 1 do
-                if FRegGroups[J].GroupCode = FGroupsFounded[I].GroupCode then
-                begin
-                  AddGroup(Destination, FRegGroups[J]);
+              FQuery := FDBContext.CreateQuery;
+              try
+                LoadLocation(FQuery, FFileList[I], FSubFolders);
+                SaveLocation(FQuery, FTable);
+              finally
+                FreeDS(FQuery);
+              end;
+            end;
+
+            //statistics
+            ProgramStatistics.PortableUsed;
+
+            SetMaxValue(FGroupsFound.Count);
+            FRegGroups := GroupsSrc.GetAll(True, True);
+            try
+              for I := 0 to FGroupsFound.Count - 1 do
+              begin
+                if IsTerminated then
                   Break;
-                end;
+                SetProgress(I);
+                for J := 0 to FRegGroups.Count - 1 do
+                  if FRegGroups[J].GroupCode = FGroupsFound[I].GroupCode then
+                  begin
+                    GroupsDest.Add(FRegGroups[J]);
+                    Break;
+                  end;
+              end;
+            finally
+              F(FRegGroups);
             end;
           finally
-            FreeGroups(FRegGroups);
+            F(FGroupsFound);
           end;
         finally
           FreeDS(FTable);

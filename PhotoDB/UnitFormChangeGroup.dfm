@@ -18,6 +18,7 @@ object FormChangeGroup: TFormChangeGroup
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     294
     347)

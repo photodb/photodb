@@ -20,7 +20,6 @@ uses
 
   CCR.Exif,
 
-  UnitGroupsWork,
   CommonDBSupport,
   UnitDBDeclare,
   GraphicCrypt,
@@ -30,6 +29,8 @@ uses
   UnitDBCommonGraphics,
 
   uDBClasses,
+  uDBContext,
+  uDBEntities,
   uGraphicUtils,
   uSettings,
   uDBTypes,
@@ -44,7 +45,6 @@ uses
   uShellIntegration,
   uDBBaseTypes,
   uMemory,
-  uDBContext,
   uJpegUtils,
   uAssociations,
   uDBImageUtils,
@@ -93,7 +93,7 @@ function BitmapToString(Bit: TBitmap): string;
 function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 function SumRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
-procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
+procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; Groups: TGroups);
 procedure SetFileNameByID(Context: IDBContext; ID: Integer; FileName: string);
 
 { DB Types }
@@ -1492,7 +1492,7 @@ begin
   end;
 end;
 
-procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; var Groups: TGroups);
+procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; Groups: TGroups);
 var
   FileName: string;
   Rec: TDBPopupMenuInfoRecord;
