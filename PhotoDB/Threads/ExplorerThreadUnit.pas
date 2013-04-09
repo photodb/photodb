@@ -55,7 +55,6 @@ uses
   uGOM,
   uConstants,
   uMemory,
-  uGroupTypes,
   uSearchQuery,
   uDBPopupMenuInfo,
   uPNGUtils,
@@ -338,6 +337,8 @@ var
   P: TPathItem;
   COMMode: Integer;
   Context: IDBContext;
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
 
   procedure LoadDBContent;
   begin
@@ -575,6 +576,7 @@ begin
         DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
 
         Context := DBKernel.DBContext;
+        SettingsRepository := Context.Settings;
 
         FQuery := Context.CreateQuery(dbilRead);
         try
@@ -786,10 +788,15 @@ begin
             end;
           end;
 
-          if (ExplorerInfo.View = LV_THUMBS) and (ExplorerInfo.PictureSize <> ThImageSize) then
-          begin
-            LoadingAllBigImages := False;
-            DoLoadBigImages(True);
+          Settings := SettingsRepository.Get;
+          try
+            if (ExplorerInfo.View = LV_THUMBS) and (ExplorerInfo.PictureSize <> Settings.ThSize) then
+            begin
+              LoadingAllBigImages := False;
+              DoLoadBigImages(True);
+            end;
+          finally
+            F(Settings);
           end;
 
           HideProgress;
@@ -1217,7 +1224,7 @@ var
                     SearchKey := SearchKey + ' ' + ExifData.Keywords;
                     if ExifData.XMPPacket.Groups <> '' then
                     begin
-                      Groups := EncodeGroups(ExifData.XMPPacket.Groups);
+                      Groups := TGroups.CreateFromString(ExifData.XMPPacket.Groups);
                       try
                         for J := 0 to Groups.Count - 1 do
                           SearchKey := SearchKey + ' ' + Groups[J].GroupName;
@@ -2964,7 +2971,7 @@ begin
             //Result picture
             TempBitmap := TBitmap.Create;
             TempBitmap.PixelFormat := pf24bit;
-            if Max(W, H) < ThImageSize then
+            if Max(W, H) < ExplorerInfo.PictureSize then
               AssignBitmap(TempBitmap, TempBit)
             else
             begin

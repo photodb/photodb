@@ -22,10 +22,10 @@ uses
   uDBPopupMenuInfo,
   uDatabaseDirectoriesUpdater,
   uDBForm,
-  uGroupTypes,
   uCollectionEvents,
   uDBClasses,
-  uDBContext;
+  uDBContext,
+  uDBEntities;
 
 type
   TUserDBInfoInput = class
@@ -114,7 +114,7 @@ begin
     OperationCounter := 0;
     if VariousKeyWords(UserInput.Keywords, FFilesInfo.CommonKeyWords) then
       Inc(OperationCounter);
-    if not CompareGroups(UserInput.Groups, FFilesInfo.CommonGroups) then
+    if not TGroups.CompareGroups(UserInput.Groups, FFilesInfo.CommonGroups) then
       Inc(OperationCounter);
     if UserInput.IsCommentChanged then
       Inc(OperationCounter);
@@ -209,7 +209,7 @@ begin
 
       // [BEGIN] Groups Support
       CommonGroups := FFilesInfo.CommonGroups;
-      if not CompareGroups(UserInput.Groups, CommonGroups) then
+      if not TGroups.CompareGroups(UserInput.Groups, CommonGroups) then
       begin
         FreeSQLList(List);
         ProgressForm.OperationPosition := ProgressForm.OperationPosition + 1;
@@ -219,8 +219,8 @@ begin
           if FFilesInfo[I].ID > 0 then
           begin
             SGroups := FFilesInfo[I].Groups;
-            ReplaceGroups(CommonGroups, UserInput.Groups, SGroups);
-            if not CompareGroups(SGroups, FFilesInfo[I].Groups) then
+            TGroups.ReplaceGroups(CommonGroups, UserInput.Groups, SGroups);
+            if not TGroups.CompareGroups(SGroups, FFilesInfo[I].Groups) then
               AddQuery(List, SGroups, FFilesInfo[I].ID);
           end;
         end;

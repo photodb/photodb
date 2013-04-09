@@ -17,7 +17,6 @@ uses
 
   uMemory,
   uMemoryEx,
-  uGroupTypes,
   uDBIcons,
   uDBContext,
   uDBEntities,

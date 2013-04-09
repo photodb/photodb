@@ -5,14 +5,35 @@ interface
 uses
   System.SysUtils,
 
-  uMemory,
-  uDBContext,
-  uTranslate,
-  uGroupTypes,
-  uDBEntities,
   uConstants,
+  uMemory,
+  uTranslate,
+  uDBContext,
+  uDBEntities,
   uSettings,
   uShellIntegration;
+
+type
+  TGroupAction = record
+    Action: Integer;
+    OutGroup: TGroup;
+    InGroup: TGroup;
+    ReplaceImageOnNew: Boolean;
+    ActionForAll: Boolean;
+    ActionForAllKnown: Boolean;
+    ActionForAllUnKnown: Boolean;
+  end;
+
+  TGroupsActions = array of TGroupAction;
+
+  TGroupsActionsW = record
+    Actions: TGroupsActions;
+    IsActionForUnKnown: Boolean;
+    ActionForUnKnown: TGroupAction;
+    IsActionForKnown: Boolean;
+    ActionForKnown: TGroupAction;
+    MaxAuto: Boolean;
+  end;
 
 procedure FilterGroups(DBContext: IDBContext; var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
 
@@ -70,7 +91,6 @@ var
   I: Integer;
   PI: PInteger;
   Action: TGroupAction;
-  TempGroups, Temp: TGroups;
   GrNameIn, GrNameOut: string;
   Options: GroupReplaceOptions;
   SortGroupsByName: Boolean;
@@ -85,18 +105,6 @@ var
       if InRegGroups[J].GroupCode = GroupCode then
       begin
         Result := InRegGroups[J].GroupName;
-        Break;
-      end;
-  end;
-
-  function GroupByNameIn(GroupName: string): TGroup;
-  var
-    J: Integer;
-  begin
-    for J := 0 to InRegGroups.Count - 1 do
-      if InRegGroups[J].GroupName = GroupName then
-      begin
-        Result := InRegGroups[J];
         Break;
       end;
   end;
@@ -150,7 +158,7 @@ var
       GroupsToRemove.Add(GroupToRemove);
       GroupsToAdd.Add(GroupToAdd);
 
-      ReplaceGroupsW(GroupsToRemove, GroupsToAdd, Groups);
+      Groups.RemoveGroups(GroupsToRemove).AddGroups(GroupsToAdd);
     finally
       GroupsToRemove.Clear;
       GroupsToAdd.Clear;
@@ -201,7 +209,7 @@ begin
 
       if Action.Action = GROUP_ACTION_NO_ADD then
       begin
-        RemoveGroupFromGroups(Groups, Action.InGroup);
+        Groups.RemoveGroup(Action.InGroup);
         Pi^ := I - 1;
       end;
 
@@ -234,7 +242,7 @@ begin
 
       if Action.Action = GROUP_ACTION_NO_ADD then
       begin
-        RemoveGroupFromGroups(Groups, Action.InGroup);
+        Groups.RemoveGroup(Action.InGroup);
         Pi^ := I - 1;
       end;
     end;

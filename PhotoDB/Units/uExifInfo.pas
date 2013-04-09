@@ -23,7 +23,6 @@ uses
   uExifUtils,
   uImageLoader,
   uDBEntities,
-  uGroupTypes,
   uAssociations,
   uICCProfile,
   uTranslate,
@@ -279,7 +278,7 @@ begin
 
       if ExifData.XMPPacket.Groups <> '' then
       begin
-        Groups := EncodeGroups(ExifData.XMPPacket.Groups);
+        Groups := TGroups.CreateFromString(ExifData.XMPPacket.Groups);
         SL := TStringList.Create;
         try
           for I := 0 to Groups.Count - 1 do

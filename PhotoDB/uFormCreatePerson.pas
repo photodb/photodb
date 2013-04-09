@@ -48,7 +48,6 @@ uses
   uDBEntities,
   uThreadForm,
   u2DUtils,
-  uGroupTypes,
   uConstants,
   uEditorTypes,
   uFastLoad,
@@ -761,33 +760,37 @@ var
   WL: TWebLink;
   LblInfo: TStaticText;
 begin
-  FCurrentGroups := EncodeGroups(FRelatedGroups);
   FillImageList;
   WllGroups.Clear;
 
-  if FCurrentGroups.Count = 0 then
-  begin
-    LblInfo := TStaticText.Create(WllGroups);
-    LblInfo.Parent := WllGroups;
-    WllGroups.AddControl(LblInfo, True);
-    LblInfo.Caption := L('There are no related groups');
-  end;
+  FCurrentGroups := TGroups.CreateFromString(FRelatedGroups);
+  try
+    if FCurrentGroups.Count = 0 then
+    begin
+      LblInfo := TStaticText.Create(WllGroups);
+      LblInfo.Parent := WllGroups;
+      WllGroups.AddControl(LblInfo, True);
+      LblInfo.Caption := L('There are no related groups');
+    end;
 
-  WL := WllGroups.AddLink(True);
-  WL.Text := L('Edit related groups');
-  WL.ImageList := GroupsImageList;
-  WL.ImageIndex := 0;
-  WL.Tag := -1;
-  WL.OnClick := GroupClick;
-
-  for I := 0 to FCurrentGroups.Count - 1 do
-  begin
-    WL := WllGroups.AddLink;
-    WL.Text := FCurrentGroups[I].GroupName;
+    WL := WllGroups.AddLink(True);
+    WL.Text := L('Edit related groups');
     WL.ImageList := GroupsImageList;
-    WL.ImageIndex := I + 1;
-    WL.Tag := I;
+    WL.ImageIndex := 0;
+    WL.Tag := -1;
     WL.OnClick := GroupClick;
+
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      WL := WllGroups.AddLink;
+      WL.Text := FCurrentGroups[I].GroupName;
+      WL.ImageList := GroupsImageList;
+      WL.ImageIndex := I + 1;
+      WL.Tag := I;
+      WL.OnClick := GroupClick;
+    end;
+  finally
+    F(FCurrentGroups);
   end;
   WllGroups.ReallignList;
 end;
@@ -859,7 +862,7 @@ begin
   finally
     F(SmallB);
   end;
-  FCurrentGroups := EncodeGroups(FRelatedGroups);
+  FCurrentGroups := TGroups.CreateFromString(FRelatedGroups);
   try
     for I := 0 to FCurrentGroups.Count - 1 do
     begin

@@ -34,6 +34,9 @@ uses
   uExplorerSearchProviders,
   uFormListView;
 
+const
+  ThSizeExplorerPreview = 100;
+
 type
   TExplorerPath = record
     Path: string;

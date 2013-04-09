@@ -62,7 +62,6 @@ uses
 
   uTranslateUtils,
   uGUIDUtils,
-  uGroupTypes,
   uRawExif,
   uLogger,
   uBitmapUtils,
@@ -108,6 +107,9 @@ type
 
 type
   TShowInfoType = (SHOW_INFO_FILE_NAME, SHOW_INFO_ID, SHOW_INFO_IDS);
+
+const
+  ThSizePropertyPreview = 100;
 
 type
   TPropertiesForm = class(TDBForm, ICurrentImageSource)
@@ -627,8 +629,6 @@ begin
           B1 := TBitmap.Create;
           try
             B1.PixelFormat := pf24bit;
-            B1.Width := ThImageSize;
-            B1.Height := ThImageSize;
             PassWord := '';
             if DA.Thumb = nil then
               Exit;
@@ -665,7 +665,7 @@ begin
                 F(JPEG);
                 W := TempBitmap.Width;
                 H := TempBitmap.Height;
-                ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+                ProportionalSize(ThSizePropertyPreview, ThSizePropertyPreview, W, H);
                 DoResize(W, H, TempBitmap, Fbit);
               finally
                 F(TempBitmap);
@@ -741,8 +741,8 @@ begin
       FPropertyLinks := CopyLinksInfo(ItemLinks);
 
       F(FNowGroups);
-      FNowGroups := uGroupTypes.EncodeGroups(DataRecord.Groups);
-      FOldGroups := CopyGroups(FNowGroups);
+      FNowGroups := TGroups.CreateFromString(DataRecord.Groups);
+      FOldGroups := FNowGroups.Clone;
 
       FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
       FFilesInfo.Clear;
@@ -947,7 +947,7 @@ begin
     CHRating := FFilesInfo.StatRating <> RatingEdit.Rating;
 
   CHKeyWords := VariousKeyWords(FFilesInfo.CommonKeyWords, KeyWordsMemo.Text);
-  CHGroups := not CompareGroups(FOldGroups, FNowGroups);
+  CHGroups := not FOldGroups.CompareTo(FNowGroups);
 
   UpdateControlFont(LabelComment, CHComment);
   UpdateControlFont(LabelKeywords, ChKeywords);
@@ -983,7 +983,7 @@ begin
     UserInput := TUserDBInfoInput.Create;
     try
       UserInput.Keywords := KeywordsMemo.Text;
-      UserInput.Groups := CodeGroups(FNowGroups);
+      UserInput.Groups := FNowGroups.ToString;
       UserInput.IsCommentChanged := not CommentMemo.ReadOnly;
       UserInput.Comment := CommentMemo.Text;
       UserInput.IsLinksChanged := ReadCHLinks;
@@ -1105,7 +1105,7 @@ var
 begin
   if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
-    Pr := GetImageIDW(DBKernel.DBContext, FileName, True);
+    Pr := GetImageIDW(DBKernel.DBContext, FileName, True, True);
     if Pr.Count <> 0 then
       Execute(Pr.Ids[0])
     else
@@ -1280,7 +1280,7 @@ var
   PR : TImageDBRecordA;
 begin
   Adding_now := False;
-  Pr := GetimageIDW(DBKernel.DBContext, FileName, False);
+  Pr := GetimageIDW(DBKernel.DBContext, FileName, False, True);
   if Pr.Count <> 0 then
     Execute(Pr.Ids[0])
   else
@@ -1633,8 +1633,8 @@ begin
     end;
 
     F(FNowGroups);
-    FNowGroups := uGroupTypes.EncodeGroups(FFilesInfo.CommonGroups);
-    FOldGroups := uGroupTypes.CopyGroups(FNowGroups);
+    FNowGroups := TGroups.CreateFromString(FFilesInfo.CommonGroups);
+    FOldGroups := FNowGroups.Clone;
 
     ItemLinks := FFilesInfo.CommonLinks;
     FPropertyLinks := CopyLinksInfo(ItemLinks);
@@ -2389,7 +2389,7 @@ begin
       Key := AnsiLowerCase(RegGroups[I].GroupName + ' ' + RegGroups[I].GroupComment + ' ' + RegGroups[I].GroupKeyWords);
       if (RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
       begin
-        uGroupTypes.AddGroupToGroups(FShowenRegGroups, RegGroups[I]);
+        FShowenRegGroups.AddGroup(RegGroups[I]);
         LstAvaliableGroups.Items.AddObject(RegGroups[I].GroupName, TObject(I));
       end;
     end;
@@ -2439,12 +2439,12 @@ var
 begin
   if Control = LstCurrentGroups then
   begin
-    XNewGroups := CopyGroups(FNowGroups);
-    RemoveGroupsFromGroups(XNewGroups, FOldGroups);
+    XNewGroups := FNowGroups.Clone;
+    XNewGroups.RemoveGroups(FOldGroups);
   end else
   begin
-    XNewGroups := CopyGroups(FOldGroups);
-    RemoveGroupsFromGroups(XNewGroups, FNowGroups);
+    XNewGroups := FOldGroups.Clone;
+    XNewGroups.RemoveGroups(FNowGroups);
   end;
   try
     LB := TListBox(Control);
@@ -2551,15 +2551,15 @@ var
     I: Integer;
     KeyWords: string;
   begin
-    FRelatedGroups := EncodeGroups(Group.RelatedGroups);
-    OldGroups := CopyGroups(FNowGroups);
-    Groups := CopyGroups(OldGroups);
+    FRelatedGroups := TGroups.CreateFromString(Group.RelatedGroups);
+    OldGroups := FNowGroups.Clone;
+    Groups := OldGroups.Clone;
     try
-      AddGroupToGroups(Groups, Group);
-      AddGroupsToGroups(Groups, FRelatedGroups);
+      Groups.AddGroup(Group);
+      Groups.AddGroups(FRelatedGroups);
       F(FNowGroups);
-      FNowGroups := CopyGroups(Groups);
-      RemoveGroupsFromGroups(Groups, OldGroups);
+      FNowGroups := Groups.Clone;
+      Groups.RemoveGroups(OldGroups);
       for I := 0 to Groups.Count - 1 do
       begin
         LstCurrentGroups.Items.Add(Groups[I].GroupName);
@@ -2575,6 +2575,7 @@ var
     finally
       F(OldGroups);
       F(Groups);
+      F(FRelatedGroups);
     end;
   end;
 
@@ -2610,7 +2611,7 @@ begin
         KeyWordsMemo.Text := KeyWords;
       end;
       // remove from current groups
-      RemoveGroupFromGroups(FNowGroups, FNowGroups[I]);
+      FNowGroups.RemoveGroup(FNowGroups[I]);
       LstCurrentGroups.Items.Delete(I);
     end;
   LstCurrentGroups.Invalidate;
@@ -2845,7 +2846,7 @@ begin
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Processing');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2879,7 +2880,7 @@ begin
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Original');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2916,7 +2917,7 @@ begin
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Processing');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2966,7 +2967,7 @@ begin
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Original');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);

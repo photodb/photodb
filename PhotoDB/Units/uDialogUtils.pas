@@ -11,11 +11,10 @@ uses
 
   uConstants,
   uMemory,
-  uRuntime,
   uAssociations,
   uImageLoader;
 
-procedure LoadNickJpegImage(Image: TPicture);
+procedure LoadNickJpegImage(Image: TPicture; JpegCompressionQuality: TJPEGQualityRange);
 function GetImageFromUser(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 
 implementation
@@ -57,7 +56,7 @@ begin
   end;
 end;
 
-procedure LoadNickJpegImage(Image: TPicture);
+procedure LoadNickJpegImage(Image: TPicture; JpegCompressionQuality: TJPEGQualityRange);
 var
   Bitmap: TBitmap;
   FJPG: TJpegImage;
@@ -68,7 +67,7 @@ begin
     begin
       FJPG := TJPegImage.Create;
       try
-        FJPG.CompressionQuality := DBJpegCompressionQuality;
+        FJPG.CompressionQuality := JpegCompressionQuality;
         FJPG.Assign(Bitmap);
         FJPG.JPEGNeeded;
         Image.Graphic := FJPG;

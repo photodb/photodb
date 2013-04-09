@@ -36,7 +36,6 @@ uses
   uAppUtils,
   uTranslate,
   uDBForm,
-  uGroupTypes,
   uDBEntities,
   uRuntime,
   uStringUtils,
@@ -127,7 +126,7 @@ begin
     NewGroup := TGroup.Create;
     try
       NewGroup.GroupName := GetWindowsUserName;
-      NewGroup.GroupCode := CreateNewGroupCode;
+      NewGroup.GroupCode := TGroup.CreateNewGroupCode;
       NewGroup.GroupImage := TJPEGImage.Create;
       NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Me.jpg');
       NewGroup.GroupDate := Now;
@@ -149,7 +148,7 @@ begin
     NewGroup := TGroup.Create;
     try
       NewGroup.GroupName := TA('Friends', 'Setup');
-      NewGroup.GroupCode := CreateNewGroupCode;
+      NewGroup.GroupCode := TGroup.CreateNewGroupCode;
       NewGroup.GroupImage := TJPEGImage.Create;
       NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Friends.jpg');
       NewGroup.GroupDate := Now;
@@ -171,7 +170,7 @@ begin
     NewGroup := TGroup.Create;
     try
       NewGroup.GroupName := TA('Family', 'Setup');
-      NewGroup.GroupCode := CreateNewGroupCode;
+      NewGroup.GroupCode := TGroup.CreateNewGroupCode;
       NewGroup.GroupImage := TJPEGImage.Create;
       NewGroup.GroupImage.LoadFromFile(ImagesDir + 'Family.jpg');
       NewGroup.GroupDate := Now;

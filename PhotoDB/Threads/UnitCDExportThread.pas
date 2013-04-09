@@ -29,7 +29,6 @@ uses
   uDBEntities,
   uDBUtils,
   uDBContext,
-  uGroupTypes,
   uCDMappingTypes,
   uTranslate,
   uResourceUtils,

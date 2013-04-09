@@ -91,7 +91,6 @@ uses
   uExplorerFolderImages,
   uShellIntegration,
   uDBCustomThread,
-  uGroupTypes,
   uShellUtils,
   uSiteUtils,
   uGUIDUtils,
@@ -1019,6 +1018,8 @@ type
     procedure ChangeDBClick(Sender: TObject);
     procedure PmShareAdditionalTasksEnterMenuLoop(Sender: TObject);
 
+    procedure LoadDefaultCollectionPictureSize;
+
     property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
   protected
     procedure ZoomIn;
@@ -1595,7 +1596,7 @@ begin
   FReloadESGroupsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_GROUPS');
   FReloadRSPersonsMessage := RegisterWindowMessage('EXPLORER_RELOAD_ES_PERSONS');
 
-  FPictureSize := ThImageSize;
+  LoadDefaultCollectionPictureSize;
   LoadSizes;
 end;
 
@@ -3297,7 +3298,7 @@ begin
 
   if [EventID_Param_DB_Changed] * Params <> [] then
   begin
-    FPictureSize := ThImageSize;
+    LoadDefaultCollectionPictureSize;
     LoadSizes;
     LoadDBList;
   end;
@@ -5683,20 +5684,22 @@ var
   GroupsRepository: IGroupsRepository;
 begin
   Context := DBKernel.DBContext;
+  GroupsRepository := Context.Groups;
+
   WL := TWebLink(PmInfoGroup.Tag);
 
   KeyWords := MemKeyWords.Text;
 
-  Groups := EncodeGroups(FSelectedInfo.Groups);
+  Groups := TGroups.CreateFromString(FSelectedInfo.Groups);
   Group := GroupsRepository.GetByName(WL.Text, False);
   try
     if Group <> nil then
     begin
-      RemoveGroupFromGroups(Groups, Group);
+      Groups.RemoveGroup(Group);
       DeleteWords(KeyWords, Group.GroupKeyWords);
     end;
 
-    FSelectedInfo.Groups := CodeGroups(Groups);
+    FSelectedInfo.Groups := Groups.ToString;
   finally
     F(Group);
     F(Groups);
@@ -9083,8 +9086,7 @@ begin
       try
         with ImPreview.Picture.Bitmap do
         begin
-          Width := ThSizeExplorerPreview;
-          Height := ThSizeExplorerPreview;
+          SetSize(ThSizeExplorerPreview, ThSizeExplorerPreview);
           Canvas.Pen.Color := Theme.PanelColor;
           Canvas.Brush.Color := Theme.PanelColor;
           if (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or
@@ -9093,7 +9095,7 @@ begin
             (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE) then
           begin
-            Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
+            Canvas.Rectangle(0, 0, ThSizeExplorerPreview, ThSizeExplorerPreview);
             FFolderImagesResult.Directory := '';
             for I := 1 to 4 do
               FFolderImagesResult.Images[I] := nil;
@@ -9201,11 +9203,10 @@ begin
           begin
             with ImPreview.Picture.Bitmap do
             begin
-              Width := ThSizeExplorerPreview;
-              Height := ThSizeExplorerPreview;
+              SetSize(ThSizeExplorerPreview, ThSizeExplorerPreview);
               Canvas.Pen.Color := Theme.PanelColor;
               Canvas.Brush.Color := Theme.PanelColor;
-              Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
+              Canvas.Rectangle(0, 0, ThSizeExplorerPreview, ThSizeExplorerPreview);
 
               Ico := nil;
               case FSelectedInfo.FileType of
@@ -9260,11 +9261,10 @@ begin
 
             with ImPreview.Picture.Bitmap do
             begin
-              Width := ThSizeExplorerPreview;
-              Height := ThSizeExplorerPreview;
+              SetSize(ThSizeExplorerPreview, ThSizeExplorerPreview);
               Canvas.Pen.Color := Theme.PanelColor;
               Canvas.Brush.Color := Theme.PanelColor;
-              Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
+              Canvas.Rectangle(0, 0, ThSizeExplorerPreview, ThSizeExplorerPreview);
 
               if FSearchMode = EXPLORER_SEARCH_DATABASE then
                 Pic := TResourceUtils.LoadGraphicFromRES<TPngImage>('SEARCH_DATABASE')
@@ -9474,11 +9474,10 @@ begin
 
   with ImPreview.Picture.Bitmap do
   begin
-    Width := ThSizeExplorerPreview;
-    Height := ThSizeExplorerPreview;
+    SetSize(ThSizeExplorerPreview, ThSizeExplorerPreview);
     Canvas.Pen.Color := Theme.PanelColor;
     Canvas.Brush.Color := Theme.PanelColor;
-    Canvas.Rectangle(0, 0, ThImageSize, ThImageSize);
+    Canvas.Rectangle(0, 0, ThSizeExplorerPreview, ThSizeExplorerPreview);
     Icon := TIcon.Create;
     try
       Icon.Handle := Ico;
@@ -9575,7 +9574,7 @@ begin
       FExtendedSearchParams.Text := EdExtendedSearchText.Text;
 
       FExtendedSearchParams.Groups.Clear;
-      Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+      Groups := TGroups.CreateFromString(WllExtendedSearchGroups.TagEx);
       try
         for I := 0 to Groups.Count - 1 do
           FExtendedSearchParams.Groups.Add(Groups[I].GroupName);
@@ -9777,7 +9776,7 @@ begin
     ItemKey := Info.Comment + ' ' + Info.KeyWords;
     if Info.Groups <> '' then
     begin
-      Groups := EncodeGroups(Info.Groups);
+      Groups := TGroups.CreateFromString(Info.Groups);
       try
         for J := 0 to Groups.Count - 1 do
           ItemKey := ItemKey + Groups[J].GroupName + ' ';
@@ -10652,7 +10651,7 @@ end;
 function TExplorerForm.ListViewTypeToSize(ListViewType: Integer): Integer;
 begin
   case ListViewType of
-    LV_THUMBS     : Result := ThSize;
+    LV_THUMBS     : Result := FPictureSize;
     LV_ICONS      : Result := 32;
     LV_SMALLICONS : Result := 16;
     LV_TITLES     : Result := 16;
@@ -11385,7 +11384,7 @@ begin
 
   WllGroups.Clear;
 
-  FCurrentGroups := EncodeGroups(FSelectedInfo.Groups);
+  FCurrentGroups := TGroups.CreateFromString(FSelectedInfo.Groups);
   try
     if FCurrentGroups.Count = 0 then
     begin
@@ -11436,7 +11435,7 @@ begin
       try
         Info := TGroupLoadInfo(Data);
         try
-          Groups := EncodeGroups(Info.Groups);
+          Groups := TGroups.CreateFromString(Info.Groups);
           try
             for J := 0 to Groups.Count - 1 do
             begin
@@ -11637,7 +11636,7 @@ begin
     WlExtendedSearchAddGroup.OnClick := ExtendedSearchGroupClick;
     WlExtendedSearchAddGroup.Tag := -1;
 
-    ESGroups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+    ESGroups := TGroups.CreateFromString(WllExtendedSearchGroups.TagEx);
     try
       for I := 0 to ESGroups.Count - 1 do
       begin
@@ -11679,7 +11678,7 @@ begin
         try
           Info := TGroupLoadInfo(Data);
           try
-            Groups := EncodeGroups(Info.Groups);
+            Groups := TGroups.CreateFromString(Info.Groups);
             try
               for J := 0 to Groups.Count - 1 do
               begin
@@ -12099,7 +12098,7 @@ var
   Group: TGroup;
   Groups: TGroups;
 begin
-  Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+  Groups := TGroups.CreateFromString(WllExtendedSearchGroups.TagEx);
 
   if PmESGroup.Tag < 0 then
     Exit;
@@ -12118,8 +12117,7 @@ var
   P: TPathItem;
   PL: TPathItemCollection;
 begin
-
-  Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+  Groups := TGroups.CreateFromString(WllExtendedSearchGroups.TagEx);
 
   if PmESGroup.Tag < 0 then
     Exit;
@@ -12148,20 +12146,22 @@ end;
 
 procedure TExplorerForm.MiESGroupRemoveClick(Sender: TObject);
 var
-  Group: TGroup;
   Groups: TGroups;
 begin
-  Groups := EncodeGroups(WllExtendedSearchGroups.TagEx);
+  Groups := TGroups.CreateFromString(WllExtendedSearchGroups.TagEx);
+  try
+    if PmESGroup.Tag < 0 then
+      Exit;
 
-  if PmESGroup.Tag < 0 then
-    Exit;
+    if PmESGroup.Tag > Groups.Count - 1 then
+      Exit;
 
-  if PmESGroup.Tag > Groups.Count - 1 then
-    Exit;
+    Groups.DeleteGroupAt(PmESGroup.Tag);
 
-  Group := Groups[PmESGroup.Tag];
-  RemoveGroupFromGroups(Groups, Group);
-  WllExtendedSearchGroups.TagEx := CodeGroups(Groups);
+    WllExtendedSearchGroups.TagEx := Groups.ToString;
+  finally
+    F(Groups);
+  end;
   ExtendedSearchInitGroups;
   PnESContainer.Refresh;
 end;
@@ -12656,7 +12656,6 @@ begin
   FShellTreeView := nil;
   FormLoadEnd := False;
   NoLockListView := False;
-  FPictureSize := ThImageSize;
   FCanPasteFromClipboard := False;
   ElvMain := nil;
   FBitmapImageList := TBitmapImageList.Create;
@@ -12752,6 +12751,23 @@ begin
   PmDBList.Items.Add(MI);
 
   ImageList_ReplaceIcon(ImDBList.Handle, -1, Icons[DB_IC_RENAME]);
+end;
+
+procedure TExplorerForm.LoadDefaultCollectionPictureSize;
+var
+  Context: IDBContext;
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
+begin
+  Context := DBKernel.DBContext;
+  SettingsRepository := Context.Settings;
+
+  Settings := SettingsRepository.Get;
+  try
+    FPictureSize := Settings.ThSize;
+  finally
+    F(Settings);
+  end;
 end;
 
 procedure TExplorerForm.EditDatabasesClick(Sender: TObject);

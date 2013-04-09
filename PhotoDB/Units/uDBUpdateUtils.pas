@@ -23,11 +23,11 @@ uses
   CmpUnit,
   UnitLinksSupport,
   UnitDBKernel,
+  UnitGroupsReplace,
 
   uConstants,
   uRuntime,
   uMemory,
-  uGroupTypes,
   uDBTypes,
   uDBUtils,
   uStringUtils,
@@ -59,9 +59,6 @@ type
   end;
 
 implementation
-
-uses
-  UnitGroupsReplace;
 
 class function TDatabaseUpdateManager.AddFile(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
 var
@@ -234,15 +231,15 @@ begin
           Groups, GExifGroups: TGroups;
           InRegGroups: TGroups;
         begin
-          Groups := EncodeGroups(Info.Groups);
-          GExifGroups := EncodeGroups(ExifGroups);
+          Groups := TGroups.CreateFromString(Info.Groups);
+          GExifGroups := TGroups.CreateFromString(ExifGroups);
           //in groups are empty because in exif no additional groups information
           InRegGroups := TGroups.Create;
           try
             FilterGroups(Context, GExifGroups, RegisteredGroups, InRegGroups, FGroupReplaceActions);
 
-            AddGroupsToGroups(Groups, GExifGroups);
-            Info.Groups := CodeGroups(Groups);
+            Groups.AddGroups(GExifGroups);
+            Info.Groups := Groups.ToString;
           finally
             F(InRegGroups);
           end;
@@ -297,7 +294,7 @@ begin
     if Info.Groups <> '' then
     begin
       Groups := Info.Groups;
-      AddGroupsToGroups(Groups, DBInfo.Groups);
+      TGroups.AddGroupsToGroups(Groups, DBInfo.Groups);
       UC.AddParameter(TStringParameter.Create('Groups', Groups));
     end;
 
@@ -360,7 +357,7 @@ var
     if InfoToAdd.Groups <> '' then
     begin
       Groups := Info.Groups;
-      AddGroupsToGroups(Groups, InfoToAdd.Groups);
+      TGroups.AddGroupsToGroups(Groups, InfoToAdd.Groups);
       Info.Groups := Groups;
     end;
 

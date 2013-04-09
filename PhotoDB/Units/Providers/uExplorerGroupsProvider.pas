@@ -19,7 +19,6 @@ uses
   uConstants,
   uMemory,
   uExplorerPathProvider,
-  uGroupTypes,
   uShellIntegration,
   uDBForm,
   uDBContext,

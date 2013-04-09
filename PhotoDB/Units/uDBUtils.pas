@@ -36,7 +36,6 @@ uses
   uDBTypes,
   uDBPopupMenuInfo,
   uConstants,
-  uGroupTypes,
   uTranslate,
   uLogger,
   uBitmapUtils,
@@ -68,8 +67,7 @@ procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   OldFileName, NewFileName: string; Ask: Boolean = True);
 function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 
-function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
-  ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
+function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean): TImageDBRecordA;
 function GetImageIDWEx(DBContext: IDBContext; Images: TDBPopupMenuInfo; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TImageDBRecordAArray;
 function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TImageDBRecordA;
 function GetIdByFileName(DBContext: IDBContext; FileName: string): Integer;
@@ -558,7 +556,7 @@ begin
 
   FileName := MapDBFileName(FileName);
 
-  Res := GetImageIDW(DBContext, FileName, False);
+  Res := GetImageIDW(DBContext, FileName, False, False);
   if Res.Jpeg = nil then
     Exit;
 
@@ -974,20 +972,31 @@ begin
   FreeDS(FQuery);
 end;
 
-function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False; AThImageSize: Integer = 0;
-  ADBJpegCompressionQuality: Byte = 0): TImageDBRecordA;
+function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean): TImageDBRecordA;
 var
   Bmp, Thbmp: TBitmap;
   PassWord,
   Imth: string;
   IsEncrypted: Boolean;
   G: TGraphic;
+
+  JpegCompressionQuality: TJPEGQualityRange;
+  ThumbnailSize: Integer;
+
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
 begin
+  SettingsRepository := Context.Settings;
+
+  Settings := SettingsRepository.Get;
+  try
+    JpegCompressionQuality := Settings.DBJpegCompressionQuality;
+    ThumbnailSize := Settings.ThSize;
+  finally
+    F(Settings);
+  end;
+
   DoProcessPath(FileName);
-  if AThImageSize = 0 then
-    AThImageSize := ThImageSize;
-  if ADBJpegCompressionQuality = 0 then
-    ADBJpegCompressionQuality := DBJpegCompressionQuality;
 
   Result.IsEncrypted := False;
   Result.Password := '';
@@ -1020,9 +1029,9 @@ begin
     Result.ImageWidth := G.Width;
     Result.ImageHeight := G.Height;
     try
-      JpegScale(G, AThImageSize, AThImageSize);
+      JpegScale(G, ThumbnailSize, ThumbnailSize);
       Result.Jpeg := TJpegImage.Create;
-      Result.Jpeg.CompressionQuality := ADBJpegCompressionQuality;
+      Result.Jpeg.CompressionQuality := JpegCompressionQuality;
       Thbmp := TBitmap.Create;
       try
         Thbmp.PixelFormat := pf24bit;
@@ -1033,12 +1042,12 @@ begin
           if (G is TRAWImage) then
             TRAWImage(G).DisplayDibSize := True;
 
-          if Max(G.Width, G.Height) > AThImageSize then
+          if Max(G.Width, G.Height) > ThumbnailSize then
           begin
             if G.Width > G.Height then
-              Thbmp.SetSize(AThImageSize, Round(AThImageSize * (G.Height / G.Width)))
+              Thbmp.SetSize(ThumbnailSize, Round(ThumbnailSize * (G.Height / G.Width)))
             else
-              Thbmp.SetSize(Round(AThImageSize * (G.Width / G.Height)), AThImageSize);
+              Thbmp.SetSize(Round(ThumbnailSize * (G.Width / G.Height)), ThumbnailSize);
 
           end else
             Thbmp.SetSize(G.Width, G.Height);
@@ -1495,13 +1504,20 @@ end;
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; Groups: TGroups);
 var
   FileName: string;
+  NewGroups: TGroups;
   Rec: TDBPopupMenuInfoRecord;
 begin
   Rec := TDBPopupMenuInfoRecord.Create;
   try
     Rec.ReadFromDS(OutTable);
     Rec.WriteToDS(InTable);
-    AddGroupsToGroups(Groups, EnCodeGroups(Rec.Groups));
+
+    NewGroups := TGroups.CreateFromString(Rec.Groups);
+    try
+      Groups.AddGroups(NewGroups);
+    finally
+      F(NewGroups);
+    end;
 
     if IsMobile then
     begin

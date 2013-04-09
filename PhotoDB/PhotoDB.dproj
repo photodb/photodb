@@ -593,7 +593,6 @@
         <DCCReference Include="Units\Providers\uExplorerProvidersInit.pas"/>
         <DCCReference Include="Units\uExifInfo.pas"/>
         <DCCReference Include="Units\uFormInterfaces.pas"/>
-        <DCCReference Include="Units\uGroupTypes.pas"/>
         <DCCReference Include="Units\Formats\uFreeImageImage.pas"/>
         <DCCReference Include="Units\PDB.uVCLRewriters.pas"/>
         <DCCReference Include="Units\uDBInfoEditorUtils.pas"/>

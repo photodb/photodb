@@ -980,6 +980,7 @@ var
   I: Integer;
 begin
   Result := False;
+{$IFDEF PHOTODB}
   if GOM.IsObj(BaseForm) and Supports(BaseForm, IImageSource) then
     Result := (BaseForm as IImageSource).GetImage(FileName, Bitmap, Width, Height);
 
@@ -994,6 +995,7 @@ begin
       Exit;
 
   end;
+{$ENDIF}
 end;
 
 class function TFormCollection.Instance: TFormCollection;

@@ -4,8 +4,9 @@ interface
 
 uses
   CmpUnit,
-  uGroupTypes,
   UnitLinksSupport,
+
+  uDBEntities,
   uDBBaseTypes;
 
 type
@@ -62,7 +63,7 @@ const
         end;
       VALUE_TYPE_GROUPS:
         begin
-          Result := CompareGroups(Value1, Value2);
+          Result := TGroups.CompareGroups(Value1, Value2);
         end;
       VALUE_TYPE_LINKS:
         begin

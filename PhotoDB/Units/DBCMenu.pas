@@ -43,7 +43,6 @@ uses
   uIconUtils,
   uLogger,
   uCDMappingTypes,
-  uGroupTypes,
   uMemory,
   uBitmapUtils,
   uGraphicUtils,
@@ -71,6 +70,8 @@ uses
 
 type
   TDBPopupMenu = class
+  class var
+    FExtImagesInImageList: Integer;
   private
     FPopupMenu: TPopupActionBar;
     FInfo: TDBPopupMenuInfo;
@@ -241,7 +242,6 @@ var
   I: Integer;
   FE, Isrecord, IsFile, IsCurrentFile, IsStaticFile: Boolean;
   MenuGroups: TGroups;
-  GroupsList: TStringList;
   StrGroups: string;
   KeyWords: TArray<string>;
   BusyMenu, ErrorMenu: TMenuItem;
@@ -321,16 +321,7 @@ begin
 
   IsStaticFile := StaticPath(DBItem.FileName);
 
-  GroupsList := TStringList.Create;
-  try
-    for I := 0 to FInfo.Count - 1 do
-      if FInfo[I].Selected then
-        GroupsList.Add(FInfo[I].Groups);
-
-    StrGroups := GetCommonGroups(GroupsList);
-  finally
-    F(GroupsList);
-  end;
+  StrGroups := FInfo.CommonSelectedGroups;
 
   TTranslateManager.Instance.BeginTranslate;
   try
@@ -404,7 +395,7 @@ begin
 
       MI := CreateMenuItem('Groups', DB_IC_GROUPS);
 
-      MenuGroups := EnCodeGroups(StrGroups);
+      MenuGroups := TGroups.CreateFromString(StrGroups);
       try
         for I := 0 to MenuGroups.Count - 1 do
           CreateMenuItemEx(MI, MenuGroups[I].GroupName, GetGroupImageInImageList(MenuGroups[I].GroupCode)).OnClick := QuickGroupInfoPopUpMenu;
@@ -1296,12 +1287,10 @@ begin
 
       for I := 0 to FInfo.Count - 1 do
         if FInfo[I].Selected then
-        begin
-          GroupList.Add(FInfo[I].Groups);
           KeyWordList.Add(FInfo[I].KeyWords);
-        end;
-      StrOldGroups := GetCommonGroups(GroupList);
-      StrNewGroups := GetCommonGroups(GroupList);
+
+      StrOldGroups := FInfo.CommonSelectedGroups;
+      StrNewGroups := FInfo.CommonSelectedGroups;
       OldKeyWords := GetCommonWordsA(KeyWordList);
     finally
       F(GroupList);
@@ -1310,7 +1299,7 @@ begin
     NewKeyWords := OldKeyWords;
     GroupsSelectForm.Execute(StrNewGroups, NewKeyWords);
     VarKeyWords := VariousKeyWords(OldKeyWords, NewKeyWords);
-    VarGroups := not CompareGroups(StrOldGroups, StrNewGroups);
+    VarGroups := not TGroups.CompareGroups(StrOldGroups, StrNewGroups);
     if not VarKeyWords and not VarGroups then
       Exit;
     if CheckDBReadOnly then
@@ -1368,7 +1357,7 @@ begin
     finally
       FreeDS(fQuery);
     end;
-    if not CompareGroups(StrNewGroups, StrOldGroups) then
+    if not TGroups.CompareGroups(StrNewGroups, StrOldGroups) then
     begin
       FreeSQLList(List);
       FQuery := Context.CreateQuery;
@@ -1383,8 +1372,8 @@ begin
             if FInfo[I].Selected then
             begin
               Groups := FInfo[I].Groups;
-              ReplaceGroups(StrOldGroups, StrNewGroups, Groups);
-              if not CompareGroups(Groups, FInfo[I].Groups) then
+              TGroups.ReplaceGroups(StrOldGroups, StrNewGroups, Groups);
+              if not TGroups.CompareGroups(Groups, FInfo[I].Groups) then
                 AddQuery(List, Groups, FInfo[I].ID);
 
             end;

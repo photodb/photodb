@@ -41,7 +41,6 @@ uses
   uExplorerGroupsProvider,
   uConstants,
   uDBForm,
-  uGroupTypes,
   uMemoryEx,
   uShellIntegration,
   uCollectionEvents,
@@ -93,6 +92,8 @@ type
     { Private declarations }
     FDBContext: IDBContext;
     FGroupsRepository: IGroupsRepository;
+    FSettingsRepository: ISettingsRepository;
+
     FGroup: TGroup;
     Saving: Boolean;
     FNewRelatedGroups: string;
@@ -134,6 +135,8 @@ procedure TFormChangeGroup.FormCreate(Sender: TObject);
 begin
   FDBContext := DBKernel.DBContext;
   FGroupsRepository := FDBContext.Groups;
+  FSettingsRepository := FDBContext.Settings;
+
   FGroup := nil;
   Saving := False;
   LoadLanguage;
@@ -144,6 +147,8 @@ end;
 procedure TFormChangeGroup.FormDestroy(Sender: TObject);
 begin
   F(FGroup);
+
+  FSettingsRepository := nil;
   FGroupsRepository := nil;
   FDBContext := nil;
 end;
@@ -289,8 +294,15 @@ begin
 end;
 
 procedure TFormChangeGroup.MiLoadFromFileClick(Sender: TObject);
+var
+  Settings: TSettings;
 begin
-  LoadNickJpegImage(ImgMain.Picture);
+  Settings := FSettingsRepository.Get;
+  try
+    LoadNickJpegImage(ImgMain.Picture, Settings.DBJpegCompressionQuality);
+  finally
+    F(Settings);
+  end;
 end;
 
 procedure TFormChangeGroup.MiLoadFromMiniGalleryClick(Sender: TObject);
@@ -312,6 +324,7 @@ var
   Editor: TImageEditorForm;
   Bitmap: TBitmap;
   FJPG: TJpegImage;
+  Settings: TSettings;
 begin
   FileName := '';
   for I := 0 to Screen.FormCount - 1 do
@@ -327,6 +340,7 @@ begin
         Break;
      end;
   end;
+
   if FileName <> '' then
   begin
     Editor := TImageEditor.Create(nil);
@@ -338,7 +352,12 @@ begin
           KeepProportions(Bitmap, 48, 48);
           FJPG := TJpegImage.Create;
           try
-            FJPG.CompressionQuality := DBJpegCompressionQuality;
+            Settings := FSettingsRepository.Get;
+            try
+              FJPG.CompressionQuality := Settings.DBJpegCompressionQuality;
+            finally
+              F(Settings);
+            end;
             FJPG.Assign(Bitmap);
             FJPG.JPEGNeeded;
             ImgMain.Picture.Graphic := FJPG;
@@ -472,7 +491,7 @@ begin
     F(SmallB);
   end;
 
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  FCurrentGroups := TGroups.CreateFromString(FNewRelatedGroups);
   try
     for I := 0 to FCurrentGroups.Count - 1 do
     begin
@@ -513,7 +532,7 @@ begin
   FillImageList;
   WllGroups.Clear;
 
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  FCurrentGroups := TGroups.CreateFromString(FNewRelatedGroups);
   try
     if FCurrentGroups.Count = 0 then
     begin

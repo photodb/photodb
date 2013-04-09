@@ -136,7 +136,6 @@
         <DCCReference Include="uSetupDatabaseActions.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uStringUtils.pas"/>
         <DCCReference Include="uLangUtils.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uImageSource.pas"/>
         <DCCReference Include="uUserUtils.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uIME.pas"/>

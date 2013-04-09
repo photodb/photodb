@@ -27,13 +27,11 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   CmpUnit,
-  //UnitGroupsWork,
   UnitGroupsTools,
   UnitDBDeclare,
   UnitDBKernel,
 
   uMemory,
-  uGroupTypes,
   uBitmapUtils,
   uDBForm,
   uDBContext,
@@ -153,10 +151,10 @@ procedure TEditGroupsForm.Execute(var Groups, KeyWords: string; CanNew: Boolean)
 var
   FGroups: TGroups;
 begin
-  FGroups := EncodeGroups(Groups);
+  FGroups := TGroups.CreateFromString(Groups);
   try
     Execute(FGroups, KeyWords, CanNew);
-    Groups := CodeGroups(FGroups);
+    Groups := FGroups.ToString;
   finally
     F(FGroups);
   end;
@@ -171,10 +169,10 @@ begin
 
   FResult := False;
   FNewKeyWords := KeyWords;
-  FOldGroups := CopyGroups(Groups);
+  FOldGroups := Groups.Clone;
   FOldKeyWords := KeyWords;
-  FGroups := CopyGroups(Groups);
-  FSetGroups := CopyGroups(Groups);
+  FGroups := Groups.Clone;
+  FSetGroups := Groups.Clone;
   LstSelectedGroups.Clear;
   for I := 0 to Groups.Count - 1 do
     LstSelectedGroups.Items.Add(Groups[I].GroupName);
@@ -183,11 +181,11 @@ begin
   F(Groups);
   if FResult then
   begin
-    Groups := CopyGroups(FSetGroups);
+    Groups := FSetGroups.Clone;
     KeyWords := FNewKeyWords;
   end else
   begin
-    Groups := CopyGroups(FOldGroups);
+    Groups := FOldGroups.Clone;
     KeyWords := FOldKeyWords;
   end;
   Close;
@@ -258,7 +256,7 @@ begin
     end;
   end;
   F(FSetGroups);
-  FSetGroups := CopyGroups(FGroups);
+  FSetGroups := FGroups.Clone;
   Close;
 end;
 
@@ -274,24 +272,23 @@ var
     I: Integer;
   begin
     // добавляем связанные группы
-    FRelatedGroups := EncodeGroups(Group.RelatedGroups);
+    FRelatedGroups := TGroups.CreateFromString(Group.RelatedGroups);
     // сохраняем что имели
-    OldGroups := CopyGroups(FSetGroups);
+    OldGroups := FSetGroups.Clone;
     try
       // копируем?
-      Groups := CopyGroups(OldGroups);
+      Groups := OldGroups.Clone;
       try
 
         // добавили группу и связанные с ней группы
-        AddGroupToGroups(Groups, Group);
-        AddGroupsToGroups(Groups, FRelatedGroups);
+        Groups.AddGroup(Group).AddGroups(FRelatedGroups);
 
         // занесли это всё в FSetGroups - результат
         F(FSetGroups);
-        FSetGroups := CopyGroups(Groups);
+        FSetGroups := Groups.Clone;
 
         // получили все новые группы путём вычитания со старым
-        RemoveGroupsFromGroups(Groups, OldGroups);
+        Groups.RemoveGroups(OldGroups);
         for I := 0 to Groups.Count - 1 do
         begin
           // добавляем группу и ключевые слова к ней
@@ -405,7 +402,7 @@ begin
     Key := AnsiLowerCase(FRegGroups[I].GroupName + ' ' + FRegGroups[I].GroupComment + ' ' + FRegGroups[I].GroupKeyWords);
     if (FRegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
     begin
-      uGroupTypes.AddGroupToGroups(FShowenRegGroups, FRegGroups[I]);
+      FShowenRegGroups.AddGroup(FRegGroups[I]);
       LstAvaliableGroups.Items.AddObject(FRegGroups[I].GroupName, TObject(I));
     end;
   end;
@@ -626,12 +623,12 @@ begin
 
   if Control = LstSelectedGroups then
   begin
-    XNewGroups := CopyGroups(FSetGroups);
-    RemoveGroupsFromGroups(XNewGroups, FOldGroups);
+    XNewGroups := FSetGroups.Clone;
+    XNewGroups.RemoveGroups(FOldGroups);
   end else
   begin
-    XNewGroups := CopyGroups(FOldGroups);
-    RemoveGroupsFromGroups(xNewGroups, FSetGroups);
+    XNewGroups := FOldGroups.Clone;
+    xNewGroups.RemoveGroups(FSetGroups);
   end;
   try
     LB := TListBox(Control);
@@ -742,7 +739,7 @@ begin
       FNewKeyWords := KeyWords;
     end;
 
-    RemoveGroupFromGroups(FSetGroups, FSetGroups[I]);
+    FSetGroups.RemoveGroup(FSetGroups[I]);
     LstSelectedGroups.Items.Delete(I);
   end;
   LstSelectedGroups.Invalidate;

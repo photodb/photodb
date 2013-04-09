@@ -38,7 +38,6 @@ uses
   uMemory,
   uMemoryEx,
   uConstants,
-  uGroupTypes,
   uBitmapUtils,
   uDBIcons,
   uExplorerGroupsProvider,
@@ -94,6 +93,7 @@ type
     { Private declarations }
     FContext: IDBContext;
     FGroupsRepository: IGroupsRepository;
+    FSettings: TSettings;
     FCreateFixedGroup: Boolean;
     FCreateGroupWithCode: Boolean;
     FNewGroupName, FGroupCode: string;
@@ -206,7 +206,7 @@ begin
     Group.GroupName := EdName.Text;
     Group.GroupImage := TJpegImage.Create;
     if not FCreateFixedGroup then
-      Group.GroupCode := CreateNewGroupCode
+      Group.GroupCode := TGroup.CreateNewGroupCode
     else
       Group.GroupCode := FGroupCode;
     Group.GroupImage.Assign(ImGroup.Picture.Graphic);
@@ -248,9 +248,14 @@ begin
 end;
 
 procedure TNewGroupForm.FormCreate(Sender: TObject);
+var
+  SettingsRepository: ISettingsRepository;
 begin
   FContext := DBKernel.DBContext;
   FGroupsRepository := FContext.Groups;
+  SettingsRepository := FContext.Settings;
+
+  FSettings := SettingsRepository.Get;
 
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_GROUP_RELOAD_GROUPS');
   LoadLanguage;
@@ -260,6 +265,7 @@ end;
 procedure TNewGroupForm.FormDestroy(Sender: TObject);
 begin
   FContext := nil;
+  F(FSettings);
 end;
 
 procedure TNewGroupForm.LoadLanguage;
@@ -327,7 +333,7 @@ begin
           KeepProportions(Bitmap, 48, 48);
           FJPG := TJpegImage.Create;
           try
-            FJPG.CompressionQuality := DBJpegCompressionQuality;
+            FJPG.CompressionQuality := FSettings.DBJpegCompressionQuality;
             FJPG.Assign(Bitmap);
             FJPG.JPEGNeeded;
             ImGroup.Picture.Graphic := FJPG;
@@ -415,7 +421,7 @@ end;
 
 procedure TNewGroupForm.LoadFromFile1Click(Sender: TObject);
 begin
-  LoadNickJpegImage(ImGroup.Picture);
+  LoadNickJpegImage(ImGroup.Picture, FSettings.DBJpegCompressionQuality);
 end;
 
 procedure TNewGroupForm.FillImageList;
@@ -439,7 +445,7 @@ begin
   finally
     F(SmallB);
   end;
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  FCurrentGroups := TGroups.CreateFromString(FNewRelatedGroups);
   try
     for I := 0 to FCurrentGroups.Count - 1 do
     begin
@@ -492,33 +498,37 @@ var
   WL: TWebLink;
   LblInfo: TStaticText;
 begin
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
   FillImageList;
   WllGroups.Clear;
 
-  if FCurrentGroups.Count = 0 then
-  begin
-    LblInfo := TStaticText.Create(WllGroups);
-    LblInfo.Parent := WllGroups;
-    WllGroups.AddControl(LblInfo, True);
-    LblInfo.Caption := L('There are no related groups');
-  end;
+  FCurrentGroups := TGroups.CreateFromString(FNewRelatedGroups);
+  try
+    if FCurrentGroups.Count = 0 then
+    begin
+      LblInfo := TStaticText.Create(WllGroups);
+      LblInfo.Parent := WllGroups;
+      WllGroups.AddControl(LblInfo, True);
+      LblInfo.Caption := L('There are no related groups');
+    end;
 
-  WL := WllGroups.AddLink(True);
-  WL.Text := L('Edit related groups');
-  WL.ImageList := GroupsImageList;
-  WL.ImageIndex := 0;
-  WL.Tag := -1;
-  WL.OnClick := GroupClick;
-
-  for I := 0 to FCurrentGroups.Count - 1 do
-  begin
-    WL := WllGroups.AddLink;
-    WL.Text := FCurrentGroups[I].GroupName;
+    WL := WllGroups.AddLink(True);
+    WL.Text := L('Edit related groups');
     WL.ImageList := GroupsImageList;
-    WL.ImageIndex := I + 1;
-    WL.Tag := I;
+    WL.ImageIndex := 0;
+    WL.Tag := -1;
     WL.OnClick := GroupClick;
+
+    for I := 0 to FCurrentGroups.Count - 1 do
+    begin
+      WL := WllGroups.AddLink;
+      WL.Text := FCurrentGroups[I].GroupName;
+      WL.ImageList := GroupsImageList;
+      WL.ImageIndex := I + 1;
+      WL.Tag := I;
+      WL.OnClick := GroupClick;
+    end;
+  finally
+    F(FCurrentGroups);
   end;
   WllGroups.ReallignList;
 end;

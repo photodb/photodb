@@ -49,7 +49,6 @@ uses
   uSetupDatabaseActions in 'uSetupDatabaseActions.pas',
   uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
   uLangUtils in 'uLangUtils.pas',
-  uImageSource in '..\PhotoDB\Units\uImageSource.pas',
   uUserUtils in 'uUserUtils.pas',
   uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',

@@ -28,7 +28,6 @@ uses
 
   uMemory,
   uConstants,
-  uGroupTypes,
   uBitmapUtils,
   uDBForm,
   uDBContext,
@@ -292,7 +291,7 @@ var
 begin
   FillImageList;
 
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  FCurrentGroups := TGroups.CreateFromString(FNewRelatedGroups);
   try
     for I := 0 to FCurrentGroups.Count - 1 do
     begin
@@ -325,7 +324,7 @@ var
 begin
   GroupsImageList.Clear;
 
-  FCurrentGroups := EncodeGroups(FNewRelatedGroups);
+  FCurrentGroups := TGroups.CreateFromString(FNewRelatedGroups);
   try
     for I := 0 to FCurrentGroups.Count - 1 do
     begin

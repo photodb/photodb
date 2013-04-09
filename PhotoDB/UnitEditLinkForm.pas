@@ -36,6 +36,7 @@ uses
   uDBUtils,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uShellIntegration,
   uAssociations,
   uDBIcons,
@@ -251,7 +252,8 @@ begin
         try
           OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
           if OpenPictureDialog.Execute then
-            EdValue.Text := CodeExtID(GetImageIDW(Context, OpenPictureDialog.FileName, False).ImTh);
+            EdValue.Text := CodeExtID(GetImageIDW(Context, OpenPictureDialog.FileName, False, True).ImTh);
+
         finally
           F(OpenPictureDialog);
         end;
@@ -283,8 +285,7 @@ begin
   begin
     for I := 0 to Length(FInfo) - 1 do
       if I <> FN then
-        if (AnsiLowerCase(FInfo[I].LinkName) = AnsiLowerCase(EdName.Text)) and
-          (FInfo[I].LinkType = CbLinkType.ItemIndex) then
+        if (AnsiLowerCase(FInfo[I].LinkName) = AnsiLowerCase(EdName.Text)) and (FInfo[I].LinkType = CbLinkType.ItemIndex) then
         begin
           MessageBoxDB(Handle, L('Link with this name already exists! Please, select another name.'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
           Exit;
@@ -329,7 +330,7 @@ begin
       end;
     LINK_TYPE_ID_EXT:
       begin
-        EdValue.Text := CodeExtID(GetImageIDW(Context, DropFileTarget1.Files[0], False).ImTh);
+        EdValue.Text := CodeExtID(GetImageIDW(Context, DropFileTarget1.Files[0], False, True).ImTh);
       end;
   end;
 end;

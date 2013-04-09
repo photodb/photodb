@@ -2431,7 +2431,7 @@ procedure TImageEditor.Properties1Click(Sender: TObject);
 var
   PR: TImageDBRecordA;
 begin
-  Pr := GetImageIDW(DBKernel.DBContext, CurrentFileName, False);
+  Pr := GetImageIDW(DBKernel.DBContext, CurrentFileName, False, True);
   if Pr.Count <> 0 then
     PropertyManager.NewIDProperty(Pr.Ids[0]).Execute(Pr.Ids[0])
   else

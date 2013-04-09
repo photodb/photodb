@@ -5,7 +5,6 @@ interface
 uses
   Windows,
   SysUtils,
-  uGroupTypes,
   Classes,
   DB,
   ActiveX,

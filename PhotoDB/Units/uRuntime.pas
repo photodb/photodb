@@ -14,20 +14,10 @@ var
   CMDInProgress: Boolean = False;
   ProgramVersionString: string = '';
   BlockClosingOfWindows: Boolean = False;
-  FExtImagesInImageList: Integer = 0;  //TODO: recheck usings
   UserDirectoryUpdaterCount: Integer = 0;
 
 var
   ProcessorCount: Integer = 0;
-
-var
-  // Image sizes
-  DBJpegCompressionQuality: Integer = 75;
-  ThSize: Integer = 202;
-  ThSizeExplorerPreview: Integer = 100;
-  ThSizePropertyPreview: Integer = 100;
-  ThImageSize: Integer = 200;
-  ThHintSize: Integer = 400;
 
 implementation
 

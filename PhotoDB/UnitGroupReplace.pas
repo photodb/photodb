@@ -20,12 +20,12 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   UnitDBKernel,
+  UnitGroupsReplace,
 
   uMemory,
   uRuntime,
   uMemoryEx,
   uConstants,
-  uGroupTypes,
   uDBForm,
   uDBContext,
   uDBEntities,

@@ -33,22 +33,28 @@ uses
   DragDrop,
   UnitHintCeator,
   UnitDBDeclare,
+  UnitDBKernel,
 
-  uBitmapUtils,
+  uConstants,
   uMemory,
+  uBitmapUtils,
   uDBForm,
   uListViewUtils,
   uGOM,
   uDBDrawing,
   uGraphicUtils,
-  uConstants,
   uDBPopupMenuInfo,
   uFormUtils,
   uDBIcons,
+  uDBContext,
+  uDBEntities,
   uAnimationHelper,
   uThemesUtils,
   uTranslateUtils,
   uRuntime;
+
+const
+  ThHintSize = 400;
 
 type
   TImHint = class(TDBForm)
@@ -386,6 +392,9 @@ procedure TImHint.Image1MouseDown(Sender: TObject; Button: TMouseButton;
 var
   DragImage: TBitmap;
   W, H: Integer;
+  Context: IDBContext;
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
 begin
   if not FDragDrop then
     Exit;
@@ -399,7 +408,16 @@ begin
 
     W := ImageBuffer.Width;
     H := ImageBuffer.Height;
-    ProportionalSize(ThSize, ThSize, W, H);
+
+    Context := DBKernel.DBContext;
+    SettingsRepository := Context.Settings;
+    Settings := SettingsRepository.Get;
+    try
+      ProportionalSize(Settings.ThSize, Settings.ThSize, W, H);
+    finally
+      F(Settings);
+    end;
+
     DragImage := TBitmap.Create;
     try
       DragImage.PixelFormat := ImageBuffer.PixelFormat;

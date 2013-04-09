@@ -92,6 +92,7 @@ uses
   uThemesUtils,
   uDBIcons,
   uDBContext,
+  uDBEntities,
   uAnimationHelper,
   uImageZoomHelper,
   uPhotoShelf,
@@ -1468,6 +1469,10 @@ var
   I: Integer;
   OldHoverFace: TFaceDetectionResultItem;
   FaceRect: TRect;
+
+  Context: IDBContext;
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
 begin
   StartPoint := Point(X, Y);
 
@@ -1527,7 +1532,15 @@ begin
           DropFileSource1.ShowImage := FImageExists;
           W := FFullImage.Width;
           H := FFullImage.Height;
-          ProportionalSize(ThImageSize, ThImageSize, W, H);
+
+          Context := DBKernel.DBContext;
+          SettingsRepository := Context.Settings;
+          Settings := SettingsRepository.Get;
+          try
+            ProportionalSize(Settings.ThSize, Settings.ThSize, W, H);
+          finally
+            F(Settings);
+          end;
 
           DragImage := TBitmap.Create;
           try

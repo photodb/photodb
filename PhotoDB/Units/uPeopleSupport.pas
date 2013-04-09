@@ -28,8 +28,6 @@ uses
   uFaceDetection,
   uSettings,
   uDBForm,
-  uGroupTypes,
-  uRuntime,
   uConstants,
   uLogger,
   uBitmapUtils,
@@ -414,10 +412,10 @@ begin
             begin
               Groups := SC.DS.FieldByName('Groups').AsString;
               Keywords := SC.DS.FieldByName('Keywords').AsString;
-              AddGroupsToGroups(Groups, P.Groups);
+              TGroups.AddGroupsToGroups(Groups, P.Groups);
 
               GroupRepository := FDBContext.Groups;
-              GS := EncodeGroups(P.Groups);
+              GS := TGroups.CreateFromString(P.Groups);
               try
                 for I := 0 to GS.Count - 1 do
                 begin

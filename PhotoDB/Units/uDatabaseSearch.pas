@@ -661,7 +661,6 @@ var
   FWorkQuery: TDataSet;
   EstimateCount: Integer;
   FLastPacketTime: Cardinal;
-  IsolationMode: TDBIsolationLevel;
 begin
   if Assigned(OnProgress) then
     OnProgress(Self, -1);

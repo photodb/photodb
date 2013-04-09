@@ -3,6 +3,7 @@ unit uDBPopupMenuInfo;
 interface
 
 uses
+  Generics.Collections,
   System.Classes,
   System.SysUtils,
 
@@ -13,7 +14,7 @@ uses
   UnitLinksSupport,
   CmpUnit,
 
-  uGroupTypes,
+  uDBEntities,
   uList64,
   uMemory;
 
@@ -49,6 +50,7 @@ type
     function GetFilesSize: Int64;
     function GetIsVariousLocation: Boolean;
     function GetHasNonDBInfo: Boolean;
+    function GetCommonSelectedGroups: string;
   protected
     FData: TList;
   public
@@ -84,6 +86,7 @@ type
     property IsPlusMenu: Boolean read FIsPlusMenu write FIsPlusMenu;
     property CommonKeyWords: string read GetCommonKeyWords;
     property CommonGroups: string read GetCommonGroups;
+    property CommonSelectedGroups: string read GetCommonSelectedGroups;
     property CommonLinks: TLinksInfo read GetCommonLinks;
     property CommonComments: string read GetCommonComments;
     property Position: Integer read GetPosition write SetPosition;
@@ -95,6 +98,59 @@ type
   end;
 
 implementation
+
+function GetCommonGroupsForStringList(GroupsList: TStringList): string;
+var
+  I: Integer;
+  FArGroups: TList<TGroups>;
+  Res: TGroups;
+
+  function GetCommonGroupsForList(ArGroups: TList<TGroups>): TGroups;
+  var
+    I, J: Integer;
+  begin
+    if ArGroups.Count = 0 then
+      Exit;
+
+    Result := ArGroups[0].Clone;
+    for I := 1 to ArGroups.Count - 1 do
+    begin
+      if ArGroups[I].Count = 0 then
+      begin
+        FreeList(Result, False);
+        Break;
+      end;
+
+      for J := Result.Count - 1 downto 0 do
+        if not ArGroups[I].HasGroup(Result[J]) then
+          Result.RemoveGroup(Result[J]);
+
+      if Result.Count = 0 then
+        Exit;
+    end;
+  end;
+
+begin
+  Result := '';
+
+  if GroupsList.Count = 0 then
+    Exit;
+
+  FArGroups := TList<TGroups>.Create;
+  try
+    for I := 0 to GroupsList.Count - 1 do
+      FArGroups.Add(TGroups.CreateFromString(GroupsList[I]));
+
+    Res := GetCommonGroupsForList(FArGroups);
+    try
+      Result := Res.ToString;
+    finally
+      F(Res);
+    end;
+  finally
+    FreeList(FArGroups);
+  end;
+end;
 
 { TDBPopupMenuInfo }
 
@@ -199,7 +255,23 @@ begin
   try
     for I := 0 to Count - 1 do
       SL.Add(Self[I].Groups);
-    Result := uGroupTypes.GetCommonGroups(SL);
+    Result := GetCommonGroupsForStringList(SL);
+  finally
+    F(SL);
+  end;
+end;
+
+function TDBPopupMenuInfo.GetCommonSelectedGroups: string;
+var
+  SL: TStringList;
+  I: Integer;
+begin
+  SL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      if Self[I].Selected then
+        SL.Add(Self[I].Groups);
+    Result := GetCommonGroupsForStringList(SL);
   finally
     F(SL);
   end;
