@@ -384,7 +384,8 @@ uses
   uDBContext in 'Units\Database\uDBContext.pas',
   uSettingsRepository in 'Units\Database\uSettingsRepository.pas',
   uDBEntities in 'Units\Database\uDBEntities.pas',
-  uGroupsRepository in 'Units\Database\uGroupsRepository.pas';
+  uGroupsRepository in 'Units\Database\uGroupsRepository.pas',
+  uMediaRepository in 'Units\Database\uMediaRepository.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

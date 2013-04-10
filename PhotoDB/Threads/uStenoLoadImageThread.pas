@@ -63,10 +63,10 @@ end;
 procedure TStenoLoadImageThread.Execute;
 var
   ImageInfo: ILoadImageInfo;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
 begin
   try
-    Info := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
+    Info := TMediaItem.CreateFromFile(FFileName);
     try
       try
         if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo, 146, 146) then

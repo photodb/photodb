@@ -58,7 +58,7 @@ type
   TGetAvaliableCryptFileList = function(Sender: TObject): TArInteger of object;
 
 type
-  TDBPopupMenuInfoRecord = class;
+  TMediaItem = class;
 
   TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
     EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
@@ -97,7 +97,7 @@ type
     IsEncrypted: Boolean;
     Include: Boolean;
     Data: TObject;
-    procedure ReadFromInfo(Info: TDBPopupMenuInfoRecord);
+    procedure ReadFromInfo(Info: TMediaItem);
   end;
 
   TClonableObject = class(TObject)
@@ -162,7 +162,7 @@ type
     procedure Assign(Item: TGeoLocation);
   end;
 
-  TDBPopupMenuInfoRecord = class(TPathItem)
+  TMediaItem = class(TPathItem)
   private
     FOriginalFileName: string;
     FFileNameCRC32: Cardinal;
@@ -172,7 +172,7 @@ type
     function GetFileNameCRC: Cardinal;
     function GetHasImage: Boolean;
   protected
-    function InitNewInstance: TDBPopupMenuInfoRecord; virtual;
+    function InitNewInstance: TMediaItem; virtual;
   public
     Name: string;
     FileName: string;
@@ -210,10 +210,10 @@ type
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet);
     procedure WriteToDS(DS: TDataSet);
-    function Copy: TDBPopupMenuInfoRecord; reintroduce; virtual;
+    function Copy: TMediaItem; reintroduce; virtual;
     function FileExists: Boolean;
     procedure LoadGeoInfo(Latitude, Longitude: Double);
-    procedure Assign(Item: TDBPopupMenuInfoRecord; MoveImage: Boolean = False); reintroduce;
+    procedure Assign(Item: TMediaItem; MoveImage: Boolean = False); reintroduce;
     property InnerImage: Boolean read GetInnerImage;
     property ExistedFileName: string read GetExistedFileName;
     //lower case
@@ -246,9 +246,8 @@ type
     procedure Assign(Source: TDataObject); override;
   end;
 
-
 type
-  THintCheckFunction = function(Info: TDBPopupMenuInfoRecord): Boolean of object;
+  THintCheckFunction = function(Info: TMediaItem): Boolean of object;
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
 
@@ -290,13 +289,11 @@ type
     PreviewOptions: TPreviewOptions;
   end;
 
-  function GetSearchRecordFromItemData(ListItem : TEasyItem) : TDBPopupMenuInfoRecord;
-
 implementation
 
 { TDBPopupMenuInfoRecord }
 
-procedure TDBPopupMenuInfoRecord.Assign(Item: TDBPopupMenuInfoRecord; MoveImage: Boolean = False);
+procedure TMediaItem.Assign(Item: TMediaItem; MoveImage: Boolean = False);
 begin
   FPath := Item.Path;
   ID := Item.ID;
@@ -336,7 +333,7 @@ begin
     LoadGeoInfo(Item.GeoLocation.Latitude, Item.GeoLocation.Longitude);
 end;
 
-function TDBPopupMenuInfoRecord.Copy: TDBPopupMenuInfoRecord;
+function TMediaItem.Copy: TMediaItem;
 begin
   Result := InitNewInstance;
   Result.Assign(Self, False);
@@ -346,7 +343,7 @@ begin
     Result.Data := nil;
 end;
 
-constructor TDBPopupMenuInfoRecord.Create;
+constructor TMediaItem.Create;
 begin
   inherited;
   FFileNameCRC32 := 0;
@@ -377,7 +374,7 @@ begin
   HasExifHeader := False;
 end;
 
-constructor TDBPopupMenuInfoRecord.CreateFromDS(DS: TDataSet);
+constructor TMediaItem.CreateFromDS(DS: TDataSet);
 begin
   InfoLoaded := True;
   Selected := True;
@@ -387,7 +384,7 @@ begin
   FGeoLocation := nil;
 end;
 
-constructor TDBPopupMenuInfoRecord.CreateFromFile(FileName: string);
+constructor TMediaItem.CreateFromFile(FileName: string);
 begin
   Create;
   Self.FOriginalFileName := FileName;
@@ -396,7 +393,7 @@ begin
   Self.Name := ExtractFileName(FileName);
 end;
 
-destructor TDBPopupMenuInfoRecord.Destroy;
+destructor TMediaItem.Destroy;
 begin
   F(Data);
   F(Image);
@@ -404,12 +401,12 @@ begin
   inherited;
 end;
 
-function TDBPopupMenuInfoRecord.FileExists: Boolean;
+function TMediaItem.FileExists: Boolean;
 begin
   Result := InnerImage or FileExistsSafe(FileName);
 end;
 
-function TDBPopupMenuInfoRecord.GetExistedFileName: string;
+function TMediaItem.GetExistedFileName: string;
 begin
   if FolderView then
     Result := FileName
@@ -417,29 +414,29 @@ begin
     Result := FOriginalFileName;
 end;
 
-function TDBPopupMenuInfoRecord.GetFileNameCRC: Cardinal;
+function TMediaItem.GetFileNameCRC: Cardinal;
 begin
   if FFileNameCRC32 = 0 then
     FFileNameCRC32 := StringCRC(AnsiLowerCase(FileName));
   Result := FFileNameCRC32;
 end;
 
-function TDBPopupMenuInfoRecord.GetHasImage: Boolean;
+function TMediaItem.GetHasImage: Boolean;
 begin
   Result := (Image <> nil) and not Image.Empty;
 end;
 
-function TDBPopupMenuInfoRecord.GetInnerImage: Boolean;
+function TMediaItem.GetInnerImage: Boolean;
 begin
   Result := FileName = '?.JPEG';
 end;
 
-function TDBPopupMenuInfoRecord.InitNewInstance: TDBPopupMenuInfoRecord;
+function TMediaItem.InitNewInstance: TMediaItem;
 begin
-  Result := TDBPopupMenuInfoRecord.Create;
+  Result := TMediaItem.Create;
 end;
 
-procedure TDBPopupMenuInfoRecord.LoadGeoInfo(Latitude, Longitude: Double);
+procedure TMediaItem.LoadGeoInfo(Latitude, Longitude: Double);
 begin
   F(FGeoLocation);
   FGeoLocation := TGeoLocation.Create;
@@ -447,7 +444,7 @@ begin
   FGeoLocation.Longitude := Longitude;
 end;
 
-procedure TDBPopupMenuInfoRecord.ReadExists;
+procedure TMediaItem.ReadExists;
 begin
   if FileExistsSafe(FileName) then
     Exists := 1
@@ -455,7 +452,7 @@ begin
     Exists := -1;
 end;
 
-procedure TDBPopupMenuInfoRecord.ReadFromDS(DS: TDataSet);
+procedure TMediaItem.ReadFromDS(DS: TDataSet);
 var
   ThumbField: TField;
   DA: TImageTableAdapter;
@@ -497,7 +494,7 @@ begin
   InfoLoaded := True;
 end;
 
-procedure TDBPopupMenuInfoRecord.WriteToDS(DS: TDataSet);
+procedure TMediaItem.WriteToDS(DS: TDataSet);
 var
   DA: TImageTableAdapter;
 begin
@@ -525,13 +522,6 @@ begin
   finally
     F(DA);
   end;
-end;
-
-{ TExplorerFileInfo }
-
-function GetSearchRecordFromItemData(ListItem: TEasyItem) : TDBPopupMenuInfoRecord;
-begin
-  Result := TDBPopupMenuInfoRecord(TLVDataObject(ListItem.Data).Data);
 end;
 
 { TSearchDataExtension }
@@ -625,7 +615,7 @@ end;
 
 { TEventValues }
 
-procedure TEventValues.ReadFromInfo(Info: TDBPopupMenuInfoRecord);
+procedure TEventValues.ReadFromInfo(Info: TMediaItem);
 begin
   Self.FileName := AnsiLowerCase(Info.FileName);
   Self.ID := Info.ID;

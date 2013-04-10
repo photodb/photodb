@@ -1594,12 +1594,12 @@ end;
 procedure TFormImportImages.ElvPreviewItemDblClick(Sender: TCustomEasyListview;
   Button: TCommonMouseButton; MousePos: TPoint; HitInfo: TEasyHitInfoItem);
 var
-  MenuInfo: TDBPopupMenuInfo;
-  Rec: TDBPopupMenuInfoRecord;
+  MenuInfo: TMediaItemCollection;
+  Rec: TMediaItem;
   I: Integer;
   PI: TPathItem;
 begin
-  MenuInfo := TDBPopupMenuInfo.Create;
+  MenuInfo := TMediaItemCollection.Create;
   try
 
     for I := 0 to ElvPreview.Items.Count - 1 do
@@ -1607,7 +1607,7 @@ begin
       PI := TPathItem(ElvPreview.Items[I].Data);
       if IsGraphicFile(PI.Path) then
       begin
-        Rec := TDBPopupMenuInfoRecord.CreateFromFile(PI.Path);
+        Rec := TMediaItem.CreateFromFile(PI.Path);
         MenuInfo.Add(Rec);
         if ElvPreview.Items[I].Selected then
           MenuInfo.Position := MenuInfo.Count - 1;

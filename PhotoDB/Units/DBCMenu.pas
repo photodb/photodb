@@ -74,7 +74,7 @@ type
     FExtImagesInImageList: Integer;
   private
     FPopupMenu: TPopupActionBar;
-    FInfo: TDBPopupMenuInfo;
+    FInfo: TMediaItemCollection;
     FPopUpPoint: TPoint;
     FUserMenu: TList<TExecutableInfo>;
     FBusy: Boolean;
@@ -123,11 +123,11 @@ type
     procedure UserMenuItemPopUpMenu(Sender: TObject);
     procedure PrintItemPopUpMenu(Sender: TObject);
     procedure ConvertItemPopUpMenu_(Sender: TObject);
-    procedure Execute(Owner: TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
-    procedure ExecutePlus(Owner: TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo; Menus: TArMenuitem);
-    procedure AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TDBPopupMenuInfo);
+    procedure Execute(Owner: TDBForm; X, Y: Integer; Info: TMediaItemCollection);
+    procedure ExecutePlus(Owner: TDBForm; X, Y: Integer; Info: TMediaItemCollection; Menus: TArMenuitem);
+    procedure AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TMediaItemCollection);
     procedure AddUserMenu(Item: TMenuItem; Insert: Boolean; index: Integer);
-    procedure SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
+    procedure SetInfo(Form: TDBForm; Info: TMediaItemCollection);
     function GetGroupImageInImageList(GroupCode: string): Integer;
     function CheckDBReadOnly: Boolean;
   end;
@@ -167,7 +167,7 @@ end;
 procedure TDBPopupMenu.ApplyActions(FileName: string);
 var
   Editor: TImageEditor;
-  Item: TDBPopupMenuInfoRecord;
+  Item: TMediaItem;
   FD: DBSaveDialog;
   FinalFIleName: string;
 begin
@@ -228,7 +228,7 @@ begin
   end;
 end;
 
-procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.AddDBContMenu(Form: TDBForm; Item: TMenuItem; Info: TMediaItemCollection);
 const
   RotateTitles: array[0..3] of string = ('No rotate', 'Rotate right', 'Rotate 180°', 'Rotate left');
   RatingIcons: array[0..5] of Integer = (DB_IC_RATING_STAR, DB_IC_RATING_1, DB_IC_RATING_2, DB_IC_RATING_3, DB_IC_RATING_4, DB_IC_RATING_5);
@@ -248,7 +248,7 @@ var
   OnlyCurrentDBinfoSelected: Boolean;
   NoDBInfoNeeded: Boolean;
   MI: TMenuItem;
-  DBItem: TDBPopupMenuInfoRecord;
+  DBItem: TMediaItem;
 begin
   if FBusy then
   begin
@@ -520,15 +520,20 @@ end;
 procedure TDBPopupMenu.MiFindFileManuallyClick(Sender: TObject);
 var
   FD: DBOpenPictureDialog;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
+  Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
+  Context := DBKernel.DBContext;
+  MediaRepository := Context.Media;
+
   FD := DBOpenPictureDialog.Create;
   try
     FD.Filter := TFileAssociations.Instance.ExtensionList;
     if FD.Execute then
     begin
       Info := FInfo[FInfo.Position];
-      SetFileNameByID(DBKernel.DBContext, Info.ID, FD.FileName);
+      MediaRepository.SetFileNameByID(Info.ID, FD.FileName);
     end;
   finally
     F(FD);
@@ -785,7 +790,7 @@ begin
   inherited;
 
   FBusy := False;
-  Finfo := TDBPopupMenuInfo.Create;
+  Finfo := TMediaItemCollection.Create;
   FUserMenu := TList<TExecutableInfo>.Create;
 
   FPopupMenu := TPopupActionBar.Create(nil);
@@ -1122,6 +1127,7 @@ var
   ID: Integer;
   DA: TImageTableAdapter;
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   if FileExistsSafe(FInfo[FInfo.Position].FileName) then
   begin
@@ -1130,11 +1136,12 @@ begin
   end else
   begin
     Context := DBKernel.DBContext;
+    MediaRepository := Context.Media;
 
     Query := Context.CreateQuery;
     DA := TImageTableAdapter.Create(Query);
     try
-      ID := GetIdByFileName(Context, FInfo[FInfo.Position].FileName);
+      ID := MediaRepository.GetIdByFileName(FInfo[FInfo.Position].FileName);
       if ID = 0 then
         Exit;
       SetSQL(Query, 'SELECT * from $DB$ where ID=' + IntToStr(ID));
@@ -1148,7 +1155,7 @@ begin
   end;
 end;
 
-procedure TDBPopupMenu.Execute(Owner: TDBForm; X, Y: Integer; Info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.Execute(Owner: TDBForm; X, Y: Integer; Info: TMediaItemCollection);
 begin
   FOwner := Owner;
   FPopUpPoint := Point(X, Y);
@@ -1171,7 +1178,7 @@ begin
   end;
 end;
 
-procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; X, Y: integer; Info: TDBPopupMenuInfo;
+procedure TDBPopupMenu.ExecutePlus(Owner : TDBForm; X, Y: integer; Info: TMediaItemCollection;
   Menus: TArMenuitem);
 var
   I: Integer;
@@ -1456,11 +1463,13 @@ var
   Count: Integer;
   ProgressForm: TProgressActionForm;
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   if CheckDBReadOnly then
     Exit;
 
   Context := DBKernel.DBContext;
+  MediaRepository := Context.Media;
 
   FBusy := True;
   OldAccess := (Sender as TMenuItem).Tag;
@@ -1483,7 +1492,7 @@ begin
       begin
         if FInfo[I].Access = Db_access_none then
         begin
-          SetPrivate(Context, FInfo[I].ID);
+          MediaRepository.SetAccess(FInfo[I].ID, Db_access_private);
           EventInfo.Access := Db_access_private;
           CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
@@ -1491,7 +1500,7 @@ begin
       begin
         if FInfo[I].Access = DB_Access_Private then
         begin
-          UnSetPrivate(Context, FInfo[I].ID);
+          MediaRepository.SetAccess(FInfo[I].ID, Db_access_none);
           EventInfo.Access := Db_access_none;
           CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
         end;
@@ -1509,7 +1518,7 @@ var
   WindowsProp: Boolean;
   SelectCount: Integer;
   FFiles: TStrings;
-  CI: TDBPopupMenuInfoRecord;
+  CI: TMediaItem;
 
   procedure ShowPathProperties;
   var
@@ -1666,7 +1675,7 @@ begin
   CollectionEvents.DoIDEvent(FOwner, 0, [EventID_ShelfChanged], EventInfo);
 end;
 
-procedure TDBPopupMenu.SetInfo(Form: TDBForm; Info: TDBPopupMenuInfo);
+procedure TDBPopupMenu.SetInfo(Form: TDBForm; Info: TMediaItemCollection);
 begin
   if Info.Count = 0 then
     Exit;
@@ -1728,17 +1737,19 @@ var
   EventInfo: TEventValues;
   NewRotate: Integer;
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   if CheckDBReadOnly then
     Exit;
 
   Context := DBKernel.DBContext;
+  MediaRepository := Context.Media;
 
   NewRotate := (Sender as Tmenuitem).Tag;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
     begin
-      SetRotate(Context, Finfo[I].ID, NewRotate);
+      MediaRepository.SetRotate(Finfo[I].ID, NewRotate);
       EventInfo.Rotation := NewRotate;
       CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
     end;

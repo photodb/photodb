@@ -39,25 +39,25 @@ type
   TItemUploadProgress = class(TInterfacedObject, IUploadProgress)
   private
     FThread: TShareImagesThread;
-    FItem: TDBPopupMenuInfoRecord;
+    FItem: TMediaItem;
   public
-    constructor Create(Thread: TShareImagesThread; Item: TDBPopupMenuInfoRecord);
+    constructor Create(Thread: TShareImagesThread; Item: TMediaItem);
     procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
   end;
 
   TShareImagesThread = class(TThreadEx)
   private
-    FData: TDBPopupMenuInfoRecord;
+    FData: TMediaItem;
     FIsPreview: Boolean;
     FAlbum: IPhotoServiceAlbum;
     FProvider: IPhotoShareProvider;
     FIsAlbumCreated: Boolean;
     procedure ShowError(ErrorText: string);
     procedure CreateAlbum;
-    procedure ProcessItem(Data: TDBPopupMenuInfoRecord);
-    procedure ProcessImage(Data: TDBPopupMenuInfoRecord);
-    procedure ProcessVideo(Data: TDBPopupMenuInfoRecord);
-    procedure NotifyProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
+    procedure ProcessItem(Data: TMediaItem);
+    procedure ProcessImage(Data: TMediaItem);
+    procedure ProcessVideo(Data: TMediaItem);
+    procedure NotifyProgress(Data: TMediaItem; Max, Position: Int64);
   protected
     procedure Execute; override;
     function GetThreadID: string; override;
@@ -231,7 +231,7 @@ begin
   Result := 'PhotoShare';
 end;
 
-procedure TShareImagesThread.NotifyProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
+procedure TShareImagesThread.NotifyProgress(Data: TMediaItem; Max, Position: Int64);
 begin
   SynchronizeEx(
     procedure
@@ -241,7 +241,7 @@ begin
   );
 end;
 
-procedure TShareImagesThread.ProcessItem(Data: TDBPopupMenuInfoRecord);
+procedure TShareImagesThread.ProcessItem(Data: TMediaItem);
 begin
   if CanShareVideo(Data.FileName) then
     ProcessVideo(Data)
@@ -261,13 +261,13 @@ begin
   end;
 end;
 
-procedure TShareImagesThread.ProcessImage(Data: TDBPopupMenuInfoRecord);
+procedure TShareImagesThread.ProcessImage(Data: TMediaItem);
 var
   PhotoItem: IPhotoServiceItem;
   ItemProgress: IUploadProgress;
 begin
   ProcessImageForSharing(Data, FIsPreview,
-    procedure(Data: TDBPopupMenuInfoRecord; Preview: TGraphic)
+    procedure(Data: TMediaItem; Preview: TGraphic)
     begin
       SynchronizeEx(
         procedure
@@ -276,7 +276,7 @@ begin
         end
       );
     end,
-    procedure(Data: TDBPopupMenuInfoRecord; S: TStream; ContentType: string)
+    procedure(Data: TMediaItem; S: TStream; ContentType: string)
     begin
       ItemProgress := TItemUploadProgress.Create(Self, Data);
       try
@@ -290,7 +290,7 @@ begin
 
 end;
 
-procedure TShareImagesThread.ProcessVideo(Data: TDBPopupMenuInfoRecord);
+procedure TShareImagesThread.ProcessVideo(Data: TMediaItem);
 var
   TempBitmap: TBitmap;
   Ico: TIcon;
@@ -362,7 +362,7 @@ end;
 { TItemUploadProgress }
 
 constructor TItemUploadProgress.Create(Thread: TShareImagesThread;
-  Item: TDBPopupMenuInfoRecord);
+  Item: TMediaItem);
 begin
   FThread := Thread;
   FItem := Item;

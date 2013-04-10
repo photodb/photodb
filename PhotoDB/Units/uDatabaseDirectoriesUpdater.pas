@@ -74,14 +74,14 @@ type
 
   TAddTask = class(TDatabaseTask)
   private
-    FData: TDBPopupMenuInfoRecord;
-    procedure NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+    FData: TMediaItem;
+    procedure NotifyAboutFileProcessing(Info: TMediaItem; Res: TImageDBRecordA);
   public
-    constructor Create(DBContext: IDBContext; Data: TDBPopupMenuInfoRecord); overload;
+    constructor Create(DBContext: IDBContext; Data: TMediaItem); overload;
     constructor Create(DBContext: IDBContext; FileName: string); overload;
     destructor Destroy; override;
     procedure Execute(Items: TArray<TAddTask>);
-    property Data: TDBPopupMenuInfoRecord read FData;
+    property Data: TMediaItem read FData;
   end;
 
   TDatabaseDirectory = class(TDataObject)
@@ -165,7 +165,7 @@ type
     procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
     procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
 
-    procedure AddFile(Info: TDBPopupMenuInfoRecord; Priority: TDatabaseTaskPriority = dtpHigh); overload;
+    procedure AddFile(Info: TMediaItem; Priority: TDatabaseTaskPriority = dtpHigh); overload;
     procedure AddFile(FileName: string; Priority: TDatabaseTaskPriority = dtpHigh); overload;
     procedure AddDirectory(DirectoryPath: string);
 
@@ -808,10 +808,13 @@ begin
 end;
 
 procedure TUpdateTask.Execute;
+var
+  MediaRepository: IMediaRepository;
 begin
+  MediaRepository := FDBContext.Media;
   try
     if FID = 0 then
-      FID := GetIdByFileName(FDBContext, FFileName);
+      FID := MediaRepository.GetIdByFileName(FFileName);
 
     if not UpdateImageRecord(FDBContext, nil, FFileName, ID) then
       UpdaterStorage.AddFileWithErrors(FFileName);
@@ -824,7 +827,7 @@ end;
 
 { TAddTask }
 
-constructor TAddTask.Create(DBContext: IDBContext; Data: TDBPopupMenuInfoRecord);
+constructor TAddTask.Create(DBContext: IDBContext; Data: TMediaItem);
 begin
   if Data = nil then
     raise Exception.Create('Can''t create task for null task!');
@@ -837,7 +840,7 @@ end;
 constructor TAddTask.Create(DBContext: IDBContext; FileName: string);
 begin
   inherited Create(DBContext, FileName);
-  FData := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+  FData := TMediaItem.CreateFromFile(FileName);
   FData.Include := True;
 end;
 
@@ -851,12 +854,15 @@ procedure TAddTask.Execute(Items: TArray<TAddTask>);
 var
   I: Integer;
   ResArray: TImageDBRecordAArray;
-  Infos: TDBPopupMenuInfo;
-  Info: TDBPopupMenuInfoRecord;
+  Infos: TMediaItemCollection;
+  Info: TMediaItem;
   Res: TImageDBRecordA;
+  MediaRepository: IMediaRepository;
 begin
+  MediaRepository := FDBContext.Media;
+
   try
-    Infos := TDBPopupMenuInfo.Create;
+    Infos := TMediaItemCollection.Create;
     try
       for I := 0 to Length(Items) - 1 do
         Infos.Add(Items[I].Data.Copy);
@@ -909,14 +915,14 @@ begin
             //the same file was deleted
             if (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName)) and (Res.Attr[0] = Db_attr_not_exists) then
             begin
-              uDBUtils.SetAttr(FDBContext, Info.ID, Db_attr_norm);
+              MediaRepository.SetAttribute(Info.ID, Db_attr_norm);
               Continue;
             end;
 
             //the same file, skip
             if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
             begin
-              uDBUtils.UpdateDBItemPathInfo(FDBContext, Res.IDs[0], Info.FileName);
+              MediaRepository.SetFileNameById(Res.IDs[0], Info.FileName);
               Continue;
             end;
           end;
@@ -940,7 +946,7 @@ begin
   end;
 end;
 
-procedure TAddTask.NotifyAboutFileProcessing(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+procedure TAddTask.NotifyAboutFileProcessing(Info: TMediaItem; Res: TImageDBRecordA);
 var
   EventInfo: TEventValues;
 begin
@@ -971,16 +977,16 @@ begin
   //TODO:
 end;
 
-procedure TUpdaterStorage.AddFile(Info: TDBPopupMenuInfoRecord; Priority: TDatabaseTaskPriority);
+procedure TUpdaterStorage.AddFile(Info: TMediaItem; Priority: TDatabaseTaskPriority);
 begin
   Add(TAddTask.Create(FContext, Info), Priority);
 end;
 
 procedure TUpdaterStorage.AddFile(FileName: string; Priority: TDatabaseTaskPriority);
 var
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
 begin
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   try
     AddFile(Info, Priority);
   finally

@@ -115,7 +115,7 @@ type
       var Accept: Boolean);
   private
     { Private declarations }
-    FFiles: TDBPopupMenuInfo;
+    FFiles: TMediaItemCollection;
     FPreviewImages: TList<Boolean>;
     FAlbums: TList<IPhotoServiceAlbum>;
     FUserUrl: string;
@@ -159,26 +159,26 @@ type
     procedure LoadAlbumList(Provider: IPhotoShareProvider);
     procedure FillAlbumList(Albums: TList<IPhotoServiceAlbum>);
     procedure UpdateAlbumImage(Album: IPhotoServiceAlbum; Image: TBitmap);
-    function GetItemBlockByData(Index: TDBPopupMenuInfoRecord): TBox;
+    function GetItemBlockByData(Index: TMediaItem): TBox;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
     function GetFormID: string; override;
-    property ItemBlock[Index: TDBPopupMenuInfoRecord]: TBox read GetItemBlockByData;
+    property ItemBlock[Index: TMediaItem]: TBox read GetItemBlockByData;
   public
     { Public declarations }
-    procedure GetDataForPreview(var Data: TDBPopupMenuInfoRecord);
-    procedure GetData(var Data: TDBPopupMenuInfoRecord);
-    procedure UpdatePreview(Data: TDBPopupMenuInfoRecord; Preview: TGraphic);
+    procedure GetDataForPreview(var Data: TMediaItem);
+    procedure GetData(var Data: TMediaItem);
+    procedure UpdatePreview(Data: TMediaItem; Preview: TGraphic);
     procedure SharingDone;
     procedure GetAlbumInfo(var AlbumID, AlbumName: string; var AlbumDate: TDateTime;
       var Access: Integer; var Album: IPhotoServiceAlbum);
-    procedure StartProcessing(Data: TDBPopupMenuInfoRecord);
-    procedure NotifyItemProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
-    procedure EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
+    procedure StartProcessing(Data: TMediaItem);
+    procedure NotifyItemProgress(Data: TMediaItem; Max, Position: Int64);
+    procedure EndProcessing(Data: TMediaItem; ErrorInfo: string);
     procedure ReloadAlbums;
     procedure HideAlbumCreation;
-    procedure Execute(Owner: TDBForm; FileList: TDBPopupMenuInfo);
+    procedure Execute(Owner: TDBForm; FileList: TMediaItemCollection);
   end;
 
 const
@@ -296,7 +296,7 @@ begin
   WlChangeUser.Enabled := Value;
 end;
 
-procedure TFormSharePhotos.Execute(Owner: TDBForm; FileList: TDBPopupMenuInfo);
+procedure TFormSharePhotos.Execute(Owner: TDBForm; FileList: TMediaItemCollection);
 var
   I: Integer;
   HasEncryptedFiles: Boolean;
@@ -378,7 +378,7 @@ begin
 
   FIsWorking := False;
   FCreateAlbumBox := nil;
-  FFiles := TDBPopupMenuInfo.Create;
+  FFiles := TMediaItemCollection.Create;
   FAlbums := TList<IPhotoServiceAlbum>.Create;
   FPreviewImages := TList<Boolean>.Create;
   LoadLanguage;
@@ -447,10 +447,10 @@ begin
   end;
 end;
 
-procedure TFormSharePhotos.GetData(var Data: TDBPopupMenuInfoRecord);
+procedure TFormSharePhotos.GetData(var Data: TMediaItem);
 var
   I: Integer;
-  D: TDBPopupMenuInfoRecord;
+  D: TMediaItem;
 begin
   if Data = nil then
   begin
@@ -473,7 +473,7 @@ begin
   F(D);
 end;
 
-procedure TFormSharePhotos.GetDataForPreview(var Data: TDBPopupMenuInfoRecord);
+procedure TFormSharePhotos.GetDataForPreview(var Data: TMediaItem);
 var
   I: Integer;
 begin
@@ -492,17 +492,17 @@ begin
   Result := 'PhotoShare';
 end;
 
-function TFormSharePhotos.GetItemBlockByData(Index: TDBPopupMenuInfoRecord): TBox;
+function TFormSharePhotos.GetItemBlockByData(Index: TMediaItem): TBox;
 var
   I: Integer;
   Box: TBox;
-  FI: TDBPopupMenuInfoRecord;
+  FI: TMediaItem;
 begin
   Result := nil;
   for I := 0 to SbItemsToUpload.ControlCount - 1 do
   begin
     Box := TBox(SbItemsToUpload.Controls[I]);
-    FI := TDBPopupMenuInfoRecord(Box.Tag);
+    FI := TMediaItem(Box.Tag);
     if AnsiLowerCase(FI.FileName) = AnsiLowerCase(Index.FileName) then
     begin
       Result := Box;
@@ -672,14 +672,14 @@ procedure TFormSharePhotos.DeleteItemFromList(Sender: TObject);
 var
   MI: TMenuItem;
   Sb: TBox;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   I, Top: Integer;
   Box: TBox;
 begin
   MI := TMenuItem(Sender);
   Sb := TBox(MI.Tag);
 
-  Info := TDBPopupMenuInfoRecord(Sb.Tag);
+  Info := TMediaItem(Sb.Tag);
 
   for I := 0 to FFiles.Count - 1 do
   begin
@@ -708,10 +708,10 @@ end;
 procedure TFormSharePhotos.ItemContexPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
   Menus: TArMenuItem;
   Sb: TBox;
-  Rec: TDBPopupMenuInfoRecord;
+  Rec: TMediaItem;
   FileList: TStrings;
   P: TPoint;
 begin
@@ -723,9 +723,9 @@ begin
 
   P := TWinControl(Sender).ClientToScreen(MousePos);
 
-  Rec := TDBPopupMenuInfoRecord(Sb.Tag);
+  Rec := TMediaItem(Sb.Tag);
 
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
 
     if IsGraphicFile(Rec.FileName) then
@@ -940,7 +940,7 @@ begin
   end;
 end;
 
-procedure TFormSharePhotos.UpdatePreview(Data: TDBPopupMenuInfoRecord;
+procedure TFormSharePhotos.UpdatePreview(Data: TMediaItem;
   Preview: TGraphic);
 var
   I: Integer;
@@ -1514,7 +1514,7 @@ procedure TFormSharePhotos.ShowImages(Sender: TObject);
 var
   Sb: TBox;
   I: Integer;
-  MI: TDBPopupMenuInfoRecord;
+  MI: TMediaItem;
   ShellDir, CurrentFileName: string;
 begin
   if Sender is TBox then
@@ -1522,7 +1522,7 @@ begin
   else
     Sb := TBox(TWinControl(Sender).Parent);
 
-  MI := TDBPopupMenuInfoRecord(Sb.Tag);
+  MI := TMediaItem(Sb.Tag);
   for I := 0 to FFiles.Count - 1 do
     if FFiles[I] = MI then
     begin
@@ -1549,7 +1549,7 @@ begin
   Accept := (NewSize > 160) and (NewSize < 400);
 end;
 
-procedure TFormSharePhotos.EndProcessing(Data: TDBPopupMenuInfoRecord; ErrorInfo: string);
+procedure TFormSharePhotos.EndProcessing(Data: TMediaItem; ErrorInfo: string);
 var
   Box: TBox;
   LS: TLoadingSign;
@@ -1585,7 +1585,7 @@ begin
   end;
 end;
 
-procedure TFormSharePhotos.StartProcessing(Data: TDBPopupMenuInfoRecord);
+procedure TFormSharePhotos.StartProcessing(Data: TMediaItem);
 var
   Box: TBox;
   LS: TLoadingSign;
@@ -1607,7 +1607,7 @@ begin
   WlInfo.Show;
 end;
 
-procedure TFormSharePhotos.NotifyItemProgress(Data: TDBPopupMenuInfoRecord; Max, Position: Int64);
+procedure TFormSharePhotos.NotifyItemProgress(Data: TMediaItem; Max, Position: Int64);
 var
   Box: TBox;
   LS: TLoadingSign;

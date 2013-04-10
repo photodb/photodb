@@ -70,7 +70,7 @@ uses
   uTranslateUtils;
 
 type
-  TRequireImageHandler = procedure(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer) of object;
+  TRequireImageHandler = procedure(Sender: TObject; Item: TMediaItem; Width, Height: Integer) of object;
 
 type
   TImageViewerControl = class(TBaseWinControl)
@@ -88,7 +88,7 @@ type
     FHorizontalScrollBar: TScrollBar;
     FVerticalScrollBar: TScrollBar;
     FApplicationEvents: TApplicationEvents;
-    FItem: TDBPopupMenuInfoRecord;
+    FItem: TMediaItem;
     FOnImageRequest: TRequireImageHandler;
     FImageFrameTimer: TTimer;
     FLockEventRotateFileList: TStrings;
@@ -172,7 +172,7 @@ type
     procedure DrawImageInfo;
     function GetIsFastDrawing: Boolean;
     procedure ReAlignScrolls(IsCenter: Boolean);
-    function GetItem: TDBPopupMenuInfoRecord;
+    function GetItem: TMediaItem;
     function GetImageRectA: TRect;
     function HeightW: Integer;
     procedure UpdateCursor;
@@ -243,8 +243,8 @@ type
 
     procedure StartLoadingImage;
     procedure StopLoadingImage;
-    procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
-    procedure LoadAnimatedImage(Item: TDBPopupMenuInfoRecord; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
+    procedure LoadStaticImage(Item: TMediaItem; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
+    procedure LoadAnimatedImage(Item: TMediaItem; Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
     procedure FailedToLoadImage(ErrorMessage: string);
 
     procedure ZoomOut;
@@ -255,7 +255,7 @@ type
 
     procedure SetText(Text: string);
     procedure ReloadCurrent;
-    procedure UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
+    procedure UpdateItemInfo(Item: TMediaItem);
 
     function IsAnimatedImage: Boolean;
 
@@ -273,7 +273,7 @@ type
 
     property ImageViewer: IImageViewer read FImageViewer write FImageViewer;
     property IsFastDrawing: Boolean read GetIsFastDrawing;
-    property Item: TDBPopupMenuInfoRecord read GetItem;
+    property Item: TMediaItem read GetItem;
     property FullImage: TBitmap read FFullImage;
     property OnImageRequest: TRequireImageHandler read FOnImageRequest write FOnImageRequest;
     property PmFace: TPopupActionBar read GetFaceMenu;
@@ -442,7 +442,7 @@ begin
   FIsSelectingFace := False;
   FDisplayAllFaces := False;
 
-  FItem := TDBPopupMenuInfoRecord.Create;
+  FItem := TMediaItem.Create;
 
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 end;
@@ -473,7 +473,7 @@ end;
 procedure TImageViewerControl.DoContextPopup(MousePos: TPoint;
   var Handled: Boolean);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   inherited;
 
@@ -486,7 +486,7 @@ begin
   if FText <> '' then
     Exit;
   
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(FItem.Copy);
     Info.Position := 0;
@@ -668,7 +668,7 @@ begin
   Result := TA(StringToTranslate, 'Viewer');
 end;
 
-procedure TImageViewerControl.LoadAnimatedImage(Item: TDBPopupMenuInfoRecord;
+procedure TImageViewerControl.LoadAnimatedImage(Item: TMediaItem;
   Image: TGraphic; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   FText := '';
@@ -733,7 +733,7 @@ begin
   StopLoadingImage;
 end;
 
-procedure TImageViewerControl.LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
+procedure TImageViewerControl.LoadStaticImage(Item: TMediaItem; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   FText := '';
   F(FItem);
@@ -1362,7 +1362,7 @@ begin
   Result := False;
 end;
 
-function TImageViewerControl.GetItem: TDBPopupMenuInfoRecord;
+function TImageViewerControl.GetItem: TMediaItem;
 begin
   Result := FItem;
 end;
@@ -2151,9 +2151,9 @@ end;
 
 procedure TImageViewerControl.RotateCCW;
 var
-  Info : TDBPopupMenuInfo;
+  Info : TMediaItemCollection;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
@@ -2176,9 +2176,9 @@ end;
 
 procedure TImageViewerControl.RotateCW;
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
@@ -2478,7 +2478,7 @@ begin
   end;
 end;
 
-procedure TImageViewerControl.UpdateItemInfo(Item: TDBPopupMenuInfoRecord);
+procedure TImageViewerControl.UpdateItemInfo(Item: TMediaItem);
 begin
   if FItem = nil then
     FItem := Item.Copy

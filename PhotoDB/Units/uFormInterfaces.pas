@@ -41,7 +41,7 @@ type
   IViewerForm = interface(IFormInterface)
     ['{951665C9-EDA5-44BD-B833-B5543B58DF04}']
     function ShowImage(Sender: TObject; FileName: string): Boolean;
-    function ShowImages(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
+    function ShowImages(Sender: TObject; Info: TMediaItemCollection): Boolean;
     function ShowImageInDirectory(FileName: string; ShowPrivate: Boolean): Boolean;
     function ShowImageInDirectoryEx(FileName: string): Boolean;
     function NextImage: Boolean;
@@ -59,14 +59,14 @@ type
     function GetIsSlideShowNow: Boolean;
     function GetImageIndex: Integer;
     procedure SetImageIndex(Value: Integer);
-    function GetImageByIndex(Index: Integer): TDBPopupMenuInfoRecord;
-    procedure UpdateImageInfo(Info: TDBPopupMenuInfoRecord);
+    function GetImageByIndex(Index: Integer): TMediaItem;
+    procedure UpdateImageInfo(Info: TMediaItem);
 
     property ImagesCount: Integer read GetImagesCount;
     property ImageIndex: Integer read GetImageIndex write SetImageIndex;
     property IsFullScreenNow: Boolean read GetIsFullScreenNow;
     property IsSlideShowNow: Boolean read GetIsSlideShowNow;
-    property Images[Index: Integer]: TDBPopupMenuInfoRecord read GetImageByIndex;
+    property Images[Index: Integer]: TMediaItem read GetImageByIndex;
   end;
 
   IAboutForm = interface(IFormInterface)
@@ -94,10 +94,10 @@ type
 
   IBatchProcessingForm = interface(IFormInterface)
     ['{DEF35564-F0E4-46DD-A323-8FC6ABF19E3D}']
-    procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-    procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-    procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-    procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
+    procedure ExportImages(Owner: TDBForm; List: TMediaItemCollection);
+    procedure ResizeImages(Owner: TDBForm; List: TMediaItemCollection);
+    procedure ConvertImages(Owner: TDBForm; List: TMediaItemCollection);
+    procedure RotateImages(Owner: TDBForm; List: TMediaItemCollection; DefaultRotate: Integer; StartImmediately: Boolean);
   end;
 
   IJpegOptionsForm = interface(IFormInterface)
@@ -125,8 +125,8 @@ type
   IEncryptForm = interface(IFormInterface)
     ['{FB0EA46F-E184-4E16-9F8A-0B4300ED1CFD}']
     function QueryPasswordForFile(FileName: string): TEncryptImageOptions;
-    procedure Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
-    procedure Decrypt(Owner: TDBForm; Info: TDBPopupMenuInfo);
+    procedure Encrypt(Owner: TDBForm; Text: string; Info: TMediaItemCollection);
+    procedure Decrypt(Owner: TDBForm; Info: TMediaItemCollection);
   end;
 
   ISteganographyForm = interface(IFormInterface)
@@ -137,12 +137,12 @@ type
 
   IShareForm = interface(IFormInterface)
     ['{2DF99576-6806-4735-90C9-434F2248B1A9}']
-    procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
+    procedure Execute(Owner: TDBForm; Info: TMediaItemCollection);
   end;
 
   IShareLinkForm = interface(IFormInterface)
     ['{25917009-223C-4012-8443-79E14C52C290}']
-    procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
+    procedure Execute(Owner: TDBForm; Info: TMediaItemCollection);
   end;
 
   IGroupCreateForm = interface(IFormInterface)
@@ -166,7 +166,7 @@ type
 
   ICollectionAddItemForm = interface(IFormInterface)
     ['{29D8DB10-F2B2-4E1C-ABDA-BCAF9CAC5FDC}']
-    procedure Execute(Info: TDBPopupMenuInfoRecord);
+    procedure Execute(Info: TMediaItem);
   end;
 
   ICDExportForm = interface(IFormInterface)

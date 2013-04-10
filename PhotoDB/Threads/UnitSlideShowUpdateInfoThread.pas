@@ -25,7 +25,7 @@ type
     FContext: IDBContext;
     FFileName: string;
     DS: TDataSet;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
   protected
     procedure Execute; override;
     procedure DoUpdateWithSlideShow;
@@ -96,7 +96,7 @@ end;
 
 procedure TSlideShowUpdateInfoThread.SetNoInfo;
 begin
-  FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FFileName);
+  FInfo := TMediaItem.CreateFromFile(FFileName);
   UpdateImageRecordFromExif(FInfo, False);
   SynchronizeEx(DoSetNotDBRecord);
 end;

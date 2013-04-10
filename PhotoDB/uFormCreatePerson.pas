@@ -114,13 +114,13 @@ type
     FDisplayImage: TBitmap;
     FOriginalFace: TFaceDetectionResultItem;
     FPerson: TPerson;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     FRelatedGroups: string;
     FReloadGroupsMessage: Cardinal;
     FIsImageChanged: Boolean;
     FIsEditMode: Boolean;
     FFormPersonSuggest: TDBForm;
-    procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
+    procedure CreatePerson(Info: TMediaItem; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap);
     function DoEditPerson(PersonID: Integer; NewAvatar: TBitmap): Boolean;
     procedure RecreateImage;
     procedure UpdateFaceArea(Face: TFaceDetectionResultItem);
@@ -174,7 +174,7 @@ type
     destructor Destroy; override;
   end;
 
-procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+procedure CreatePerson(Info: TMediaItem; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 function EditPerson(PersonID: Integer; NewAvatar: TBitmap = nil): Boolean;
 
 implementation
@@ -186,7 +186,7 @@ uses
 
 {$R *.dfm}
 
-procedure CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
+procedure CreatePerson(Info: TMediaItem; OriginalFace, FaceInImage: TFaceDetectionResultItem; Bitmap: TBitmap; out Person: TPerson);
 var
   FormCreatePerson: TFormCreatePerson;
 begin
@@ -332,7 +332,7 @@ end;
 
 procedure TFormCreatePerson.MarkPersonOnPhoto;
 var
-  FileInfo: TDBPopupMenuInfoRecord;
+  FileInfo: TMediaItem;
 begin
   if Person.ID > 0 then
   begin
@@ -341,7 +341,7 @@ begin
       AddPhoto;
     end else
     begin
-      FileInfo := TDBPopupMenuInfoRecord.Create;
+      FileInfo := TMediaItem.Create;
       try
         FileInfo.FileName := FInfo.FileName;
         FileInfo.Include := True;
@@ -467,7 +467,7 @@ begin
   WlPersonNameStatus.Enabled := IsEnabled;
 end;
 
-procedure TFormCreatePerson.CreatePerson(Info: TDBPopupMenuInfoRecord; OriginalFace, FaceInImage: TFaceDetectionResultItem;
+procedure TFormCreatePerson.CreatePerson(Info: TMediaItem; OriginalFace, FaceInImage: TFaceDetectionResultItem;
   Bitmap: TBitmap);
 begin
   FIsEditMode := False;

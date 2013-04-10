@@ -44,16 +44,16 @@ type
     FImageSource: IImageSource;
     FImageControl: TImageViewerControl;
     FCurrentFile: string;
-    FFiles: TDBPopupMenuInfo;
+    FFiles: TMediaItemCollection;
     FIsWaiting: Boolean;
     FActiveThreadId: TGUID;
-    FItem: TDBPopupMenuInfoRecord;
+    FItem: TMediaItem;
     FOnBeginLoadingImage: TBeginLoadingImageEvent;
     FOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
     FOnUpdateButtonsState: TUpdateButtonsStateEvent;
     procedure Resize;
-    procedure LoadFile(FileInfo: TDBPopupMenuInfoRecord; NewImage: Boolean);
-    procedure LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
+    procedure LoadFile(FileInfo: TMediaItem; NewImage: Boolean);
+    procedure LoadImage(Sender: TObject; Item: TMediaItem; Width, Height: Integer);
     procedure NotifyButtonsUpdate;
   public
     constructor Create;
@@ -76,7 +76,7 @@ type
     procedure UpdateAvatar(PersonID: Integer);
 
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
-    procedure LoadFiles(FileList: TDBPopupMenuInfo);
+    procedure LoadFiles(FileList: TMediaItemCollection);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
@@ -95,7 +95,7 @@ type
     function GetTop: Integer;
     function GetLeft: Integer;
     function GetActiveThreadId: TGUID;
-    function GetItem: TDBPopupMenuInfoRecord;
+    function GetItem: TMediaItem;
     function GetDisplayBitmap: TBitmap;
     function GetCurentFile: string;
     function GetIsAnimatedImage: Boolean;
@@ -161,7 +161,7 @@ begin
   FCurrentFile := '';
   FIsWaiting := False;
   FActiveThreadId := GetEmptyGUID;
-  FItem := TDBPopupMenuInfoRecord.Create;
+  FItem := TMediaItem.Create;
 
   FOnBeginLoadingImage := nil;
   FOnPersonsFoundOnImage := nil;
@@ -204,7 +204,7 @@ begin
   Result := FImageControl.IsAnimatedImage;
 end;
 
-function TImageViewer.GetItem: TDBPopupMenuInfoRecord;
+function TImageViewer.GetItem: TMediaItem;
 begin
   Result := FItem;
 end;
@@ -278,7 +278,7 @@ begin
   Result := FWidth;
 end;
 
-procedure TImageViewer.LoadFile(FileInfo: TDBPopupMenuInfoRecord; NewImage: Boolean);
+procedure TImageViewer.LoadFile(FileInfo: TMediaItem; NewImage: Boolean);
 var
   Width, Height: Integer;
   Bitmap: TBitmap;
@@ -320,7 +320,7 @@ begin
   LoadImage(Self, FileInfo, FWidth, FHeight);
 end;
 
-procedure TImageViewer.LoadFiles(FileList: TDBPopupMenuInfo);
+procedure TImageViewer.LoadFiles(FileList: TMediaItemCollection);
 var
   I, Position: Integer;
   TheSameFileList: Boolean;
@@ -358,7 +358,7 @@ begin
   end;
 end;
 
-procedure TImageViewer.LoadImage(Sender: TObject; Item: TDBPopupMenuInfoRecord; Width, Height: Integer);
+procedure TImageViewer.LoadImage(Sender: TObject; Item: TMediaItem; Width, Height: Integer);
 var
   DisplaySize: TSize;
 begin

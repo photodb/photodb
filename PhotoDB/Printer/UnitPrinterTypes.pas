@@ -308,13 +308,13 @@ end;
 
 function LoadPicture(var Graphic: TGraphic; FileName: string; out ImageInfo: ILoadImageInfo): Boolean;
 var
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
 begin
   Result := False;
   Graphic := nil;
 
   try
-    Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    Info := TMediaItem.CreateFromFile(FileName);
     try
       if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword], ImageInfo) then
         Graphic := ImageInfo.ExtractGraphic;

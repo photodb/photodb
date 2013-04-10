@@ -23,7 +23,7 @@ type
     FContext: IDBContext;
     FSender: TForm;
     BaseFileName: string;
-    Info: TDBPopupMenuInfo;
+    Info: TMediaItemCollection;
     FSID: TGUID;
   protected
     procedure Execute; override;
@@ -54,7 +54,7 @@ begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
-    Info := TDBPopupMenuInfo.Create;
+    Info := TMediaItemCollection.Create;
     try
       GetFileListByMask(FContext, BaseFileName, TFileAssociations.Instance.ExtensionList, Info, N, True);
       SynchronizeEx(SynchNotify);

@@ -125,7 +125,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
-    FData: TDBPopupMenuInfo;
+    FData: TMediaItemCollection;
     FW7TaskBar: ITaskbarList3;
     FDataCount: Integer;
     FProcessingParams: TProcessingParams;
@@ -146,7 +146,7 @@ type
     procedure DefaultConvert;
     procedure DefaultExport;
     procedure DoDefaultRotate(RotateValue: Integer; StartImmediately: Boolean);
-    procedure SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
+    procedure SetInfo(Owner: TDBForm; List: TMediaItemCollection);
   protected
     function GetFormID: string; override;
     procedure FillProcessingParams;
@@ -158,14 +158,14 @@ type
   public
     { Public declarations }
     destructor Destroy; override;
-    procedure ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
+    procedure ThreadEnd(Data: TMediaItem; EndProcessing: Boolean);
     procedure UpdatePreview(PreviewImage: TBitmap; FileName: string; RealWidth, RealHeight: Integer);
 
     //IBatchProcessingForm
-    procedure ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-    procedure ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-    procedure ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
-    procedure RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo; DefaultRotate: Integer; StartImmediately: Boolean);
+    procedure ExportImages(Owner: TDBForm; List: TMediaItemCollection);
+    procedure ResizeImages(Owner: TDBForm; List: TMediaItemCollection);
+    procedure ConvertImages(Owner: TDBForm; List: TMediaItemCollection);
+    procedure RotateImages(Owner: TDBForm; List: TMediaItemCollection; DefaultRotate: Integer; StartImmediately: Boolean);
   end;
 
 const
@@ -180,28 +180,28 @@ uses
 
 {$R *.dfm}
 
-procedure TFormSizeResizer.ConvertImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.ConvertImages(Owner: TDBForm; List: TMediaItemCollection);
 begin
   SetInfo(Owner, List);
   DefaultConvert;
   Show;
 end;
 
-procedure TFormSizeResizer.ExportImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.ExportImages(Owner: TDBForm; List: TMediaItemCollection);
 begin
   SetInfo(Owner, List);
   DefaultExport;
   Show;
 end;
 
-procedure TFormSizeResizer.ResizeImages(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.ResizeImages(Owner: TDBForm; List: TMediaItemCollection);
 begin
   SetInfo(Owner, List);
   DefaultResize;
   Show;
 end;
 
-procedure TFormSizeResizer.RotateImages(Owner: TDBForm; List: TDBPopupMenuInfo;
+procedure TFormSizeResizer.RotateImages(Owner: TDBForm; List: TMediaItemCollection;
   DefaultRotate: Integer; StartImmediately: Boolean);
 begin
   SetInfo(Owner, List);
@@ -367,7 +367,7 @@ begin
   DoubleBuffered := True;
   RegisterMainForm(Self);
   LoadLanguage;
-  FData := TDBPopupMenuInfo.Create;
+  FData := TMediaItemCollection.Create;
   FProcessingList := TStringList.Create;
   FCurrentPreviewPosition := 0;
 
@@ -562,7 +562,7 @@ begin
   end;
 end;
 
-procedure TFormSizeResizer.SetInfo(Owner: TDBForm; List: TDBPopupMenuInfo);
+procedure TFormSizeResizer.SetInfo(Owner: TDBForm; List: TMediaItemCollection);
 var
   I: Integer;
   FWidth, FHeight: Integer;
@@ -600,7 +600,7 @@ begin
   GeneratePreview;
 end;
 
-procedure TFormSizeResizer.ThreadEnd(Data: TDBPopupMenuInfoRecord; EndProcessing: Boolean);
+procedure TFormSizeResizer.ThreadEnd(Data: TMediaItem; EndProcessing: Boolean);
 var
   I: Integer;
 begin
@@ -960,12 +960,12 @@ end;
 procedure TFormSizeResizer.PbImageContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
   I: Integer;
 begin
   if PrbMain.Visible then
     Exit;
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Assign(FData);
     Info.Position := FCurrentPreviewPosition;

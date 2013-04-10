@@ -14,17 +14,17 @@ uses
   UnitLinksSupport,
   CmpUnit,
 
+  uMemory,
   uDBEntities,
-  uList64,
-  uMemory;
+  uList64;
 
 type
-  TDBPopupMenuInfo = class(TObject)
+  TMediaItemCollection = class(TObject)
   private
     FIsPlusMenu: Boolean;
     FIsListItem: Boolean;
     FListItem: TEasyItem;
-    function GetValueByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+    function GetValueByIndex(Index: Integer): TMediaItem;
     function GetCount: Integer;
     function GetIsVariousInclude: Boolean;
     function GetStatRating: Integer;
@@ -42,7 +42,7 @@ type
     procedure SetPosition(const Value: Integer);
     function GetStatInclude: Boolean;
     function GetCommonComments: string;
-    procedure SetValueByIndex(Index: Integer; const Value: TDBPopupMenuInfoRecord);
+    procedure SetValueByIndex(Index: Integer; const Value: TMediaItem);
     function GetSelectionCount: Integer;
     function GetIsVariousHeight: Boolean;
     function GetIsVariousWidth: Boolean;
@@ -56,18 +56,18 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Assign(Source: TDBPopupMenuInfo);
-    procedure Insert(Index: Integer; MenuRecord: TDBPopupMenuInfoRecord);
-    procedure Add(MenuRecord: TDBPopupMenuInfoRecord); overload;
-    function Add(FileName: string): TDBPopupMenuInfoRecord; overload;
+    procedure Assign(Source: TMediaItemCollection);
+    procedure Insert(Index: Integer; MenuRecord: TMediaItem);
+    procedure Add(MenuRecord: TMediaItem); overload;
+    function Add(FileName: string): TMediaItem; overload;
     procedure Clear;
     procedure ClearList;
     procedure Exchange(Index1, Index2: Integer);
     procedure Delete(Index: Integer);
     procedure NextSelected;
     procedure PrevSelected;
-    function Extract(Index: Integer): TDBPopupMenuInfoRecord;
-    property Items[index: Integer]: TDBPopupMenuInfoRecord read GetValueByIndex write SetValueByIndex; default;
+    function Extract(Index: Integer): TMediaItem;
+    property Items[index: Integer]: TMediaItem read GetValueByIndex write SetValueByIndex; default;
     property IsListItem: Boolean read FIsListItem write FIsListItem;
     property Count: Integer read GetCount;
     property IsVariousInclude: Boolean read GetIsVariousInclude;
@@ -154,7 +154,7 @@ end;
 
 { TDBPopupMenuInfo }
 
-procedure TDBPopupMenuInfo.Add(MenuRecord: TDBPopupMenuInfoRecord);
+procedure TMediaItemCollection.Add(MenuRecord: TMediaItem);
 begin
   if MenuRecord = nil then
     Exit;
@@ -162,8 +162,8 @@ begin
   FData.Add(MenuRecord);
 end;
 
-procedure TDBPopupMenuInfo.Insert(Index: Integer;
-  MenuRecord: TDBPopupMenuInfoRecord);
+procedure TMediaItemCollection.Insert(Index: Integer;
+  MenuRecord: TMediaItem);
 begin
   if MenuRecord = nil then
     Exit;
@@ -171,16 +171,16 @@ begin
   FData.Insert(Index, MenuRecord);
 end;
 
-function TDBPopupMenuInfo.Add(FileName: string) : TDBPopupMenuInfoRecord;
+function TMediaItemCollection.Add(FileName: string) : TMediaItem;
 begin
-  Result := TDBPopupMenuInfoRecord.Create;
+  Result := TMediaItem.Create;
   Result.FileName := FileName;
   Result.Include := True;
   Result.FileSize := GetFileSize(FileName);
   Add(Result);
 end;
 
-procedure TDBPopupMenuInfo.Assign(Source: TDBPopupMenuInfo);
+procedure TMediaItemCollection.Assign(Source: TMediaItemCollection);
 var
   I: Integer;
 begin
@@ -196,57 +196,57 @@ begin
   ListItem := Source.ListItem;
 end;
 
-procedure TDBPopupMenuInfo.Clear;
+procedure TMediaItemCollection.Clear;
 var
   I: Integer;
 begin
   for I := 0 to FData.Count - 1 do
-    TDBPopupMenuInfoRecord(FData[I]).Free;
+    TMediaItem(FData[I]).Free;
   FData.Clear;
 end;
 
-procedure TDBPopupMenuInfo.ClearList;
+procedure TMediaItemCollection.ClearList;
 begin
   FData.Clear;
 end;
 
-constructor TDBPopupMenuInfo.Create;
+constructor TMediaItemCollection.Create;
 begin
   FData := TList.Create;
 end;
 
-procedure TDBPopupMenuInfo.Delete(Index: Integer);
+procedure TMediaItemCollection.Delete(Index: Integer);
 begin
   TObject(FData[Index]).Free;
   FData.Delete(Index);
 end;
 
-destructor TDBPopupMenuInfo.Destroy;
+destructor TMediaItemCollection.Destroy;
 begin
   Clear;
   F(FData);
   inherited;
 end;
 
-procedure TDBPopupMenuInfo.Exchange(Index1, Index2: Integer);
+procedure TMediaItemCollection.Exchange(Index1, Index2: Integer);
 begin
   FData.Exchange(Index1, Index2);
 end;
 
-function TDBPopupMenuInfo.Extract(Index: Integer): TDBPopupMenuInfoRecord;
+function TMediaItemCollection.Extract(Index: Integer): TMediaItem;
 begin
   Result := FData[Index];
   FData.Delete(Index);
 end;
 
-function TDBPopupMenuInfo.GetCommonComments: string;
+function TMediaItemCollection.GetCommonComments: string;
 begin
   Result := '';
   if (Count > 0) and not IsVariousComments then
     Result := Self[0].Comment;
 end;
 
-function TDBPopupMenuInfo.GetCommonGroups: string;
+function TMediaItemCollection.GetCommonGroups: string;
 var
   SL: TStringList;
   I: Integer;
@@ -261,7 +261,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetCommonSelectedGroups: string;
+function TMediaItemCollection.GetCommonSelectedGroups: string;
 var
   SL: TStringList;
   I: Integer;
@@ -277,7 +277,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetCommonKeyWords: string;
+function TMediaItemCollection.GetCommonKeyWords: string;
 var
   KL: TStringList;
   I: Integer;
@@ -292,7 +292,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetCommonLinks: TLinksInfo;
+function TMediaItemCollection.GetCommonLinks: TLinksInfo;
 var
   LL: TStringList;
   I: Integer;
@@ -307,12 +307,12 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetCount: Integer;
+function TMediaItemCollection.GetCount: Integer;
 begin
   Result := FData.Count;
 end;
 
-function TDBPopupMenuInfo.GetFilesSize: Int64;
+function TMediaItemCollection.GetFilesSize: Int64;
 var
   I: Integer;
 begin
@@ -321,7 +321,7 @@ begin
     Inc(Result, Self[I].FileSize);
 end;
 
-function TDBPopupMenuInfo.GetHasNonDBInfo: Boolean;
+function TMediaItemCollection.GetHasNonDBInfo: Boolean;
 var
   I: Integer;
 begin
@@ -331,7 +331,7 @@ begin
       Exit(True);
 end;
 
-function TDBPopupMenuInfo.GetIsVariousComments: Boolean;
+function TMediaItemCollection.GetIsVariousComments: Boolean;
 var
   I: Integer;
 begin
@@ -342,7 +342,7 @@ begin
         Result := True;
 end;
 
-function TDBPopupMenuInfo.GetIsVariousDate: Boolean;
+function TMediaItemCollection.GetIsVariousDate: Boolean;
 var
   I: Integer;
 begin
@@ -353,7 +353,7 @@ begin
         Result := True;
 end;
 
-function TDBPopupMenuInfo.GetIsVariousHeight: Boolean;
+function TMediaItemCollection.GetIsVariousHeight: Boolean;
 var
   I: Integer;
 begin
@@ -364,7 +364,7 @@ begin
         Result := True;
 end;
 
-function TDBPopupMenuInfo.GetIsVariousInclude: Boolean;
+function TMediaItemCollection.GetIsVariousInclude: Boolean;
 var
   I: Integer;
 begin
@@ -375,7 +375,7 @@ begin
         Result := True;
 end;
 
-function TDBPopupMenuInfo.GetIsVariousLocation: Boolean;
+function TMediaItemCollection.GetIsVariousLocation: Boolean;
 var
   I: Integer;
   FirstDir: string;
@@ -390,7 +390,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetIsVariousTime: Boolean;
+function TMediaItemCollection.GetIsVariousTime: Boolean;
 var
   I: Integer;
 begin
@@ -401,7 +401,7 @@ begin
         Result := True;
 end;
 
-function TDBPopupMenuInfo.GetIsVariousWidth: Boolean;
+function TMediaItemCollection.GetIsVariousWidth: Boolean;
 var
   I: Integer;
 begin
@@ -412,7 +412,7 @@ begin
         Result := True;
 end;
 
-function TDBPopupMenuInfo.GetOnlyDBInfo: Boolean;
+function TMediaItemCollection.GetOnlyDBInfo: Boolean;
 var
   I: Integer;
 begin
@@ -423,7 +423,7 @@ begin
       Exit(False);
 end;
 
-function TDBPopupMenuInfo.GetPosition: Integer;
+function TMediaItemCollection.GetPosition: Integer;
 var
   I: Integer;
 begin
@@ -435,7 +435,7 @@ begin
       Result := I;
 end;
 
-function TDBPopupMenuInfo.GetSelectionCount: Integer;
+function TMediaItemCollection.GetSelectionCount: Integer;
 var
   I: Integer;
 begin
@@ -445,7 +445,7 @@ begin
       Inc(Result);
 end;
 
-function TDBPopupMenuInfo.GetStatDate: TDateTime;
+function TMediaItemCollection.GetStatDate: TDateTime;
 var
   I: Integer;
   List: TList64;
@@ -460,7 +460,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetStatInclude: Boolean;
+function TMediaItemCollection.GetStatInclude: Boolean;
 var
   I: Integer;
   List: TList64;
@@ -475,7 +475,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetStatIsDate: Boolean;
+function TMediaItemCollection.GetStatIsDate: Boolean;
 var
   I: Integer;
   List: TList64;
@@ -490,7 +490,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetStatIsTime: Boolean;
+function TMediaItemCollection.GetStatIsTime: Boolean;
 var
   I: Integer;
   List: TList64;
@@ -505,7 +505,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetStatRating: Integer;
+function TMediaItemCollection.GetStatRating: Integer;
 var
   I: Integer;
   List: TList64;
@@ -520,7 +520,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetStatTime: TDateTime;
+function TMediaItemCollection.GetStatTime: TDateTime;
 var
   I: Integer;
   List: TList64;
@@ -535,7 +535,7 @@ begin
   end;
 end;
 
-function TDBPopupMenuInfo.GetValueByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+function TMediaItemCollection.GetValueByIndex(Index: Integer): TMediaItem;
 begin
   if Index < 0 then
     raise EInvalidOperation.Create('Index is out of range - index should be 0 or grater!');
@@ -546,7 +546,7 @@ begin
   Result := FData[Index];
 end;
 
-procedure TDBPopupMenuInfo.SetPosition(const Value: Integer);
+procedure TMediaItemCollection.SetPosition(const Value: Integer);
 var
   I: Integer;
 begin
@@ -555,7 +555,7 @@ begin
   Self[Value].IsCurrent := True;
 end;
 
-procedure TDBPopupMenuInfo.NextSelected;
+procedure TMediaItemCollection.NextSelected;
 var
   I: Integer;
 begin
@@ -574,7 +574,7 @@ begin
     end;
 end;
 
-procedure TDBPopupMenuInfo.PrevSelected;
+procedure TMediaItemCollection.PrevSelected;
 var
   I: Integer;
 begin
@@ -593,11 +593,11 @@ begin
     end;
 end;
 
-procedure TDBPopupMenuInfo.SetValueByIndex(index: Integer;
-  const Value: TDBPopupMenuInfoRecord);
+procedure TMediaItemCollection.SetValueByIndex(index: Integer;
+  const Value: TMediaItem);
 begin
   if FData[index] <> nil then
-    TDBPopupMenuInfoRecord(FData[index]).Free;
+    TMediaItem(FData[index]).Free;
   FData[index] := Value;
 end;
 

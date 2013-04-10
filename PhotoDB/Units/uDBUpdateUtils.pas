@@ -49,18 +49,18 @@ type
     FGroupReplaceActions: TGroupsActionsW;
   protected
     class procedure CleanUp;
-    class procedure NotifyFileAdded(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+    class procedure NotifyFileAdded(Info: TMediaItem; Res: TImageDBRecordA);
   public
-    class function AddFile(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class function AddFileAsDuplicate(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class function AddNewImageRecord(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
-    class procedure ProcessGroups(Context: IDBContext; Info: TDBPopupMenuInfoRecord; ExifGroups: string);
+    class function AddFile(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+    class function AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+    class function AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+    class procedure ProcessGroups(Context: IDBContext; Info: TMediaItem; ExifGroups: string);
   end;
 
 implementation
 
-class function TDatabaseUpdateManager.AddFile(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddFile(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
 var
   Groups, ExifGroups: string;
 begin
@@ -93,7 +93,7 @@ begin
   end;
 end;
 
-class function TDatabaseUpdateManager.AddNewImageRecord(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
 var
   IC: TInsertCommand;
   M: TMemoryStream;
@@ -214,7 +214,7 @@ begin
   Result := True;
 end;
 
-class procedure TDatabaseUpdateManager.ProcessGroups(Context: IDBContext; Info: TDBPopupMenuInfoRecord; ExifGroups: string);
+class procedure TDatabaseUpdateManager.ProcessGroups(Context: IDBContext; Info: TMediaItem; ExifGroups: string);
 var
   RegisteredGroups: TGroups;
   GroupsRepository: IGroupsRepository;
@@ -262,9 +262,9 @@ begin
 end;
 
 class function TDatabaseUpdateManager.MergeWithExistedInfo(Context: IDBContext; ID: Integer;
-  Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+  Info: TMediaItem; Res: TImageDBRecordA): Boolean;
 var
-  DBInfo: TDBPopupMenuInfoRecord;
+  DBInfo: TMediaItem;
   UC: TUpdateCommand;
   Comment, Groups, KeyWords, Links: string;
 begin
@@ -327,16 +327,16 @@ begin
   end;
 end;
 
-class function TDatabaseUpdateManager.AddFileAsDuplicate(Context: IDBContext; Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
 var
   I: Integer;
-  Infos: TDBPopupMenuInfo;
+  Infos: TMediaItemCollection;
   ItemsToDelete: TStringList;
   ItemsDuplicates: TStringList;
   DC: TDeleteCommand;
   UC: TUpdateCommand;
 
-  procedure AddInfo(Info: TDBPopupMenuInfoRecord; InfoToAdd: TDBPopupMenuInfoRecord);
+  procedure AddInfo(Info: TMediaItem; InfoToAdd: TMediaItem);
   var
     Groups, KeyWords, Links: string;
   begin
@@ -378,7 +378,7 @@ var
 
 begin
   Result := False;
-  Infos := TDBPopupMenuInfo.Create;
+  Infos := TMediaItemCollection.Create;
   ItemsToDelete := TStringList.Create;
   ItemsDuplicates := TStringList.Create;
   try
@@ -430,7 +430,7 @@ begin
   end;
 end;
 
-class procedure TDatabaseUpdateManager.NotifyFileAdded(Info: TDBPopupMenuInfoRecord; Res: TImageDBRecordA);
+class procedure TDatabaseUpdateManager.NotifyFileAdded(Info: TMediaItem; Res: TImageDBRecordA);
 var
   EventInfo: TEventValues;
 begin

@@ -56,7 +56,8 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
-    FData: TDBPopupMenuInfoRecord;
+    FMediaRepository: IMediaRepository;
+    FData: TMediaItem;
     FProcessingParams: TProcessingParams;
     FDialogResult: Integer;
     FEndProcessing: Boolean;
@@ -68,7 +69,7 @@ type
     FRect: TRect;
     FIntParam: Integer;
     FLongFont: TLogFont;
-    FDataParam: TDBPopupMenuInfoRecord;
+    FDataParam: TMediaItem;
     procedure ShowWriteError;
     procedure OnEnd;
     procedure NotifyDB;
@@ -80,7 +81,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TDBPopupMenuInfoRecord; AProcessingParams : TProcessingParams);
+    constructor Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TMediaItem; AProcessingParams : TProcessingParams);
     procedure AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect; Text: string);
     procedure SyncDrawCallBack;
     function AsyncPrepareBitmapCallBack(Bitmap: TBitmap; Font: HFont; Text: string): Integer;
@@ -127,10 +128,11 @@ begin
   Result := FIntParam;
 end;
 
-constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TDBPopupMenuInfoRecord; AProcessingParams: TProcessingParams);
+constructor TImageConvertThread.Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TMediaItem; AProcessingParams: TProcessingParams);
 begin
   inherited Create(AOwnerForm, AState);
   FContext := Context;
+  FMediaRepository := Context.Media;
   FData := AData;
   FProcessingParams := AProcessingParams;
 end;
@@ -149,7 +151,7 @@ var
   MS, MD: TMemoryStream;
   FS: TFileStream;
   IsPreviewAvailalbe: Boolean;
-  FileInfo: TDBPopupMenuInfoRecord;
+  FileInfo: TMediaItem;
   FOriginalOrientation: Integer;
   ImageInfo: ILoadImageInfo;
   Flags: TImageLoadFlags;
@@ -365,7 +367,7 @@ const
         begin
           if FProcessingParams.Rotate then
           begin
-            SetRotate(FContext, FData.ID, DB_IMAGE_ROTATE_0);
+            FMediaRepository.SetRotate(FData.ID, DB_IMAGE_ROTATE_0);
             FData.Rotation := DB_IMAGE_ROTATE_0;
 
             RotateFaces(Rotation);
@@ -449,7 +451,7 @@ begin
 
           if Rotation <> (FData.Rotation and DB_IMAGE_ROTATE_MASK) then
           begin
-            SetRotate(FContext, FData.ID, Rotation);
+            FMediaRepository.SetRotate(FData.ID, Rotation);
             FIntParam := Rotation;
             Synchronize(UpdateDBRotation);
           end;

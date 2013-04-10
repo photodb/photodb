@@ -203,8 +203,10 @@ var
   OpenDialog: DBOpenDialog;
   OpenPictureDialog: DBOpenPictureDialog;
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   Context := DBKernel.DBContext;
+  MediaRepository := Context.Media;
 
   case CbLinkType.ItemIndex of
     LINK_TYPE_ID:
@@ -213,7 +215,7 @@ begin
         try
           OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
           if OpenPictureDialog.Execute then
-            EdValue.Text := IntToStr(GetIdByFileName(Context, OpenPictureDialog.FileName));
+            EdValue.Text := IntToStr(MediaRepository.GetIdByFileName(OpenPictureDialog.FileName));
 
         finally
           F(OpenPictureDialog);
@@ -303,13 +305,15 @@ procedure TFormEditLink.DropFileTarget1Drop(Sender: TObject;
 var
   S: string;
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   Context := DBKernel.DBContext;
+  MediaRepository := Context.Media;
 
   case CbLinkType.ItemIndex of
     LINK_TYPE_ID:
       begin
-        EdValue.Text := IntToStr(GetIdByFileName(Context, DropFileTarget1.Files[0]));
+        EdValue.Text := IntToStr(MediaRepository.GetIdByFileName(DropFileTarget1.Files[0]));
       end;
     LINK_TYPE_IMAGE:
       begin

@@ -26,18 +26,18 @@ type
   end;
 
 type
-  TUpdatePreviewProc = reference to procedure(Data: TDBPopupMenuInfoRecord; Preview: TGraphic);
-  TUpdateStreamProc = reference to procedure(Data: TDBPopupMenuInfoRecord; S: TStream; ContentType: string);
+  TUpdatePreviewProc = reference to procedure(Data: TMediaItem; Preview: TGraphic);
+  TUpdateStreamProc = reference to procedure(Data: TMediaItem; S: TStream; ContentType: string);
 
-procedure ProcessImageForSharing(Data: TDBPopupMenuInfoRecord; IsPreview: Boolean;
+procedure ProcessImageForSharing(Data: TMediaItem; IsPreview: Boolean;
   UpdatePreviewProc: TUpdatePreviewProc;
   UpdateStreamProc: TUpdateStreamProc);
-function GetShareLinkForDBItem(Data: TDBPopupMenuInfoRecord): TShareLinkData;
-procedure UpdateDBItemLink(Data: TDBPopupMenuInfoRecord; LinkData: TShareLinkData);
+function GetShareLinkForDBItem(Data: TMediaItem): TShareLinkData;
+procedure UpdateDBItemLink(Data: TMediaItem; LinkData: TShareLinkData);
 
 implementation
 
-procedure ProcessImageForSharing(Data: TDBPopupMenuInfoRecord; IsPreview: Boolean;
+procedure ProcessImageForSharing(Data: TMediaItem; IsPreview: Boolean;
   UpdatePreviewProc: TUpdatePreviewProc;
   UpdateStreamProc: TUpdateStreamProc);
 var
@@ -142,7 +142,7 @@ begin
   end;
 end;
 
-function GetShareLinkForDBItem(Data: TDBPopupMenuInfoRecord): TShareLinkData;
+function GetShareLinkForDBItem(Data: TMediaItem): TShareLinkData;
 var
   DBItem: TDBItem;
   DBItemRepository: TDBitemRepository;
@@ -167,7 +167,7 @@ begin
   //  Result.Url := DBItem.Links;
 end;
 
-procedure UpdateDBItemLink(Data: TDBPopupMenuInfoRecord; LinkData: TShareLinkData);
+procedure UpdateDBItemLink(Data: TMediaItem; LinkData: TShareLinkData);
 begin
 
 end;

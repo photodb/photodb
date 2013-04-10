@@ -57,7 +57,7 @@ type
     Bitmap: TBitmap;
     FIsForward: Boolean;
     FTransparent: Boolean;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     FIsNewDBInfo: Boolean;
     FPage: Word;
     FPages: Word;
@@ -77,7 +77,7 @@ type
     procedure ShowLoadingSign;
     procedure FinishDetectionFaces;
   public
-    constructor Create(Viewer: TViewerForm; Context: IDBContext; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended;
+    constructor Create(Viewer: TViewerForm; Context: IDBContext; Info: TMediaItem; FullImage: Boolean; BeginZoom: Extended;
       SID: TGUID; IsForward: Boolean; Page: Word);
     destructor Destroy; override;
   end;
@@ -90,7 +90,7 @@ uses
 
 { TViewerThread }
 
-constructor TViewerThread.Create(Viewer: TViewerForm; Context: IDBContext; Info: TDBPopupMenuInfoRecord; FullImage: Boolean; BeginZoom: Extended; SID : TGUID; IsForward: Boolean; Page: Word);
+constructor TViewerThread.Create(Viewer: TViewerForm; Context: IDBContext; Info: TMediaItem; FullImage: Boolean; BeginZoom: Extended; SID : TGUID; IsForward: Boolean; Page: Word);
 begin
   inherited Create(Viewer, False);
   FContext := Context;
@@ -495,7 +495,7 @@ begin
       if Query.RecordCount <> 0 then
       begin      
         F(FInfo);
-        FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+        FInfo := TMediaItem.CreateFromFile(FileName);
         FInfo.ReadFromDS(Query);
         FIsNewDBInfo := True;
       end;

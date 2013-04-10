@@ -50,7 +50,7 @@ type
     FOriginalHeight: Integer;
     BooleanResult: Boolean;
     FStateID: TGUID;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     FOwner: TDBForm;
     FHintCheckProc: THintCheckFunction;
     FPoint: TPoint;
@@ -60,7 +60,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwner: TDBForm; AStateID: TGUID; AInfo: TDBPopupMenuInfoRecord; Point: TPoint;
+    constructor Create(AOwner: TDBForm; AStateID: TGUID; AInfo: TMediaItem; Point: TPoint;
       HintCheckProc: THintCheckFunction);
   end;
 
@@ -73,7 +73,7 @@ type
   public
     destructor Destroy; override;
     class function Instance: THintManager;
-    procedure CreateHintWindow(Owner: TDBForm; Info: TDBPopupMenuInfoRecord;
+    procedure CreateHintWindow(Owner: TDBForm; Info: TMediaItem;
       Point: TPoint; HintCheckProc: THintCheckFunction);
     procedure NewState;
     procedure RegisterHint(HintWindow: TForm);
@@ -92,7 +92,7 @@ var
 
 { HintcCeator }
 
-constructor THintCeator.Create(AOwner: TDBForm; AStateID: TGUID; AInfo: TDBPopupMenuInfoRecord;
+constructor THintCeator.Create(AOwner: TDBForm; AStateID: TGUID; AInfo: TMediaItem;
                               Point: TPoint; HintCheckProc: THintCheckFunction);
 begin
   inherited Create(AOwner, False);
@@ -262,7 +262,7 @@ begin
 end;
 
 procedure THintManager.CreateHintWindow(Owner: TDBForm;
-  Info: TDBPopupMenuInfoRecord; Point: TPoint; HintCheckProc : THintCheckFunction);
+  Info: TMediaItem; Point: TPoint; HintCheckProc : THintCheckFunction);
 begin
   FSync.Enter;
   try

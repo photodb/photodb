@@ -98,7 +98,10 @@ procedure TWindowsCopyFilesThread.CorrectPath(Owner: TDBForm; Src: TStrings; Des
 var
   I: Integer;
   FN, Adest: string;
+  MediaRepository: IMediaRepository;
 begin
+  MediaRepository := FContext.Media;
+
   Dest := ExcludeTrailingBackslash(Dest);
   for I := 0 to Src.Count - 1 do
   begin
@@ -111,7 +114,7 @@ begin
     if FileExistsSafe(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFileWithDB(FContext, KernelEventCallBack, Src[I], Adest, GetIDByFileName(FContext, Src[I]), True);
+      RenameFileWithDB(FContext, KernelEventCallBack, Src[I], Adest, MediaRepository.GetIDByFileName(Src[I]), True);
     end;
   end;
 end;

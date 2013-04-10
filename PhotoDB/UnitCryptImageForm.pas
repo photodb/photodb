@@ -77,8 +77,8 @@ type
   public
     { Public declarations }
     function QueryPasswordForFile(FileName: string): TEncryptImageOptions;
-    procedure Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
-    procedure Decrypt(Owner: TDBForm; Info: TDBPopupMenuInfo);
+    procedure Encrypt(Owner: TDBForm; Text: string; Info: TMediaItemCollection);
+    procedure Decrypt(Owner: TDBForm; Info: TMediaItemCollection);
   end;
 
 implementation
@@ -88,7 +88,7 @@ uses
 
 {$R *.dfm}
 
-procedure TCryptImageForm.Decrypt(Owner: TDBForm; Info: TDBPopupMenuInfo);
+procedure TCryptImageForm.Decrypt(Owner: TDBForm; Info: TMediaItemCollection);
 var
   I: Integer;
   Options: TCryptImageThreadOptions;
@@ -127,7 +127,7 @@ begin
   Close;
 end;
 
-procedure TCryptImageForm.Encrypt(Owner: TDBForm; Text: string; Info: TDBPopupMenuInfo);
+procedure TCryptImageForm.Encrypt(Owner: TDBForm; Text: string; Info: TMediaItemCollection);
 var
   Options: TCryptImageThreadOptions;
   Opt: TEncryptImageOptions;

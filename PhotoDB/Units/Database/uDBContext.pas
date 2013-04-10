@@ -20,6 +20,17 @@ uses
   uDBEntities;
 
 type
+  IMediaRepository = interface
+    function GetIdByFileName(FileName: string): Integer;
+    function GetFileNameById(ID: Integer): string;
+    procedure SetFileNameById(ID: Integer; FileName: string);
+    procedure SetAccess(ID, Access: Integer);
+    procedure SetRotate(ID, Rotate: Integer);
+    procedure SetRating(ID, Rating: Integer);
+    procedure SetAttribute(ID, Attribute: Integer);
+    function GetCount: Integer;
+  end;
+
   IGroupsRepository = interface
     function GetAll(LoadImages: Boolean; SortByName: Boolean; UseInclude: Boolean = False): TGroups;
     function Add(Group: TGroup): Boolean;
@@ -88,6 +99,7 @@ type
     function Settings: ISettingsRepository;
     function Groups: IGroupsRepository;
     function People: IPeopleRepository;
+    function Media: IMediaRepository;
   end;
 
   TBaseRepository<T: TBaseEntity> = class(TInterfacedObject)
@@ -124,11 +136,13 @@ type
     function Settings: ISettingsRepository;
     function Groups: IGroupsRepository;
     function People: IPeopleRepository;
+    function Media: IMediaRepository;
   end;
 
 implementation
 
 uses
+  uMediaRepository,
   uGroupsRepository,
   uPeopleRepository,
   uSettingsRepository;
@@ -167,6 +181,11 @@ end;
 function TDBContext.IsValid: Boolean;
 begin
   Result := FIsValid;
+end;
+
+function TDBContext.Media: IMediaRepository;
+begin
+  Result := TMediaRepository.Create(Self);
 end;
 
 function TDBContext.People: IPeopleRepository;

@@ -40,7 +40,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure TmrCheckTimer(Sender: TObject);
   private
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     FLoadingState: Extended;
     { Private declarations }
   protected
@@ -51,7 +51,7 @@ type
     function DisableMasking: Boolean; override;
   public
     { Public declarations }
-    procedure Execute(Info: TDBPopupMenuInfoRecord);
+    procedure Execute(Info: TMediaItem);
   end;
 
 implementation
@@ -126,7 +126,7 @@ begin
   end;
 end;
 
-procedure TFormAddingImage.Execute(Info: TDBPopupMenuInfoRecord);
+procedure TFormAddingImage.Execute(Info: TMediaItem);
 begin
   FInfo := Info;
   FInfo.Include := True;

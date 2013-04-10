@@ -314,6 +314,8 @@ type
     { Private declarations }
     FContext: IDBContext;
     FGroupsRepository: IGroupsRepository;
+    FMediaRepository: IMediaRepository;
+
     FShowInfoType: TShowInfoType;
     LinkDropFiles: TStrings;
     EditLinkForm: TForm;
@@ -323,8 +325,8 @@ type
     FOldGroups, FNowGroups: TGroups;
     FShowenRegGroups: TGroups;
     FPropertyLinks, ItemLinks: TLinksInfo;
-    FFilesInfo: TDBPopupMenuInfo;
-    FMenuRecord: TDBPopupMenuInfoRecord;
+    FFilesInfo: TMediaItemCollection;
+    FMenuRecord: TMediaItem;
     RegGroups: TGroups;
     Adding_now, Editing_info, No_file: Boolean;
     FDateTimeInFileExists: Boolean;
@@ -369,7 +371,7 @@ type
     procedure ExecuteFileNoEx(FileName: string);
     procedure Execute(ID: Integer);
     procedure ExecuteEx(IDs: TArInteger); overload;
-    procedure ExecuteEx(Data: TDBPopupMenuInfo; Image: TBitmap = nil); overload;
+    procedure ExecuteEx(Data: TMediaItemCollection; Image: TBitmap = nil); overload;
     property ImageID: Integer read GetImageID;
     property FileName: string read GetFileName;
   end;
@@ -574,7 +576,7 @@ var
   JPEG: TJpegImage;
   PassWord: string;
   W, H: Integer;
-  DataRecord: TDBPopupMenuInfoRecord;
+  DataRecord: TMediaItem;
   WorkQuery: TDataSet;
   DA: TImageTableAdapter;
 begin
@@ -617,7 +619,7 @@ begin
         BtSave.Enabled := False;
 
       WorkQuery.First;
-      DataRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+      DataRecord := TMediaItem.CreateFromDS(WorkQuery);
       FFilesInfo.Clear;
       FFilesInfo.Add(DataRecord);
 
@@ -744,7 +746,7 @@ begin
       FNowGroups := TGroups.CreateFromString(DataRecord.Groups);
       FOldGroups := FNowGroups.Clone;
 
-      FMenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+      FMenuRecord := TMediaItem.CreateFromDS(WorkQuery);
       FFilesInfo.Clear;
       FFilesInfo.Add(FMenuRecord);
       CommentMemoChange(nil);
@@ -798,7 +800,9 @@ begin
   EditLinkForm := nil;
   FContext := DBKernel.DBContext;
   FGroupsRepository := FContext.Groups;
-  FFilesInfo := TDBPopupMenuInfo.Create;
+  FMediaRepository := FContext.Media;
+
+  FFilesInfo := TMediaItemCollection.Create;
   DestroyCounter := 0;
   GistogrammData.Loaded := False;
   GistogrammData.Loading := False;
@@ -973,7 +977,7 @@ procedure TPropertiesForm.BtSaveClick(Sender: TObject);
 var
   I: Integer;
   IDArray: TArInteger;
-  FileInfo: TDBPopupMenuInfoRecord;
+  FileInfo: TMediaItem;
   UserInput: TUserDBInfoInput;
 begin
   BtSave.SetEnabledEx(False);
@@ -1029,7 +1033,7 @@ begin
       begin
         FSaving := False;
 
-        FileInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+        FileInfo := TMediaItem.CreateFromFile(FileName);
         try
           FillDataRecordWithUserInfo(FileInfo, UserInput);
 
@@ -1118,7 +1122,7 @@ var
   ExifData: TExifData;
   RAWExif: TRAWExif;
   Options: TPropertyLoadImageThreadOptions;
-  Rec: TDBPopupMenuInfoRecord;
+  Rec: TMediaItem;
 begin
   if FSaving then
   begin
@@ -1186,7 +1190,7 @@ begin
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
   Editing_info := False;
 
-  Rec := TDBPopupMenuInfoRecord.Create;
+  Rec := TMediaItem.Create;
   Rec.FileName := FileName;
   FFilesInfo.Clear;
   FFilesInfo.Add(Rec);
@@ -1341,7 +1345,7 @@ begin
 
           if (AnsiLowerCase(EventFileName) = AnsiLowerCase(FileName)) and FileExistsSafe(EventFileName) then
           begin
-            NewFileID := GetIdByFileName(DBKernel.DBContext, FileName);
+            NewFileID := FMediaRepository.GetIdByFileName(FileName);
             if NewFileID = 0 then
               ExecuteFileNoEx(Value.NewName)
             else
@@ -1426,8 +1430,8 @@ var
   SQL: string;
   FirstID: Boolean;
   I, N, M, ALeft, Num, K: Integer;
-  FInfo: TDBPopupMenuInfo;
-  MenuRecord: TDBPopupMenuInfoRecord;
+  FInfo: TMediaItemCollection;
+  MenuRecord: TMediaItem;
   WorkQuery: TDataSet;
 begin
   if Length(IDs) = 0 then
@@ -1439,7 +1443,7 @@ begin
     Exit;
   end;
 
-  FInfo := TDBPopupMenuInfo.Create;
+  FInfo := TMediaItemCollection.Create;
   try
     WorkQuery := FContext.CreateQuery;
     try
@@ -1482,7 +1486,7 @@ begin
         FInfo.Clear;
         for I := 0 to WorkQuery.RecordCount - 1 do
         begin
-          MenuRecord := TDBPopupMenuInfoRecord.CreateFromDS(WorkQuery);
+          MenuRecord := TMediaItem.CreateFromDS(WorkQuery);
           MenuRecord.Selected := True;
           FInfo.Add(MenuRecord);
           WorkQuery.Next;
@@ -1498,7 +1502,7 @@ begin
   end;
 end;
 
-procedure TPropertiesForm.ExecuteEx(Data: TDBPopupMenuInfo; Image: TBitmap = nil);
+procedure TPropertiesForm.ExecuteEx(Data: TMediaItemCollection; Image: TBitmap = nil);
 var
   I: Integer;
   B: TBitmap;
@@ -2046,7 +2050,7 @@ begin
   LI := CopyLinksInfo(FPropertyLinks);
   case LI[N].LinkType of
     LINK_TYPE_ID:
-      ViewFile(GetFileNameById(FContext, StrToIntDef(LI[N].LinkValue, 0)));
+      ViewFile(FMediaRepository.GetFileNameById(StrToIntDef(LI[N].LinkValue, 0)));
     LINK_TYPE_ID_EXT:
       begin
         TIRA := GetimageIDTh(FContext, DeCodeExtID(LI[N].LinkValue));
@@ -2085,7 +2089,7 @@ end;
 
 procedure TPropertiesForm.PmLinksPopup(Sender: TObject);
 var
-  MenuInfo: TDBPopupMenuInfo;
+  MenuInfo: TMediaItemCollection;
   N, ID: Integer;
   LI: TLinksInfo;
 
@@ -2256,7 +2260,7 @@ begin
   FN := '';
   case FPropertyLinks[N].LinkType of
     LINK_TYPE_ID:
-      FN := GetFileNameById(FContext, StrToIntDef(FPropertyLinks[N].LinkValue, 0));
+      FN := FMediaRepository.GetFileNameById(StrToIntDef(FPropertyLinks[N].LinkValue, 0));
     LINK_TYPE_ID_EXT:
       begin
         TIRA := GetImageIDTh(FContext, DeCodeExtID(FPropertyLinks[N].LinkValue));
@@ -2837,12 +2841,12 @@ end;
 
 procedure TPropertiesForm.AddImThLink1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   LinkInfo: TLinkInfo;
   I: Integer;
   B: Boolean;
 begin
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
@@ -2871,12 +2875,12 @@ end;
 
 procedure TPropertiesForm.AddOriginalImTh1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   LinkInfo: TLinkInfo;
   I: Integer;
   B: Boolean;
 begin
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
@@ -2906,14 +2910,14 @@ end;
 procedure TPropertiesForm.AddImThProcessingImageAndAddOriginalToProcessingPhoto1Click(
   Sender: TObject);
 var
-  Info : TDBPopupMenuInfoRecord;
+  Info : TMediaItem;
   LinkInfo: TLinkInfo;
   LinksInfo: TLinksInfo;
   Query: TDataSet;
   I: Integer;
   B: Boolean;
 begin
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then
@@ -2956,14 +2960,14 @@ end;
 procedure TPropertiesForm.AddOriginalImThAndAddProcessngToOriginalImTh1Click(
   Sender: TObject);
 var
-  Info : TDBPopupMenuInfoRecord;
+  Info : TMediaItem;
   LinkInfo: TLinkInfo;
   LinksInfo: TLinksInfo;
   Query: TDataSet;
   I: Integer;
   B: Boolean;
 begin
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   try
     GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
     if Info.LongImageID = '' then

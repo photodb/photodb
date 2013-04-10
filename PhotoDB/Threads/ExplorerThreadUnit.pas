@@ -184,7 +184,7 @@ type
     procedure DoLoadBigImages(LoadOnlyDBItems: Boolean);
     procedure GetAllFiles;
     procedure DoDefaultSort;
-    procedure ExtractImage(Info: TDBPopupMenuInfoRecord; EncryptedFile: Boolean; FileID: TGUID);
+    procedure ExtractImage(Info: TMediaItem; EncryptedFile: Boolean; FileID: TGUID);
     procedure ExtractDirectoryPreview(FileName: string; DirectoryID: TGUID);
     procedure ExtractBigPreview(FileName: string; ID: Integer; Rotated: Integer; FileGUID: TGUID);
     procedure DoMultiProcessorTask; override;
@@ -199,14 +199,14 @@ type
     procedure SearchDB(Parameters: TDatabaseSearchParameters); overload;
     function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
-    procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo);
+    procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TMediaItemCollection);
   protected
     function IsVirtualTerminate: Boolean; override;
     function GetThreadID: string; override;
   public
     FContext: IDBContext;
     ExplorerInfo: TExplorerViewInfo;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     IsCryptedFile: Boolean;
     FFileID: TGUID;
     FSender: TExplorerForm;
@@ -302,7 +302,7 @@ constructor TExplorerThread.Create(Context: IDBContext; Folder, Mask: string; Th
 begin
   inherited Create(Sender, SID);
   FContext := Context;
-  FInfo := TDBPopupMenuInfoRecord.Create;
+  FInfo := TMediaItem.Create;
   CurrentFileInfo := nil;
   FPacketImages := nil;
   FPacketInfos := nil;
@@ -932,11 +932,11 @@ begin
 end;
 
 procedure TExplorerThread.OnDatabasePacketReady(Sender: TDatabaseSearch;
-  Packet: TDBPopupMenuInfo);
+  Packet: TMediaItemCollection);
 var
   I: Integer;
   Info: TExplorerFileInfo;
-  DataRecord: TDBPopupMenuInfoRecord;
+  DataRecord: TMediaItem;
   SearchExtraInfo: TSearchDataExtension;
   FDataList: TList;
 begin
@@ -1455,7 +1455,7 @@ begin
   CryptedFile := ValidCryptGraphicFile(FileName);
 
   F(FInfo);
-  FInfo := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+  FInfo := TMediaItem.CreateFromFile(FileName);
   FInfo.FileSize := FileSize;
   FInfo.Encrypted := CryptedFile;
   FInfo.Tag := EXPLORER_ITEM_FOLDER;
@@ -1554,7 +1554,7 @@ var
   Crc: Cardinal;
   Context: IDBContext;
 
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   Graphic: TGraphic;
   ImageInfo: ILoadImageInfo;
 
@@ -1800,7 +1800,7 @@ begin
         end else
         begin
 
-          Info := TDBPopupMenuInfoRecord.CreateFromFile(Files[Index]);
+          Info := TMediaItem.CreateFromFile(Files[Index]);
           try
 
             Graphic := nil;
@@ -2836,7 +2836,7 @@ procedure TExplorerThread.ExtractBigPreview(FileName: string; ID: Integer; Rotat
 var
   FBit: TBitmap;
   W, H: Integer;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   Graphic: TGraphic;
   ImageInfo: ILoadImageInfo;
 begin
@@ -2847,7 +2847,7 @@ begin
   if not FileExistsSafe(FileName) then
     Exit;
 
-  Info := TDBPopupMenuInfoRecord.CreateFromFile(CurrentFile);
+  Info := TMediaItem.CreateFromFile(CurrentFile);
   try
     Info.ID := ID;
     Info.Rotation := Rotated;
@@ -2933,7 +2933,7 @@ begin
   FSender.DoStopLoading;
 end;
 
-procedure TExplorerThread.ExtractImage(Info: TDBPopupMenuInfoRecord; EncryptedFile: Boolean; FileID: TGUID);
+procedure TExplorerThread.ExtractImage(Info: TMediaItem; EncryptedFile: Boolean; FileID: TGUID);
 var
   W, H: Integer;
   Graphic: TGraphic;

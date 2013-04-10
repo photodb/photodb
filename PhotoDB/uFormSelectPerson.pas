@@ -70,7 +70,7 @@ type
     FContext: IDBContext;
     FPeopleRepository: IPeopleRepository;
     WndMethod: TWndMethod;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     FFormResult: Integer;
     FPersons: TPersonCollection;
     function GetIndex(aNMHdr: pNMHdr): Integer;
@@ -85,7 +85,7 @@ type
     procedure CloseForm;
   public
     { Public declarations }
-    function Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
+    function Execute(Info: TMediaItem; var Person: TPerson): Integer;
   end;
 
 const
@@ -230,7 +230,7 @@ begin
   LsMain.Visible := not IsEnabled;
 end;
 
-function TFormFindPerson.Execute(Info: TDBPopupMenuInfoRecord; var Person: TPerson): Integer;
+function TFormFindPerson.Execute(Info: TMediaItem; var Person: TPerson): Integer;
 begin
   FFormResult := SELECT_PERSON_CANCEL;
 

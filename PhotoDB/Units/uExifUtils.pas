@@ -228,18 +228,18 @@ function ExifOrientationToRatation(Orientation: Integer): Integer;
 function GetExifRating(FileName: string): Integer; overload;
 function GetExifRating(ExifData: TExifData): Integer; overload;
 function GetExifRotate(FileName: string): Integer;
-function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
-function UpdateImageRecordFromExifData(Info: TDBPopupMenuInfoRecord; ExifData: TExifData; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+function UpdateImageRecordFromExif(Info: TMediaItem; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+function UpdateImageRecordFromExifData(Info: TMediaItem; ExifData: TExifData; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 function UpdateFileExif(FileName: string; Info: TExifPatchInfo): Boolean; overload;
-function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean; overload;
+function UpdateFileExif(Info: TMediaItem): Boolean; overload;
 function CreateRating(Rating: Integer): TWindowsStarRating;
 function CreateOrientation(Rotation: Integer): TExifOrientation;
 function IsTheSameOrientation(Or1, Or2: TExifOrientation): Boolean;
 function CanSaveEXIF(FileName: string): Boolean;
 function UpdateFileGeoInfo(FileName: string; GeoInfo: TGeoLocation; RaiseException: Boolean = False): Boolean;
 function DeleteFileGeoInfo(FileName: string; RaiseException: Boolean = False): Boolean;
-function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExifData): Boolean;
-function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+function UpdateImageGeoInfoFromExif(Info: TMediaItem; ExifData: TExifData): Boolean;
+function UpdateImageGeoInfo(Info: TMediaItem): Boolean;
 procedure FixJpegStreamEXIF(Stream: TStream; Width, Height: Integer);
 procedure FixEXIFForJpegStream(Exif: TExifData; Stream: TStream; Width, Height: Integer);
 function EXIFDateToDate(DateTime: string): TDateTime;
@@ -310,7 +310,7 @@ begin
     Result := -Result;
 end;
 
-function UpdateImageGeoInfoFromExif(Info: TDBPopupMenuInfoRecord; ExifData: TExifData): Boolean;
+function UpdateImageGeoInfoFromExif(Info: TMediaItem; ExifData: TExifData): Boolean;
 begin
   Result := False;
 
@@ -325,7 +325,7 @@ begin
   end;
 end;
 
-function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+function UpdateImageGeoInfo(Info: TMediaItem): Boolean;
 var
   ExifData: TExifData;
   OldMode: Cardinal;
@@ -359,7 +359,7 @@ begin
   end;
 end;
 
-function CanReadExifInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+function CanReadExifInfo(Info: TMediaItem): Boolean;
 begin
   Result := False;
 
@@ -375,7 +375,7 @@ begin
   Result := True;
 end;
 
-function UpdateImageRecordFromExifData(Info: TDBPopupMenuInfoRecord; ExifData: TExifData; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+function UpdateImageRecordFromExifData(Info: TMediaItem; ExifData: TExifData; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 var
   Rating, Rotation: Integer;
 begin
@@ -434,7 +434,7 @@ begin
   end;
 end;
 
-function UpdateImageRecordFromExif(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+function UpdateImageRecordFromExif(Info: TMediaItem; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 var
   ExifData: TExifData;
   OldMode: Cardinal;
@@ -478,7 +478,7 @@ begin
   end;
 end;
 
-function UpdateFileExif(Info: TDBPopupMenuInfoRecord): Boolean;
+function UpdateFileExif(Info: TMediaItem): Boolean;
 var
   ExifData: TExifData;
   Changed: Boolean;

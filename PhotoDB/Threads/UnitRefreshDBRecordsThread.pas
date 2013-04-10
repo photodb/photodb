@@ -23,7 +23,7 @@ uses
 
 type
   TRefreshIDRecordThreadOptions = record
-    Info: TDBPopupMenuInfo;
+    Info: TMediaItemCollection;
   end;
 
 type
@@ -31,7 +31,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
-    FInfo: TDBPopupMenuInfo;
+    FInfo: TMediaItemCollection;
     ProgressWindow: TForm;
     BoolParam: Boolean;
     Count: Integer;
@@ -69,7 +69,7 @@ begin
   inherited Create(Owner, False);
   FContext := Context;
   DBEvent_Sender := Owner;
-  FInfo := TDBPopupMenuInfo.Create;
+  FInfo := TMediaItemCollection.Create;
   FInfo.Assign(Options.Info);
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].ID <> 0 then

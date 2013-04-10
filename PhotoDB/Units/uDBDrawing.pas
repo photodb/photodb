@@ -22,9 +22,9 @@ type
   TDrawAttributesOption = (daoEXIF, daoNonImage);
   TDrawAttributesOptions = set of TDrawAttributesOption;
 
-procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
-procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
-procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
+procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TMediaItem);
+procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TMediaItem; Options: TDrawAttributesOptions = []);
+procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TMediaItem; Options: TDrawAttributesOptions = []);
 function GetListItemBorderColor(Data: TLVDataObject): TColor;
 function RectInRect(const R1, R2: TRect): Boolean;
 
@@ -33,7 +33,7 @@ implementation
 uses
   uManagerExplorer;
 
-procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TDBPopupMenuInfoRecord);
+procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TMediaItem);
 var
   DeltaX: Integer;
 begin
@@ -41,12 +41,12 @@ begin
   DrawAttributesExWide(Bitmap, 0, DeltaX, 0, Info);
 end;
 
-procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
+procedure DrawAttributesEx(HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TMediaItem; Options: TDrawAttributesOptions = []);
 begin
   DrawAttributesExWide(nil, HCanvas, DeltaX, DeltaY, Info, Options);
 end;
 
-procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TDBPopupMenuInfoRecord; Options: TDrawAttributesOptions = []);
+procedure DrawAttributesExWide(Bitmap: TBitmap; HCanvas: THandle; DeltaX, DeltaY: Integer; Info: TMediaItem; Options: TDrawAttributesOptions = []);
 var
   FE, RotationNotInDB: Boolean;
   FileName: string;

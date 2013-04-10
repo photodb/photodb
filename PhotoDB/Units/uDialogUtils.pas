@@ -21,11 +21,11 @@ implementation
 
 function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 var
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   ImageInfo: ILoadImageInfo;
 begin
   Result := False;
-  Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+  Info := TMediaItem.CreateFromFile(FileName);
   try
     if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo, MaxWidth, MaxHeight) then
     begin

@@ -57,9 +57,9 @@ type
     function GetImageTotalPages: Integer;
     function GetRotation: Integer;
     function AppllyICCProfile(Bitmap: TBitmap): Boolean;
-    function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
-    function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
-    function GenerateBitmap(Info: TDBPopupMenuInfoRecord; Width, Height: Integer; PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
+    function UpdateImageGeoInfo(Info: TMediaItem): Boolean;
+    function UpdateImageInfo(Info: TMediaItem; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+    function GenerateBitmap(Info: TMediaItem; Width, Height: Integer; PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
     function SaveWithExif(Graphic: TGraphic; FileName: string): Boolean;
     function TryUpdateExif(MS: TMemoryStream; Graphic: TGraphic): Boolean;
     function GetGraphicWidth: Integer;
@@ -110,9 +110,9 @@ type
     function GetExifData: TExifData;
     function GetRawExif: TRAWExif;
     function AppllyICCProfile(Bitmap: TBitmap): Boolean;
-    function UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
-    function UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
-    function GenerateBitmap(Info: TDBPopupMenuInfoRecord; Width, Height: Integer; PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
+    function UpdateImageGeoInfo(Info: TMediaItem): Boolean;
+    function UpdateImageInfo(Info: TMediaItem; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+    function GenerateBitmap(Info: TMediaItem; Width, Height: Integer; PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
     function SaveWithExif(Graphic: TGraphic; FileName: string): Boolean;
     function TryUpdateExif(MS: TMemoryStream; Graphic: TGraphic): Boolean;
   end;
@@ -123,7 +123,7 @@ type
     function CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer; Progress: TLoadImageProgress): Int64;
   end;
 
-function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
+function LoadImageFromPath(Info: TMediaItem; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
   out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0; Progress: TLoadImageProgress = nil): Boolean;
 
 implementation
@@ -135,7 +135,7 @@ begin
     Result := '';
 end;
 
-function LoadImageFromPath(Info: TDBPopupMenuInfoRecord; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
+function LoadImageFromPath(Info: TMediaItem; LoadPage: Integer; Password: string; Flags: TImageLoadFlags;
   out ImageInfo: ILoadImageInfo; Width: Integer = 0; Height: Integer = 0; Progress: TLoadImageProgress = nil): Boolean;
 var
   FS: TFileStream;
@@ -440,7 +440,7 @@ begin
   FGraphic := nil;
 end;
 
-function TLoadImageInfo.GenerateBitmap(Info: TDBPopupMenuInfoRecord; Width, Height: Integer;
+function TLoadImageInfo.GenerateBitmap(Info: TMediaItem; Width, Height: Integer;
   PixelFormat: TPixelFormat; BackgroundColor: TColor; Flags: TImageLoadBitmapFlags): TBitmap;
 var
   B, B32: TBitmap;
@@ -608,14 +608,14 @@ begin
   end;
 end;
 
-function TLoadImageInfo.UpdateImageGeoInfo(Info: TDBPopupMenuInfoRecord): Boolean;
+function TLoadImageInfo.UpdateImageGeoInfo(Info: TMediaItem): Boolean;
 begin
   Result := False;
   if FExifData <> nil then
     Result := UpdateImageGeoInfoFromExif(Info, FExifData);
 end;
 
-function TLoadImageInfo.UpdateImageInfo(Info: TDBPopupMenuInfoRecord; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
+function TLoadImageInfo.UpdateImageInfo(Info: TMediaItem; IsDBValues: Boolean = True; LoadGroups: Boolean = False): Boolean;
 begin
   Result := False;
   try

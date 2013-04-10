@@ -83,7 +83,7 @@ var
   OldMode: Cardinal;
   ExifInfo: IExifInfo;
   Line: IExifInfoLine;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   ImageInfo: ILoadImageInfo;
 
   function L(S: string): string;
@@ -99,7 +99,7 @@ begin
     OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
     try
       try
-        Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+        Info := TMediaItem.CreateFromFile(FileName);
         try
           if LoadImageFromPath(Info, -1, '', [ilfICCProfile, ilfEXIF, ilfPassword, ilfDontUpdateInfo], ImageInfo) then
           begin

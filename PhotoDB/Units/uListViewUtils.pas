@@ -97,7 +97,7 @@ procedure SetListViewColors(ListView: TEasyListView);
 procedure SetLVSelection(ListView: TEasyListView; Multiselect: Boolean; MouseButton: TCommonMouseButtons = []);
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
-                             ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord;
+                             ShowInfo: Boolean; Info: TMediaItem;
                              CanAddImages: Boolean; CustomInfo: string = ''; Options: TDrawAttributesOptions = []);
 
 procedure CreateDragImage(Bitmap: TGraphic; DragImageList: TImageList; Font: TFont; FileName: string); overload;
@@ -149,7 +149,7 @@ end;
 
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
-                             ShowInfo: Boolean; Info: TDBPopupMenuInfoRecord; CanAddImages: Boolean; CustomInfo: string = '';
+                             ShowInfo: Boolean; Info: TMediaItem; CanAddImages: Boolean; CustomInfo: string = '';
                              Options: TDrawAttributesOptions = []);
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK;

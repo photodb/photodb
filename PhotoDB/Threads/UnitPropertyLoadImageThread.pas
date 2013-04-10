@@ -68,10 +68,10 @@ procedure TPropertyLoadImageThread.Execute;
 var
   TempBitmap: TBitmap;
   ImageInfo: ILoadImageInfo;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
 begin
 
-  Info := TDBPopupMenuInfoRecord.CreateFromFile(FOptions.FileName);
+  Info := TMediaItem.CreateFromFile(FOptions.FileName);
   try
     if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo,
       ThSizePropertyPreview, ThSizePropertyPreview) then

@@ -23,7 +23,7 @@ type
     procedure AddNewThread(Thread: TMultiCPUThread); override;
   public
     class function Instance: TExplorerThreadPool;
-    procedure ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
+    procedure ExtractImage(Sender: TMultiCPUThread; Info: TMediaItem; CryptedFile: Boolean; FileID: TGUID);
     procedure ExtractDirectoryPreview(Sender: TMultiCPUThread; DirectoryPath: string; FileID: TGUID);
     procedure ExtractBigImage(Sender: TMultiCPUThread; FileName: string; ID, Rotated: Integer; FileID: TGUID);
   end;
@@ -50,7 +50,7 @@ begin
     AddAvaliableThread(TExplorerThread.Create(nil, '', '', THREAD_TYPE_THREAD_PREVIEW, ExplorerViewInfo, nil, TUpdaterInfo.Create, Thread.StateID));
 end;
 
-procedure TExplorerThreadPool.ExtractImage(Sender: TMultiCPUThread; Info: TDBPopupMenuInfoRecord; CryptedFile: Boolean; FileID: TGUID);
+procedure TExplorerThreadPool.ExtractImage(Sender: TMultiCPUThread; Info: TMediaItem; CryptedFile: Boolean; FileID: TGUID);
 var
   Thread: TExplorerThread;
   Avaliablethread: TExplorerThread;

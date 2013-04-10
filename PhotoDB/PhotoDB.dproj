@@ -654,6 +654,7 @@
         <DCCReference Include="Units\Database\uSettingsRepository.pas"/>
         <DCCReference Include="Units\Database\uDBEntities.pas"/>
         <DCCReference Include="Units\Database\uGroupsRepository.pas"/>
+        <DCCReference Include="Units\Database\uMediaRepository.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

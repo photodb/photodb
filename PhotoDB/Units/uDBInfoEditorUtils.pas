@@ -53,13 +53,13 @@ type
     IsIncludeChanged: Boolean;
   end;
 
-procedure BatchUpdateDBInfo(Owner: TDBForm; FFilesInfo: TDBPopupMenuInfo; UserInput: TUserDBInfoInput);
-procedure FillDataRecordWithUserInfo(Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
-procedure UpdateDBRecordWithUserInfo(Owner: TDBForm; Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
+procedure BatchUpdateDBInfo(Owner: TDBForm; FFilesInfo: TMediaItemCollection; UserInput: TUserDBInfoInput);
+procedure FillDataRecordWithUserInfo(Info: TMediaItem; UserInput: TUserDBInfoInput);
+procedure UpdateDBRecordWithUserInfo(Owner: TDBForm; Info: TMediaItem; UserInput: TUserDBInfoInput);
 
 implementation
 
-procedure FillDataRecordWithUserInfo(Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
+procedure FillDataRecordWithUserInfo(Info: TMediaItem; UserInput: TUserDBInfoInput);
 begin
   if UserInput.Comment <> '' then
     Info.Comment := UserInput.Comment;
@@ -80,7 +80,7 @@ begin
     Info.Links := UserInput.Links;
 end;
 
-procedure BatchUpdateDBInfo(Owner: TDBForm; FFilesInfo: TDBPopupMenuInfo; UserInput: TUserDBInfoInput);
+procedure BatchUpdateDBInfo(Owner: TDBForm; FFilesInfo: TMediaItemCollection; UserInput: TUserDBInfoInput);
 var
   I, J, C, OperationCounter: Integer;
   ProgressForm: TProgressActionForm;
@@ -88,7 +88,7 @@ var
   SQL, IDs, CommonGroups, KeyWords, SGroups, OriginalLinks, SLinks: string;
   EventInfo: TEventValues;
   WorkQuery: TDataSet;
-  FileInfo: TDBPopupMenuInfoRecord;
+  FileInfo: TMediaItem;
   UC: TUpdateCommand;
   Context: IDBContext;
 
@@ -404,7 +404,7 @@ begin
   end;
 end;
 
-procedure UpdateDBRecordWithUserInfo(Owner: TDBForm; Info: TDBPopupMenuInfoRecord; UserInput: TUserDBInfoInput);
+procedure UpdateDBRecordWithUserInfo(Owner: TDBForm; Info: TMediaItem; UserInput: TUserDBInfoInput);
 var
   UC: TUpdateCommand;
   EventInfo: TEventValues;

@@ -818,7 +818,7 @@ var
   G: TGraphic;
   Res: Integer;
 
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
 begin
   DoProcessPath(FileName, True);
   Result := False;
@@ -844,7 +844,7 @@ begin
   try
     G := nil;
     try
-      Info := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+      Info := TMediaItem.CreateFromFile(FileName);
       try
         if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfFullRAW, ilfPassword, ilfAskUserPassword], FImageInfo) then
         begin
@@ -2090,6 +2090,7 @@ var
   SavePictureDialog: DBSavePictureDialog;
   FileName: string;
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 
   function RewriteFile(FileName : string) : Boolean;
   begin
@@ -2109,6 +2110,7 @@ begin
   end;
 
   Context := DBKernel.DBContext;
+  MediaRepository := Context.Media;
 
   SavePictureDialog := DBSavePictureDialog.Create;
   try
@@ -2161,7 +2163,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(Context, FileName);
+              ID := MediaRepository.GetIdByFileName(FileName);
             end;
 
             Image := TJPEGImage.Create;
@@ -2201,7 +2203,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(Context, FileName);
+              ID := MediaRepository.GetIdByFileName(FileName);
             end;
             Image := TGIFImage.Create;
             try
@@ -2221,7 +2223,7 @@ begin
               UpdateImageRecord(Context, Self, FileName, ID);
           end;
 
-     3:
+        3:
           begin
             if (GetExt(FileName) <> 'BMP') then
               FileName := FileName + '.bmp';
@@ -2231,7 +2233,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(Context, FileName);
+              ID := MediaRepository.GetIdByFileName(FileName);
             end;
             Image := TBitmap.Create;
             try
@@ -2260,7 +2262,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(DBKernel.DBContext, FileName);
+              ID := MediaRepository.GetIdByFileName(FileName);
             end;
             Image := TPngImage.Create;
             try
@@ -2289,7 +2291,7 @@ begin
                 if not RewriteFile(FileName) then
                   Exit;
               Replace := True;
-              ID := GetIdByFileName(DBKernel.DBContext, FileName);
+              ID := MediaRepository.GetIdByFileName(FileName);
             end;
             Image := TTiffImage.Create;
             try

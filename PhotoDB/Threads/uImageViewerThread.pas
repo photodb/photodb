@@ -40,7 +40,7 @@ type
   private
     FOwnerControl: IImageViewer;
     FThreadId: TGUID;
-    FInfo: TDBPopupMenuInfoRecord;
+    FInfo: TMediaItem;
     FDisplaySize: TSize;
     FIsPreview: Boolean;
     FPageNumber: Integer;
@@ -64,7 +64,7 @@ type
     procedure Execute; override;
   public
     constructor Create(OwnerForm: TThreadForm; OwnerControl: IImageViewer; ThreadId: TGUID;
-     Info: TDBPopupMenuInfoRecord; DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer);
+     Info: TMediaItem; DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer);
     destructor Destroy; override;
   end;
 
@@ -73,7 +73,7 @@ implementation
 { TImageViewerThread }
 
 constructor TImageViewerThread.Create(OwnerForm: TThreadForm;
-  OwnerControl: IImageViewer; ThreadId: TGUID; Info: TDBPopupMenuInfoRecord;
+  OwnerControl: IImageViewer; ThreadId: TGUID; Info: TMediaItem;
   DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer);
 begin
   if Info = nil then

@@ -53,7 +53,7 @@ type
     { Private declarations }
     Image: TJpegImage;
     function GetImageOptions: TSettings;
-    function HintCheck(Info: TDBPopupMenuInfoRecord): Boolean;
+    function HintCheck(Info: TMediaItem): Boolean;
     procedure FillImageSize(Combo: TcomboBox);
     procedure FillImageQuality(Combo: TcomboBox);
     procedure ShowPreview(Graphic: TGraphic; Size: Int64);
@@ -136,7 +136,7 @@ begin
 end;
 
 function TFrmConvertationSettings.HintCheck(
-  Info: TDBPopupMenuInfoRecord): Boolean;
+  Info: TMediaItem): Boolean;
 begin
   Result := True;
 end;
@@ -200,11 +200,11 @@ end;
 
 procedure TFrmConvertationSettings.ShowPreview(Graphic: TGraphic; Size: Int64);
 var
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   P: TPoint;
 begin
   GetCursorPos(P);
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   Info.Image := TJpegImage.Create;
   Info.Image.Assign(Graphic);
   Info.Image.CompressionQuality := 100;

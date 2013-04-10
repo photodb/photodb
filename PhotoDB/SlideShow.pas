@@ -267,7 +267,7 @@ type
     procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure ReloadCurrent;
     procedure ImageFrameTimerTimer(Sender: TObject);
-    procedure UpdateInfo(SID : TGUID; Info : TDBPopupMenuInfoRecord);
+    procedure UpdateInfo(SID : TGUID; Info : TMediaItem);
     procedure TbSlideShowClick(Sender: TObject);
     procedure SlideTimerTimer(Sender: TObject);
     procedure ImageEditor1Click(Sender: TObject);
@@ -311,6 +311,7 @@ type
     FContext: IDBContext;
     FSettingsRepository: ISettingsRepository;
     FPeopleRepository: IPeopleRepository;
+    FMediaRepository: IMediaRepository;
 
     WindowsMenuTickCount: Cardinal;
     FImageExists: Boolean;
@@ -367,7 +368,7 @@ type
     procedure WndProc(var Message: TMessage); override;
     function GetFormID: string; override;
     procedure ApplyStyle; override;
-    function GetItem: TDBPopupMenuInfoRecord; override;
+    function GetItem: TMediaItem; override;
     procedure RefreshFaces;
     procedure RefreshFaceDetestionState;
     procedure UpdateFaces(FileName: string; Faces: TFaceDetectionResult);
@@ -380,7 +381,7 @@ type
     function Buffer: TBitmap;
   public
     { Public declarations }
-    CurrentInfo: TDBPopupMenuInfo;
+    CurrentInfo: TMediaItemCollection;
     ZoomerOn: Boolean;
     Zoom: Real;
     WaitingList: Boolean;
@@ -403,8 +404,8 @@ type
 
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
     function ShowImageInDirectoryEx(FileName: string): Boolean;
-    function ShowImages(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
-    function ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile: string): Boolean;
+    function ShowImages(Sender: TObject; Info: TMediaItemCollection): Boolean;
+    function ExecuteW(Sender: TObject; Info: TMediaItemCollection; LoadBaseFile: string): Boolean;
     procedure LoadLanguage;
     procedure LoadPopupMenuLanguage;
     procedure ReAllignScrolls(IsCenter: Boolean);
@@ -418,7 +419,7 @@ type
     procedure PrepareNextImage;
     procedure SetFullImageState(State: Boolean; BeginZoom: Extended; Pages, Page: Integer);
     procedure DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);
-    procedure DoSetNoDBRecord(Info: TDBPopupMenuInfoRecord);
+    procedure DoSetNoDBRecord(Info: TMediaItem);
     procedure MakePagesLinks;
     procedure SetProgressPosition(Position, Max: Integer);
     function GetPageCaption: string;
@@ -446,9 +447,9 @@ type
     function CurrentFullImage: TBitmap;
     function GetImageIndex: Integer;
     procedure SetImageIndex(Value: Integer);
-    function GetImageByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+    function GetImageByIndex(Index: Integer): TMediaItem;
     function ShowImageInDirectory(FileName: string; ShowPrivate: Boolean): Boolean;
-    procedure UpdateImageInfo(Info: TDBPopupMenuInfoRecord);
+    procedure UpdateImageInfo(Info: TMediaItem);
 
     function GetObject: TObject;
   published
@@ -463,7 +464,7 @@ type
     property TransparentImage: Boolean read FTransparentImage write SetTransparentImage;
     property CurrentlyLoadedFile: string read FCurrentlyLoadedFile write SetCurrentlyLoadedFile;
     property Play: Boolean read FPlay write SetPlay;
-    property Item: TDBPopupMenuInfoRecord read GetItem;
+    property Item: TMediaItem read GetItem;
   end;
 
 const
@@ -510,7 +511,7 @@ begin
   FIsSelectingFace := False;
   FCreating := True;
   LsLoading.Active := True;
-  CurrentInfo := TDBPopupMenuInfo.Create;
+  CurrentInfo := TMediaItemCollection.Create;
   FCurrentPage := 0;
   FPageCount := 1;
   WaitingList := False;
@@ -623,6 +624,7 @@ begin
   FContext := DBKernel.DBContext;
   FSettingsRepository := FContext.Settings;
   FPeopleRepository := FContext.People;
+  FMediaRepository := FContext.Media;
 end;
 
 function TViewer.LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Double;
@@ -1348,8 +1350,8 @@ end;
 
 procedure TViewer.PmMainPopup(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
-  MenuRecord: TDBPopupMenuInfoRecord;
+  Info: TMediaItemCollection;
+  MenuRecord: TMediaItem;
   I: Integer;
 
   procedure InitializeInfo;
@@ -1363,7 +1365,7 @@ begin
   LoadPopupMenuLanguage;
   if CurrentInfo.Count = 0 then
     Exit;
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.IsPlusMenu := False;
     Info.IsListItem := False;
@@ -1738,7 +1740,7 @@ var
   I: Integer;
   FileName: string;
   FQuery: TDataSet;
-  InfoItem: TDBPopupMenuInfoRecord;
+  InfoItem: TMediaItem;
 begin
   if List.Count = 0 then
     Exit;
@@ -1757,11 +1759,11 @@ begin
       if FQuery.RecordCount <> 0 then
       begin
         FQuery.First;
-        InfoItem := TDBPopupMenuInfoRecord.CreateFromDS(FQuery);
+        InfoItem := TMediaItem.CreateFromDS(FQuery);
         CurrentInfo.Add(InfoItem);
       end else
       begin
-        InfoItem := TDBPopupMenuInfoRecord.Create;
+        InfoItem := TMediaItem.Create;
         InfoItem.FileName := FileName;
         InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
         InfoItem.InfoLoaded := True;
@@ -1841,12 +1843,12 @@ end;
 
 function TViewer.ShowImage(Sender: TObject; FileName: string): Boolean;
 var
-  Info: TDBPopupMenuInfo;
-  InfoItem: TDBPopupMenuInfoRecord;
+  Info: TMediaItemCollection;
+  InfoItem: TMediaItem;
 begin
-  Info:= TDBPopupMenuInfo.Create;
+  Info:= TMediaItemCollection.Create;
   try
-    InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    InfoItem := TMediaItem.CreateFromFile(FileName);
     InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
     Info.Add(InfoItem);
     Result := ShowImages(Sender, Info);
@@ -1858,14 +1860,14 @@ end;
 procedure TViewer.ShowFolder(Files: TStrings; CurrentN : integer);
 var
   I: Integer;
-  Info: TDBPopupMenuInfo;
-  InfoItem: TDBPopupMenuInfoRecord;
+  Info: TMediaItemCollection;
+  InfoItem: TMediaItem;
 begin
-  Info:= TDBPopupMenuInfo.Create;
+  Info:= TMediaItemCollection.Create;
   try
     for I := 0 to Files.Count - 1 do
     begin
-      InfoItem := TDBPopupMenuInfoRecord.CreateFromFile(Files[I]);
+      InfoItem := TMediaItem.CreateFromFile(Files[I]);
       InfoItem.Encrypted := ValidCryptGraphicFile(Files[I]);
       Info.Add(InfoItem);
     end;
@@ -1891,7 +1893,7 @@ begin
     DS.Active := True;
     if DS.RecordCount = 0 then
       Exit;
-    CurrentInfo[FileNo] := TDBPopupMenuInfoRecord.CreateFromDS(DS);
+    CurrentInfo[FileNo] := TMediaItem.CreateFromDS(DS);
   finally
     FreeDS(DS);
   end;
@@ -2117,16 +2119,16 @@ end;
 //TODO: remove ShowFolderA and use ShowImageInDirectoryEx instead of
 function TViewer.ShowImageInDirectoryEx(FileName: string): Boolean;
 var
-  Info: TDBPopupMenuInfo;
-  InfoItem: TDBPopupMenuInfoRecord;
+  Info: TMediaItemCollection;
+  InfoItem: TMediaItem;
 begin
   NewFormState;
   WaitingList := True;
   TSlideShowScanDirectoryThread.Create(FContext, Self, StateID, FileName);
 
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
-    InfoItem:= TDBPopupMenuInfoRecord.CreateFromFile(FileName);
+    InfoItem:= TMediaItem.CreateFromFile(FileName);
     InfoItem.Encrypted := ValidCryptGraphicFile(FileName);
     Info.Add(InfoItem);
     Result := ExecuteW(Self, Info, '');
@@ -2138,18 +2140,18 @@ begin
   end;
 end;
 
-function TViewer.ShowImages(Sender: TObject; Info: TDBPopupMenuInfo): Boolean;
+function TViewer.ShowImages(Sender: TObject; Info: TMediaItemCollection): Boolean;
 begin
   NewFormState;
   WaitingList := False;
   Result := ExecuteW(Sender, Info, '');
 end;
 
-function TViewer.ExecuteW(Sender: TObject; Info: TDBPopupMenuInfo; LoadBaseFile : String) : Boolean;
+function TViewer.ExecuteW(Sender: TObject; Info: TMediaItemCollection; LoadBaseFile : String) : Boolean;
 var
   I: Integer;
   FOldImageExists, NotifyUser: Boolean;
-  CurrentItem, DBItem: TDBPopupMenuInfoRecord;
+  CurrentItem, DBItem: TMediaItem;
 begin
   ForwardThreadExists := False;
   FForwardThreadReady := False;
@@ -2992,7 +2994,7 @@ begin
       Zoom);
 end;
 
-function TViewer.GetItem: TDBPopupMenuInfoRecord;
+function TViewer.GetItem: TMediaItem;
 begin
   Result := CurrentInfo[CurrentFileNumber];
 end;
@@ -3177,9 +3179,9 @@ end;
 
 procedure TViewer.RotateCCW1Click(Sender: TObject);
 var
-  Info : TDBPopupMenuInfo;
+  Info : TMediaItemCollection;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
@@ -3204,9 +3206,9 @@ end;
 
 procedure TViewer.RotateCW1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
@@ -3259,9 +3261,9 @@ end;
 
 procedure TViewer.Rotateon1801Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
@@ -3310,9 +3312,9 @@ end;
 
 procedure TViewer.Resize1Click(Sender: TObject);
 var
-  List: TDBPopupMenuInfo;
+  List: TMediaItemCollection;
 begin
-  List := TDBPopupMenuInfo.Create;
+  List := TMediaItemCollection.Create;
   try
     List.Add(Item.Copy);
     List[0].Selected := True;
@@ -3731,7 +3733,7 @@ begin
   end;
 end;
 
-procedure TViewer.UpdateInfo(SID: TGUID; Info: TDBPopupMenuInfoRecord);
+procedure TViewer.UpdateInfo(SID: TGUID; Info: TMediaItem);
 begin
   Item.Assign(Info);
   DisplayRating := Info.Rating;
@@ -3886,9 +3888,9 @@ end;
 
 procedure TViewer.TbEncryptClick(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
     Info.Add(Item.Copy);
     Info[0].Selected := True;
@@ -3967,19 +3969,19 @@ var
   Str: string;
   NewRating: Integer;
   EventInfo: TEventValues;
-  FileInfo: TDBPopupMenuInfoRecord;
+  FileInfo: TMediaItem;
 begin
   Str := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
   NewRating := StrToInt(Str);
 
   if Item.ID > 0 then
   begin
-    SetRating(FContext, Item.ID, NewRating);
+    FMediaRepository.SetRating(Item.ID, NewRating);
     EventInfo.Rating := NewRating;
     CollectionEvents.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
   end else
   begin
-    FileInfo := TDBPopupMenuInfoRecord.Create;
+    FileInfo := TMediaItem.Create;
     try
       FileInfo.FileName := Item.FileName;
       FileInfo.Rating := NewRating;
@@ -4046,7 +4048,7 @@ begin
   UpdateCrypted;
 end;
 
-procedure TViewer.DoSetNoDBRecord(Info: TDBPopupMenuInfoRecord);
+procedure TViewer.DoSetNoDBRecord(Info: TMediaItem);
 var
   I: integer;
 begin
@@ -4377,7 +4379,7 @@ begin
   Result := CurrentFileNumber;
 end;
 
-function TViewer.GetImageByIndex(Index: Integer): TDBPopupMenuInfoRecord;
+function TViewer.GetImageByIndex(Index: Integer): TMediaItem;
 begin
   Result := CurrentInfo[Index];
 end;
@@ -4386,13 +4388,13 @@ function TViewer.ShowImageInDirectory(FileName: string;
   ShowPrivate: Boolean): Boolean;
 var
   N: Integer;
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Result := False;
   if FileExistsSafe(FileName) or DirectoryExistsSafe(FileName) then
   begin
     FileName := LongFileName(FileName);
-    Info := TDBPopupMenuInfo.Create;
+    Info := TMediaItemCollection.Create;
     try
       GetFileListByMask(FContext, FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
       if Info.Count > 0 then
@@ -4406,7 +4408,7 @@ begin
   end;
 end;
 
-procedure TViewer.UpdateImageInfo(Info: TDBPopupMenuInfoRecord);
+procedure TViewer.UpdateImageInfo(Info: TMediaItem);
 var
   I: Integer;
 begin

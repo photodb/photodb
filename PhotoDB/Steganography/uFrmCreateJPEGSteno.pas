@@ -252,13 +252,13 @@ end;
 procedure TFrmCreateJPEGSteno.ImJpegFileContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  Info: TDBPopupMenuInfo;
-  Rec: TDBPopupMenuInfoRecord;
+  Info: TMediaItemCollection;
+  Rec: TMediaItem;
   Menus: TArMenuItem;
 begin
-  Info := TDBPopupMenuInfo.Create;
+  Info := TMediaItemCollection.Create;
   try
-    Rec := TDBPopupMenuInfoRecord.CreateFromFile(ImageFileName);
+    Rec := TMediaItem.CreateFromFile(ImageFileName);
     uDBUtils.GetInfoByFileNameA(DBKernel.DBContext, ImageFileName, False, Rec);
     Rec.Selected := True;
 

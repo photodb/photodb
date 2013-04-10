@@ -558,7 +558,7 @@ type
     procedure ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
     procedure HintTimerTimer(Sender: TObject);
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    procedure SetInfoToItem(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
+    procedure SetInfoToItem(Info: TMediaItem; FileGUID: TGUID; Loaded: Boolean = False);
     procedure SpeedButton3Click(Sender: TObject);
     procedure Open1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -822,6 +822,7 @@ type
     FContext: IDBContext;
     FPeopleRepository: IPeopleRepository;
     FGroupsRepository: IGroupsRepository;
+    FMediaRepository: IMediaRepository;
 
     FBitmapImageList: TBitmapImageList;
     FSearchMode: Integer;
@@ -932,7 +933,7 @@ type
     function GetPathPartName(PP: TPathItem): string;
     procedure ReallignInfo;
     procedure PasteFromClipboard;
-    function HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
+    function HintRealA(Info: TMediaItem): Boolean;
     function GetCurrentPopUpMenuInfo(Item: TEasyItem; OnlySelected: Boolean = False): TExplorerFileInfos;
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure RefreshItem(Number: Integer; UpdateDB: Boolean);
@@ -1102,7 +1103,7 @@ type
     procedure SetProgressPosition(Value: Integer);
     procedure SetStatusText(Text: String);
     procedure SetNewFileNameGUID(FileGUID: TGUID);
-    procedure SetPanelInfo(Info: TDBPopupMenuInfoRecord; ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
+    procedure SetPanelInfo(Info: TMediaItem; ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
     procedure SetPanelImage(Image: TBitmap; FileGUID: TGUID);
     procedure ClearHistogram;
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
@@ -1671,7 +1672,7 @@ end;
 procedure TExplorerForm.SlideShow1Click(Sender: TObject);
 var
   FileName: string;
-  MenuInfo: TDBPopupMenuInfo;
+  MenuInfo: TMediaItemCollection;
   Index: Integer;
 begin
   FileName := FFilesInfo[PmItemPopup.Tag].FileName;
@@ -1711,7 +1712,7 @@ end;
 
 procedure TExplorerForm.PmItemPopupPopup(Sender: TObject);
 var
-  Infos: TDBPopupMenuInfo;
+  Infos: TMediaItemCollection;
   info: TExplorerFileInfo;
   Item: TEasyItem;
   Point: TPoint;
@@ -2010,7 +2011,7 @@ end;
 
 procedure TExplorerForm.DBitem1Click(Sender: TObject);
 var
-  Infos: TDBPopupMenuInfo;
+  Infos: TMediaItemCollection;
   Item: TEasyItem;
 begin
   if DBitem1.Visible then
@@ -2392,7 +2393,7 @@ procedure TExplorerForm.HintTimerTimer(Sender: TObject);
 var
   P, P1: Tpoint;
   Index, I: Integer;
-  MenuInfo: TDBPopupMenuInfoRecord;
+  MenuInfo: TMediaItem;
 begin
   if BlockClosingOfWindows then
     Exit;
@@ -2441,7 +2442,7 @@ begin
   THintManager.Instance.CreateHintWindow(Self, MenuInfo, P, HintRealA);
 end;
 
-function TExplorerForm.HintRealA(Info: TDBPopupMenuInfoRecord): Boolean;
+function TExplorerForm.HintRealA(Info: TMediaItem): Boolean;
 var
   P, P1: TPoint;
   Item: TeasyItem;
@@ -2548,7 +2549,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetInfoToItem(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
+procedure TExplorerForm.SetInfoToItem(Info: TMediaItem; FileGUID: TGUID; Loaded: Boolean = False);
 var
   I: Integer;
   ExplorerInfo: TExplorerFileInfo;
@@ -2907,7 +2908,7 @@ var
   I: Integer;
   ItemIndex: Integer;
   FileInfo: TExplorerFileInfo;
-  MenuRecord: TDBPopupMenuInfoRecord;
+  MenuRecord: TMediaItem;
 begin
   Result := TExplorerFileInfos.Create;
   Result.IsListItem := False;
@@ -5096,10 +5097,10 @@ end;
 procedure TExplorerForm.WlShareClick(Sender: TObject);
 var
   I, Index: Integer;
-  Files: TDBPopupMenuInfo;
+  Files: TMediaItemCollection;
   EI: TExplorerFileInfo;
 begin
-  Files := TDBPopupMenuInfo.Create;
+  Files := TMediaItemCollection.Create;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then
@@ -5946,7 +5947,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SetPanelInfo(Info: TDBPopupMenuInfoRecord;
+procedure TExplorerForm.SetPanelInfo(Info: TMediaItem;
   ExifInfo: IExifInfo; var Histogramm: TBitmap; FileGUID: TGUID);
 var
   Line: IExifInfoLine;
@@ -6491,7 +6492,7 @@ end;
 
 procedure TExplorerForm.ImPreviewDblClick(Sender: TObject);
 var
-  MenuInfo: TDBPopupMenuInfo;
+  MenuInfo: TMediaItemCollection;
 begin
   if FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE then
   begin
@@ -6571,7 +6572,7 @@ end;
 
 procedure TExplorerForm.Properties1Click(Sender: TObject);
 var
-  PropInfo, Info: TDBPopupMenuInfo;
+  PropInfo, Info: TMediaItemCollection;
   Files: TStrings;
   I, ItemIndex: Integer;
   EInfo: TExplorerFileInfo;
@@ -6645,7 +6646,7 @@ begin
     begin
       Info := GetCurrentPopUpMenuInfo(ListView1Selected);
       try
-        PropInfo := TDBPopupMenuInfo.Create;
+        PropInfo := TMediaItemCollection.Create;
         try
           for I := 0 to Info.Count - 1 do
             if Info[I].Selected then
@@ -6671,7 +6672,7 @@ begin
     end else
     begin
       if not EInfo.Loaded then
-        EInfo.ID := GetIdByFileName(DBKernel.DBContext, EInfo.FileName);
+        EInfo.ID := FMediaRepository.GetIdByFileName(EInfo.FileName);
       if EInfo.ID = 0 then
         PropertyManager.NewFileProperty(EInfo.FileName).ExecuteFileNoEx(EInfo.FileName)
       else
@@ -6743,7 +6744,7 @@ end;
 
 procedure TExplorerForm.SlideShowLinkClick(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 
   procedure ShowNoImagesError;
   begin
@@ -7142,12 +7143,12 @@ begin
 
     if Effects = DROPEFFECT_MOVE then
     begin
-      CopyFiles(DBKernel.DBContext, Handle, Files, Path, True, False, Self);
+      CopyFiles(FContext, Handle, Files, Path, True, False, Self);
       ClipBoard.Clear;
       TbPaste.Enabled := False;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
-      CopyFiles(DBKernel.DBContext, Handle, Files, Path, False, False, Self);
+      CopyFiles(FContext, Handle, Files, Path, False, False, Self);
 
   finally
     F(Files);
@@ -7781,8 +7782,8 @@ begin
   begin
     PePath.CanBreakLoading := True;
     UpdaterInfo := TUpdaterInfo.Create;
-    UpdaterInfo.Context := DBKernel.DBContext;
-    TExplorerThread.Create(DBKernel.DBContext, Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
+    UpdaterInfo.Context := FContext;
+    TExplorerThread.Create(FContext, Path, FileMask, ThreadType, Info, Self, UpdaterInfo, StateID);
   end;
   if IsExplorerTreeViewVisible and not Explorer then
   begin
@@ -7961,7 +7962,7 @@ begin
   DoHomeContactWithAuthor;
 end;
 
-procedure EncryptFiles(Owner: TListViewForm; FileList: TDBPopupMenuInfo; Password: string; IsEncrypt: Boolean);
+procedure EncryptFiles(Owner: TListViewForm; FileList: TMediaItemCollection; Password: string; IsEncrypt: Boolean);
 var
   I: Integer;
   Options: TCryptImageThreadOptions;
@@ -7997,7 +7998,7 @@ end;
 
 procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
   FileName, Password: string;
   Item: TEasyItem;
   Index: Integer;
@@ -8005,7 +8006,7 @@ var
   I: Integer;
   ItemIndex: Integer;
   FileInfo: TExplorerFileInfo;
-  MenuRecord: TDBPopupMenuInfoRecord;
+  MenuRecord: TMediaItem;
 begin
   Info := TExplorerFileInfos.Create;
   try
@@ -8058,7 +8059,7 @@ end;
 procedure TExplorerForm.CryptFile1Click(Sender: TObject);
 var
   Opt: TEncryptImageOptions;
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
   FileName: string;
   Item: TEasyItem;
   Index: Integer;
@@ -8066,7 +8067,7 @@ var
   I: Integer;
   ItemIndex: Integer;
   FileInfo: TExplorerFileInfo;
-  MenuRecord: TDBPopupMenuInfoRecord;
+  MenuRecord: TMediaItem;
 begin
   Info := TExplorerFileInfos.Create;
   try
@@ -8131,7 +8132,7 @@ end;
 
 procedure TExplorerForm.Resize1Click(Sender: TObject);
 var
-  List: TDBPopupMenuInfo;
+  List: TMediaItemCollection;
   Item: TEasyItem;
 begin
   Item := ElvMain.Selection.FocusedItem;
@@ -8162,7 +8163,7 @@ end;
 
 procedure TExplorerForm.Convert1Click(Sender: TObject);
 var
-  List: TDBPopupMenuInfo;
+  List: TMediaItemCollection;
   Item: TEasyItem;
 begin
   Item := ElvMain.Selection.FocusedItem;
@@ -8238,7 +8239,7 @@ end;
 
 procedure TExplorerForm.AsEXIF1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -8250,7 +8251,7 @@ end;
 
 procedure TExplorerForm.RotateCCW1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -8262,7 +8263,7 @@ end;
 
 procedure TExplorerForm.RotateCW1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -8274,7 +8275,7 @@ end;
 
 procedure TExplorerForm.Rotateon1801Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -8287,12 +8288,12 @@ end;
 procedure TExplorerForm.RefreshID1Click(Sender: TObject);
 var
   Options: TRefreshIDRecordThreadOptions;
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Info := GetCurrentPopUpMenuInfo(nil);
   try
     Options.Info := Info;
-    TRefreshDBRecordsThread.Create(DBKernel.DBContext, Self, Options);
+    TRefreshDBRecordsThread.Create(FContext, Self, Options);
   finally
     F(Info);
   end;
@@ -8339,9 +8340,9 @@ begin
         FDBCanDragW := False;
 
         if Effect = DROPEFFECT_COPY then
-          CopyFiles(DBKernel.DBContext, Handle, DropInfo, GetCurrentPath, False, False, Self)
+          CopyFiles(FContext, Handle, DropInfo, GetCurrentPath, False, False, Self)
         else if Effect = DROPEFFECT_MOVE then
-          CopyFiles(DBKernel.DBContext, Handle, DropInfo, GetCurrentPath, True, False, Self);
+          CopyFiles(FContext, Handle, DropInfo, GetCurrentPath, True, False, Self);
 
       end;
       if SelCount = 1 then
@@ -8355,9 +8356,9 @@ begin
             Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
             if Effect = DROPEFFECT_COPY then
-              CopyFiles(DBKernel.DBContext, Handle, DropInfo, Str, False, False, Self)
+              CopyFiles(FContext, Handle, DropInfo, Str, False, False, Self)
             else if Effect = DROPEFFECT_MOVE then
-              CopyFiles(DBKernel.DBContext, Handle, DropInfo, Str, True, False, Self);
+              CopyFiles(FContext, Handle, DropInfo, Str, True, False, Self);
 
           end;
         end;
@@ -8516,7 +8517,7 @@ end;
 
 procedure TExplorerForm.ExportImages1Click(Sender: TObject);
 var
-  Info: TDBPopupMenuInfo;
+  Info: TMediaItemCollection;
 begin
   Info := GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem);
   try
@@ -8621,7 +8622,7 @@ begin
         UpDir := Copy(Files[0], L2 + 1, L1 - L2);
         NewDir := IncludeTrailingBackslash(TPath.Combine(Dir, UpDir));
         CreateDirA(NewDir);
-        CopyFiles(DBKernel.DBContext, Handle, Files, NewDir, False, False, Self);
+        CopyFiles(FContext, Handle, Files, NewDir, False, False, Self);
       end;
     finally
       F(Files);
@@ -8782,10 +8783,10 @@ begin
   Editor := TLinkListEditorFolder.Create(Self, FCurrentPath);
   Data := TList<TDataObject>.Create;
   try
-    ReadPlacesList(DBKernel.DBContext, TList<TLinkInfo>(Data));
+    ReadPlacesList(FContext, TList<TLinkInfo>(Data));
 
     if LinkItemSelectForm.Execute(450, L('List of directories'), Data, Editor) then
-      WritePlacesList(DBKernel.DBContext, TList<TLinkInfo>(Data));
+      WritePlacesList(FContext, TList<TLinkInfo>(Data));
 
   finally
     FreeList(Data);
@@ -8814,11 +8815,11 @@ begin
   MI.Caption := '-';
   PmLocations.Items.Add(MI);
 
-  ReadPlacesList(DBKernel.DBContext, FPlaces);
+  ReadPlacesList(FContext, FPlaces);
   if FPlaces.Count = 0 then
   begin
     AddDefaultPlaces(FPlaces);
-    WritePlacesList(DBKernel.DBContext, FPlaces);
+    WritePlacesList(FContext, FPlaces);
   end;
 
   for Place in FPlaces do
@@ -8891,9 +8892,9 @@ begin
     FDBCanDragW := False;
 
     if not(Sender = Move1) then
-      CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self)
+      CopyFiles(FContext, Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self)
     else
-      CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self);
+      CopyFiles(FContext, Handle, DragFilesPopup, GetCurrentPath, Sender = Move1, False, Self);
 
   end;
   if LastListViewSelCount = 1 then
@@ -8907,9 +8908,9 @@ begin
         Str := ExcludeTrailingBackslash(FFilesInfo[index].FileName);
 
         if not(Sender = Move1) then
-          CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, Str, Sender = Move1, False, Self)
+          CopyFiles(FContext, Handle, DragFilesPopup, Str, Sender = Move1, False, Self)
         else
-          CopyFiles(DBKernel.DBContext, Handle, DragFilesPopup, Str, Sender = Move1, False, Self);
+          CopyFiles(FContext, Handle, DragFilesPopup, Str, Sender = Move1, False, Self);
 
       end;
     end;
@@ -9067,7 +9068,7 @@ begin
         try
           Info.FileType := FSelectedInfo.FileType;
           Info.ID := FSelectedInfo.Id;
-          TExplorerThumbnailCreator.Create(DBKernel.DBContext, Info, FileSID, Self, True);
+          TExplorerThumbnailCreator.Create(FContext, Info, FileSID, Self, True);
         finally
           F(Info);
         end;
@@ -9136,10 +9137,10 @@ begin
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
                      IsVideoFile(FileName) then
                   begin
-                    TExplorerThumbnailCreator.Create(DBKernel.DBContext, Info, FSelectedInfo._GUID, Self, True);
+                    TExplorerThumbnailCreator.Create(FContext, Info, FSelectedInfo._GUID, Self, True);
                   end else
                   begin
-                    TExplorerThumbnailCreator.Create(DBKernel.DBContext, Info, FSelectedInfo.PreviewID, Self, False);
+                    TExplorerThumbnailCreator.Create(FContext, Info, FSelectedInfo.PreviewID, Self, False);
                   end;
                 finally
                   F(Info);
@@ -10250,15 +10251,12 @@ var
   IncludeSub: Boolean;
   Folder: string;
   FileList: TStrings;
-  Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
-
   FileList := TStringList.Create;
   try
     FileList.Add(GetCurrentPath);
     IncludeSub := False;
-    Query := Context.CreateQuery(dbilRead);
+    Query := FContext.CreateQuery(dbilRead);
     try
       Folder := IncludeTrailingBackslash(GetCurrentPath);
       SetSQL(Query, 'SELECT count(*) AS CountField FROM $DB$ WHERE (FFileName LIKE :FolderA)');
@@ -10269,7 +10267,7 @@ begin
     finally
       FreeDS(Query);
     end;
-    SaveQuery(DBKernel.DBContext, GetCurrentPath, IncludeSub, FileList);
+    SaveQuery(FContext, GetCurrentPath, IncludeSub, FileList);
   finally
     F(FileList);
   end;
@@ -10330,19 +10328,16 @@ end;
 procedure TExplorerForm.N05Click(Sender: TObject);
 var
   EventInfo: TEventValues;
-  FileInfo: TDBPopupMenuInfoRecord;
-  Context: IDBContext;
+  FileInfo: TMediaItem;
 begin
-  Context := DBKernel.DBContext;
-
   if RatingPopupMenu.Tag > 0 then
   begin
-    SetRating(Context, RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
+    FMediaRepository.SetRating(RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
     EventInfo.Rating := (Sender as TMenuItem).Tag;
     CollectionEvents.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating], EventInfo);
   end else
   begin
-    FileInfo := TDBPopupMenuInfoRecord.Create;
+    FileInfo := TMediaItem.Create;
     try
       FileInfo.FileName := FFilesInfo[-RatingPopupMenu.Tag].FileName;
       FileInfo.Rating := (Sender as TMenuItem).Tag;
@@ -10390,7 +10385,7 @@ procedure TExplorerForm.EasyListview1DblClick(Sender: TCustomEasyListview;
   var Handled: Boolean);
 var
   Capt, Dir, ShellDir, LinkPath: string;
-  MenuInfo: TDBPopupMenuInfo;
+  MenuInfo: TMediaItemCollection;
   Index: Integer;
   P, P1: TPoint;
   Item: TObject;
@@ -10842,7 +10837,7 @@ begin
               FileList.Add(FFilesInfo[Index].FileName)
 
         end;
-      SaveQuery(DBKernel.DBContext, GetCurrentPath, False, FileList);
+      SaveQuery(FContext, GetCurrentPath, False, FileList);
     finally
       F(FileList);
     end;
@@ -10955,13 +10950,13 @@ begin
     Exit;
   // тут начинается загрузка больших картинок
   UpdaterInfo := TUpdaterInfo.Create;
-  UpdaterInfo.Context := DBKernel.DBContext;
+  UpdaterInfo.Context := FContext;
 
   NewFormState;
   DirectoryWatcher.UpdateStateID(StateID);
 
   PePath.CanBreakLoading := True;
-  TExplorerThread.Create(DBKernel.DBContext, '::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
+  TExplorerThread.Create(FContext, '::BIGIMAGES', '', THREAD_TYPE_BIG_IMAGES, ViewInfo, Self, UpdaterInfo, StateID);
   for I := 0 to FFilesInfo.Count - 1 do
     FFilesInfo[I].IsBigImage := False;
 end;
@@ -11419,7 +11414,7 @@ begin
   LoadGroupInfo := TGroupLoadInfo.Create;
   LoadGroupInfo.Owner := Self;
   LoadGroupInfo.Groups := FSelectedInfo.Groups;
-  LoadGroupInfo.Context := DBKernel.DBContext;
+  LoadGroupInfo.Context := FContext;
 
   TThreadTask.Create(Self, LoadGroupInfo,
     procedure(Thread: TThreadTask; Data: Pointer)
@@ -11662,7 +11657,7 @@ begin
     LoadGroupInfo := TGroupLoadInfo.Create;
     LoadGroupInfo.Owner := Self;
     LoadGroupInfo.Groups := WllExtendedSearchGroups.TagEx;
-    LoadGroupInfo.Context := DBKernel.DBContext;
+    LoadGroupInfo.Context := FContext;
 
     TThreadTask.Create(Self, LoadGroupInfo,
       procedure(Thread: TThreadTask; Data: Pointer)
@@ -12674,6 +12669,7 @@ begin
   FContext := DBKernel.DBContext;
   FPeopleRepository := FContext.People;
   FGroupsRepository := FContext.Groups;
+  FMediaRepository := FContext.Media;
 end;
 
 procedure TExplorerForm.LoadDBList;
@@ -12684,10 +12680,7 @@ var
   Ico: HIcon;
   IconFileName: string;
   LB: TLayeredBitmap;
-  Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
-
   FreeList(FDatabases, False);
   ReadUserCollections(FDatabases);
 
@@ -12713,7 +12706,7 @@ begin
       DestroyIcon(Ico);
     end;
 
-    if AnsiLowerCase(DB.Path) = AnsiLowerCase(Context.CollectionFileName) then
+    if AnsiLowerCase(DB.Path) = AnsiLowerCase(FContext.CollectionFileName) then
     begin
       MI.Default := True;
       IconFileName := DB.Icon;
@@ -12967,10 +12960,10 @@ end;
 procedure TExplorerForm.MiShareImageAndGetUrlClick(Sender: TObject);
 var
   I, Index: Integer;
-  Files: TDBPopupMenuInfo;
+  Files: TMediaItemCollection;
   EI: TExplorerFileInfo;
 begin
-  Files := TDBPopupMenuInfo.Create;
+  Files := TMediaItemCollection.Create;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
       if ElvMain.Items[I].Selected then

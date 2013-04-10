@@ -122,6 +122,7 @@ var
   S: string;
   Password: string;
   ID: Integer;
+  MediaRepository: IMediaRepository;
 begin
   if GetParamStrDBBool('/cmd') then
   begin
@@ -129,22 +130,11 @@ begin
     DBTerminating := True;
   end;
 
-  if GetParamStrDBBool('/SQLExec') then
-  begin
-    ExecuteQuery(Context, AnsiDequotedStr(GetParamStrDBValue('/SQLExec'), '"'));
-  end;
-
-  if GetParamStrDBBool('/SQLExecFile') then
-  begin
-    S := AnsiDequotedStr(GetParamStrDBValue('/SQLExecFile'), '"');
-    S := ReadTextFileInString(S);
-    ExecuteQuery(Context, S);
-  end;
-
   if GetParamStrDBBool('/e') then
   begin
+    MediaRepository := Context.Media;
     S := AnsiDequotedStr(GetParamStrDBValue('/e'), '"');
-    ID := GetIdByFileName(Context, S);
+    ID := MediaRepository.GetIdByFileName(S);
     Password := AnsiDequotedStr(GetParamStrDBValue('/p'), '"');
 
     EncryptImageByFileName(Context, nil, S, ID, Password, CRYPT_OPTIONS_NORMAL, False);
@@ -152,8 +142,9 @@ begin
 
   if GetParamStrDBBool('/d') then
   begin
+    MediaRepository := Context.Media;
     S := AnsiDequotedStr(GetParamStrDBValue('/d'), '"');
-    ID := GetIdByFileName(Context, S);
+    ID := MediaRepository.GetIdByFileName(S);
     Password := AnsiDequotedStr(GetParamStrDBValue('/p'), '"');
 
     ResetPasswordImageByFileName(Context, nil, S, ID, Password);

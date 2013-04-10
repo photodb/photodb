@@ -82,10 +82,10 @@ type
     function GetRotate: Integer;
   public
     Image: TGraphic;
-    Data: TDBPopupMenuInfoRecord;
+    Data: TMediaItem;
     Caller: TObject;
     IColler: IFaceResultForm;
-    constructor Create(Context: IDBContext; AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
+    constructor Create(Context: IDBContext; AImage: TGraphic; AData: TMediaItem; ACaller: TObject);
     destructor Destroy; override;
     property ID: Integer read GetID;
     property FileName: string read GetFileName;
@@ -103,7 +103,7 @@ type
     function ExtractData: TFaceDetectionData;
     function GetDetectionMethod: string;
   public
-    procedure RequestFaceDetection(Caller: TObject; Context: IDBContext; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
+    procedure RequestFaceDetection(Caller: TObject; Context: IDBContext; var Image: TGraphic; Data: TMediaItem);
     function GetFaceDataFromCache(CacheFileName: string; Faces: TFaceDetectionResult): Integer;
     function RotateCacheData(ImageFileName: string; Rotate: Integer): Boolean;
     function RotateDBData(Context: IDBContext; ID: Integer; Rotate: Integer): Boolean;
@@ -359,7 +359,7 @@ begin
 end;
 
 procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TObject; Context: IDBContext;
-  var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
+  var Image: TGraphic; Data: TMediaItem);
 var
   I: Integer;
   FData: TFaceDetectionData;
@@ -461,7 +461,7 @@ end;
 
 { TFaceDetectionData }
 
-constructor TFaceDetectionData.Create(Context: IDBContext; AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
+constructor TFaceDetectionData.Create(Context: IDBContext; AImage: TGraphic; AData: TMediaItem; ACaller: TObject);
 begin
   FContext := Context;
   Image := AImage;

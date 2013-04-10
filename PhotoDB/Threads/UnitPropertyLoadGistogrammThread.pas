@@ -64,11 +64,11 @@ end;
 procedure TPropertyLoadGistogrammThread.Execute;
 var
   Bitmap: TBitmap;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
   ImageInfo: ILoadImageInfo;
 begin
   try
-    Info := TDBPopupMenuInfoRecord.CreateFromFile(FOptions.FileName);
+    Info := TMediaItem.CreateFromFile(FOptions.FileName);
     try
       if LoadImageFromPath(Info, -1, FOptions.Password, [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo, 800, 800) then
       begin

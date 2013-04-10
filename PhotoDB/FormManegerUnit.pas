@@ -536,6 +536,7 @@ end;
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
 var
   Context: IDBContext;
+  MediaRepository: IMediaRepository;
 {$IFDEF LICENCE}
   FReg: TBDRegistry;
   InstallDate: TDateTime;
@@ -592,10 +593,12 @@ begin
     begin
       //todo: restart it when db has changed
       Context := DBKernel.DBContext;
+      MediaRepository := Context.Media;
+
       if AppSettings.ReadboolW('DBCheck', ExtractFileName(Context.CollectionFileName), True) = True then
       begin
         AppSettings.WriteBoolW('DBCheck', ExtractFileName(Context.CollectionFileName), False);
-        if (GetRecordsCount(Context.CollectionFileName) = 0) and not FolderView then
+        if (MediaRepository.GetCount = 0) and not FolderView then
           UpdateCurrentCollectionDirectories(Context.CollectionFileName);
       end;
     end;

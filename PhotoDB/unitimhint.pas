@@ -66,7 +66,7 @@ type
     DragImageList: TImageList;
     DropFileTargetMain: TDropFileTarget;
     ImageFrameTimer: TTimer;
-    function Execute(Sender: TForm; G: TGraphic; W, H: Integer; Info: TDBPopupMenuInfoRecord; Pos: TPoint;
+    function Execute(Sender: TForm; G: TGraphic; W, H: Integer; Info: TMediaItem; Pos: TPoint;
       CheckFunction: THintCheckFunction): Boolean;
     procedure FormClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -93,7 +93,7 @@ type
     ImageBuffer: TBitmap;
     CanClosed: Boolean;
     FFormBuffer: TBitmap;
-    CurrentInfo: TDBPopupMenuInfoRecord;
+    CurrentInfo: TMediaItem;
     FDragDrop: Boolean;
     FOwner: TForm;
     GoIn: Boolean;
@@ -121,7 +121,7 @@ uses
 
 { TImHint }
 
-procedure DrawHintInfo(Bitmap: TBitmap; Width, Height: Integer; FInfo: TDBPopupMenuInfoRecord);
+procedure DrawHintInfo(Bitmap: TBitmap; Width, Height: Integer; FInfo: TMediaItem);
 var
   Sm, Y: Integer;
   RotationNotInDB: Boolean;
@@ -230,7 +230,7 @@ begin
 end;
 
 function TImHint.Execute(Sender: TForm; G: TGraphic; W, H: Integer;
-  Info: TDBPopupMenuInfoRecord; Pos: TPoint; CheckFunction: THintCheckFunction): Boolean;
+  Info: TMediaItem; Pos: TPoint; CheckFunction: THintCheckFunction): Boolean;
 var
   DisplayWidth, DisplayHeight, WindowHeight,
   WindowWidth, WindowLeft, WindowTop, TextHeight: Integer;
@@ -505,11 +505,11 @@ end;
 procedure TImHint.Image1ContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
-  MenuInfo: TDBPopupMenuInfo;
+  MenuInfo: TMediaItemCollection;
 begin
   TimerHintCheck.Enabled := False;
   FDragDrop := True;
-  MenuInfo := TDBPopupMenuInfo.Create;
+  MenuInfo := TMediaItemCollection.Create;
   try
     MenuInfo.Add(CurrentInfo.Copy);
     MenuInfo[0].Selected := True;

@@ -62,6 +62,8 @@ var
   Info: TExifPatchInfo;
   FileName: string;
   LastUpdateTime: Cardinal;
+  Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
@@ -74,10 +76,13 @@ begin
       begin
         if Info <> nil then
         begin
+          Context := Info.Context;
+          MediaRepository := Context.Media;
+
           LastUpdateTime := GetTickCount;
           FileName := Info.Value.FileName;
           if not FileExistsSafe(FileName) then
-            FileName := uDBUtils.GetFileNameById(Info.Context, Info.ID);
+            FileName := MediaRepository.GetFileNameById(Info.ID);
 
           UpdateFileExif(FileName, Info);
           F(Info);

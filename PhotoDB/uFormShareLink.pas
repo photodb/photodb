@@ -72,7 +72,7 @@ type
     FShortUrlInProgress: Boolean;
     FUrl: string;
     FProgressCount: Integer;
-    procedure GetImageLink(Info: TDBPopupMenuInfo; Provider: IPhotoShareProvider);
+    procedure GetImageLink(Info: TMediaItemCollection; Provider: IPhotoShareProvider);
     procedure CheckShortLink;
     procedure LoadLanguage;
     procedure StartProgress;
@@ -85,14 +85,14 @@ type
   public
     { Public declarations }
     destructor Destroy; override;
-    procedure Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
-    procedure UpdateProgress(Item: TDBPopupMenuInfoRecord; Max, Position: Int64);
+    procedure Execute(Owner: TDBForm; Info: TMediaItemCollection);
+    procedure UpdateProgress(Item: TMediaItem; Max, Position: Int64);
   end;
 
 type
   TShareThreadTask = class
   public
-    Info: TDBPopupMenuInfo;
+    Info: TMediaItemCollection;
     Provider: IPhotoShareProvider
   end;
 
@@ -101,9 +101,9 @@ type
   TItemUploadProgress = class(TInterfacedObject, IUploadProgress)
   private
     FThread: TThreadTaskThread;
-    FItem: TDBPopupMenuInfoRecord;
+    FItem: TMediaItem;
   public
-    constructor Create(Thread: TThreadTaskThread; Item: TDBPopupMenuInfoRecord);
+    constructor Create(Thread: TThreadTaskThread; Item: TMediaItem);
     procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
   end;
 
@@ -211,9 +211,9 @@ begin
   end;
 end;
 
-procedure TFormShareLink.Execute(Owner: TDBForm; Info: TDBPopupMenuInfo);
+procedure TFormShareLink.Execute(Owner: TDBForm; Info: TMediaItemCollection);
 var
-  Photos: TDBPopupMenuInfo;
+  Photos: TMediaItemCollection;
 begin
   if Info.Count = 0 then
     Exit;
@@ -221,7 +221,7 @@ begin
   FViewer := TImageViewer.Create;
   FViewer.AttachTo(Self, PnPreview, 0, 0);
   FViewer.ResizeTo(PnPreview.Width, PnPreview.Height);
-  Photos := TDBPopupMenuInfo.Create;
+  Photos := TMediaItemCollection.Create;
   Photos.Assign(Info);
   FViewer.LoadFiles(Photos);
 
@@ -265,7 +265,7 @@ begin
   Result := 'ShareLink';
 end;
 
-procedure TFormShareLink.GetImageLink(Info: TDBPopupMenuInfo; Provider: IPhotoShareProvider);
+procedure TFormShareLink.GetImageLink(Info: TMediaItemCollection; Provider: IPhotoShareProvider);
 var
   Task: TShareThreadTask;
   Progress: IUploadProgress;
@@ -279,7 +279,7 @@ begin
   TThreadTaskThread.Create(Self, Task,
     procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
-      Item: TDBPopupMenuInfoRecord;
+      Item: TMediaItem;
       DBItemRepository: TDBItemRepository;
       DBItem: TDBItem;
     begin
@@ -292,11 +292,11 @@ begin
           .FirstOrDefault();
 
         ProcessImageForSharing(Item, False,
-          procedure(Data: TDBPopupMenuInfoRecord; Preview: TGraphic)
+          procedure(Data: TMediaItem; Preview: TGraphic)
           begin
             //no preview is available
           end,
-          procedure(Data: TDBPopupMenuInfoRecord; S: TStream; ContentType: string)
+          procedure(Data: TMediaItem; S: TStream; ContentType: string)
           var
             Photo: IPhotoServiceItem;
           begin
@@ -404,7 +404,7 @@ begin
   SbCopyToClipboard.Visible := False;
 end;
 
-procedure TFormShareLink.UpdateProgress(Item: TDBPopupMenuInfoRecord; Max,
+procedure TFormShareLink.UpdateProgress(Item: TMediaItem; Max,
   Position: Int64);
 begin
   LnkPublicLink.Text := FormatEx(L('Uploading: {0:0.#}%'), [100.0 * Position / Max]);
@@ -437,7 +437,7 @@ end;
 { TItemUploadProgress }
 
 constructor TItemUploadProgress.Create(Thread: TThreadTaskThread;
-  Item: TDBPopupMenuInfoRecord);
+  Item: TMediaItem);
 begin
   FThread := Thread;
   FItem := Item;

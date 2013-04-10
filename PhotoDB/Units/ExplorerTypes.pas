@@ -120,9 +120,9 @@ type
     dbcv_flags: Word;
   end;
 
-  TExplorerFileInfo = class(TDBPopupMenuInfoRecord)
+  TExplorerFileInfo = class(TMediaItem)
   protected
-    function InitNewInstance : TDBPopupMenuInfoRecord; override;
+    function InitNewInstance : TMediaItem; override;
   public
     IsBigImage: Boolean;
     SID: TGUID;
@@ -131,10 +131,10 @@ type
     Loaded: Boolean;
     ImageIndex: Integer;
     constructor CreateFromPathItem(PI: TPathItem);
-    function Copy: TDBPopupMenuInfoRecord; override;
+    function Copy: TMediaItem; override;
   end;
 
-  TExplorerFileInfos = class(TDBPopupMenuInfo)
+  TExplorerFileInfos = class(TMediaItemCollection)
   private
     function GetValueByIndex(Index: Integer): TExplorerFileInfo;
     procedure SetValueByIndex(Index: Integer; const Value: TExplorerFileInfo);
@@ -474,7 +474,7 @@ end;
 
 { TExplorerFileInfo }
 
-function TExplorerFileInfo.Copy: TDBPopupMenuInfoRecord;
+function TExplorerFileInfo.Copy: TMediaItem;
 var
   Info: TExplorerFileInfo;
 begin
@@ -568,7 +568,7 @@ begin
     FileType := EXPLORER_ITEM_SEARCH;
 end;
 
-function TExplorerFileInfo.InitNewInstance: TDBPopupMenuInfoRecord;
+function TExplorerFileInfo.InitNewInstance: TMediaItem;
 begin
   Result := TExplorerFileInfo.Create;
 end;

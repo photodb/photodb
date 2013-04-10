@@ -17,7 +17,7 @@ type
     FFullScreenNow: Boolean;
     FSlideShowNow: Boolean;
   protected
-    function GetItem: TDBPopupMenuInfoRecord; virtual;
+    function GetItem: TMediaItem; virtual;
   public
     CurrentFileNumber: Integer;
     property FullScreenNow: Boolean read FFullScreenNow write FFullScreenNow;
@@ -53,7 +53,7 @@ end;
 
 { TViewerForm }
 
-function TViewerForm.GetItem: TDBPopupMenuInfoRecord;
+function TViewerForm.GetItem: TMediaItem;
 begin
   Result := nil;
 end;

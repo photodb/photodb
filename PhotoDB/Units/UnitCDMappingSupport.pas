@@ -225,13 +225,13 @@ var
   Found: Integer;
   SearchRec: TSearchRec;
   Info: TProgressCallBackInfo;
-  DBInfo: TDBPopupMenuInfo;
+  DBInfo: TMediaItemCollection;
   I, N: Integer;
 begin
   CreateDirectory(ExtractFileName(Directory));
   SelectDirectory(ExtractFileName(Directory));
 
-  DBInfo := TDBPopupMenuInfo.Create;
+  DBInfo := TMediaItemCollection.Create;
   try
     Directory := IncludeTrailingBackslash(Directory);
     Found := FindFirst(Directory + '*', FaDirectory, SearchRec);
@@ -302,9 +302,9 @@ end;
 procedure TCDIndexMapping.AddRealItemsToCurrentDirectory(Files: TStrings);
 var
   I: Integer;
-  Info: TDBPopupMenuInfoRecord;
+  Info: TMediaItem;
 begin
-  Info := TDBPopupMenuInfoRecord.Create;
+  Info := TMediaItem.Create;
   try
     for I := 0 to Files.Count - 1 do
     begin

@@ -55,7 +55,7 @@ type
 type
   IImageViewer = interface(IFaceResultForm)
     procedure AttachTo(OwnerForm: TThreadForm; Control: TWinControl; X, Y: Integer);
-    procedure LoadFiles(FileList: TDBPopupMenuInfo);
+    procedure LoadFiles(FileList: TMediaItemCollection);
     procedure LoadPreviousFile;
     procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
@@ -84,7 +84,7 @@ type
     function GetTop: Integer;
     function GetLeft: Integer;
     function GetActiveThreadId: TGUID;
-    function GetItem: TDBPopupMenuInfoRecord;
+    function GetItem: TMediaItem;
     function GetDisplayBitmap: TBitmap;
     function GetCurentFile: string;
     function GetIsAnimatedImage: Boolean;
@@ -93,7 +93,7 @@ type
     property Top: Integer read GetTop;
     property Left: Integer read GetLeft;
     property ActiveThreadId: TGUID read GetActiveThreadId;
-    property Item: TDBPopupMenuInfoRecord read GetItem;
+    property Item: TMediaItem read GetItem;
     property DisplayBitmap: TBitmap read GetDisplayBitmap;
     property CurentFile: string read GetCurentFile;
     property IsAnimatedImage: Boolean read GetIsAnimatedImage;

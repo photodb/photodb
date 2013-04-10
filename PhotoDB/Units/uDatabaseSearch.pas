@@ -61,12 +61,13 @@ type
   TGetFilePasswordHandler = function(Sender: TDatabaseSearch; FileName: string): string of object;
   TTextMessageHandler = procedure(Sender: TDatabaseSearch; Text: string) of object;
   TProgressHandler = procedure(Sender: TDatabaseSearch; Progress: Extended) of object;
-  TPacketHandler = procedure(Sender: TDatabaseSearch; Packet: TDBPopupMenuInfo) of object;
+  TPacketHandler = procedure(Sender: TDatabaseSearch; Packet: TMediaItemCollection) of object;
 
   TDatabaseSearch = class(TObject)
   private
     FDBContext: IDBContext;
     FPeopleRepository: IPeopleRepository;
+    FMediaRepository: IMediaRepository;
     FSearchParams: TSearchQuery;
     FCurrentQueryType: TQueryType;
     FOwner: TThreadEx;
@@ -83,8 +84,8 @@ type
     procedure LoadImages;
     procedure LoadTextQuery(QueryParams: TDBQueryParams);
   protected
-    FData: TDBPopupMenuInfo;
-    FQData: TDBPopupMenuInfo;
+    FData: TMediaItemCollection;
+    FQData: TMediaItemCollection;
   public
     constructor Create(AOwner: TThreadEx; ASearchParams: TSearchQuery);
     destructor Destroy; override;
@@ -106,6 +107,7 @@ constructor TDatabaseSearch.Create(AOwner: TThreadEx; ASearchParams: TSearchQuer
 begin
   FDBContext := DBKernel.DBContext;
   FPeopleRepository := FDBContext.People;
+  FMediaRepository := FDBContext.Media;
   FCurrentQueryType := QT_TEXT;
   FSearchParams := ASearchParams;
   FOwner := AOwner;
@@ -124,7 +126,7 @@ var
   Folder, SysAction, Stemp, S1, S, Sqltext: string;
   A, B, C, N, I, J, Id, Left, L, M: Integer;
   Sqlwords, Sqlrwords: TStrings;
-  Systemquery, First: Boolean;
+  SystemQuery, First: Boolean;
   Fields_names: array [1 .. 10] of string;
   Fields_names_count: Integer;
   FSpecQuery: TDataSet;
@@ -198,7 +200,7 @@ begin
   SqlText := FSearchParams.Query;
   if SqlText = '' then
     SqlText := '*';
-  Systemquery := False;
+  SystemQuery := False;
 
   if Length(SqlText) > 3 then
     if (SqlText[1] = '%') and (SqlText[2] = ':') and (SqlText[Length(SqlText)] = ':') then
@@ -207,11 +209,11 @@ begin
   if Length(SqlText) > 2 then
     if (Sqltext[1] = ':') and (Sqltext[Length(Sqltext)] = ':') then
     begin
-      Sysaction := Copy(Sqltext, 2, Length(Sqltext) - 2);
+      SysAction := Copy(Sqltext, 2, Length(Sqltext) - 2);
 
       if AnsiLowerCase(Sysaction) = AnsiLowerCase('DeletedFiles') then
       begin
-        Systemquery := True;
+        SystemQuery := True;
         Result.Query := Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
         ApplyFilter(Result, Db_attr_not_exists);
       end;
@@ -267,7 +269,7 @@ begin
 
         Folder := Copy(Sysaction, 8, Length(Sysaction) - 8);
         if StrToIntDef(Folder, -1) <> -1 then
-          Folder := ExtractFileDir(uDBUtils.GetFileNameById(FDBContext, StrToInt(Folder)));
+          Folder := ExtractFileDir(FMediaRepository.GetFileNameById(StrToInt(Folder)));
 
         Folder := IncludeTrailingBackslash(Folder);
 
@@ -610,13 +612,13 @@ end;
 procedure TDatabaseSearch.AddItem(S: TDataSet);
 var
   I: Integer;
-  SearchData: TDBPopupMenuInfoRecord;
+  SearchData: TMediaItem;
   SearchExtension: TSearchDataExtension;
   JPEG: TJPEGImage;
   PassWord: string;
   BS: TStream;
 begin
-  SearchData := TDBPopupMenuInfoRecord.CreateFromDS(S);
+  SearchData := TMediaItem.CreateFromDS(S);
   SearchExtension := TSearchDataExtension.Create;
   SearchData.Data := SearchExtension;
   FData.Add(SearchData);
@@ -731,8 +733,8 @@ end;
 
 procedure TDatabaseSearch.ExecuteSearch;
 begin
-  FData := TDBPopupMenuInfo.Create;
-  FQData := TDBPopupMenuInfo.Create;
+  FData := TMediaItemCollection.Create;
+  FQData := TMediaItemCollection.Create;
   try
     LoadImages;
   finally

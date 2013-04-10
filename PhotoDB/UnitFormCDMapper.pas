@@ -264,8 +264,8 @@ var
   DS: TDataSet;
   I: Integer;
   CD: TCDClass;
-  Info: TDBPopupMenuInfo;
-  InfoRecord: TDBPopupMenuInfoRecord;
+  Info: TMediaItemCollection;
+  InfoRecord: TMediaItem;
 begin
   if CDMappingListView.Selected <> nil then
     if CDMappingListView.Selected.Data <> nil then
@@ -292,12 +292,12 @@ begin
           end;
           if DS.RecordCount > 0 then
           begin
-            Info := TDBPopupMenuInfo.Create;
+            Info := TMediaItemCollection.Create;
             try
               DS.First;
               for I := 1 to DS.RecordCount do
               begin
-                InfoRecord := TDBPopupMenuInfoRecord.Create;
+                InfoRecord := TMediaItem.Create;
                 InfoRecord.FileName := DS.FieldByName('FFileName').AsString;
                 InfoRecord.ID := DS.FieldByName('ID').AsInteger;
                 InfoRecord.Selected := True;
