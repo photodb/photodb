@@ -36,6 +36,7 @@ uses
   GIFImage,
   Effects,
   DBCMenu,
+  UnitDBKernel,
 
   uMemory,
   uConstants,
@@ -45,7 +46,7 @@ uses
   uDBPopupMenuInfo,
   uFaceDetection,
   uFaceDetectionThread,
-  uPeopleSupport,
+  uPeopleRepository,
   uGraphicUtils,
   uBitmapUtils,
   uAssociations,
@@ -57,6 +58,8 @@ uses
   uCollectionEvents,
   uThemesUtils,
   uDBIcons,
+  uDBContext,
+  uDBEntities,
   uSettings,
   uExifInfo,
   uPortableDeviceUtils,
@@ -72,6 +75,9 @@ type
 type
   TImageViewerControl = class(TBaseWinControl)
   private
+    FContext: IDBContext;
+    FPeopleRepository: IPeopleRepository;
+
     FImageViewer: IImageViewer;
 
     FExifInfo: IExifInfo;
@@ -160,6 +166,7 @@ type
     FOnDblClick: TNotifyEvent;
     FOnStopPersonSelection: TNotifyEvent;
 
+    procedure ChangeContext;
     function Buffer: TBitmap;
     procedure RecreateImage;
     procedure DrawImageInfo;
@@ -233,6 +240,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
     procedure StartLoadingImage;
     procedure StopLoadingImage;
     procedure LoadStaticImage(Item: TDBPopupMenuInfoRecord; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
@@ -349,6 +357,8 @@ begin
   TControlCanvas(FCanvas).Control := Self;
 
   ControlStyle := ControlStyle + [csOpaque, csPaintBlackOpaqueOnGlass];
+
+  ChangeContext;
 
   FLsLoading := TLoadingSign.Create(Self);
   FLsLoading.Parent := Self;
@@ -824,7 +834,7 @@ begin
   if FR.Data <> nil then
   begin
     FA := TPersonArea(FR.Data);
-    PersonManager.RemovePersonFromPhoto(Item.ID, FA);
+    FPeopleRepository.RemovePersonFromPhoto(Item.ID, FA);
   end;
   FFaces.RemoveFaceResult(FR);
   FHoverFace := nil;
@@ -1000,7 +1010,7 @@ begin
     Exit;
   P := TPerson.Create;
   try
-    PersonManager.FindPerson(PA.PersonID, P);
+    FPeopleRepository.FindPerson(PA.PersonID, P);
     if P.Empty then
       Exit;
 
@@ -1529,7 +1539,7 @@ begin
   try
     if (PA <> nil) and (PA.PersonID > 0) then
     begin
-      PersonManager.FindPerson(PA.PersonID, P);
+      FPeopleRepository.FindPerson(PA.PersonID, P);
       MiCreatePerson.Visible := P.Empty;
       if not P.Empty then
       begin
@@ -1567,7 +1577,7 @@ begin
       end;
 
       //add current persons
-      PersonManager.FillLatestSelections(SelectedPersons);
+      FPeopleRepository.FillLatestSelections(SelectedPersons);
 
       if not P.Empty then
         for I := 0 to SelectedPersons.Count - 1 do
@@ -2043,7 +2053,7 @@ var
 
       P := TPerson.Create;
       try
-        PersonManager.FindPerson(PA.PersonID, P);
+        FPeopleRepository.FindPerson(PA.PersonID, P);
         if not P.Empty or (PA.PersonID = -1) then
         begin
           if not P.Empty then
@@ -2220,14 +2230,14 @@ begin
       begin
         PA := TPersonArea.Create(Item.ID, P.ID, RI);
         try
-          PersonManager.AddPersonForPhoto(TDBForm(Self.OwnerForm), PA);
+          FPeopleRepository.AddPersonForPhoto(TDBForm(Self.OwnerForm), PA);
           RI.Data := PA.Clone;
 
         finally
           F(PA);
         end;
       end else
-        PersonManager.ChangePerson(PA, P.ID);
+        FPeopleRepository.ChangePerson(PA, P.ID);
 
       if FImageViewer <> nil then
         FImageViewer.UpdateFaces(FItem.FileName, FFaces);
@@ -2261,7 +2271,7 @@ begin
   P := TPerson.Create;
   try
     PersonID := TMenuItem(Sender).Tag;
-    PersonManager.FindPerson(PersonID, P);
+    FPeopleRepository.FindPerson(PersonID, P);
     if not P.Empty then
       SelectPerson(P);
   finally
@@ -2341,11 +2351,20 @@ begin
     Cursor := crDefault;
 end;
 
+procedure TImageViewerControl.ChangeContext;
+begin
+  FContext := DBKernel.DBContext;
+  FPeopleRepository := FContext.People;
+end;
+
 procedure TImageViewerControl.ChangedDBDataByID(Sender: TObject; ID: Integer;
   Params: TEventFields; Value: TEventValues);
 var
   I: Integer;
 begin
+  if Params * [EventID_Param_DB_Changed] <> [] then
+     ChangeContext;
+
   if SetNewIDFileData in Params then
   begin
     if AnsiLowerCase(FItem.FileName) = AnsiLowerCase(Value.FileName) then

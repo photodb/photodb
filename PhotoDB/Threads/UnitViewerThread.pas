@@ -251,7 +251,7 @@ begin
         if CanDetectFacesOnImage(FInfo.FileName, Graphic) then
         begin
           SynchronizeEx(ShowLoadingSign);
-          FaceDetectionDataManager.RequestFaceDetection(FViewer, Graphic, FInfo);
+          FaceDetectionDataManager.RequestFaceDetection(FViewer, FContext, Graphic, FInfo);
         end else
           FinishDetectionFaces;
       end else

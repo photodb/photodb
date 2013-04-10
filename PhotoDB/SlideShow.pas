@@ -80,7 +80,7 @@ uses
   uAssociations,
   uExifUtils,
   uInterfaces,
-  uPeopleSupport,
+  uPeopleRepository,
   u2DUtils,
   uVCLHelpers,
   uAnimatedJPEG,
@@ -264,8 +264,7 @@ type
     procedure Properties1Click(Sender: TObject);
     procedure Resize1Click(Sender: TObject);
     procedure FormContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
-    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState;
-      Point: TPoint; var Effect: Integer);
+    procedure DropFileTarget1Drop(Sender: TObject; ShiftState: TShiftState; Point: TPoint; var Effect: Integer);
     procedure ReloadCurrent;
     procedure ImageFrameTimerTimer(Sender: TObject);
     procedure UpdateInfo(SID : TGUID; Info : TDBPopupMenuInfoRecord);
@@ -309,6 +308,10 @@ type
     procedure FormDblClick(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
+    FSettingsRepository: ISettingsRepository;
+    FPeopleRepository: IPeopleRepository;
+
     WindowsMenuTickCount: Cardinal;
     FImageExists: Boolean;
     FStaticImage: Boolean;
@@ -357,6 +360,7 @@ type
     procedure SetDisplayRating(const Value: Integer);
     procedure UpdateCrypted;
     procedure SelectPerson(P: TPerson);
+    procedure LoadContext;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -497,6 +501,7 @@ end;
 procedure TViewer.FormCreate(Sender: TObject);
 begin
   RegisterMainForm(Self);
+  LoadContext;
   FIsClosing := False;
   TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
@@ -613,6 +618,13 @@ begin
   PostMessage(Handle, FProgressMessage, 0, 0);
 end;
 
+procedure TViewer.LoadContext;
+begin
+  FContext := DBKernel.DBContext;
+  FSettingsRepository := FContext.Settings;
+  FPeopleRepository := FContext.People;
+end;
+
 function TViewer.LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Double;
   RealZoom: Boolean): Boolean;
 var
@@ -666,7 +678,7 @@ begin
       Result := True;
       ForwardThreadExists := False;
       FForwardThreadReady := False;
-      TViewerThread.Create(Self, DBKernel.DBContext, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
+      TViewerThread.Create(Self, FContext, Item, FullImage, IIF(RealZoom, BeginZoom, 1), FSID, False, FCurrentPage);
 
       if NeedsUpdating then
       begin
@@ -675,7 +687,7 @@ begin
         TbRotateCCW.Enabled := False;
         TbRotateCW.Enabled := False;
         UpdateCrypted;
-        TSlideShowUpdateInfoThread.Create(Self, StateID, DBKernel.DBContext, Item.FileName);
+        TSlideShowUpdateInfoThread.Create(Self, StateID, FContext, Item.FileName);
       end;
 
     end else
@@ -1083,6 +1095,10 @@ begin
   F(AnimatedBuffer);
   F(AnimatedImage);
   F(LockEventRotateFileList);
+
+  FSettingsRepository := nil;
+  FPeopleRepository := nil;
+  FContext := nil;
 end;
 
 procedure TViewer.SpeedButton5Click(Sender: TObject);
@@ -1166,7 +1182,7 @@ begin
   P := TPerson.Create;
   try
     PersonID := TMenuItem(Sender).Tag;
-    PersonManager.FindPerson(PersonID, P);
+    FPeopleRepository.FindPerson(PersonID, P);
     if not P.Empty then
       SelectPerson(P);
   finally
@@ -1200,7 +1216,7 @@ begin
   try
     if (PA <> nil) and (PA.PersonID > 0) then
     begin
-      PersonManager.FindPerson(PA.PersonID, P);
+      FPeopleRepository.FindPerson(PA.PersonID, P);
       MiCreatePerson.Visible := P.Empty;
       if not P.Empty then
       begin
@@ -1238,7 +1254,7 @@ begin
       end;
 
       //add current persons
-      PersonManager.FillLatestSelections(SelectedPersons);
+      FPeopleRepository.FillLatestSelections(SelectedPersons);
 
       if not P.Empty then
         for I := 0 to SelectedPersons.Count - 1 do
@@ -1533,9 +1549,7 @@ begin
           W := FFullImage.Width;
           H := FFullImage.Height;
 
-          Context := DBKernel.DBContext;
-          SettingsRepository := Context.Settings;
-          Settings := SettingsRepository.Get;
+          Settings := FSettingsRepository.Get;
           try
             ProportionalSize(Settings.ThSize, Settings.ThSize, W, H);
           finally
@@ -1565,12 +1579,15 @@ begin
   FOldPoint := Point(X, Y);
 end;
 
-procedure TViewer.ChangedDBDataByID(Sender : TObject; ID : integer; params : TEventFields; Value : TEventValues);
+procedure TViewer.ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
 var
   I: Integer;
 begin
   if Viewer = nil then
     Exit;
+
+  if Params * [EventID_Param_DB_Changed] <> [] then
+     LoadContext;
 
   if SetNewIDFileData in Params then
   begin
@@ -1722,15 +1739,12 @@ var
   FileName: string;
   FQuery: TDataSet;
   InfoItem: TDBPopupMenuInfoRecord;
-  Context: IDBContext;
 begin
   if List.Count = 0 then
     Exit;
 
-  Context := DBKernel.DBContext;
-
   CurrentInfo.Clear;
-  FQuery := Context.CreateQuery(dbilRead);
+  FQuery := FContext.CreateQuery(dbilRead);
   try
     ReadOnlyQuery(FQuery);
     for I := 0 to List.Count - 1 do
@@ -1866,11 +1880,8 @@ procedure TViewer.UpdateRecord(FileNo: integer);
 var
   DS: TDataSet;
   FileName: string;
-  Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
-
-  DS := Context.CreateQuery(dbilRead);
+  DS := FContext.CreateQuery(dbilRead);
   try
     ReadOnlyQuery(DS);
     FileName := CurrentInfo[FileNo].FileName;
@@ -2111,7 +2122,7 @@ var
 begin
   NewFormState;
   WaitingList := True;
-  TSlideShowScanDirectoryThread.Create(DBKernel.DBContext, Self, StateID, FileName);
+  TSlideShowScanDirectoryThread.Create(FContext, Self, StateID, FileName);
 
   Info := TDBPopupMenuInfo.Create;
   try
@@ -2313,7 +2324,7 @@ begin
   if FR.Data <> nil then
   begin
     FA := TPersonArea(FR.Data);
-    PersonManager.RemovePersonFromPhoto(Item.ID, FA);
+    FPeopleRepository.RemovePersonFromPhoto(Item.ID, FA);
   end;
   FFaces.RemoveFaceResult(FR);
   FHoverFace := nil;
@@ -2466,14 +2477,14 @@ begin
       begin
         PA := TPersonArea.Create(Item.ID, P.ID, RI);
         try
-          PersonManager.AddPersonForPhoto(Self, PA);
+          FPeopleRepository.AddPersonForPhoto(Self, PA);
           RI.Data := PA.Clone;
 
         finally
           F(PA);
         end;
       end else
-        PersonManager.ChangePerson(PA, P.ID);
+        FPeopleRepository.ChangePerson(PA, P.ID);
 
       RefreshFaces;
     end;
@@ -2521,7 +2532,7 @@ begin
     Exit;
   P := TPerson.Create;
   try
-    PersonManager.FindPerson(PA.PersonID, P);
+    FPeopleRepository.FindPerson(PA.PersonID, P);
     if P.Empty then
       Exit;
 
@@ -3124,7 +3135,7 @@ var
 
       P := TPerson.Create;
       try
-        PersonManager.FindPerson(PA.PersonID, P);
+        FPeopleRepository.FindPerson(PA.PersonID, P);
         if not P.Empty or (PA.PersonID = -1) then
         begin
           if not P.Empty then
@@ -3621,7 +3632,7 @@ begin
       N := 0;
     ForwardThreadExists := True;
     ForwardThreadFileName := CurrentInfo[N].FileName;
-    TViewerThread.Create(Self, DBKernel.DBContext, CurrentInfo[N], False, 1, ForwardThreadSID, True, 0);
+    TViewerThread.Create(Self, FContext, CurrentInfo[N], False, 1, ForwardThreadSID, True, 0);
   end;
 end;
 
@@ -3791,7 +3802,6 @@ var
   DeleteID: Integer;
   DItem: IPDItem;
   Device: IPDevice;
-  Context: IDBContext;
 begin
   if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete file to recycle bin?'), L('Delete confirmation'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
@@ -3799,8 +3809,7 @@ begin
     DeleteID := 0;
     if Item.ID <> 0 then
     begin
-      Context := DBKernel.DBContext;
-      FQuery := Context.CreateQuery;
+      FQuery := FContext.CreateQuery;
       try
         DeleteID := Item.ID;
         SQL_ := Format('DELETE FROM $DB$ WHERE ID = %d', [Item.ID]);
@@ -3959,16 +3968,13 @@ var
   NewRating: Integer;
   EventInfo: TEventValues;
   FileInfo: TDBPopupMenuInfoRecord;
-  Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
-
   Str := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
   NewRating := StrToInt(Str);
 
   if Item.ID > 0 then
   begin
-    SetRating(Context, Item.ID, NewRating);
+    SetRating(FContext, Item.ID, NewRating);
     EventInfo.Rating := NewRating;
     CollectionEvents.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
   end else
@@ -4388,7 +4394,7 @@ begin
     FileName := LongFileName(FileName);
     Info := TDBPopupMenuInfo.Create;
     try
-      GetFileListByMask(DBKernel.DBContext, FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
+      GetFileListByMask(FContext, FileName, TFileAssociations.Instance.ExtensionList, Info, N, ShowPrivate);
       if Info.Count > 0 then
       begin
         ShowImages(Self, info);

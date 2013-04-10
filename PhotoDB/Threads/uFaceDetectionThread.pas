@@ -21,6 +21,7 @@ uses
 
   uMemory,
   uDBThread,
+  uDBEntities,
   uFaceDetection,
   uLogger,
   uConstants,
@@ -32,7 +33,7 @@ uses
   uSettings,
   uDateUtils,
   uDBContext,
-  uPeopleSupport,
+  uPeopleRepository,
   u2DUtils,
   uConfiguration,
   uStringUtils,
@@ -63,17 +64,19 @@ type
 
   TDBFaceLoadThread = class(TDBThread)
   private
+    FContext: IDBContext;
     FImageID: Integer;
     FPersonAreas: TPersonAreaCollection;
   protected
     procedure Execute; override;
   public
-    constructor Create(ImageID: Integer);
+    constructor Create(Context: IDBContext; ImageID: Integer);
     destructor Destroy; override;
   end;
 
   TFaceDetectionData = class
   private
+    FContext: IDBContext;
     function GetFileName: string;
     function GetID: Integer;
     function GetRotate: Integer;
@@ -82,11 +85,12 @@ type
     Data: TDBPopupMenuInfoRecord;
     Caller: TObject;
     IColler: IFaceResultForm;
-    constructor Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
+    constructor Create(Context: IDBContext; AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
     destructor Destroy; override;
     property ID: Integer read GetID;
     property FileName: string read GetFileName;
     property Rotate: Integer read GetRotate;
+    property Context: IDBContext read FContext;
   end;
 
   TFaceDetectionDataManager = class(TObject)
@@ -99,7 +103,7 @@ type
     function ExtractData: TFaceDetectionData;
     function GetDetectionMethod: string;
   public
-    procedure RequestFaceDetection(Caller: TObject; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
+    procedure RequestFaceDetection(Caller: TObject; Context: IDBContext; var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
     function GetFaceDataFromCache(CacheFileName: string; Faces: TFaceDetectionResult): Integer;
     function RotateCacheData(ImageFileName: string; Rotate: Integer): Boolean;
     function RotateDBData(Context: IDBContext; ID: Integer; Rotate: Integer): Boolean;
@@ -196,7 +200,7 @@ begin
           FaceMethod := FaceDetectionDataManager.DetectionMethod;
 
           if ImageData.ID > 0 then
-            Thread := TDBFaceLoadThread.Create(ImageData.ID);
+            Thread := TDBFaceLoadThread.Create(ImageData.Context, ImageData.ID);
           try
             CacheFileName := FaceDetectionDataManager.CreateCacheFileName(FaceMethod, ImageData.FileName);
             LoadResult := FaceDetectionDataManager.GetFaceDataFromCache(CacheFileName, FFaces);
@@ -354,7 +358,7 @@ begin
     Result := FACE_DETECTION_OK;
 end;
 
-procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TObject;
+procedure TFaceDetectionDataManager.RequestFaceDetection(Caller: TObject; Context: IDBContext;
   var Image: TGraphic; Data: TDBPopupMenuInfoRecord);
 var
   I: Integer;
@@ -365,7 +369,7 @@ begin
     if Image = nil then
       Exit;
 
-    FData := TFaceDetectionData.Create(Image, Data, Caller);
+    FData := TFaceDetectionData.Create(Context, Image, Data, Caller);
     FImages.Insert(0, FData);
     Image := nil;
     for I := FImages.Count - 1 downto 1 do
@@ -431,8 +435,11 @@ end;
 function TFaceDetectionDataManager.RotateDBData(Context: IDBContext; ID, Rotate: Integer): Boolean;
 var
   PersonAreas: TPersonAreaCollection;
+  PeopleRepository: IPeopleRepository;
 begin
-  PersonAreas := PersonManager.GetAreasOnImage(ID);
+  PeopleRepository := Context.People;
+
+  PersonAreas := PeopleRepository.GetAreasOnImage(ID);
   try
     case Rotate and DB_IMAGE_ROTATE_MASK of
       DB_IMAGE_ROTATE_270:
@@ -445,7 +452,7 @@ begin
           PersonAreas.RotateRight;
         end;
     end;
-    PersonAreas.UpdateDB(Context);
+    PeopleRepository.UpdatePersonAreaCollection(PersonAreas);
     Result := True;
   finally
     F(PersonAreas);
@@ -454,8 +461,9 @@ end;
 
 { TFaceDetectionData }
 
-constructor TFaceDetectionData.Create(AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
+constructor TFaceDetectionData.Create(Context: IDBContext; AImage: TGraphic; AData: TDBPopupMenuInfoRecord; ACaller: TObject);
 begin
+  FContext := Context;
   Image := AImage;
   Data := AData.Copy;
   Caller := ACaller;
@@ -696,9 +704,10 @@ end;
 
 { TDBFaceLoadThread }
 
-constructor TDBFaceLoadThread.Create(ImageID: Integer);
+constructor TDBFaceLoadThread.Create(Context: IDBContext; ImageID: Integer);
 begin
   inherited Create(nil, False);
+  FContext := Context;
   FImageID := ImageID;
   FPersonAreas := nil;
 end;
@@ -706,15 +715,19 @@ end;
 destructor TDBFaceLoadThread.Destroy;
 begin
   F(FPersonAreas);
+  FContext := nil;
   inherited;
 end;
 
 procedure TDBFaceLoadThread.Execute;
+var
+  PeopleRepository: IPeopleRepository;
 begin
   inherited;
   CoInitializeEx(nil, COM_MODE);
   try
-    FPersonAreas := PersonManager.GetAreasOnImage(FImageID);
+    PeopleRepository := FContext.People;
+    FPersonAreas := PeopleRepository.GetAreasOnImage(FImageID);
   finally
     CoUninitialize;
   end;

@@ -32,7 +32,7 @@ uses
   uDBPopupMenuInfo,
   uAssociatedIcons,
   uThreadEx,
-  uPeopleSupport,
+  uPeopleRepository,
   uAssociations,
   uSessionPasswords,
   uSearchQuery;
@@ -66,6 +66,7 @@ type
   TDatabaseSearch = class(TObject)
   private
     FDBContext: IDBContext;
+    FPeopleRepository: IPeopleRepository;
     FSearchParams: TSearchQuery;
     FCurrentQueryType: TQueryType;
     FOwner: TThreadEx;
@@ -104,6 +105,7 @@ implementation
 constructor TDatabaseSearch.Create(AOwner: TThreadEx; ASearchParams: TSearchQuery);
 begin
   FDBContext := DBKernel.DBContext;
+  FPeopleRepository := FDBContext.People;
   FCurrentQueryType := QT_TEXT;
   FSearchParams := ASearchParams;
   FOwner := AOwner;
@@ -113,6 +115,7 @@ destructor TDatabaseSearch.Destroy;
 begin
   F(FSearchParams);
   FDBContext := nil;
+  FPeopleRepository := nil;
   inherited;
 end;
 
@@ -487,7 +490,7 @@ begin
       for I := 0 to FSearchParams.Persons.Count - 1 do
         PersonNames.Add(NormalizeDBString(NormalizeDBStringLike(FSearchParams.Persons[I])));
 
-      Persons := PersonManager.GetPersonsByNames(PersonNames);
+      Persons := FPeopleRepository.GetPersonsByNames(PersonNames);
       try
         PersonIDsSum := 0;
         for I := 0 to Persons.Count - 1 do

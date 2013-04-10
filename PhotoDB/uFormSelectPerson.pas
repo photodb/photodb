@@ -25,16 +25,19 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.Controls.SaveWindowPos,
 
+  UnitDBKernel,
   UnitDBDeclare,
 
   uConstants,
   uThreadForm,
   uThreadTask,
-  uPeopleSupport,
+  uPeopleRepository,
   uBitmapUtils,
   uMemory,
   uMachMask,
   uFormInterfaces,
+  uDBEntities,
+  uDBContext,
   uGraphicUtils;
 
 type
@@ -59,13 +62,13 @@ type
     procedure LvPersonsDblClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
-    procedure WedPersonFilterKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure LvPersonsSelectItem(Sender: TObject; Item: TListItem;
-      Selected: Boolean);
+    procedure WedPersonFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LvPersonsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure WlCreatePersonClick(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
+    FPeopleRepository: IPeopleRepository;
     WndMethod: TWndMethod;
     FInfo: TDBPopupMenuInfoRecord;
     FFormResult: Integer;
@@ -250,6 +253,9 @@ end;
 
 procedure TFormFindPerson.FormCreate(Sender: TObject);
 begin
+  FContext := DBKernel.DBContext;
+  FPeopleRepository := FContext.People;
+
   FInfo := nil;
   FPersons := TPersonCollection.Create(False);
   FFormResult := SELECT_PERSON_CANCEL;
@@ -268,6 +274,9 @@ begin
   FPersons.FreeItems;
   F(FPersons);
   F(FInfo);
+
+  FPeopleRepository := nil;
+  FContext := nil;
 end;
 
 procedure TFormFindPerson.FormKeyDown(Sender: TObject; var Key: Word;
@@ -321,7 +330,7 @@ begin
 
       CoInitialize(nil);
       try
-        PersonManager.LoadTopPersons(procedure(P: TPerson; var StopOperation: Boolean)
+        FPeopleRepository.LoadTopPersons(procedure(P: TPerson; var StopOperation: Boolean)
           begin
             B := TBitmap.Create;
             try

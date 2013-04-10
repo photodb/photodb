@@ -37,7 +37,7 @@ uses
   UnitDBKernel,
 
   uFaceDetection,
-  uPeopleSupport,
+  uPeopleRepository,
   uMemory,
   uMemoryEx,
   uBitmapUtils,
@@ -108,6 +108,8 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FGroupsRepository: IGroupsRepository;
+    FPeopleRepository: IPeopleRepository;
     FPicture: TBitmap;
     FDisplayImage: TBitmap;
     FOriginalFace: TFaceDetectionResultItem;
@@ -235,7 +237,7 @@ begin
   begin
     PersonArea := TPersonArea.Create(FInfo.ID, Person.ID, FOriginalFace);
     try
-      PersonManager.AddPersonForPhoto(Self, PersonArea);
+      FPeopleRepository.AddPersonForPhoto(Self, PersonArea);
       FOriginalFace.Data := PersonArea.Clone;
     finally
       F(PersonArea);
@@ -295,7 +297,7 @@ begin
     UpdatePersonFields;
     if FIsImageChanged then
       UpdateImage;
-    PersonManager.UpdatePerson(FPerson, FIsImageChanged);
+    FPeopleRepository.UpdatePerson(FPerson, FIsImageChanged);
 
     EventValues.ID := FPerson.ID;
     EventValues.FileName := FPerson.Name;
@@ -311,10 +313,10 @@ begin
     FPerson := TPerson.Create;
     UpdatePersonFields;
     UpdateImage;
-    PersonID := PersonManager.CreateNewPerson(Person);
+    PersonID := FPeopleRepository.CreateNewPerson(Person);
     F(FPerson);
     FPerson := TPerson.Create;
-    PersonManager.FindPerson(PersonID, FPerson);
+    FPeopleRepository.FindPerson(PersonID, FPerson);
 
     if not FPerson.Empty then
     begin
@@ -359,7 +361,7 @@ begin
   if not FIsEditMode then
   begin
     EnableControls(False);
-    FPerson := PersonManager.GetPerson(PersonID);
+    FPerson := FPeopleRepository.GetPerson(PersonID);
     MarkPersonOnPhoto;
   end else
   begin
@@ -422,7 +424,7 @@ begin
   Result := False;
   FPerson := TPerson.Create;
   try
-    PersonManager.FindPerson(PersonID, FPerson);
+    FPeopleRepository.FindPerson(PersonID, FPerson);
 
     if FPerson.Empty then
       Exit;
@@ -484,6 +486,8 @@ end;
 procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
   FContext := DBKernel.DBContext;
+  FGroupsRepository := FContext.Groups;
+  FPeopleRepository := FContext.People;
   FInfo := nil;
   FPerson := nil;
   FFormPersonSuggest := nil;
@@ -510,6 +514,8 @@ begin
   F(FDisplayImage);
   F(FInfo);
   FContext := nil;
+  FPeopleRepository := nil;
+  FGroupsRepository := nil;
 end;
 
 procedure TFormCreatePerson.FormKeyDown(Sender: TObject; var Key: Word;
@@ -845,9 +851,7 @@ var
   Group: TGroup;
   SmallB: TBitmap;
   FCurrentGroups: TGroups;
-  FGroupsRepository: IGroupsRepository;
 begin
-  FGroupsRepository := FContext.Groups;
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
   try

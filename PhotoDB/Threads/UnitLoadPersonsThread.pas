@@ -3,7 +3,12 @@ unit UnitLoadPersonsThread;
 interface
 
 uses
-  Classes, uDBThread, uPeopleSupport, ActiveX, uConstants;
+  Classes,
+  ActiveX,
+
+  uDBThread,
+  uPeopleRepository,
+  uConstants;
 
 type
   TLoadPersonsThread = class(TDBThread)
@@ -22,7 +27,7 @@ begin
 
   CoInitializeEx(nil, COM_MODE);
   try
-    PersonManager.AllPersons;
+    //PersonManager.AllPersons;
   finally
     CoUninitialize;
   end;

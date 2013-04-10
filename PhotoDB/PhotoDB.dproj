@@ -475,7 +475,7 @@
         <DCCReference Include="Units\uDatabaseSearch.pas"/>
         <DCCReference Include="Units\uFaceDetection.pas"/>
         <DCCReference Include="Threads\uFaceDetectionThread.pas"/>
-        <DCCReference Include="Units\uPeopleSupport.pas"/>
+        <DCCReference Include="Units\Database\uPeopleRepository.pas"/>
         <DCCReference Include="uFormCreatePerson.pas">
             <Form>FormCreatePerson</Form>
         </DCCReference>
@@ -649,8 +649,8 @@
         <DCCReference Include="Units\uSessionPasswords.pas"/>
         <DCCReference Include="Units\uCollectionEvents.pas"/>
         <DCCReference Include="Units\uDBIcons.pas"/>
-        <DCCReference Include="Units\uDBScheme.pas"/>
-        <DCCReference Include="Units\uDBContext.pas"/>
+        <DCCReference Include="Units\Database\uDBScheme.pas"/>
+        <DCCReference Include="Units\Database\uDBContext.pas"/>
         <DCCReference Include="Units\Database\uSettingsRepository.pas"/>
         <DCCReference Include="Units\Database\uDBEntities.pas"/>
         <DCCReference Include="Units\Database\uGroupsRepository.pas"/>

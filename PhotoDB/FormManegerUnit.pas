@@ -46,6 +46,7 @@ uses
   uPortableDeviceManager,
   uUpTime,
   uPortableClasses,
+  uPeopleRepository,
   uTranslate,
   {$IFDEF LICENCE}
   UnitINI,
@@ -507,6 +508,7 @@ begin
   if Params * [EventID_Param_DB_Changed] <> [] then
   begin
     AppSettings.ClearCache;
+    TPeopleRepository.ClearCache;
     UpdaterStorage.CleanUpDatabase(DBKernel.DBContext);
     UpdaterStorage.SaveStorage;
     UpdaterStorage.RestoreStorage(DBKernel.DBContext);

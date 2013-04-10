@@ -246,7 +246,7 @@ uses
   uDatabaseSearch in 'Units\uDatabaseSearch.pas',
   uFaceDetection in 'Units\uFaceDetection.pas',
   uFaceDetectionThread in 'Threads\uFaceDetectionThread.pas',
-  uPeopleSupport in 'Units\uPeopleSupport.pas',
+  uPeopleRepository in 'Units\Database\uPeopleRepository.pas',
   uFormCreatePerson in 'uFormCreatePerson.pas' {FormCreatePerson},
   u2DUtils in 'Units\u2DUtils.pas',
   uDBClasses in 'Units\uDBClasses.pas',
@@ -380,8 +380,8 @@ uses
   uSessionPasswords in 'Units\uSessionPasswords.pas',
   uCollectionEvents in 'Units\uCollectionEvents.pas',
   uDBIcons in 'Units\uDBIcons.pas',
-  uDBScheme in 'Units\uDBScheme.pas',
-  uDBContext in 'Units\uDBContext.pas',
+  uDBScheme in 'Units\Database\uDBScheme.pas',
+  uDBContext in 'Units\Database\uDBContext.pas',
   uSettingsRepository in 'Units\Database\uSettingsRepository.pas',
   uDBEntities in 'Units\Database\uDBEntities.pas',
   uGroupsRepository in 'Units\Database\uGroupsRepository.pas';
@@ -539,7 +539,6 @@ begin
       TLoad.Instance.RequiredStyle;
     end;
 
-    UnRegisterPersonManager;
     UnLoadTranslateModule;
   except
     on e: Exception do

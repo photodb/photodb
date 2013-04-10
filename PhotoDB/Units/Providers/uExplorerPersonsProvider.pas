@@ -16,7 +16,7 @@ uses
   UnitDBDeclare,
   UnitDBKernel,
 
-  uPeopleSupport,
+  uPeopleRepository,
   uBitmapUtils,
   uTime,
   uMemory,
@@ -28,6 +28,7 @@ uses
   uShellIntegration,
   uDBForm,
   uDBClasses,
+  uDBEntities,
   uDBContext,
   uCollectionEvents;
 
@@ -113,6 +114,7 @@ var
   Form: TDBForm;
   Item: TPersonItem;
   Context: IDBContext;
+  PeopleRepository: IPeopleRepository;
 begin
   Result := False;
 
@@ -129,11 +131,13 @@ begin
 
   Item := TPersonItem(Items[0]);
 
-  P := PersonManager.GetPersonByName(Item.PersonName);
+  Context := DBKernel.DBContext;
+  PeopleRepository := Context.People;
+
+  P := PeopleRepository.GetPersonByName(Item.PersonName);
   try
     if not P.Empty then
     begin
-      Context := DBKernel.DBContext;
       SC := Context.CreateSelect(ObjectMappingTableName);
       try
         SC.AddParameter(TCustomFieldParameter.Create('Count(1) as RecordCount'));
@@ -143,7 +147,7 @@ begin
           Count := SC.DS.FieldByName('RecordCount').AsInteger;
           if ID_OK = MessageBoxDB(Form.Handle, FormatEx(L('Do you really want to delete person "{0}" (Has {1} reference(s) on photo(s))?'), [P.Name, Count]), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
           begin
-            Result := PersonManager.DeletePerson(Item.PersonName);
+            Result := PeopleRepository.DeletePerson(Item.PersonName);
             if Result then
             begin
               EventValues.ID := P.ID;
@@ -179,11 +183,17 @@ function TPersonProvider.ExtractPreview(Item: TPathItem; MaxWidth,
   MaxHeight: Integer; var Bitmap: TBitmap; var Data: TObject): Boolean;
 var
   Person: TPerson;
+  Context: IDBContext;
+  PeopleRepository: IPeopleRepository;
 begin
   Result := False;
+
+  Context := DBKernel.DBContext;
+  PeopleRepository := Context.People;
+
   Person := TPerson.Create;
   try
-    PersonManager.FindPerson(ExtractPersonName(Item.Path), Person);
+    PeopleRepository.FindPerson(ExtractPersonName(Item.Path), Person);
     if Person.Image = nil then
       Exit;
     Bitmap.Assign(Person.Image);
@@ -208,6 +218,8 @@ var
   P: TPersonItem;
   Cancel: Boolean;
   Persons: TPersonCollection;
+  Context: IDBContext;
+  PeopleRepository: IPeopleRepository;
 begin
   inherited;
   Result := True;
@@ -224,9 +236,12 @@ begin
 
   if Item is TPersonsItem then
   begin
+    Context := DBKernel.DBContext;
+    PeopleRepository := Context.People;
+
     Persons := TPersonCollection.Create;
     try
-      PersonManager.LoadPersonList(Persons);
+      PeopleRepository.LoadPersonList(Persons);
       for I := 0 to Persons.Count - 1 do
       begin
         TW.I.Start('Person - create');
@@ -259,6 +274,8 @@ function TPersonProvider.Rename(Sender: TObject; Items: TPathItemCollection;
 var
   EventValues: TEventValues;
   Item: TPersonItem;
+  Context: IDBContext;
+  PeopleRepository: IPeopleRepository;
 begin
   Result := False;
 
@@ -267,7 +284,10 @@ begin
 
   Item := TPersonItem(Items[0]);
 
-  Result := PersonManager.RenamePerson(Item.PersonName, Options.NewName);
+  Context := DBKernel.DBContext;
+  PeopleRepository := Context.People;
+
+  Result := PeopleRepository.RenamePerson(Item.PersonName, Options.NewName);
   if Result then
   begin
     EventValues.ID := Item.PersonID;
@@ -288,13 +308,18 @@ function TPersonProvider.ShowProperties(Sender: TObject;
   Items: TPathItemCollection): Boolean;
 var
   P: TPerson;
+  Context: IDBContext;
+  PeopleRepository: IPeopleRepository;
 begin
   Result := False;
 
   if Items.Count = 0 then
     Exit;
 
-  P := PersonManager.GetPersonByName(TPersonItem(Items[0]).PersonName);
+  Context := DBKernel.DBContext;
+  PeopleRepository := Context.People;
+
+  P := PeopleRepository.GetPersonByName(TPersonItem(Items[0]).PersonName);
   try
     Result := P.ID > 0;
     if Result then
@@ -401,10 +426,16 @@ end;
 function TPersonItem.LoadImage(Options, ImageSize: Integer): Boolean;
 var
   Person: TPerson;
+  Context: IDBContext;
+  PeopleRepository: IPeopleRepository;
 begin
   Result := False;
   F(FImage);
-  Person := PersonManager.GetPersonByName(FPersonName);
+
+  Context := DBKernel.DBContext;
+  PeopleRepository := Context.People;
+
+  Person := PeopleRepository.GetPersonByName(FPersonName);
   try
     if not Person.Empty then
     begin

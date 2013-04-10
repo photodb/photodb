@@ -173,7 +173,7 @@ uses
   uMediaEncryption,
   uIImageViewer,
   uImageViewer,
-  uPeopleSupport,
+  uPeopleRepository,
   uFormSelectPerson,
   uEXIFDisplayControl,
   uProgramStatInfo,
@@ -558,7 +558,7 @@ type
     procedure ListView1Edited(Sender: TObject; Item: TEasyItem; var S: String);
     procedure HintTimerTimer(Sender: TObject);
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    procedure SetInfoToItem(info : TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
+    procedure SetInfoToItem(Info: TDBPopupMenuInfoRecord; FileGUID: TGUID; Loaded: Boolean = False);
     procedure SpeedButton3Click(Sender: TObject);
     procedure Open1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
@@ -819,6 +819,10 @@ type
     procedure DBitem1Click(Sender: TObject);
   private
     { Private declarations }
+    FContext: IDBContext;
+    FPeopleRepository: IPeopleRepository;
+    FGroupsRepository: IGroupsRepository;
+
     FBitmapImageList: TBitmapImageList;
     FSearchMode: Integer;
     NewFileName: string;
@@ -916,6 +920,7 @@ type
     IsResizePreivew: Boolean;
     FDatabases: TList<TDatabaseInfo>;
 
+    procedure LoadContext;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
     procedure Reload;
@@ -1389,6 +1394,7 @@ end;
 
 procedure TExplorerForm.FormCreate(Sender: TObject);
 begin
+  LoadContext;
   FSearchMode := -1;
   FGeoHTMLWindow := nil;
   FEditorInfo := nil;
@@ -2308,7 +2314,6 @@ var
   PI: TPathItem;
   PL: TPathItemCollection;
   EO: TPathFeatureOptions;
-  Context: IDBContext;
 begin
   //.Tag is index of item
   if PmItemPopup.Tag < 0 then
@@ -2358,9 +2363,7 @@ begin
       end;
     if Info.FileType = EXPLORER_ITEM_FOLDER then
     begin
-      Context := DBKernel.DBContext;
-
-      DS := Context.CreateQuery(dbilRead);
+      DS := FContext.CreateQuery(dbilRead);
       try
         Folder := IncludeTrailingBackslash(Info.FileName);
         SetSQL(DS, 'Select count(*) as CountField from $DB$ where (FFileName Like :FolderA)');
@@ -2374,13 +2377,13 @@ begin
             RenameResult := False;
           end;
         end else
-          RenameResult := RenameFileWithDB(DBKernel.DBContext, KernelEventCallBack, Info.FileName,
+          RenameResult := RenameFileWithDB(FContext, KernelEventCallBack, Info.FileName,
             ExtractFilePath(Info.FileName) + S, Info.ID, False);
       finally
         FreeDS(DS);
       end;
     end else
-      RenameResult := RenamefileWithDB(DBKernel.DBContext, KernelEventCallBack, Info.FileName,
+      RenameResult := RenamefileWithDB(FContext, KernelEventCallBack, Info.FileName,
         ExtractFilePath(Info.FileName) + S, Info.ID, False);
   end;
 end;
@@ -2715,7 +2718,7 @@ begin
               if not NewPerson then
                 Continue;
 
-              P := PersonManager.GetPerson(PA.PersonID);
+              P := FPeopleRepository.GetPerson(PA.PersonID);
               if P <> nil then
               begin
                 Persons.Add(P);
@@ -3298,6 +3301,7 @@ begin
 
   if [EventID_Param_DB_Changed] * Params <> [] then
   begin
+    LoadContext;
     LoadDefaultCollectionPictureSize;
     LoadSizes;
     LoadDBList;
@@ -3361,12 +3365,12 @@ begin
       Index := ItemIndexToMenuIndex(I);
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE) then
-        TExplorerThread.Create(DBKernel.DBContext, FFilesInfo[Index].FileName, '', THREAD_TYPE_IMAGE,
-          Info, Self, TUpdaterInfo.Create(DBKernel.DBContext, FFilesInfo[Index]), StateID);
+        TExplorerThread.Create(FContext, FFilesInfo[Index].FileName, '', THREAD_TYPE_IMAGE,
+          Info, Self, TUpdaterInfo.Create(FContext, FFilesInfo[Index]), StateID);
 
       if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
-        TExplorerThread.Create(DBKernel.DBContext, FFilesInfo[Index].FileName, '',
-          THREAD_TYPE_FOLDER_UPDATE, info, Self, TUpdaterInfo.Create(DBKernel.DBContext, FFilesInfo[Index]), StateID);
+        TExplorerThread.Create(FContext, FFilesInfo[Index].FileName, '',
+          THREAD_TYPE_FOLDER_UPDATE, info, Self, TUpdaterInfo.Create(FContext, FFilesInfo[Index]), StateID);
     end;
 end;
 
@@ -3377,7 +3381,7 @@ var
   NotifyInfo: TExplorerNotifyInfo;
 begin
   Index := ItemIndexToMenuIndex(Number);
-  UpdaterInfo := TUpdaterInfo.Create(DBKernel.DBContext, FFilesInfo[Index]);
+  UpdaterInfo := TUpdaterInfo.Create(FContext, FFilesInfo[Index]);
   try
     UpdaterInfo.UpdateDB := UpdateDB;
     if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
@@ -3388,7 +3392,7 @@ begin
       UpdaterInfo := nil;
     end else if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE) or (FFilesInfo[Index].FileType = EXPLORER_ITEM_EXEFILE) then
     begin
-      TExplorerThread.Create(DBKernel.DBContext, FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo, Self, UpdaterInfo, StateID);
+      TExplorerThread.Create(FContext, FFilesInfo[Index].FileName, '', THREAD_TYPE_FILE, ViewInfo, Self, UpdaterInfo, StateID);
       UpdaterInfo := nil;
     end;
   finally
@@ -4738,7 +4742,7 @@ begin
           try
             Info.FileName := PInfo[K].FNewFileName;
 
-            UpdaterInfo := TUpdaterInfo.Create(DBKernel.DBContext, Info);
+            UpdaterInfo := TUpdaterInfo.Create(FContext, Info);
             UpdaterInfo.IsUpdater := True;
             UpdaterInfo.NewFileItem := Self.NewFileName = AnsiLowerCase(Info.FileName);
 
@@ -4824,7 +4828,7 @@ begin
                   ListView1SelectItem(ElvMain, ListView1Selected, ListView1Selected = nil);
               end
               else
-                RenamefileWithDB(DBKernel.DBContext, KernelEventCallBack, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
+                RenamefileWithDB(FContext, KernelEventCallBack, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
               Continue;
             end;
           end;
@@ -5680,18 +5684,13 @@ var
   KeyWords: string;
   Group: TGroup;
   Groups: TGroups;
-  Context: IDBContext;
-  GroupsRepository: IGroupsRepository;
 begin
-  Context := DBKernel.DBContext;
-  GroupsRepository := Context.Groups;
-
   WL := TWebLink(PmInfoGroup.Tag);
 
   KeyWords := MemKeyWords.Text;
 
   Groups := TGroups.CreateFromString(FSelectedInfo.Groups);
-  Group := GroupsRepository.GetByName(WL.Text, False);
+  Group := FGroupsRepository.GetByName(WL.Text, False);
   try
     if Group <> nil then
     begin
@@ -6338,7 +6337,7 @@ begin
     EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption);
 
     if EndDir <> '' then
-      CopyFiles(DBKernel.DBContext, Handle, Files, EndDir, False, False, Self);
+      CopyFiles(FContext, Handle, Files, EndDir, False, False, Self);
   finally
     F(Files);
   end;
@@ -6371,7 +6370,7 @@ begin
 
     EndDir := UnitDBFileDialogs.DBSelectDir(Handle, DlgCaption);
     if EndDir <> '' then
-      CopyFiles(DBKernel.DBContext, Handle, Files, EndDir, True, False, Self);
+      CopyFiles(FContext, Handle, Files, EndDir, True, False, Self);
 
   finally
     F(Files);
@@ -11883,7 +11882,7 @@ end;
 
 procedure TExplorerForm.AddWideSearchPerson(P: TPerson);
 begin
-  PersonManager.MarkLatestPerson(P.ID);
+  FPeopleRepository.MarkLatestPerson(P.ID);
   FExtendedSearchPersons.Add(P);
   P.CreatePreview(16, 16);
   PostMessage(Handle, FReloadRSPersonsMessage, 0, 0);
@@ -11922,7 +11921,7 @@ begin
     end;
 
     //add current persons
-    PersonManager.FillLatestSelections(SelectedPersons);
+    FPeopleRepository.FillLatestSelections(SelectedPersons);
 
     for J := 0 to FExtendedSearchPersons.Count - 1 do
     begin
@@ -12012,7 +12011,7 @@ begin
   P := TPerson.Create;
   try
     PersonID := TMenuItem(Sender).Tag;
-    if PersonManager.FindPerson(PersonID, P) then
+    if FPeopleRepository.FindPerson(PersonID, P) then
     begin
       AddWideSearchPerson(P);
       P := nil;
@@ -12668,6 +12667,13 @@ begin
   FSelectedItem := nil;
   FIsPanaramio := False;
   inherited Create(AOwner);
+end;
+
+procedure TExplorerForm.LoadContext;
+begin
+  FContext := DBKernel.DBContext;
+  FPeopleRepository := FContext.People;
+  FGroupsRepository := FContext.Groups;
 end;
 
 procedure TExplorerForm.LoadDBList;

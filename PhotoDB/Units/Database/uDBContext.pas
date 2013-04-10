@@ -5,6 +5,7 @@ interface
 uses
   Winapi.Windows,
   System.SysUtils,
+  System.Classes,
   Data.DB,
   Dmitry.CRC32,
 
@@ -12,8 +13,9 @@ uses
   UnitINI,
 
   uConstants,
-  uDBClasses,
+  uDBForm,
   uSettings,
+  uDBClasses,
   uDBScheme,
   uDBEntities;
 
@@ -30,6 +32,36 @@ type
     function FindNameByCode(GroupCode: string): string;
     function HasGroupWithCode(GroupCode: string): Boolean;
     function HasGroupWithName(GroupName: string): Boolean;
+  end;
+
+const
+  PERSON_TYPE = 1;
+
+type
+  TPersonFoundCallBack = reference to procedure(P: TPerson; var StopOperation: Boolean);
+
+  IPeopleRepository = interface
+    procedure LoadPersonList(Persons: TPersonCollection);
+    procedure LoadTopPersons(CallBack: TPersonFoundCallBack);
+    function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
+    function FindPerson(PersonName: string; Person: TPerson): Boolean; overload;
+    function GetPerson(PersonID: Integer): TPerson;
+    function GetPersonByName(PersonName: string): TPerson;
+    function RenamePerson(PersonName, NewName: string): Boolean;
+    function CreateNewPerson(Person: TPerson): Integer;
+    function DeletePerson(PersonID: Integer): Boolean; overload;
+    function DeletePerson(PersonName: string): Boolean; overload;
+    function UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
+    function GetPersonsOnImage(ImageID: Integer): TPersonCollection;
+    function GetPersonsByNames(Persons: TStringList): TPersonCollection;
+    function GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
+    function AddPersonForPhoto(Sender: TDBForm; PersonArea: TPersonArea): Boolean;
+    function RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
+    function ChangePerson(PersonArea: TPersonArea; ToPersonID: Integer): Boolean;
+    procedure FillLatestSelections(Persons: TPersonCollection);
+    procedure MarkLatestPerson(PersonID: Integer);
+    function UpdatePersonArea(PersonArea: TPersonArea): Boolean;
+    function UpdatePersonAreaCollection(PersonAreas: TPersonAreaCollection): Boolean;
   end;
 
   ISettingsRepository = interface
@@ -55,6 +87,7 @@ type
     //repositories
     function Settings: ISettingsRepository;
     function Groups: IGroupsRepository;
+    function People: IPeopleRepository;
   end;
 
   TBaseRepository<T: TBaseEntity> = class(TInterfacedObject)
@@ -90,12 +123,14 @@ type
     //repositories
     function Settings: ISettingsRepository;
     function Groups: IGroupsRepository;
+    function People: IPeopleRepository;
   end;
 
 implementation
 
 uses
   uGroupsRepository,
+  uPeopleRepository,
   uSettingsRepository;
 
 { TDBContext }
@@ -132,6 +167,11 @@ end;
 function TDBContext.IsValid: Boolean;
 begin
   Result := FIsValid;
+end;
+
+function TDBContext.People: IPeopleRepository;
+begin
+  Result := TPeopleRepository.Create(Self);
 end;
 
 function TDBContext.GetCollectionFileName: string;

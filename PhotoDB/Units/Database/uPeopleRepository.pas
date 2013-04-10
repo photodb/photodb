@@ -1,4 +1,4 @@
-unit uPeopleSupport;
+unit uPeopleRepository;
 
 interface
 
@@ -36,28 +36,20 @@ uses
   uCollectionEvents,
   uShellIntegration;
 
-const
-  PERSON_TYPE = 1;
-
 type
-  TPerson = class;
-
-  TPersonCollection = class;
-
-  TPersonArea = class;
-
-  TPersonAreaCollection = class;
-
-  TPersonFoundCallBack = reference to procedure(P: TPerson; var StopOperation: Boolean);
-
-  TPersonManager = class(TObject)
-  private
+  TPeopleRepository = class(TInterfacedObject, IPeopleRepository)
+  class var
     FIsInitialized: Boolean;
     FPeoples: TPersonCollection;
     FSync: TCriticalSection;
+  private
     FDBContext: IDBContext;
-    function GetAllPersons: TPersonCollection;
   public
+    class procedure ClearCache;
+    class constructor Create;
+    class destructor Destroy;
+    class function AllPersons(Repository: IPeopleRepository): TPersonCollection;
+
     procedure LoadPersonList(Persons: TPersonCollection);
     procedure LoadTopPersons(CallBack: TPersonFoundCallBack);
     function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
@@ -77,293 +69,68 @@ type
     function ChangePerson(PersonArea: TPersonArea; ToPersonID: Integer): Boolean;
     procedure FillLatestSelections(Persons: TPersonCollection);
     procedure MarkLatestPerson(PersonID: Integer);
-    constructor Create;
+    function UpdatePersonArea(PersonArea: TPersonArea): Boolean;
+    function UpdatePersonAreaCollection(PersonAreas: TPersonAreaCollection): Boolean;
+    constructor Create(Context: IDBContext);
     destructor Destroy; override;
-    procedure RegisterManager;
-    procedure Unregister;
-    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEventFields; Value: TEventValues);
-    property AllPersons: TPersonCollection read GetAllPersons;
   end;
-
-  TPersonCollection = class(TObject)
-  private
-    FList: TList<TPerson>;
-    FFreeCollectionItems: Boolean;
-    function GetCount: Integer;
-    function GetPersonByIndex(Index: Integer): TPerson;
-  public
-    function GetPersonByName(PersonName: string): TPerson;
-    function GetPersonByID(ID: Integer): TPerson;
-    function IndexOf(Person: TPerson): Integer;
-    constructor Create(FreeCollectionItems: Boolean = True);
-    destructor Destroy; override;
-    procedure Clear;
-    procedure FreeItems;
-    procedure Add(Person: TPerson);
-    procedure ReadFromDS(DS: TDataSet);
-    procedure DeleteAt(I: Integer);
-    procedure RemoveByID(PersonID: Integer);
-    property Count: Integer read GetCount;
-    property Items[Index: Integer]: TPerson read GetPersonByIndex; default;
-  end;
-
-  TPerson = class(TClonableObject)
-  private
-    FEmpty: Boolean;
-    FID: Integer;
-    FName: string;
-    FImage: TJpegImage;
-    FGroups: string;
-    FBirthDay: TDateTime;
-    FComment: string;
-    FPhone: string;
-    FAddress: string;
-    FCompany: string;
-    FJobTitle: string;
-    FIMNumber: string;
-    FEmail: string;
-    FSex: Integer;
-    FCreateDate: TDateTime;
-    FUniqID: string;
-    FPreview: TBitmap;
-    FPreviewSize: TSize;
-    FCount: Integer;
-    procedure SetImage(const Value: TJpegImage);
-    procedure SetID(const Value: Integer);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    function CreatePreview(Width, Height: Integer): TBitmap;
-    procedure ReadFromDS(DS: TDataSet);
-    procedure SaveToDS(DS: TDataSet);
-    procedure Assign(Source: TPerson);
-    function Clone: TClonableObject; override;
-    property ID: Integer read FID write SetID;
-    property Name: string read FName write FName;
-    property BirthDay: TDateTime read FBirthDay write FBirthDay;
-    property Image: TJpegImage read FImage write SetImage;
-    property Groups: string read FGroups write FGroups;
-    property Comment: string read FComment write FComment;
-    property Phone: string read FPhone write FPhone;
-    property Address: string read FAddress write FAddress;
-    property Company: string read FCompany write FCompany;
-    property JobTitle: string read FJobTitle write FJobTitle;
-    property IMNumber: string read FIMNumber write FIMNumber;
-    property Email: string read FEmail write FEmail;
-    property Sex: Integer read FSex write FSex;
-    property CreateDate: TDateTime read FCreateDate;
-    property UniqID: string read FUniqID write FUniqID;
-    property Empty: Boolean read FEmpty;
-    property Count: Integer read FCount;
-  end;
-
-  TPersonArea = class(TClonableObject)
-  private
-    FID: Integer;
-    FX: Integer;
-    FY: Integer;
-    FWidth: Integer;
-    FHeight: Integer;
-    FFullWidth: Integer;
-    FFullHeight: Integer;
-    FImageID: Integer;
-    FPersonID: Integer;
-    FPage: Integer;
-  public
-    constructor Create; overload;
-    constructor Create(ImageID, PersonID: Integer; Area: TFaceDetectionResultItem); overload;
-    procedure ReadFromDS(DS: TDataSet);
-    function UpdateDB(DBContext: IDBContext): Boolean;
-    procedure RotateLeft;
-    procedure RotateRight;
-    function Clone: TClonableObject; override;
-    property ID: Integer read FID write FID;
-    property X: Integer read FX;
-    property Y: Integer read FY;
-    property Width: Integer read FWidth;
-    property Height: Integer read FHeight;
-    property FullWidth: Integer read FFullWidth;
-    property FullHeight: Integer read FFullHeight;
-    property ImageID: Integer read FImageID;
-    property PersonID: Integer read FPersonID;
-    property Page: Integer read FPage;
-  end;
-
-  TPersonAreaCollection = class(TObject)
-  private
-    FList: TList;
-    function GetAreaByIndex(Index: Integer): TPersonArea;
-    function GetCount: Integer;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Clear;
-    procedure ReadFromDS(DS: TDataSet);
-    function Extract(Index: Integer): TPersonArea;
-    procedure RotateLeft;
-    procedure RotateRight;
-    procedure UpdateDB(DBContext: IDBContext);
-    property Count: Integer read GetCount;
-    property Items[Index: Integer]: TPersonArea read GetAreaByIndex; default;
-  end;
-
-function PersonManager: TPersonManager;
-
-procedure UnRegisterPersonManager;
 
 implementation
-
-var
-  FManager: TPersonManager = nil;
-
-function PersonManager: TPersonManager;
-begin
-  if FManager = nil then
-    FManager := TPersonManager.Create;
-
-  Result := FManager;
-end;
-
-procedure UnRegisterPersonManager;
-begin
-  if FManager <> nil then
-    FManager.Unregister;
-end;
 
 procedure InternalHandleError(Ex: Exception);
 begin
   EventLog(Ex);
-  TThread.Synchronize(nil,
-    procedure
-    begin
-      MessageBoxDB(0, Ex.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
-    end
-  );
+  MessageBoxDB(0, Ex.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
 end;
 
-{ TPerson }
+{ TPeopleRepository }
 
-procedure TPerson.Assign(Source: TPerson);
+class procedure TPeopleRepository.ClearCache;
 begin
-  FID := Source.ID;
-  FName := Source.Name;
-  Image := Source.Image;
-  FGroups := Source.Groups;
-  FBirthDay := Source.BirthDay;
-  FComment := Source.Comment;
-  FPhone := Source.Phone;
-  FAddress := Source.Address;
-  FCompany := Source.Company;
-  FJobTitle := Source.JobTitle;
-  FIMNumber := Source.IMNumber;
-  FEmail := Source.Email;
-  FSex := Source.Sex;
-  FCreateDate := Source.CreateDate;
-  FEmpty := Source.Empty;
-end;
-
-function TPerson.Clone: TClonableObject;
-var
-  P: TPerson;
-begin
-  P := TPerson.Create;
-  P.Assign(Self);
-  Result := P;
-end;
-
-constructor TPerson.Create;
-begin
-  FEmpty := True;
-  FID := 0;
-  FName := '';
-  FImage := nil;
-  FGroups := '';
-  FPreview := nil;
-  FPreviewSize.cx := 0;
-  FPreviewSize.cy := 0;
-  FCount := 0;
-end;
-
-function TPerson.CreatePreview(Width, Height: Integer): TBitmap;
-var
-  B: TBitmap;
-  W, H: Integer;
-begin
-  if (FPreview = nil) or (FPreviewSize.cx <> Width) or (FPreviewSize.cy <> Height) then
-  begin
-    F(FPreview);
-    B := TBitmap.Create;
-    try
-      B.Assign(FImage);
-      W := B.Width;
-      H := B.Height;
-      ProportionalSizeA(Width, Height, W, H);
-      FPreview := TBitmap.Create;
-      DoResize(W, H, B, FPreview);
-      CenterBitmap24To32ImageList(FPreview, Width);
-    finally
-      F(B);
-    end;
+  FSync.Enter;
+  try
+    FIsInitialized := False;
+    F(FPeoples);
+  finally
+    FSync.Leave;
   end;
-  Result := FPreview;
 end;
 
-destructor TPerson.Destroy;
+class function TPeopleRepository.AllPersons(Repository: IPeopleRepository): TPersonCollection;
 begin
-  F(FImage);
-  F(FPreview);
+  if FPeoples = nil then
+  begin
+    FPeoples := TPersonCollection.Create;
+    Repository.LoadPersonList(FPeoples);
+  end;
+  Result := FPeoples;
+end;
+
+class constructor TPeopleRepository.Create;
+begin
+  FPeoples := nil;
+  FIsInitialized := False;
+  FSync := TCriticalSection.Create;
+end;
+
+class destructor TPeopleRepository.Destroy;
+begin
+  F(FPeoples);
+  F(FSync);
+end;
+
+constructor TPeopleRepository.Create(Context: IDBContext);
+begin
+  FDBContext := Context;
+end;
+
+destructor TPeopleRepository.Destroy;
+begin
+  FDBContext := nil;
   inherited;
 end;
 
-procedure TPerson.ReadFromDS(DS: TDataSet);
-begin
-  FID := DS.FieldByName('ObjectID').AsInteger;
-  FName := Trim(DS.FieldByName('ObjectName').AsString);
-  FGroups := DS.FieldByName('RelatedGroups').AsString;
-  FBirthDay := DS.FieldByName('BirthDate').AsDateTime;
-  FPhone := Trim(DS.FieldByName('Phone').AsString);
-  FAddress := Trim(DS.FieldByName('Address').AsString);
-  FCompany := Trim(DS.FieldByName('Company').AsString);
-  FJobTitle := Trim(DS.FieldByName('JobTitle').AsString);
-  FIMNumber := Trim(DS.FieldByName('IMNumber').AsString);
-  FEmail := Trim(DS.FieldByName('Email').AsString);
-  FSex := DS.FieldByName('Sex').AsInteger;
-  FComment := DS.FieldByName('ObjectComment').AsString;
-  FCreateDate := DS.FieldByName('CreateDate').AsDateTime;
-  FUniqID := Trim(DS.FieldByName('ObjectUniqID').AsString);
-  if DS.Fields.FindField('ObjectsCount') <> nil then
-    FCount := DS.FieldByName('ObjectsCount').AsInteger;
-
-  F(FImage);
-  FImage := TJpegImage.Create;
-  FImage.Assign(DS.FieldByName('Image'));
-  FEmpty := False;
-end;
-
-procedure TPerson.SaveToDS(DS: TDataSet);
-begin
-  raise Exception.Create('Not implemented');
-end;
-
-procedure TPerson.SetID(const Value: Integer);
-begin
-  FID := Value;
-  FEmpty := False;
-end;
-
-procedure TPerson.SetImage(const Value: TJpegImage);
-begin
-  F(FImage);
-  if Value <> nil then
-  begin
-    FImage := TJpegImage.Create;
-    FImage.Assign(Value);
-  end;
-end;
-
-{ TPersonManager }
-
-function TPersonManager.AddPersonForPhoto(Sender: TDBForm; PersonArea: TPersonArea): Boolean;
+function TPeopleRepository.AddPersonForPhoto(Sender: TDBForm; PersonArea: TPersonArea): Boolean;
 var
   P: TPerson;
   IC: TInsertCommand;
@@ -465,7 +232,7 @@ begin
   end;
 end;
 
-function TPersonManager.ChangePerson(PersonArea: TPersonArea;
+function TPeopleRepository.ChangePerson(PersonArea: TPersonArea;
   ToPersonID: Integer): Boolean;
 var
   UC: TUpdateCommand;
@@ -481,7 +248,7 @@ begin
     UC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID', PersonArea.ID));
     try
       UC.Execute;
-      PersonArea.FPersonID := ToPersonID;
+      PersonArea.PersonID := ToPersonID;
 
       MarkLatestPerson(ToPersonID);
 
@@ -498,16 +265,7 @@ begin
   end;
 end;
 
-constructor TPersonManager.Create;
-begin
-  FPeoples := nil;
-  FIsInitialized := False;
-  FSync := TCriticalSection.Create;
-  FDBContext := DBKernel.DBContext;
-  RegisterManager;
-end;
-
-function TPersonManager.CreateNewPerson(Person: TPerson): Integer;
+function TPeopleRepository.CreateNewPerson(Person: TPerson): Integer;
 var
   IC: TInsertCommand;
 begin
@@ -536,7 +294,7 @@ begin
       Result := Person.ID;
       FSync.Enter;
       try
-        AllPersons.Add(Person);
+        AllPersons(Self).Add(Person);
       finally
         FSync.Leave;
       end;
@@ -555,7 +313,7 @@ begin
   end;
 end;
 
-function TPersonManager.DeletePerson(PersonID: Integer): Boolean;
+function TPeopleRepository.DeletePerson(PersonID: Integer): Boolean;
 var
   DC: TDeleteCommand;
 begin
@@ -570,7 +328,7 @@ begin
 
       FSync.Enter;
       try
-        AllPersons.RemoveByID(PersonID);
+        AllPersons(Self).RemoveByID(PersonID);
       finally
         FSync.Leave;
       end;
@@ -588,7 +346,7 @@ begin
   end;
 end;
 
-function TPersonManager.DeletePerson(PersonName: string): Boolean;
+function TPeopleRepository.DeletePerson(PersonName: string): Boolean;
 var
   P: TPerson;
 begin
@@ -602,14 +360,7 @@ begin
   end;
 end;
 
-destructor TPersonManager.Destroy;
-begin
-  F(FPeoples);
-  F(FSync);
-  inherited;
-end;
-
-procedure TPersonManager.FillLatestSelections(Persons: TPersonCollection);
+procedure TPeopleRepository.FillLatestSelections(Persons: TPersonCollection);
 var
   I, Count, PersonID: Integer;
   P: TPerson;
@@ -637,14 +388,14 @@ begin
   end;
 end;
 
-function TPersonManager.FindPerson(PersonName: string; Person: TPerson): Boolean;
+function TPeopleRepository.FindPerson(PersonName: string; Person: TPerson): Boolean;
 var
   P: TPerson;
 begin
   Result := False;
   FSync.Enter;
   try
-    P := AllPersons.GetPersonByName(PersonName);
+    P := AllPersons(Self).GetPersonByName(PersonName);
     if P <> nil then
     begin
       Person.Assign(P);
@@ -655,14 +406,14 @@ begin
   end;
 end;
 
-function TPersonManager.FindPerson(PersonID: Integer; Person: TPerson): Boolean;
+function TPeopleRepository.FindPerson(PersonID: Integer; Person: TPerson): Boolean;
 var
   P: TPerson;
 begin
   Result := False;
   FSync.Enter;
   try
-    P := AllPersons.GetPersonByID(PersonID);
+    P := AllPersons(Self).GetPersonByID(PersonID);
     if P <> nil then
     begin
       Person.Assign(P);
@@ -673,17 +424,7 @@ begin
   end;
 end;
 
-function TPersonManager.GetAllPersons: TPersonCollection;
-begin
-  if FPeoples = nil then
-  begin
-    FPeoples := TPersonCollection.Create;
-    LoadPersonList(FPeoples);
-  end;
-  Result := FPeoples;
-end;
-
-function TPersonManager.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
+function TPeopleRepository.GetAreasOnImage(ImageID: Integer): TPersonAreaCollection;
 var
   SC: TSelectCommand;
 begin
@@ -707,7 +448,7 @@ begin
   end;
 end;
 
-function TPersonManager.GetPerson(PersonID: Integer): TPerson;
+function TPeopleRepository.GetPerson(PersonID: Integer): TPerson;
 var
   SC: TSelectCommand;
 begin
@@ -733,7 +474,7 @@ begin
   end;
 end;
 
-function TPersonManager.GetPersonByName(PersonName: string): TPerson;
+function TPeopleRepository.GetPersonByName(PersonName: string): TPerson;
 var
   SC: TSelectCommand;
 begin
@@ -759,8 +500,7 @@ begin
   end;
 end;
 
-function TPersonManager.GetPersonsByNames(
-  Persons: TStringList): TPersonCollection;
+function TPeopleRepository.GetPersonsByNames(Persons: TStringList): TPersonCollection;
 var
   SC: TSelectCommand;
 begin
@@ -785,7 +525,7 @@ begin
   end;
 end;
 
-function TPersonManager.GetPersonsOnImage(ImageID: Integer): TPersonCollection;
+function TPeopleRepository.GetPersonsOnImage(ImageID: Integer): TPersonCollection;
 var
   SC: TSelectCommand;
 begin
@@ -809,7 +549,7 @@ begin
   end;
 end;
 
-procedure TPersonManager.LoadPersonList(Persons: TPersonCollection);
+procedure TPeopleRepository.LoadPersonList(Persons: TPersonCollection);
 var
   SC: TSelectCommand;
 begin
@@ -830,7 +570,7 @@ begin
   end;
 end;
 
-procedure TPersonManager.LoadTopPersons(CallBack: TPersonFoundCallBack);
+procedure TPeopleRepository.LoadTopPersons(CallBack: TPersonFoundCallBack);
 var
   SC: TSelectCommand;
   SQL: string;
@@ -869,7 +609,7 @@ begin
   end;
 end;
 
-procedure TPersonManager.MarkLatestPerson(PersonID: Integer);
+procedure TPeopleRepository.MarkLatestPerson(PersonID: Integer);
 var
   I, Count, MaxCount, ItemCount, ID: Integer;
   List: TList<Integer>;
@@ -907,7 +647,7 @@ begin
   end;
 end;
 
-function TPersonManager.RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
+function TPeopleRepository.RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
 var
   DC: TDeleteCommand;
 begin
@@ -933,7 +673,7 @@ begin
   end;
 end;
 
-function TPersonManager.RenamePerson(PersonName, NewName: string): Boolean;
+function TPeopleRepository.RenamePerson(PersonName, NewName: string): Boolean;
 var
   P, PTest, CachePerson: TPerson;
   UC: TUpdateCommand;
@@ -960,7 +700,7 @@ begin
               //update cache
               FSync.Enter;
               try
-                CachePerson := AllPersons.GetPersonByID(P.ID);
+                CachePerson := AllPersons(Self).GetPersonByID(P.ID);
                 if CachePerson <> nil then
                   CachePerson.Name := NewName;
               finally
@@ -982,32 +722,7 @@ begin
   end;
 end;
 
-procedure TPersonManager.RegisterManager;
-begin
-  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
-end;
-
-procedure TPersonManager.Unregister;
-begin
-  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
-end;
-
-procedure TPersonManager.ChangedDBDataByID(Sender: TObject; ID: Integer;
-  params: TEventFields; Value: TEventValues);
-begin
-  if EventID_Param_DB_Changed in Params then
-  begin
-    FIsInitialized := False;
-    FSync.Enter;
-    try
-      F(FPeoples);
-    finally
-      FSync.Leave;
-    end;
-  end;
-end;
-
-function TPersonManager.UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
+function TPeopleRepository.UpdatePerson(Person: TPerson; UpdateImage: Boolean): Boolean;
 var
   UC: TUpdateCommand;
   P: TPerson;
@@ -1046,7 +761,7 @@ begin
     //update internal cache
     FSync.Enter;
     try
-      P := AllPersons.GetPersonByID(Person.ID);
+      P := AllPersons(Self).GetPersonByID(Person.ID);
       if P <> nil then
         P.Assign(Person);
     finally
@@ -1059,323 +774,25 @@ begin
   end;
 end;
 
-{ TPersonCollection }
-
-procedure TPersonCollection.Add(Person: TPerson);
-begin
-  if FFreeCollectionItems then
-    FList.Add(TPerson(Person.Clone))
-  else
-    FList.Add(Person);
-end;
-
-procedure TPersonCollection.Clear;
-begin
-  if FFreeCollectionItems then
-    FreeList(FList, False)
-  else
-    FList.Clear;
-end;
-
-constructor TPersonCollection.Create(FreeCollectionItems: Boolean = True);
-begin
-  FFreeCollectionItems := FreeCollectionItems;
-  FList := TList<TPerson>.Create;
-end;
-
-procedure TPersonCollection.DeleteAt(I: Integer);
-begin
-  if FFreeCollectionItems then
-    FList[I].Free;
-
-  FList.Delete(I);
-end;
-
-destructor TPersonCollection.Destroy;
-begin
-  if FFreeCollectionItems then
-    FreeList(FList)
-  else
-    F(FList);
-  inherited;
-end;
-
-procedure TPersonCollection.FreeItems;
-begin
-  FreeList(FList, False);
-end;
-
-function TPersonCollection.GetCount: Integer;
-begin
-  Result := FList.Count;
-end;
-
-function TPersonCollection.GetPersonByIndex(Index: Integer): TPerson;
-begin
-  Result := FList[Index];
-end;
-
-function TPersonCollection.GetPersonByName(PersonName: string): TPerson;
-var
-  I: Integer;
-begin
-  Result := nil;
-  for I := 0 to Count - 1 do
-    if Items[I].Name = PersonName then
-    begin
-      Result := Items[I];
-      Exit;
-    end;
-end;
-
-function TPersonCollection.IndexOf(Person: TPerson): Integer;
-begin
-  Result := FList.IndexOf(Person);
-end;
-
-function TPersonCollection.GetPersonByID(ID: Integer): TPerson;
-var
-  I: Integer;
-begin
-  Result := nil;
-  for I := 0 to Count - 1 do
-    if Items[I].ID = ID then
-    begin
-      Result := Items[I];
-      Exit;
-    end;
-end;
-
-procedure TPersonCollection.ReadFromDS(DS: TDataSet);
-var
-  I: Integer;
-  P: TPerson;
-begin
-  Clear;
-
-  for I := 0 to DS.RecordCount - 1 do
-  begin
-    if I = 0 then
-      DS.First;
-    P := TPerson.Create;
-    FList.Add(P);
-    P.ReadFromDS(DS);
-    DS.Next;
-  end;
-end;
-
-procedure TPersonCollection.RemoveByID(PersonID: Integer);
-var
-  I: Integer;
-begin
-  for I := 0 to FList.Count - 1 do
-    if Items[I].ID = PersonID then
-    begin
-      DeleteAt(I);
-      Exit;
-    end;
-end;
-
-{ TPersonAreaCollection }
-
-procedure TPersonAreaCollection.Clear;
-begin
-  FreeList(FList, False);
-end;
-
-constructor TPersonAreaCollection.Create;
-begin
-  FList := TList.Create;
-end;
-
-destructor TPersonAreaCollection.Destroy;
-begin
-  FreeList(FList);
-  inherited;
-end;
-
-function TPersonAreaCollection.Extract(Index: Integer): TPersonArea;
-begin
-  Result := FList[Index];
-  FList.Delete(Index);
-end;
-
-function TPersonAreaCollection.GetAreaByIndex(Index: Integer): TPersonArea;
-begin
-  Result := FList[Index];
-end;
-
-function TPersonAreaCollection.GetCount: Integer;
-begin
-  Result := FList.Count;
-end;
-
-procedure TPersonAreaCollection.ReadFromDS(DS: TDataSet);
-var
-  I: Integer;
-  PA: TPersonArea;
-begin
-  Clear;
-  if DS.RecordCount > 0 then
-    DS.First;
-  for I := 0 to DS.RecordCount - 1 do
-  begin
-    PA := TPersonArea.Create;
-    FList.Add(PA);
-    PA.ReadFromDS(DS);
-    DS.Next;
-  end;
-end;
-
-procedure TPersonAreaCollection.RotateLeft;
-var
-  I: Integer;
-begin
-  for I := 0 to Count - 1 do
-    Self[I].RotateLeft;
-end;
-
-procedure TPersonAreaCollection.RotateRight;
-var
-  I: Integer;
-begin
-  for I := 0 to Count - 1 do
-    Self[I].RotateRight;
-end;
-
-procedure TPersonAreaCollection.UpdateDB(DBContext: IDBContext);
-var
-  I: Integer;
-begin
-  for I := 0 to Count - 1 do
-    Self[I].UpdateDB(DBContext);
-end;
-
-{ TPersonArea }
-
-function TPersonArea.Clone: TClonableObject;
-var
-  P: TPersonArea;
-begin
-  P := TPersonArea.Create;
-  P.ID := ID;
-  P.FX := X;
-  P.FY := Y;
-  P.FWidth := Width;
-  P.FHeight := Height;
-  P.FFullWidth := FullWidth;
-  P.FFullHeight := FullHeight;
-  P.FImageID := ImageID;
-  P.FPersonID := PersonID;
-  P.FPage := Page;
-
-  Result := P;
-end;
-
-constructor TPersonArea.Create(ImageID, PersonID: Integer;
-  Area: TFaceDetectionResultItem);
-begin
-  Create;
-  FID := 0;
-
-  if Area <> nil then
-  begin
-    FX := Area.X;
-    FY := Area.Y;
-    FWidth := Area.Width;
-    FHeight := Area.Height;
-    FFullWidth := Area.ImageWidth;
-    FFullHeight := Area.ImageHeight;
-    FPage := Area.Page;
-  end;
-
-  FImageID := ImageID;
-  FPersonID := PersonID;
-end;
-
-constructor TPersonArea.Create;
-begin
-end;
-
-procedure TPersonArea.ReadFromDS(DS: TDataSet);
-begin
-  FID := DS.FieldByName('ObjectMappingID').AsInteger;
-  FX := DS.FieldByName('Left').AsInteger;
-  FY := DS.FieldByName('Top').AsInteger;
-  FWidth := DS.FieldByName('Right').AsInteger - FX;
-  FHeight := DS.FieldByName('Bottom').AsInteger - FY;
-  FFullWidth := DS.FieldByName('ImageWidth').AsInteger;
-  FFullHeight := DS.FieldByName('ImageHeight').AsInteger;
-  FImageID := DS.FieldByName('ImageID').AsInteger;
-  FPersonID := DS.FieldByName('ObjectID').AsInteger;
-  FPage := DS.FieldByName('PageNumber').AsInteger;
-end;
-
-procedure TPersonArea.RotateLeft;
-var
-  NW, NH, NImageW, NImageH, NX, NY: Integer;
-begin
-  NImageH := FFullWidth;
-  NImageW := FFullHeight;
-
-  NW := FHeight;
-  NH := FWidth;
-
-  NX := FY;
-  NY := FFullWidth - FX - Width;
-
-  FFullWidth := NImageW;
-  FFullHeight := NImageH;
-
-  FWidth := NW;
-  FHeight := NH;
-
-  FX := NX;
-  FY := NY;
-end;
-
-procedure TPersonArea.RotateRight;
-var
-  NW, NH, NImageW, NImageH, NX, NY: Integer;
-begin
-  NImageH := FFullWidth;
-  NImageW := FFullHeight;
-
-  NW := FHeight;
-  NH := FWidth;
-
-  NX := FFullHeight - FY - Height;
-  NY := FX;
-
-  FFullWidth := NImageW;
-  FFullHeight := NImageH;
-
-  FWidth := NW;
-  FHeight := NH;
-
-  FX := NX;
-  FY := NY;
-end;
-
-function TPersonArea.UpdateDB(DBContext: IDBContext): Boolean;
+function TPeopleRepository.UpdatePersonArea(PersonArea: TPersonArea): Boolean;
 var
   UC: TUpdateCommand;
 begin
   Result := False;
-  if FID = 0 then
+  if PersonArea.ID = 0 then
     Exit;
 
-  UC := DBContext.CreateUpdate(ObjectMappingTableName);
+  UC := FDBContext.CreateUpdate(ObjectMappingTableName);
   try
-    UC.AddParameter(TIntegerParameter.Create('Left', FX));
-    UC.AddParameter(TIntegerParameter.Create('Top', FY));
-    UC.AddParameter(TIntegerParameter.Create('Right', FX + FWidth));
-    UC.AddParameter(TIntegerParameter.Create('Bottom', FY + FHeight));
-    UC.AddParameter(TIntegerParameter.Create('ImageWidth', FFullWidth));
-    UC.AddParameter(TIntegerParameter.Create('ImageHeight', FFullHeight));
-    UC.AddParameter(TIntegerParameter.Create('PageNumber', FPage));
+    UC.AddParameter(TIntegerParameter.Create('Left', PersonArea.X));
+    UC.AddParameter(TIntegerParameter.Create('Top',  PersonArea.Y));
+    UC.AddParameter(TIntegerParameter.Create('Right',  PersonArea.X +  PersonArea.Width));
+    UC.AddParameter(TIntegerParameter.Create('Bottom',  PersonArea.Y +  PersonArea.Height));
+    UC.AddParameter(TIntegerParameter.Create('ImageWidth',  PersonArea.FullWidth));
+    UC.AddParameter(TIntegerParameter.Create('ImageHeight',  PersonArea.FullHeight));
+    UC.AddParameter(TIntegerParameter.Create('PageNumber',  PersonArea.Page));
 
-    UC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID', FID));
+    UC.AddWhereParameter(TIntegerParameter.Create('ObjectMappingID',  PersonArea.ID));
 
     try
       UC.Execute;
@@ -1387,9 +804,14 @@ begin
   end;
 end;
 
-initialization
-
-finalization
-  F(FManager);
+function TPeopleRepository.UpdatePersonAreaCollection(PersonAreas: TPersonAreaCollection): Boolean;
+var
+  I: Integer;
+begin
+  Result := True;
+  for I := 0 to PersonAreas.Count - 1 do
+    if not UpdatePersonArea(PersonAreas[I]) then
+      Result := False;
+end;
 
 end.
