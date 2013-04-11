@@ -14,6 +14,7 @@ uses
   UnitDBDeclare,
 
   uDBIcons,
+  uDBEntities,
   uConstants,
   uRuntime,
   uMemory;

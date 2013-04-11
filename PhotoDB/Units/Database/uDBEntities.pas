@@ -7,22 +7,174 @@ uses
   Generics.Collections,
   System.Classes,
   System.SysUtils,
+  System.DateUtils,
   Vcl.Graphics,
   Vcl.Imaging.Jpeg,
   Data.DB,
 
+  Dmitry.CRC32,
+  Dmitry.Utils.Files,
+
+  CmpUnit,
+  EasyListView,
   CommonDBSupport,
   UnitDBDeclare,
+  GraphicCrypt,
+  UnitLinksSupport,
 
   uConstants,
   uMemory,
+  uRuntime,
+  uList64,
+  uDBAdapter,
   uBitmapUtils,
+  uCDMappingTypes,
   uFaceDetection;
 
 type
   TBaseEntity = class
   public
     procedure ReadFromDS(DS: TDataSet); virtual; abstract;
+  end;
+
+type
+  TMediaItem = class(TBaseEntity)
+  private
+    FOriginalFileName: string;
+    FFileNameCRC32: Cardinal;
+    FGeoLocation: TGeoLocation;
+    function GetInnerImage: Boolean;
+    function GetExistedFileName: string;
+    function GetFileNameCRC: Cardinal;
+    function GetHasImage: Boolean;
+  protected
+    function InitNewInstance: TMediaItem; virtual;
+  public
+    Name: string;
+    FileName: string;
+    Comment: string;
+    FileSize: Int64;
+    Rotation: Integer;
+    Rating: Integer;
+    ID: Integer;
+    IsCurrent: Boolean;
+    Selected: Boolean;
+    Access: Integer;
+    Date: TDateTime;
+    Time: TTime;
+    IsDate: Boolean;
+    IsTime: Boolean;
+    Groups: string;
+    KeyWords: string;
+    Encrypted: Boolean;
+    Attr: Integer;
+    InfoLoaded: Boolean;
+    Include: Boolean;
+    Width, Height: Integer;
+    Links: string;
+    Exists: Integer; // for drawing in lists
+    LongImageID: string;
+    Data: TClonableObject;
+    Image: TJpegImage;
+    Tag: Integer;
+    IsImageEncrypted: Boolean;
+    HasExifHeader: Boolean;
+    constructor Create;
+    constructor CreateFromDS(DS: TDataSet);
+    constructor CreateFromFile(FileName: string);
+    procedure ReadExists;
+    destructor Destroy; override;
+    procedure ReadFromDS(DS: TDataSet);
+    procedure WriteToDS(DS: TDataSet);
+    function Copy: TMediaItem; virtual;
+    function FileExists: Boolean;
+    procedure SaveToEvent(EventValues: TEventValues);
+    procedure LoadGeoInfo(Latitude, Longitude: Double);
+    procedure Assign(Item: TMediaItem; MoveImage: Boolean = False); reintroduce;
+    property InnerImage: Boolean read GetInnerImage;
+    property ExistedFileName: string read GetExistedFileName;
+    //lower case
+    property FileNameCRC: Cardinal read GetFileNameCRC;
+    property GeoLocation: TGeoLocation read FGeoLocation;
+    property HasImage: Boolean read GetHasImage;
+  end;
+
+  TMediaItemCollection = class(TObject)
+  private
+    FIsPlusMenu: Boolean;
+    FIsListItem: Boolean;
+    FListItem: TEasyItem;
+    function GetValueByIndex(Index: Integer): TMediaItem;
+    function GetCount: Integer;
+    function GetIsVariousInclude: Boolean;
+    function GetStatRating: Integer;
+    function GetStatDate: TDateTime;
+    function GetStatTime: TDateTime;
+    function GetStatIsDate: Boolean;
+    function GetStatIsTime: Boolean;
+    function GetIsVariousDate: Boolean;
+    function GetIsVariousTime: Boolean;
+    function GetCommonKeyWords: string;
+    function GetIsVariousComments: Boolean;
+    function GetCommonGroups: string;
+    function GetCommonLinks: TLinksInfo;
+    function GetPosition: Integer;
+    procedure SetPosition(const Value: Integer);
+    function GetStatInclude: Boolean;
+    function GetCommonComments: string;
+    procedure SetValueByIndex(Index: Integer; const Value: TMediaItem);
+    function GetSelectionCount: Integer;
+    function GetIsVariousHeight: Boolean;
+    function GetIsVariousWidth: Boolean;
+    function GetOnlyDBInfo: Boolean;
+    function GetFilesSize: Int64;
+    function GetIsVariousLocation: Boolean;
+    function GetHasNonDBInfo: Boolean;
+    function GetCommonSelectedGroups: string;
+  protected
+    FData: TList;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Assign(Source: TMediaItemCollection);
+    procedure Insert(Index: Integer; MenuRecord: TMediaItem);
+    procedure Add(MenuRecord: TMediaItem); overload;
+    function Add(FileName: string): TMediaItem; overload;
+    procedure Clear;
+    procedure ClearList;
+    procedure Exchange(Index1, Index2: Integer);
+    procedure Delete(Index: Integer);
+    procedure NextSelected;
+    procedure PrevSelected;
+    function Extract(Index: Integer): TMediaItem;
+    property Items[index: Integer]: TMediaItem read GetValueByIndex write SetValueByIndex; default;
+    property IsListItem: Boolean read FIsListItem write FIsListItem;
+    property Count: Integer read GetCount;
+    property IsVariousInclude: Boolean read GetIsVariousInclude;
+    property IsVariousDate: Boolean read GetIsVariousDate;
+    property IsVariousTime: Boolean read GetIsVariousTime;
+    property IsVariousComments: Boolean read GetIsVariousComments;
+    property IsVariousWidth: Boolean read GetIsVariousWidth;
+    property IsVariousHeight: Boolean read GetIsVariousHeight;
+    property IsVariousLocation: Boolean read GetIsVariousLocation;
+    property StatRating: Integer read GetStatRating;
+    property StatDate: TDateTime read GetStatDate;
+    property StatTime: TDateTime read GetStatTime;
+    property StatIsDate: Boolean read GetStatIsDate;
+    property StatIsTime: Boolean read GetStatIsTime;
+    property StatInclude: Boolean read GetStatInclude;
+    property IsPlusMenu: Boolean read FIsPlusMenu write FIsPlusMenu;
+    property CommonKeyWords: string read GetCommonKeyWords;
+    property CommonGroups: string read GetCommonGroups;
+    property CommonSelectedGroups: string read GetCommonSelectedGroups;
+    property CommonLinks: TLinksInfo read GetCommonLinks;
+    property CommonComments: string read GetCommonComments;
+    property Position: Integer read GetPosition write SetPosition;
+    property ListItem: TEasyItem read FListItem write FListItem;
+    property SelectionCount: Integer read GetSelectionCount;
+    property OnlyDBInfo: Boolean read GetOnlyDBInfo;
+    property FilesSize: Int64 read GetFilesSize;
+    property HasNonDBInfo: Boolean read GetHasNonDBInfo;
   end;
 
 const
@@ -214,6 +366,770 @@ type
 
 implementation
 
+{$REGION 'Media'}
+
+{ TMediaItem }
+
+procedure TMediaItem.Assign(Item: TMediaItem; MoveImage: Boolean = False);
+begin
+//  FPath := Item.Path;
+  ID := Item.ID;
+  Name := Item.Name;
+  FileName := Item.FileName;
+  FOriginalFileName := Item.FOriginalFileName;
+  Comment := Item.Comment;
+  Groups := Item.Groups;
+  FileSize := Item.FileSize;
+  Rotation := Item.Rotation;
+  Rating := Item.Rating;
+  Access := Item.Access;
+  Date := Item.Date;
+  Time := Item.Time;
+  IsDate := Item.IsDate;
+  IsTime := Item.IsTime;
+  Encrypted := Item.Encrypted;
+  KeyWords := Item.KeyWords;
+  InfoLoaded := Item.InfoLoaded;
+  Include := Item.Include;
+  Links := Item.Links;
+  Selected := Item.Selected;
+  Tag := Item.Tag;
+  IsImageEncrypted := Item.IsImageEncrypted;
+  Width := Item.Width;
+  Height := Item.Height;
+  Exists := Item.Exists;
+  HasExifHeader := Item.HasExifHeader;
+  if MoveImage then
+  begin
+    F(Image);
+    Image := Item.Image;
+    Item.Image := nil;
+  end;
+  F(FGeoLocation);
+  if Item.GeoLocation <> nil then
+    LoadGeoInfo(Item.GeoLocation.Latitude, Item.GeoLocation.Longitude);
+end;
+
+function TMediaItem.Copy: TMediaItem;
+begin
+  Result := InitNewInstance;
+  Result.Assign(Self, False);
+  if Data <> nil then
+    Result.Data := Data.Clone
+  else
+    Result.Data := nil;
+end;
+
+constructor TMediaItem.Create;
+begin
+  inherited;
+  FFileNameCRC32 := 0;
+  IsImageEncrypted := False;
+  Tag := 0;
+  ID := 0;
+  FOriginalFileName := '';
+  FileName := '';
+  Comment := '';
+  Groups := '';
+  FileSize := 0;
+  Rotation := 0;
+  Rating := 0;
+  Access := 0;
+  Date := 0;
+  Time := 0;
+  IsDate := False;
+  IsTime := False;
+  Encrypted := False;
+  KeyWords := '';
+  InfoLoaded := False;
+  Include := False;
+  Links := '';
+  Selected := False;
+  Data := nil;
+  Image := nil;
+  FGeoLocation := nil;
+  HasExifHeader := False;
+end;
+
+constructor TMediaItem.CreateFromDS(DS: TDataSet);
+begin
+  InfoLoaded := True;
+  Selected := True;
+  ReadFromDS(DS);
+  Data := nil;
+  Image := nil;
+  FGeoLocation := nil;
+end;
+
+constructor TMediaItem.CreateFromFile(FileName: string);
+begin
+  Create;
+  Self.FOriginalFileName := FileName;
+  Self.FileName := FileName;
+//  Self.FPath := FileName;
+  Self.Name := ExtractFileName(FileName);
+end;
+
+destructor TMediaItem.Destroy;
+begin
+  F(Data);
+  F(Image);
+  F(FGeoLocation);
+  inherited;
+end;
+
+function TMediaItem.FileExists: Boolean;
+begin
+  Result := InnerImage or FileExistsSafe(FileName);
+end;
+
+function TMediaItem.GetExistedFileName: string;
+begin
+  if FolderView then
+    Result := FileName
+  else
+    Result := FOriginalFileName;
+end;
+
+function TMediaItem.GetFileNameCRC: Cardinal;
+begin
+  if FFileNameCRC32 = 0 then
+    FFileNameCRC32 := StringCRC(AnsiLowerCase(FileName));
+  Result := FFileNameCRC32;
+end;
+
+function TMediaItem.GetHasImage: Boolean;
+begin
+  Result := (Image <> nil) and not Image.Empty;
+end;
+
+function TMediaItem.GetInnerImage: Boolean;
+begin
+  Result := FileName = '?.JPEG';
+end;
+
+function TMediaItem.InitNewInstance: TMediaItem;
+begin
+  Result := TMediaItem.Create;
+end;
+
+procedure TMediaItem.LoadGeoInfo(Latitude, Longitude: Double);
+begin
+  F(FGeoLocation);
+  FGeoLocation := TGeoLocation.Create;
+  FGeoLocation.Latitude := Latitude;
+  FGeoLocation.Longitude := Longitude;
+end;
+
+procedure TMediaItem.ReadExists;
+begin
+  if FileExistsSafe(FileName) then
+    Exists := 1
+  else
+    Exists := -1;
+end;
+
+procedure TMediaItem.ReadFromDS(DS: TDataSet);
+var
+  ThumbField: TField;
+  DA: TImageTableAdapter;
+begin
+  F(Image);
+  DA := TImageTableAdapter.Create(DS);
+  try
+    ID := DA.ID;
+    Name := DA.Name;
+    FOriginalFileName := DA.FileName;
+    if FolderView then
+      FileName := ExtractFilePath(ParamStr(0)) + FOriginalFileName
+    else
+      FileName := ProcessPath(FOriginalFileName, False);
+    KeyWords := DA.KeyWords;
+    FileSize := DA.FileSize;
+    Rotation := DA.Rotation;
+    Rating := DA.Rating;
+    Access := DA.Access;
+    Attr := DA.Attributes;
+    Comment := DA.Comment;
+    Date := DA.Date;
+    Time := DA.Time;
+    IsDate := DA.IsDate;
+    IsTime := DA.IsTime;
+    Groups := DA.Groups;
+    LongImageID := DA.LongImageID;
+    Width := DA.Width;
+    Height := DA.Height;
+
+    ThumbField := DA.Thumb;
+    Encrypted := (ThumbField <> nil) and ValidCryptBlobStreamJPG(ThumbField);
+    Include := DA.Include;
+    Links := DA.Links;
+
+  finally
+    F(DA);
+  end;
+  InfoLoaded := True;
+end;
+
+procedure TMediaItem.SaveToEvent(EventValues: TEventValues);
+begin
+  EventValues.FileName := AnsiLowerCase(Self.FileName);
+  EventValues.ID := Self.ID;
+  EventValues.Rotation := Self.Rotation;
+  EventValues.Rating := Self.Rating;
+  EventValues.Comment := Self.Comment;
+  EventValues.KeyWords := Self.KeyWords;
+  EventValues.Access := Self.Access;
+  EventValues.Attr := Self.Attr;
+  EventValues.Date := Self.Date;
+  EventValues.IsDate := Self.IsDate;
+  EventValues.IsTime := Self.IsTime;
+  EventValues.Time := TimeOf(Self.Time);
+  EventValues.Groups := Self.Groups;
+  EventValues.IsEncrypted := Self.Encrypted;
+  EventValues.Include := Self.Include;
+end;
+
+procedure TMediaItem.WriteToDS(DS: TDataSet);
+var
+  DA: TImageTableAdapter;
+begin
+  DA := TImageTableAdapter.Create(DS);
+  try
+    DA.Name := Name;
+    DA.FileName := FOriginalFileName;
+    DA.KeyWords := KeyWords;
+    DA.FileSize := FileSize;
+    DA.Rotation := Rotation;
+    DA.Rating := Rating;
+    DA.Access := Access;
+    DA.Attributes := Attr;
+    DA.Comment := Comment;
+    DA.Date := DateOf(Date);
+    DA.Time := TimeOf(Time);
+    DA.IsDate := IsDate;
+    DA.IsTime := IsTime;
+    DA.Groups := Groups;
+    DA.LongImageID := LongImageID;
+    DA.Width := Width;
+    DA.Height := Height;
+    DA.Include := Include;
+    DA.Links := Links;
+  finally
+    F(DA);
+  end;
+end;
+
+
+function GetCommonGroupsForStringList(GroupsList: TStringList): string;
+var
+  I: Integer;
+  FArGroups: TList<TGroups>;
+  Res: TGroups;
+
+  function GetCommonGroupsForList(ArGroups: TList<TGroups>): TGroups;
+  var
+    I, J: Integer;
+  begin
+    if ArGroups.Count = 0 then
+      Exit;
+
+    Result := ArGroups[0].Clone;
+    for I := 1 to ArGroups.Count - 1 do
+    begin
+      if ArGroups[I].Count = 0 then
+      begin
+        FreeList(Result, False);
+        Break;
+      end;
+
+      for J := Result.Count - 1 downto 0 do
+        if not ArGroups[I].HasGroup(Result[J]) then
+          Result.RemoveGroup(Result[J]);
+
+      if Result.Count = 0 then
+        Exit;
+    end;
+  end;
+
+begin
+  Result := '';
+
+  if GroupsList.Count = 0 then
+    Exit;
+
+  FArGroups := TList<TGroups>.Create;
+  try
+    for I := 0 to GroupsList.Count - 1 do
+      FArGroups.Add(TGroups.CreateFromString(GroupsList[I]));
+
+    Res := GetCommonGroupsForList(FArGroups);
+    try
+      Result := Res.ToString;
+    finally
+      F(Res);
+    end;
+  finally
+    FreeList(FArGroups);
+  end;
+end;
+
+{ TDBPopupMenuInfo }
+
+procedure TMediaItemCollection.Add(MenuRecord: TMediaItem);
+begin
+  if MenuRecord = nil then
+    Exit;
+
+  FData.Add(MenuRecord);
+end;
+
+procedure TMediaItemCollection.Insert(Index: Integer;
+  MenuRecord: TMediaItem);
+begin
+  if MenuRecord = nil then
+    Exit;
+
+  FData.Insert(Index, MenuRecord);
+end;
+
+function TMediaItemCollection.Add(FileName: string) : TMediaItem;
+begin
+  Result := TMediaItem.Create;
+  Result.FileName := FileName;
+  Result.Include := True;
+  Result.FileSize := GetFileSize(FileName);
+  Add(Result);
+end;
+
+procedure TMediaItemCollection.Assign(Source: TMediaItemCollection);
+var
+  I: Integer;
+begin
+  if Pointer(Source) = Pointer(Self) then
+     Exit;
+  Clear;
+  for I := 0 to Source.Count - 1 do
+    FData.Add(Source[I].Copy);
+
+  if Source.Position >= 0 then
+    Position := Source.Position;
+
+  ListItem := Source.ListItem;
+end;
+
+procedure TMediaItemCollection.Clear;
+var
+  I: Integer;
+begin
+  for I := 0 to FData.Count - 1 do
+    TMediaItem(FData[I]).Free;
+  FData.Clear;
+end;
+
+procedure TMediaItemCollection.ClearList;
+begin
+  FData.Clear;
+end;
+
+constructor TMediaItemCollection.Create;
+begin
+  FData := TList.Create;
+  ListItem := nil;
+  IsListItem := False;
+  IsPlusMenu := False;
+end;
+
+procedure TMediaItemCollection.Delete(Index: Integer);
+begin
+  TObject(FData[Index]).Free;
+  FData.Delete(Index);
+end;
+
+destructor TMediaItemCollection.Destroy;
+begin
+  Clear;
+  F(FData);
+  inherited;
+end;
+
+procedure TMediaItemCollection.Exchange(Index1, Index2: Integer);
+begin
+  FData.Exchange(Index1, Index2);
+end;
+
+function TMediaItemCollection.Extract(Index: Integer): TMediaItem;
+begin
+  Result := FData[Index];
+  FData.Delete(Index);
+end;
+
+function TMediaItemCollection.GetCommonComments: string;
+begin
+  Result := '';
+  if (Count > 0) and not IsVariousComments then
+    Result := Self[0].Comment;
+end;
+
+function TMediaItemCollection.GetCommonGroups: string;
+var
+  SL: TStringList;
+  I: Integer;
+begin
+  SL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      SL.Add(Self[I].Groups);
+    Result := GetCommonGroupsForStringList(SL);
+  finally
+    F(SL);
+  end;
+end;
+
+function TMediaItemCollection.GetCommonSelectedGroups: string;
+var
+  SL: TStringList;
+  I: Integer;
+begin
+  SL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      if Self[I].Selected then
+        SL.Add(Self[I].Groups);
+    Result := GetCommonGroupsForStringList(SL);
+  finally
+    F(SL);
+  end;
+end;
+
+function TMediaItemCollection.GetCommonKeyWords: string;
+var
+  KL: TStringList;
+  I: Integer;
+begin
+  KL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      KL.Add(Self[I].KeyWords);
+    Result := GetCommonWordsA(KL);
+  finally
+    F(KL);
+  end;
+end;
+
+function TMediaItemCollection.GetCommonLinks: TLinksInfo;
+var
+  LL: TStringList;
+  I: Integer;
+begin
+  LL := TStringList.Create;
+  try
+    for I := 0 to Count - 1 do
+      LL.Add(Self[I].Links);
+    Result := UnitLinksSupport.GetCommonLinks(LL);
+  finally
+    F(LL);
+  end;
+end;
+
+function TMediaItemCollection.GetCount: Integer;
+begin
+  Result := FData.Count;
+end;
+
+function TMediaItemCollection.GetFilesSize: Int64;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 0 to Count - 1 do
+    Inc(Result, Self[I].FileSize);
+end;
+
+function TMediaItemCollection.GetHasNonDBInfo: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to Count - 1 do
+    if Self[I].ID = 0 then
+      Exit(True);
+end;
+
+function TMediaItemCollection.GetIsVariousComments: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Comment <> Self[I].Comment then
+        Result := True;
+end;
+
+function TMediaItemCollection.GetIsVariousDate: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Date <> Self[I].Date then
+        Result := True;
+end;
+
+function TMediaItemCollection.GetIsVariousHeight: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Height <> Self[I].Height then
+        Result := True;
+end;
+
+function TMediaItemCollection.GetIsVariousInclude: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Include <> Self[I].Include then
+        Result := True;
+end;
+
+function TMediaItemCollection.GetIsVariousLocation: Boolean;
+var
+  I: Integer;
+  FirstDir: string;
+begin
+  Result := False;
+  if Count > 1 then
+  begin
+    FirstDir := ExtractFileDir(Self[0].FileName);
+    for I := 1 to Count - 1 do
+      if FirstDir <> ExtractFileDir(Self[I].FileName) then
+        Result := True;
+  end;
+end;
+
+function TMediaItemCollection.GetIsVariousTime: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Time <> Self[I].Time then
+        Result := True;
+end;
+
+function TMediaItemCollection.GetIsVariousWidth: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Count > 1 then
+    for I := 1 to Count - 1 do
+      if Self[0].Width <> Self[I].Width then
+        Result := True;
+end;
+
+function TMediaItemCollection.GetOnlyDBInfo: Boolean;
+var
+  I: Integer;
+begin
+  Result := True;
+
+  for I := 0 to Count - 1 do
+    if Self[I].ID = 0 then
+      Exit(False);
+end;
+
+function TMediaItemCollection.GetPosition: Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  if Count > 0 then
+    Result := 0;
+  for I := 1 to Count - 1 do
+    if Self[I].IsCurrent then
+      Result := I;
+end;
+
+function TMediaItemCollection.GetSelectionCount: Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 0 to Count - 1 do
+    if Self[I].Selected then
+      Inc(Result);
+end;
+
+function TMediaItemCollection.GetStatDate: TDateTime;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Date);
+    Result := List.MaxStatDateTime;
+  finally
+    F(List);
+  end;
+end;
+
+function TMediaItemCollection.GetStatInclude: Boolean;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Include);
+    Result := List.MaxStatBoolean;
+  finally
+    F(List);
+  end;
+end;
+
+function TMediaItemCollection.GetStatIsDate: Boolean;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].IsDate);
+    Result := List.MaxStatBoolean;
+  finally
+    F(List);
+  end;
+end;
+
+function TMediaItemCollection.GetStatIsTime: Boolean;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].IsTime);
+    Result := List.MaxStatBoolean;
+  finally
+    F(List);
+  end;
+end;
+
+function TMediaItemCollection.GetStatRating: Integer;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Rating);
+    Result := List.MaxStatInteger;
+  finally
+    F(List);
+  end;
+end;
+
+function TMediaItemCollection.GetStatTime: TDateTime;
+var
+  I: Integer;
+  List: TList64;
+begin
+  List := TList64.Create;
+  try
+    for I := 0 to Count - 1 do
+      List.Add(Self[I].Time);
+    Result := List.MaxStatDateTime;
+  finally
+    F(List);
+  end;
+end;
+
+function TMediaItemCollection.GetValueByIndex(Index: Integer): TMediaItem;
+begin
+  if Index < 0 then
+    raise EInvalidOperation.Create('Index is out of range - index should be 0 or grater!');
+
+  if Index > Count - 1 then
+    raise EInvalidOperation.Create('Index is out of range!');
+
+  Result := FData[Index];
+end;
+
+procedure TMediaItemCollection.SetPosition(const Value: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    Self[I].IsCurrent := False;
+  Self[Value].IsCurrent := True;
+end;
+
+procedure TMediaItemCollection.NextSelected;
+var
+  I: Integer;
+begin
+  for I := Position + 1 to Count - 1 do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+
+  for I := 0 to Position do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+end;
+
+procedure TMediaItemCollection.PrevSelected;
+var
+  I: Integer;
+begin
+  for I := Position - 1 downto 0 do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+
+  for I := Count - 1 downto Position do
+    if Self[I].Selected then
+    begin
+      Position := I;
+      Exit;
+    end;
+end;
+
+procedure TMediaItemCollection.SetValueByIndex(index: Integer;
+  const Value: TMediaItem);
+begin
+  if FData[Index] <> nil then
+    TMediaItem(FData[index]).Free;
+  FData[Index] := Value;
+end;
+
+{$ENDREGION}
+
+{$REGION 'Settings'}
+
 { TSettings }
 
 function TSettings.Copy: TSettings;
@@ -248,6 +1164,10 @@ begin
   ThSize := DS.FieldByName('ThImageSize').AsInteger;
   ThHintSize := DS.FieldByName('ThHintSize').AsInteger;
 end;
+
+{$ENDREGION}
+
+{$REGION 'Groups'}
 
 { TGroup }
 
@@ -565,6 +1485,10 @@ begin
   for I := 0 to Count - 1 do
     Result := Result + Self[I].ToString // '${'+Groups[i].GroupCode+'}[#'+Groups[i].GroupName+'#]';
 end;
+
+{$ENDREGION}
+
+{$REGION 'Persons'}
 
 { TPerson }
 
@@ -970,5 +1894,7 @@ begin
   FX := NX;
   FY := NY;
 end;
+
+{$ENDREGION}
 
 end.

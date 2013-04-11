@@ -9,7 +9,6 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.PngImage,
 
-  UnitDBDeclare,
   UnitDBKernel,
   RAWImage,
   GraphicCrypt,
@@ -21,6 +20,7 @@ uses
   uLogger,
   uIImageViewer,
   uDBThread,
+  uDBEntities,
   uImageLoader,
   uPortableDeviceUtils,
   uBitmapUtils,

@@ -5,12 +5,15 @@ interface
 uses
   System.SysUtils,
 
+  Dmitry.CRC32,
+
   CommonDBSupport,
 
   uConstants,
   uMemory,
   uDBClasses,
-  uDBContext;
+  uDBContext,
+  uDBEntities;
 
 type
   TMediaRepository = class(TInterfacedObject, IMediaRepository)
@@ -27,6 +30,10 @@ type
     procedure SetRating(ID, Rating: Integer);
     procedure SetAttribute(ID, Attribute: Integer);
     function GetCount: Integer;
+    function GetMenuItemByID(ID: Integer): TMediaItem;
+    function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
+    function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
+    procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
   end;
 
 implementation
@@ -174,6 +181,104 @@ begin
     UC.Execute;
   finally
     F(UC);
+  end;
+end;
+
+function TMediaRepository.GetMenuItemByID(ID: Integer): TMediaItem;
+var
+  SC: TSelectCommand;
+begin
+  Result := nil;
+  SC := FContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+
+    if SC.Execute > 0 then
+      Result := TMediaItem.CreateFromDS(SC.DS);
+  finally
+    F(SC);
+  end;
+end;
+
+function TMediaRepository.GetMenuItemsByID(ID: Integer): TMediaItemCollection;
+var
+  MediaItem: TMediaItem;
+begin
+  Result := TMediaItemCollection.Create;
+  MediaItem := GetMenuItemByID(ID);
+  if MediaItem <> nil then
+    Result.Add(MediaItem);
+end;
+
+function TMediaRepository.GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
+var
+  SC: TSelectCommand;
+  MediaItem: TMediaItem;
+begin
+  Result := TMediaItemCollection.Create;
+
+  SC := FContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TAllParameter.Create);
+
+    SC.AddWhereParameter(TIntegerParameter.Create('StrThCrc', StringCRC(UniqId)));
+    SC.AddWhereParameter(TStringParameter.Create('StrTh', UniqId));
+
+    if SC.Execute > 0 then
+    begin
+      while not SC.DS.Eof do
+      begin
+        MediaItem := TMediaItem.CreateFromDS(SC.DS);
+        Result.Add(MediaItem);
+
+        SC.DS.Next;
+      end;
+      Result.Position := 0;
+    end;
+
+  finally
+    F(SC);
+  end;
+end;
+
+procedure TMediaRepository.UpdateMediaInfosFromDB(Info: TMediaItemCollection);
+var
+  I, J: Integer;
+  SC: TSelectCommand;
+  MediaItem: TMediaItem;
+begin
+  for I := 0 to Info.Count - 1 do
+  begin
+    if not Info[I].InfoLoaded then
+    begin
+      SC := FContext.CreateSelect(ImageTable);
+      try
+        //todo: don't select images
+        SC.AddParameter(TAllParameter.Create);
+
+        SC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(Info[I].FileName, True)));
+
+        if SC.Execute > 0 then
+        begin
+          while not SC.DS.Eof do
+          begin
+            MediaItem := TMediaItem.CreateFromDS(SC.DS);
+
+            for J := I to Info.Count - 1 do
+            begin
+              if AnsiLowerCase(Info[I].FileName) = MediaItem.FileName then
+                Info[I].Assign(MediaItem);
+            end;
+
+            SC.DS.Next;
+          end;
+
+        end;
+      finally
+        F(SC);
+      end;
+    end;
   end;
 end;
 

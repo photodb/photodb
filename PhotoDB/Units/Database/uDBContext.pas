@@ -29,6 +29,10 @@ type
     procedure SetRating(ID, Rating: Integer);
     procedure SetAttribute(ID, Attribute: Integer);
     function GetCount: Integer;
+    function GetMenuItemByID(ID: Integer): TMediaItem;
+    function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
+    function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
+    procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
   end;
 
   IGroupsRepository = interface

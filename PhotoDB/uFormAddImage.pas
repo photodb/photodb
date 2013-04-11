@@ -24,6 +24,7 @@ uses
   uBitmapUtils,
   uThemesUtils,
   uDBForm,
+  uDBEntities,
   uDatabaseDirectoriesUpdater,
   uFormInterfaces,
   uCollectionEvents;

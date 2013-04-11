@@ -22,7 +22,6 @@ uses
   UnitDBDeclare,
   CmpUnit,
   UnitLinksSupport,
-  UnitDBKernel,
   UnitGroupsReplace,
 
   uConstants,
@@ -40,8 +39,7 @@ uses
   uDBClasses,
   uDBContext,
   uDBEntities,
-  uCollectionEvents,
-  uDBPopupMenuInfo;
+  uCollectionEvents;
 
 type
   TDatabaseUpdateManager = class
@@ -49,18 +47,18 @@ type
     FGroupReplaceActions: TGroupsActionsW;
   protected
     class procedure CleanUp;
-    class procedure NotifyFileAdded(Info: TMediaItem; Res: TImageDBRecordA);
-  public
-    class function AddFile(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
-    class function AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
-    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
-    class function AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+    class procedure NotifyFileAdded(Info: TMediaItem; Res: TMediaInfo);
+    class function AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
     class procedure ProcessGroups(Context: IDBContext; Info: TMediaItem; ExifGroups: string);
+  public
+    class function AddFile(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
+    class function AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
+    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; Info: TMediaItem; Res: TMediaInfo): Boolean;
   end;
 
 implementation
 
-class function TDatabaseUpdateManager.AddFile(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddFile(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
 var
   Groups, ExifGroups: string;
 begin
@@ -93,7 +91,7 @@ begin
   end;
 end;
 
-class function TDatabaseUpdateManager.AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
 var
   IC: TInsertCommand;
   M: TMemoryStream;
@@ -262,16 +260,20 @@ begin
 end;
 
 class function TDatabaseUpdateManager.MergeWithExistedInfo(Context: IDBContext; ID: Integer;
-  Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+  Info: TMediaItem; Res: TMediaInfo): Boolean;
 var
-  DBInfo: TMediaItem;
+  MediaItem: TMediaItem;
   UC: TUpdateCommand;
   Comment, Groups, KeyWords, Links: string;
+
+  MediaRepository: IMediaRepository;
 begin
   Result := False;
 
-  DBInfo := GetMenuInfoRecordByID(Context, ID);
-  if DBInfo = nil then
+  MediaRepository := Context.Media;
+
+  MediaItem := MediaRepository.GetMenuItemByID(ID);
+  if MediaItem = nil then
     Exit;
 
   UC := Context.CreateUpdate(ImageTable);
@@ -279,8 +281,8 @@ begin
     if Info.Comment <> '' then
     begin
       Comment := Info.Comment;
-      if DBInfo.Comment <> '' then
-        Comment := Comment + sLineBreak + DBInfo.Comment;
+      if MediaItem.Comment <> '' then
+        Comment := Comment + sLineBreak + MediaItem.Comment;
 
       UC.AddParameter(TStringParameter.Create('Comment', Comment));
     end;
@@ -294,21 +296,21 @@ begin
     if Info.Groups <> '' then
     begin
       Groups := Info.Groups;
-      TGroups.AddGroupsToGroups(Groups, DBInfo.Groups);
+      TGroups.AddGroupsToGroups(Groups, MediaItem.Groups);
       UC.AddParameter(TStringParameter.Create('Groups', Groups));
     end;
 
     if Info.KeyWords <> '' then
     begin
       KeyWords := Info.KeyWords;
-      AddWordsA(DBInfo.KeyWords, KeyWords);
+      AddWordsA(MediaItem.KeyWords, KeyWords);
       UC.AddParameter(TStringParameter.Create('KeyWords', KeyWords));
     end;
 
     if Info.Links <> '' then
     begin
       Links := Info.Links;
-      ReplaceLinks('', DBInfo.Links, Links);
+      ReplaceLinks('', MediaItem.Links, Links);
       UC.AddParameter(TStringParameter.Create('Links', Links));
     end;
 
@@ -327,7 +329,7 @@ begin
   end;
 end;
 
-class function TDatabaseUpdateManager.AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TImageDBRecordA): Boolean;
+class function TDatabaseUpdateManager.AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
 var
   I: Integer;
   Infos: TMediaItemCollection;
@@ -335,6 +337,8 @@ var
   ItemsDuplicates: TStringList;
   DC: TDeleteCommand;
   UC: TUpdateCommand;
+
+  MediaRepository: IMediaRepository;
 
   procedure AddInfo(Info: TMediaItem; InfoToAdd: TMediaItem);
   var
@@ -378,12 +382,15 @@ var
 
 begin
   Result := False;
+
+  MediaRepository := Context.Media;
+
   Infos := TMediaItemCollection.Create;
   ItemsToDelete := TStringList.Create;
   ItemsDuplicates := TStringList.Create;
   try
     for I := 0 to Res.Count - 1 do
-      Infos.Add(uDBUtils.GetMenuInfoRecordByID(Context, Res.IDs[0]));
+      Infos.Add(MediaRepository.GetMenuItemByID(Res.IDs[0]));
 
     for I := 0 to Infos.Count - 1 do
     begin
@@ -430,14 +437,14 @@ begin
   end;
 end;
 
-class procedure TDatabaseUpdateManager.NotifyFileAdded(Info: TMediaItem; Res: TImageDBRecordA);
+class procedure TDatabaseUpdateManager.NotifyFileAdded(Info: TMediaItem; Res: TMediaInfo);
 var
   EventInfo: TEventValues;
 begin
   TThread.Synchronize(nil,
     procedure
     begin
-      EventInfo.ReadFromInfo(Info);
+      Info.SaveToEvent(EventInfo);
 
       EventInfo.JPEGImage := Res.Jpeg;
       EventInfo.IsEncrypted := Res.IsEncrypted;

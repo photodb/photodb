@@ -37,6 +37,7 @@ uses
   uLockedFileNotifications,
   uDBUtils,
   uDBContext,
+  uDBEntities,
   uGraphicUtils,
   uAssociations,
   uExifUtils,

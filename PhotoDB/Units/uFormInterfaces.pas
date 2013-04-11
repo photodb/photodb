@@ -23,7 +23,6 @@ uses
   uMemory,
   uDBForm,
   uRuntime,
-  uDBPopupMenuInfo,
   uDBEntities;
 
 type

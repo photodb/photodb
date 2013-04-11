@@ -28,14 +28,10 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.Controls.LoadingSign,
 
-  UnitDBDeclare,
-
-
   uConstants,
   uMemory,
   uDBForm,
   uThreadForm,
-  uDBPopupMenuInfo,
   uFormInterfaces,
   uThreadTask,
   uImageViewer,
@@ -44,7 +40,7 @@ uses
   uShellIntegration,
   uPhotoShareInterfaces,
   uShareUtils,
-  uDBRepository,
+  uDBEntities,
   uSettings;
 
 type
@@ -280,16 +276,9 @@ begin
     procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
       Item: TMediaItem;
-      DBItemRepository: TDBItemRepository;
-      DBItem: TDBItem;
     begin
       try
         Item := Data.Info[0];
-
-        DBItemRepository := TDBItemRepository.Create;
-        DBItem := DBItemRepository.WithKey().Add(DBItemFields.Links).Table()
-          .SelectItem().ById(Item.Id)
-          .FirstOrDefault();
 
         ProcessImageForSharing(Item, False,
           procedure(Data: TMediaItem; Preview: TGraphic)

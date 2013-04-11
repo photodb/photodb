@@ -56,7 +56,6 @@ uses
   uConstants,
   uMemory,
   uSearchQuery,
-  uDBPopupMenuInfo,
   uPNGUtils,
   uMultiCPUThreadManager,
   uPrivateHelper,

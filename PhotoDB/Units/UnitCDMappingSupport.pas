@@ -21,7 +21,7 @@ uses
   uDBBaseTypes,
   uDBUtils,
   uDBContext,
-  uDBPopupMenuInfo,
+  uDBEntities,
   uCDMappingTypes;
 
 type

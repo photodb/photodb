@@ -43,7 +43,6 @@ uses
   uGOM,
   uDBDrawing,
   uGraphicUtils,
-  uDBPopupMenuInfo,
   uFormUtils,
   uDBIcons,
   uDBContext,

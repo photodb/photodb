@@ -25,21 +25,24 @@ uses
   GraphicEx,
   RAWImage,
   GraphicCrypt,
-  UnitDBDeclare,
 
+  uConstants,
+  uMemory,
+  uRuntime,
   uAnimatedJPEG,
   uJpegUtils,
   uBitmapUtils,
   uDBForm,
-  uMemory,
   uGraphicUtils,
-  uRuntime,
   uAssociations,
   uDBThread,
-  uConstants,
+  uDBEntities,
   uPortableDeviceUtils,
   uSessionPasswords,
   uImageLoader;
+
+type
+  THintCheckFunction = function(Info: TMediaItem): Boolean of object;
 
 type
   THintCeator = class(TDBThread)

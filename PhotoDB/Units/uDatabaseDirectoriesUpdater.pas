@@ -38,12 +38,12 @@ uses
   uDBTypes,
   uDBUtils,
   uDBContext,
+  uDBEntities,
   uLogger,
   uCounters,
   uFormInterfaces,
   uConfiguration,
   uDBUpdateUtils,
-  uDBPopupMenuInfo,
   uShellUtils,
   uTranslate,
   uLockedFileNotifications,
@@ -75,7 +75,7 @@ type
   TAddTask = class(TDatabaseTask)
   private
     FData: TMediaItem;
-    procedure NotifyAboutFileProcessing(Info: TMediaItem; Res: TImageDBRecordA);
+    procedure NotifyAboutFileProcessing(Info: TMediaItem; Res: TMediaInfo);
   public
     constructor Create(DBContext: IDBContext; Data: TMediaItem); overload;
     constructor Create(DBContext: IDBContext; FileName: string); overload;
@@ -853,10 +853,10 @@ end;
 procedure TAddTask.Execute(Items: TArray<TAddTask>);
 var
   I: Integer;
-  ResArray: TImageDBRecordAArray;
+  ResArray: TMediaInfoArray;
   Infos: TMediaItemCollection;
   Info: TMediaItem;
-  Res: TImageDBRecordA;
+  Res: TMediaInfo;
   MediaRepository: IMediaRepository;
 begin
   MediaRepository := FDBContext.Media;
@@ -946,11 +946,11 @@ begin
   end;
 end;
 
-procedure TAddTask.NotifyAboutFileProcessing(Info: TMediaItem; Res: TImageDBRecordA);
+procedure TAddTask.NotifyAboutFileProcessing(Info: TMediaItem; Res: TMediaInfo);
 var
   EventInfo: TEventValues;
 begin
-  EventInfo.ReadFromInfo(Info);
+  Info.SaveToEvent(EventInfo);
   EventInfo.JPEGImage := Res.Jpeg;
   CollectionEvents.DoIDEvent(Application.MainForm as TDBForm, Info.ID, [EventID_FileProcessed], EventInfo);
 end;

@@ -16,12 +16,12 @@ uses
 
   Dmitry.Graphics.LayeredBitmap,
 
-  UnitDBDeclare,
   EasyListview,
   UnitBitmapImageList,
 
   uMemory,
   uDBDrawing,
+  uDBEntities,
   uGraphicUtils,
   uConstants,
   uRuntime,

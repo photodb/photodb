@@ -34,7 +34,6 @@ uses
   uGraphicUtils,
   uSettings,
   uDBTypes,
-  uDBPopupMenuInfo,
   uConstants,
   uTranslate,
   uLogger,
@@ -65,9 +64,9 @@ procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   OldFileName, NewFileName: string; Ask: Boolean = True);
 function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 
-function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean): TImageDBRecordA;
-function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TImageDBRecordAArray;
-function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TImageDBRecordA;
+function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean): TMediaInfo;
+function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; UseFileNameScanning: Boolean; OnlyImTh: Boolean = False): TMediaInfoArray;
+function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TMediaInfo;
 
 function GetInfoByFileNameA(Context: IDBContext; FileName: string; LoadThum: Boolean; Info: TMediaItem): Boolean;
 function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
@@ -80,14 +79,6 @@ function GetNeededRotation(OldRotation, NewRotation: Integer): Integer;
 function SumRotation(OldRotation, NewRotation: Integer): Integer;
 procedure CopyFiles(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move: Boolean; AutoRename: Boolean; ExplorerForm: TDBForm);
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; Groups: TGroups);
-
-{ DB Types }
-
-function GetMenuInfoByID(Context: IDBContext; ID: Integer): TMediaItemCollection;
-function GetMenuInfoRecordByID(Context: IDBContext; ID: Integer): TMediaItem;
-function GetMenuInfoByStrTh(Context: IDBContext; StrTh: string): TMediaItemCollection;
-procedure UpdateDataFromDB(Context: IDBContext; Info: TMediaItemCollection);
-{ END DB Types }
 
 implementation
 
@@ -383,7 +374,7 @@ end;
 
 function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
 var
-  Res: TImageDBRecordA;
+  Res: TMediaInfo;
   I, Attribute: Integer;
   EventInfo: TEventValues;
   ExifData: TExifData;
@@ -589,7 +580,7 @@ begin
   end;
 end;
 
-function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TImageDBRecordA;
+function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TMediaInfo;
 var
   FQuery: TDataSet;
   I: Integer;
@@ -632,7 +623,7 @@ begin
   end;
 end;
 
-function GetImageIDFileName(Context: IDBContext; FileName: string): TImageDBRecordA;
+function GetImageIDFileName(Context: IDBContext; FileName: string): TMediaInfo;
 var
   FQuery: TDataSet;
   I, Count, Rot: Integer;
@@ -750,12 +741,12 @@ begin
 end;
 
 function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; UseFileNameScanning: Boolean;
-  OnlyImTh: Boolean = False): TImageDBRecordAArray;
+  OnlyImTh: Boolean = False): TMediaInfoArray;
 var
   K, I, L, Len: Integer;
   FQuery: TDataSet;
   Temp, Sql, FromDB: string;
-  ThImS: TImageDBRecordAArray;
+  ThImS: TMediaInfoArray;
 begin
   L := Images.Count;
   SetLength(ThImS, L);
@@ -844,7 +835,7 @@ begin
   FreeDS(FQuery);
 end;
 
-function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean): TImageDBRecordA;
+function GetImageIDW(Context: IDBContext; FileName: string; UseFileNameScanning: Boolean; OnlyImTh: Boolean): TMediaInfo;
 var
   Bmp, Thbmp: TBitmap;
   PassWord,
@@ -1264,114 +1255,6 @@ end;
 ///////////////////////////////////////////////////////////////////////
 ///  BEGIN DB TYPES
 ///////////////////////////////////////////////////////////////////////
-
-function GetMenuInfoByID(Context: IDBContext; ID: Integer): TMediaItemCollection;
-var
-  FQuery: TDataSet;
-  MenuRecord: TMediaItem;
-begin
-  Result := TMediaItemCollection.Create;
-  FQuery := Context.CreateQuery(dbilRead);
-  try
-    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
-    SetIntParam(FQuery, 0, ID);
-    FQuery.Open;
-    if FQuery.RecordCount <> 1 then
-      Exit;
-
-    MenuRecord := TMediaItem.CreateFromDS(FQuery);
-    Result.Add(MenuRecord);
-    Result.ListItem := nil;
-    Result.IsListItem := False;
-    Result.IsPlusMenu := False;
-  finally
-    FreeDS(FQuery);
-  end;
-end;
-
-function GetMenuInfoRecordByID(Context: IDBContext; ID: Integer): TMediaItem;
-var
-  FQuery: TDataSet;
-begin
-  Result := nil;
-  FQuery := Context.CreateQuery(dbilRead);
-  try
-    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE ID = :ID');
-    SetIntParam(FQuery, 0, ID);
-    FQuery.Open;
-    if FQuery.RecordCount <> 1 then
-      Exit;
-
-    Result := TMediaItem.CreateFromDS(FQuery);
-  finally
-    FreeDS(FQuery);
-  end;
-end;
-
-procedure UpdateDataFromDB(Context: IDBContext; Info: TMediaItemCollection);
-var
-  I, J, K: Integer;
-  FQuery: TDataSet;
-  MenuRecord: TMediaItem;
-begin
-  for I := 0 to Info.Count - 1 do
-  begin
-    if not Info[I].InfoLoaded then
-    begin
-      FQuery := Context.CreateQuery(dbilRead);
-      try
-        //todo: don't select images
-        SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Info[I].FileName, True)));
-        FQuery.Open;
-
-        if not FQuery.Eof then
-          for J := 1 to FQuery.RecordCount do
-          begin
-            MenuRecord := TMediaItem.CreateFromDS(FQuery);
-            try
-              for K := I to Info.Count - 1 do
-              begin
-                if AnsiLowerCase(Info[I].FileName) = MenuRecord.FileName then
-                  Info[I].Assign(MenuRecord);
-              end;
-              FQuery.Next;
-            finally
-              F(MenuRecord);
-            end;
-          end;
-      finally
-        FreeDS(FQuery);
-      end;
-    end;
-  end;
-end;
-
-function GetMenuInfoByStrTh(Context: IDBContext; StrTh: string): TMediaItemCollection;
-var
-  FQuery: TDataSet;
-  MenuRecord: TMediaItem;
-begin
-  Result := TMediaItemCollection.Create;
-
-  FQuery := Context.CreateQuery(dbilRead);
-  try
-    SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE StrThCrc = :CRC AND StrTh = :StrTh');
-    SetIntParam(FQuery, 0, StringCRC(StrTh));
-    SetStrParam(FQuery, 1, StrTh);
-    FQuery.Open;
-    if FQuery.RecordCount <> 1 then
-      Exit;
-
-    MenuRecord := TMediaItem.CreateFromDS(FQuery);
-    Result.Add(MenuRecord);
-    Result.ListItem := nil;
-    Result.IsListItem := False;
-    Result.IsPlusMenu := False;
-    Result.Position := 0;
-  finally
-    FreeDS(FQuery);
-  end;
-end;
 
 procedure CopyRecordsW(OutTable, InTable: TDataSet; IsMobile, UseFinalLocation: Boolean; BaseFolder: string; Groups: TGroups);
 var

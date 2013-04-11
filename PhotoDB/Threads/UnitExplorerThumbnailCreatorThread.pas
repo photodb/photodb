@@ -29,6 +29,7 @@ uses
 
   Dmitry.Utils.Files,
   Dmitry.Utils.ShellIcons,
+  Dmitry.PathProviders,
 
   CCR.Exif,
 
@@ -99,6 +100,7 @@ var
   Data: TObject;
   MinC, MaxC: Integer;
   FHistogramm: TGistogrammData;
+  PI: TPathItem;
 begin
   inherited;
   try
@@ -125,30 +127,35 @@ begin
         FBit := TBitmap.Create;
         try
           Data := nil;
-          if FInfo.Provider.ExtractPreview(FInfo, ThSizeExplorerPreview, ThSizeExplorerPreview, FBit, Data) then
-          begin
-            TempBitmap := TBitmap.Create;
-            try
-              TempBitmap.PixelFormat := pf32Bit;
-              TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
-              FillTransparentColor(TempBitmap, Theme.PanelColor);
-
-              ShadowImage := TBitmap.Create;
+          PI := PathProviderManager.CreatePathItem(FInfo.FileName);
+          try
+            if (PI <> nil) and PI.Provider.ExtractPreview(PI, ThSizeExplorerPreview, ThSizeExplorerPreview, FBit, Data) then
+            begin
+              TempBitmap := TBitmap.Create;
               try
-                if (FInfo.FileType <> EXPLORER_ITEM_DEVICE) then
-                  DrawShadowToImage(ShadowImage, FBit)
-                else
-                  ShadowImage.Assign(FBit);
+                TempBitmap.PixelFormat := pf32Bit;
+                TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
+                FillTransparentColor(TempBitmap, Theme.PanelColor);
 
-                DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
-                  TempBitmap.Height div 2 - ShadowImage.Height div 2);
+                ShadowImage := TBitmap.Create;
+                try
+                  if (FInfo.FileType <> EXPLORER_ITEM_DEVICE) then
+                    DrawShadowToImage(ShadowImage, FBit)
+                  else
+                    ShadowImage.Assign(FBit);
+
+                  DrawImageEx32(TempBitmap, ShadowImage, TempBitmap.Width div 2 - ShadowImage.Width div 2,
+                    TempBitmap.Height div 2 - ShadowImage.Height div 2);
+                finally
+                  F(ShadowImage);
+                end;
+                SynchronizeEx(SetImage);
               finally
-                F(ShadowImage);
+                F(TempBitmap);
               end;
-              SynchronizeEx(SetImage);
-            finally
-              F(TempBitmap);
             end;
+          finally
+            F(PI);
           end;
         finally
           F(FBit);

@@ -5,12 +5,12 @@ interface
 uses
   Classes,
   Graphics,
-  UnitDBDeclare,
   SysUtils,
-  uAssociations,
 
+  uAssociations,
   uDBThread,
   uDBForm,
+  uDBEntities,
   uShellIntegration,
   uConstants,
   uMemory,

@@ -29,7 +29,6 @@ uses
   uTranslate,
   uJpegUtils,
   uBitmapUtils,
-  uDBPopupMenuInfo,
   uAssociatedIcons,
   uThreadEx,
   uPeopleRepository,

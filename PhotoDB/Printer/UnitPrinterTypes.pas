@@ -10,13 +10,15 @@ uses
   Printers,
   Classes,
   ComObj,
-  uLogger,
-  Dmitry.Graphics.Types,
   ActiveX,
+
+  Dmitry.Graphics.Types,
+
   uMemory,
+  uLogger,
+  uDBEntities,
   uAssociations,
   uBitmapUtils,
-  UnitDBDeclare,
   uImageLoader;
 
 type

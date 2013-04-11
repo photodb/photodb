@@ -317,7 +317,6 @@
         <DCCReference Include="Units\UnitCrypting.pas"/>
         <DCCReference Include="Units\ShellContextMenu.pas"/>
         <DCCReference Include="Units\DDraw.pas"/>
-        <DCCReference Include="Units\DXCommon.pas"/>
         <DCCReference Include="Units\UnitLinksSupport.pas"/>
         <DCCReference Include="Units\GDIPlusRotate.pas"/>
         <DCCReference Include="Units\UnitGroupsTools.pas"/>
@@ -354,7 +353,6 @@
         <DCCReference Include="Units\uDBDrawing.pas"/>
         <DCCReference Include="Units\uList64.pas"/>
         <DCCReference Include="Units\uW7TaskBar.pas"/>
-        <DCCReference Include="Units\uDBHint.pas"/>
         <DCCReference Include="Units\uMath.pas"/>
         <DCCReference Include="External\Crypt\DECv5.2\DECCipher.pas"/>
         <DCCReference Include="External\Crypt\DECv5.2\DECData.pas"/>
@@ -374,7 +372,6 @@
         <DCCReference Include="Units\uFormListView.pas"/>
         <DCCReference Include="Threads\uDBThread.pas"/>
         <DCCReference Include="Units\uGraphicUtils.pas"/>
-        <DCCReference Include="Units\uDBPopupMenuInfo.pas"/>
         <DCCReference Include="Units\uPrivateHelper.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.Consts.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.IPTC.pas"/>
@@ -621,7 +618,6 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Units\uShareUtils.pas"/>
-        <DCCReference Include="Units\uDBRepository.pas"/>
         <DCCReference Include="Units\uWinApi.pas"/>
         <DCCReference Include="uImportSource.pas">
             <Form>FormImportSource</Form>

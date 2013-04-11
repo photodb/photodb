@@ -35,6 +35,7 @@ uses
   uBitmapUtils,
   uJpegUtils,
   uTranslate,
+  uDBEntities,
   uFormInterfaces,
   uSessionPasswords,
   uPNGUtils;

@@ -22,16 +22,17 @@ uses
   uConstants,
   uRuntime,
   uMemory,
+  uLogger,
   uThreadEx,
   uThreadForm,
   uAssociations,
-  uLogger,
   uShellThumbnails,
   uAssociatedIcons,
   uPhotoShareInterfaces,
   uShellIntegration,
   uShareUtils,
-  uImageLoader;
+  uImageLoader,
+  uDBEntities;
 
 type
   TShareImagesThread = class;

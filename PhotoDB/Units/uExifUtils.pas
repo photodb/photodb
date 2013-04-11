@@ -32,6 +32,7 @@ uses
   uLogger,
   uPortableDeviceUtils,
   uTranslate,
+  uDBEntities,
   uSessionPasswords;
 
 const

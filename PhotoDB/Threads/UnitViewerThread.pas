@@ -12,16 +12,16 @@ uses
   Forms,
   JPEG,
   pngimage,
-  DB,
+  Data.DB,
 
   Dmitry.Utils.Files,
 
   GIFImage,
   CommonDBSupport,
   ActiveX,
-  UnitDBDeclare,
   RAWImage,
 
+  uConstants,
   uMemory,
   uPNGUtils,
   uDBThread,
@@ -31,8 +31,8 @@ uses
   uBitmapUtils,
   uSettings,
   uDBContext,
+  uDBEntities,
   uFaceDetection,
-  uConstants,
   uImageLoader,
   uPortableDeviceUtils,
   uAnimatedJPEG,

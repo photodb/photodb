@@ -8,14 +8,16 @@ uses
   Classes,
   SysUtils,
   SyncObjs,
+
   ExplorerTypes,
-  UnitDBDeclare,
+
+  uConstants,
+  uMemory,
+  uTime,
+  uRuntime,
   uMultiCPUThreadManager,
   uThreadEx,
-  uTime,
-  uMemory,
-  uConstants,
-  uRuntime;
+  uDBEntities;
 
 type
   TExplorerThreadPool = class(TThreadPoolCustom)

@@ -8,13 +8,13 @@ uses
   SysUtils,
   DB,
 
-  UnitDBDeclare,
   CommonDBSupport,
 
   uThreadForm,
   uThreadEx,
   uMemory,
   uDBContext,
+  uDBEntities,
   uExifUtils,
   uConstants;
 

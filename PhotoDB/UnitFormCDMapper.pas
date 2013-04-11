@@ -21,7 +21,6 @@ uses
 
   UnitCDMappingSupport,
   CommonDBSupport,
-  UnitDBDeclare,
   UnitDBKernel,
 
   uLogger,
@@ -29,7 +28,7 @@ uses
   uMemory,
   uDBIcons,
   uDBContext,
-  uDBPopupMenuInfo,
+  uDBEntities,
   uShellIntegration,
   uConstants,
   uFormInterfaces,

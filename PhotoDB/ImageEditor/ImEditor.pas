@@ -77,6 +77,7 @@ uses
   uRuntime,
   uDBUtils,
   uDBContext,
+  uDBEntities,
   uDBTypes,
   uDBFileTypes,
   uConstants,
@@ -2431,7 +2432,7 @@ end;
 
 procedure TImageEditor.Properties1Click(Sender: TObject);
 var
-  PR: TImageDBRecordA;
+  PR: TMediaInfo;
 begin
   Pr := GetImageIDW(DBKernel.DBContext, CurrentFileName, False, True);
   if Pr.Count <> 0 then

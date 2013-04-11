@@ -14,13 +14,11 @@ uses
   Dmitry.Controls.LoadingSign,
   Dmitry.Controls.WebLink,
 
-  UnitDBDeclare,
   ExplorerTypes,
 
   uMemory,
   uGOM,
   uIImageViewer,
-  uDBPopupMenuInfo,
   uImageViewerControl,
   uFaceDetection,
   uImageViewerThread,
@@ -30,6 +28,7 @@ uses
   uInterfaces,
   uFormInterfaces,
   uExifInfo,
+  uDBEntities,
   uSessionPasswords;
 
 type

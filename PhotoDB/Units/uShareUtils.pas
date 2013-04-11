@@ -9,14 +9,12 @@ uses
   Vcl.Imaging.Jpeg,
   Vcl.Imaging.pngimage,
 
-  UnitDBDeclare,
-
   uMemory,
   uGraphicUtils,
   uJpegUtils,
   uAssociatedIcons,
   uImageLoader,
-  uDBRepository,
+  uDBEntities,
   uSettings;
 
 type
@@ -32,8 +30,6 @@ type
 procedure ProcessImageForSharing(Data: TMediaItem; IsPreview: Boolean;
   UpdatePreviewProc: TUpdatePreviewProc;
   UpdateStreamProc: TUpdateStreamProc);
-function GetShareLinkForDBItem(Data: TMediaItem): TShareLinkData;
-procedure UpdateDBItemLink(Data: TMediaItem; LinkData: TShareLinkData);
 
 implementation
 
@@ -140,36 +136,6 @@ begin
       raise;
     end;
   end;
-end;
-
-function GetShareLinkForDBItem(Data: TMediaItem): TShareLinkData;
-var
-  DBItem: TDBItem;
-  DBItemRepository: TDBitemRepository;
-  DBGroupsRepository: TDBGroupsRepository;
-begin
-  DBItem := DBItemRepository.WithKey().Add(DBItemFields.Links).Table()
-    .Join<TDBGroupItem>(DBGroupsRepository.AllFields.Table()).Onn(DBGroupFields.GroupId).Eq(DBItemFields.GroupId)
-    .SelectItem()
-    .ById(Data.Id)
-    .OrderByDesc(DBItemFields.Links)
-    .FirstOrDefault();
-
-  DBItem := DBItemRepository.WithKey().Add(DBItemFields.Links).Table()
-    .SelectItem()
-    .ById(Data.ID)
-    .FirstOrDefault();
-
-  //DBItem := DBItemRepository.TextFields.Select().ById(Data.ID);
-  //DBItem := DBItemRepository.AllFields.Select().ById(Data.ID);
-
-  //if DBItem <> nil then
-  //  Result.Url := DBItem.Links;
-end;
-
-procedure UpdateDBItemLink(Data: TMediaItem; LinkData: TShareLinkData);
-begin
-
 end;
 
 end.

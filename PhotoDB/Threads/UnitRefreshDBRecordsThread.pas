@@ -15,7 +15,7 @@ uses
   uMemory,
   uDBUtils,
   uDBContext,
-  uDBPopupMenuInfo,
+  uDBEntities,
   uCollectionEvents,
   uDBForm,
   uDBThread,

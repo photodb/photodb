@@ -19,7 +19,6 @@ uses
   uConstants,
   uMemory,
   uMemoryEx,
-  uDBPopupMenuInfo,
   uDatabaseDirectoriesUpdater,
   uDBForm,
   uCollectionEvents,

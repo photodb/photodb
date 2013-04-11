@@ -13,7 +13,7 @@ uses
   uThreadForm,
   uDBUtils,
   uDBContext,
-  uDBPopupMenuInfo,
+  uDBEntities,
   uAssociations;
 
 type

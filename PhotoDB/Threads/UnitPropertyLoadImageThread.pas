@@ -20,6 +20,7 @@ uses
   uConstants,
   uDBForm,
   uDBIcons,
+  uDBEntities,
   uThemesUtils,
   uImageLoader;
 

@@ -46,7 +46,6 @@ uses
   uMemory,
   uBitmapUtils,
   uGraphicUtils,
-  uDBPopupMenuInfo,
   uAssociations,
   uConstants,
   uPrivateHelper,

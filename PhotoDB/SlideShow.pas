@@ -69,7 +69,6 @@ uses
   uMemory,
   uFaceDetection,
   uListViewUtils,
-  uDBPopupMenuInfo,
   uGraphicUtils,
   uShellIntegration,
   uDBUtils,
@@ -3298,7 +3297,7 @@ end;
 
 procedure TViewer.Properties1Click(Sender: TObject);
 begin
-  if not IsDevicePath(Item.Path) then
+  if not IsDevicePath(Item.FileName) then
   begin
     if Item.ID <> 0 then
       PropertyManager.NewIDProperty(Item.ID).Execute(Item.ID)
@@ -3306,7 +3305,7 @@ begin
       PropertyManager.NewFileProperty(Item.FileName).ExecuteFileNoEx(Item.FileName);
   end else
   begin
-    ExecuteProviderFeature(Self, Item.Path, PATH_FEATURE_PROPERTIES)
+    ExecuteProviderFeature(Self, Item.FileName, PATH_FEATURE_PROPERTIES)
   end;
 end;
 
@@ -4135,7 +4134,7 @@ end;
 
 procedure TViewer.SetDisplayRating(const Value: Integer);
 begin
-  TbRating.Enabled := (not (FolderView and (Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(Item.Path);
+  TbRating.Enabled := (not (FolderView and (Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(Item.FileName);
 
   if Value >= 0 then
     TbRating.ImageIndex := 14 + Abs(Value)

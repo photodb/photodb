@@ -39,7 +39,6 @@ uses
   EasyListview,
 
   UnitDBFileDialogs,
-  UnitDBDeclare,
   UnitBitmapImageList,
 
   uConstants,
@@ -50,13 +49,13 @@ uses
   uResources,
   uSettings,
   uDBForm,
+  uDBEntities,
   uThreadForm,
   uGraphicUtils,
   uTranslate,
   uTranslateUtils,
   uVCLHelpers,
   uListViewUtils,
-  uDBPopupMenuInfo,
   uAssociations,
   uDateUtils,
   uPathUtils,

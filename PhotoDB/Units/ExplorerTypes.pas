@@ -19,12 +19,12 @@ uses
   Dmitry.Controls.PathEditor,
 
   uMemory,
-  uDBPopupMenuInfo,
   uThreadEx,
   uThreadForm,
   uConstants,
   uGUIDUtils,
   uDBContext,
+  uDBEntities,
 
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
@@ -122,7 +122,7 @@ type
 
   TExplorerFileInfo = class(TMediaItem)
   protected
-    function InitNewInstance : TMediaItem; override;
+    function InitNewInstance: TMediaItem; override;
   public
     IsBigImage: Boolean;
     SID: TGUID;
@@ -494,7 +494,6 @@ var
   CN: string;
 begin
   inherited Create;
-  FPath := PI.Path;
   FileName := PI.Path;
   Name := PI.DisplayName;
   SID := GetGUID;

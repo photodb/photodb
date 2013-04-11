@@ -25,21 +25,20 @@ uses
   Dmitry.Controls.LoadingSign,
 
   UnitDBFileDialogs,
-  UnitDBDeclare,
   UnitDBKernel,
+  GraphicCrypt,
   DBCMenu,
 
   uConstants,
   uStenography,
-  GraphicCrypt,
   uAssociations,
   uShellIntegration,
   uTranslateUtils,
-  uDBPopupMenuInfo,
   uCryptUtils,
   uMemory,
   uFrameWizardBase,
   uDBUtils,
+  uDBEntities,
   uDBBaseTypes,
   uProgramStatInfo,
   uPortableDeviceUtils;

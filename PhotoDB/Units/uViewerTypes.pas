@@ -5,11 +5,10 @@ interface
 uses
   SyncObjs,
   ActiveX,
+
   uMemory,
   uThreadForm,
-
-  UnitDBDeclare,
-  uDBPopupMenuInfo;
+  uDBEntities;
 
 type
   TViewerForm = class(TThreadForm)

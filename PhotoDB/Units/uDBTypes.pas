@@ -46,24 +46,26 @@ type
     GeoLocation: TGeoLocation;
   end;
 
-  TImageDBRecordA = record
-    IDs: array of Integer;
-    FileNames: array of string;
+  TMediaInfo = record
     ImTh: string;
-    Count: Integer;
-    Attr: array of Integer;
     Jpeg: TJpegImage;
     ImageWidth, ImageHeight: Integer;
     IsEncrypted: Boolean;
     Password: string;
     Size: Integer;
-    UsedFileNameSearch: Boolean;
+
+    Count: Integer;
+    IDs: array of Integer;
+    FileNames: array of string;
     ChangedRotate: array of Boolean;
+    Attr: array of Integer;
+
+    UsedFileNameSearch: Boolean;
     IsError: Boolean;
     ErrorText: string;
   end;
 
-  TImageDBRecordAArray = array of TImageDBRecordA;
+  TMediaInfoArray = array of TMediaInfo;
 
 implementation
 

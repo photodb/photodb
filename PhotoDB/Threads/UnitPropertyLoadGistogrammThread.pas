@@ -7,12 +7,14 @@ uses
   Classes,
   Graphics,
   SysUtils,
-  UnitDBDeclare,
+
   uDBForm,
+
   uMemory,
   uBitmapUtils,
   uDBGraphicTypes,
   uDBThread,
+  uDBEntities,
   uImageLoader;
 
 type

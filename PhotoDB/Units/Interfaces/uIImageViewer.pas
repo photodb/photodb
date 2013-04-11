@@ -12,11 +12,9 @@ uses
   Dmitry.Controls.LoadingSign,
   Dmitry.Controls.WebLink,
 
-  UnitDBDeclare,
-
   uMemory,
   uInterfaces,
-  uDBPopupMenuInfo,
+  uDBEntities,
   uFaceDetection,
   uExifInfo,
   uThreadForm;

@@ -32,11 +32,11 @@ uses
   uConstants,
   uDBForm,
   uDBContext,
+  uDBEntities,
   uShellIntegration,
   uSettings,
   uActivationUtils,
   uCryptUtils,
-  uDBPopupMenuInfo,
   uDBBaseTypes;
 
 type

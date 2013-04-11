@@ -43,7 +43,6 @@ uses
   u2DUtils,
   uDBForm,
   uIImageViewer,
-  uDBPopupMenuInfo,
   uFaceDetection,
   uFaceDetectionThread,
   uPeopleRepository,

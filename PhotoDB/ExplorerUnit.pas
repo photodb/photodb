@@ -110,7 +110,6 @@ uses
   uTime,
   uDateUtils,
   uFastLoad,
-  uDBPopupMenuInfo,
   uDBDrawing,
   uW7TaskBar,
   uMemory,
@@ -2587,7 +2586,7 @@ begin
     begin
       EI := TExplorerFileInfo.CreateFromPathItem(PI.Parent);
       try
-        SetNewPathW(ExplorerPath(EI.Path, EI.FileType), False);
+        SetNewPathW(ExplorerPath(EI.FileName, EI.FileType), False);
       finally
         F(EI);
       end;
@@ -2646,7 +2645,7 @@ begin
           TWebLink(WllPersonsPreview.Controls[I]).Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor);
         end;
 
-      TbPreviewRating.Enabled := (not (FolderView and (FImageViewer.Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(FImageViewer.Item.Path);
+      TbPreviewRating.Enabled := (not (FolderView and (FImageViewer.Item.ID = 0)) and not DBReadOnly) and not IsDevicePath(FImageViewer.Item.FileName);
     end;
 
     Rating := FImageViewer.Item.Rating;
@@ -3135,8 +3134,7 @@ begin
           FFilesInfo[I].Name := Value.NewName;
           Index := MenuIndexToItemIndex(I);
           ElvMain.Items[Index].Caption := Value.NewName;
-          FFilesInfo[I].UpdatePath(cPersonsPath + '\' + Value.NewName);
-          FFilesInfo[I].FileName := FFilesInfo[I].Path;
+          FFilesInfo[I].FileName := cPersonsPath + '\' + Value.NewName;
           ListView1SelectItem(nil, ListView1Selected, True);
         end;
     end;
@@ -3164,13 +3162,12 @@ begin
       GI := TGroupItem(Value.Data);
       S := cGroupsPath + '\' + Value.FileName;
       for I := 0 to FFilesInfo.Count - 1 do
-        if FFilesInfo[I].Path = S then
+        if FFilesInfo[I].FileName = S then
         begin
           FFilesInfo[I].Name := GI.GroupName;
           Index := MenuIndexToItemIndex(I);
           ElvMain.Items[Index].Caption := GI.GroupName;
-          FFilesInfo[I].UpdatePath(GI.Path);
-          FFilesInfo[I].FileName := FFilesInfo[I].Path;
+          FFilesInfo[I].FileName := GI.Path;
           ListView1SelectItem(nil, ListView1Selected, True);
         end;
     end;
@@ -3178,7 +3175,7 @@ begin
     begin
       GI := TGroupItem(Value.Data);
       for I := 0 to FFilesInfo.Count - 1 do
-        if FFilesInfo[I].Path = GI.Path then
+        if FFilesInfo[I].FileName = GI.Path then
         begin
           Index := MenuIndexToItemIndex(I);
           DeleteItemWithIndex(Index);
@@ -8766,7 +8763,7 @@ begin
 
     EI := TExplorerFileInfo.CreateFromPathItem(PI);
     try
-      SetNewPathW(ExplorerPath(EI.Path, EI.FileType), False);
+      SetNewPathW(ExplorerPath(EI.FileName, EI.FileType), False);
     finally
       F(EI);
     end;

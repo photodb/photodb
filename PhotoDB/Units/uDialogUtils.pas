@@ -6,12 +6,12 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.JPEG,
 
-  UnitDBDeclare,
   UnitDBFileDialogs,
 
   uConstants,
   uMemory,
   uAssociations,
+  uDBEntities,
   uImageLoader;
 
 procedure LoadNickJpegImage(Image: TPicture; JpegCompressionQuality: TJPEGQualityRange);

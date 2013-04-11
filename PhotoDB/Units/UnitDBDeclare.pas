@@ -58,8 +58,6 @@ type
   TGetAvaliableCryptFileList = function(Sender: TObject): TArInteger of object;
 
 type
-  TMediaItem = class;
-
   TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
     EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
     EventID_Param_KeyWords, EventID_Param_Attr,
@@ -97,7 +95,6 @@ type
     IsEncrypted: Boolean;
     Include: Boolean;
     Data: TObject;
-    procedure ReadFromInfo(Info: TMediaItem);
   end;
 
   TClonableObject = class(TObject)
@@ -162,66 +159,6 @@ type
     procedure Assign(Item: TGeoLocation);
   end;
 
-  TMediaItem = class(TPathItem)
-  private
-    FOriginalFileName: string;
-    FFileNameCRC32: Cardinal;
-    FGeoLocation: TGeoLocation;
-    function GetInnerImage: Boolean;
-    function GetExistedFileName: string;
-    function GetFileNameCRC: Cardinal;
-    function GetHasImage: Boolean;
-  protected
-    function InitNewInstance: TMediaItem; virtual;
-  public
-    Name: string;
-    FileName: string;
-    Comment: string;
-    FileSize: Int64;
-    Rotation: Integer;
-    Rating: Integer;
-    ID: Integer;
-    IsCurrent: Boolean;
-    Selected: Boolean;
-    Access: Integer;
-    Date: TDateTime;
-    Time: TTime;
-    IsDate: Boolean;
-    IsTime: Boolean;
-    Groups: string;
-    KeyWords: string;
-    Encrypted: Boolean;
-    Attr: Integer;
-    InfoLoaded: Boolean;
-    Include: Boolean;
-    Width, Height: Integer;
-    Links: string;
-    Exists: Integer; // for drawing in lists
-    LongImageID: string;
-    Data: TClonableObject;
-    Image: TJpegImage;
-    Tag: Integer;
-    IsImageEncrypted: Boolean;
-    HasExifHeader: Boolean;
-    constructor Create; override;
-    constructor CreateFromDS(DS: TDataSet);
-    constructor CreateFromFile(FileName: string);
-    procedure ReadExists;
-    destructor Destroy; override;
-    procedure ReadFromDS(DS: TDataSet);
-    procedure WriteToDS(DS: TDataSet);
-    function Copy: TMediaItem; reintroduce; virtual;
-    function FileExists: Boolean;
-    procedure LoadGeoInfo(Latitude, Longitude: Double);
-    procedure Assign(Item: TMediaItem; MoveImage: Boolean = False); reintroduce;
-    property InnerImage: Boolean read GetInnerImage;
-    property ExistedFileName: string read GetExistedFileName;
-    //lower case
-    property FileNameCRC: Cardinal read GetFileNameCRC;
-    property GeoLocation: TGeoLocation read FGeoLocation;
-    property HasImage: Boolean read GetHasImage;
-  end;
-
   TEncryptImageOptions = record
     Password: string;
     CryptFileName: Boolean;
@@ -247,7 +184,6 @@ type
   end;
 
 type
-  THintCheckFunction = function(Info: TMediaItem): Boolean of object;
   TRemoteCloseFormProc = procedure(Form: TForm; ID: string) of object;
   TFileFoundedEvent = procedure(Owner: TObject; FileName: string; Size: Int64) of object;
 
@@ -290,239 +226,6 @@ type
   end;
 
 implementation
-
-{ TDBPopupMenuInfoRecord }
-
-procedure TMediaItem.Assign(Item: TMediaItem; MoveImage: Boolean = False);
-begin
-  FPath := Item.Path;
-  ID := Item.ID;
-  Name := Item.Name;
-  FileName := Item.FileName;
-  FOriginalFileName := Item.FOriginalFileName;
-  Comment := Item.Comment;
-  Groups := Item.Groups;
-  FileSize := Item.FileSize;
-  Rotation := Item.Rotation;
-  Rating := Item.Rating;
-  Access := Item.Access;
-  Date := Item.Date;
-  Time := Item.Time;
-  IsDate := Item.IsDate;
-  IsTime := Item.IsTime;
-  Encrypted := Item.Encrypted;
-  KeyWords := Item.KeyWords;
-  InfoLoaded := Item.InfoLoaded;
-  Include := Item.Include;
-  Links := Item.Links;
-  Selected := Item.Selected;
-  Tag := Item.Tag;
-  IsImageEncrypted := Item.IsImageEncrypted;
-  Width := Item.Width;
-  Height := Item.Height;
-  Exists := Item.Exists;
-  HasExifHeader := Item.HasExifHeader;
-  if MoveImage then
-  begin
-    F(Image);
-    Image := Item.Image;
-    Item.Image := nil;
-  end;
-  F(FGeoLocation);
-  if Item.GeoLocation <> nil then
-    LoadGeoInfo(Item.GeoLocation.Latitude, Item.GeoLocation.Longitude);
-end;
-
-function TMediaItem.Copy: TMediaItem;
-begin
-  Result := InitNewInstance;
-  Result.Assign(Self, False);
-  if Data <> nil then
-    Result.Data := Data.Clone
-  else
-    Result.Data := nil;
-end;
-
-constructor TMediaItem.Create;
-begin
-  inherited;
-  FFileNameCRC32 := 0;
-  IsImageEncrypted := False;
-  Tag := 0;
-  ID := 0;
-  FOriginalFileName := '';
-  FileName := '';
-  Comment := '';
-  Groups := '';
-  FileSize := 0;
-  Rotation := 0;
-  Rating := 0;
-  Access := 0;
-  Date := 0;
-  Time := 0;
-  IsDate := False;
-  IsTime := False;
-  Encrypted := False;
-  KeyWords := '';
-  InfoLoaded := False;
-  Include := False;
-  Links := '';
-  Selected := False;
-  Data := nil;
-  Image := nil;
-  FGeoLocation := nil;
-  HasExifHeader := False;
-end;
-
-constructor TMediaItem.CreateFromDS(DS: TDataSet);
-begin
-  InfoLoaded := True;
-  Selected := True;
-  ReadFromDS(DS);
-  Data := nil;
-  Image := nil;
-  FGeoLocation := nil;
-end;
-
-constructor TMediaItem.CreateFromFile(FileName: string);
-begin
-  Create;
-  Self.FOriginalFileName := FileName;
-  Self.FileName := FileName;
-  Self.FPath := FileName;
-  Self.Name := ExtractFileName(FileName);
-end;
-
-destructor TMediaItem.Destroy;
-begin
-  F(Data);
-  F(Image);
-  F(FGeoLocation);
-  inherited;
-end;
-
-function TMediaItem.FileExists: Boolean;
-begin
-  Result := InnerImage or FileExistsSafe(FileName);
-end;
-
-function TMediaItem.GetExistedFileName: string;
-begin
-  if FolderView then
-    Result := FileName
-  else
-    Result := FOriginalFileName;
-end;
-
-function TMediaItem.GetFileNameCRC: Cardinal;
-begin
-  if FFileNameCRC32 = 0 then
-    FFileNameCRC32 := StringCRC(AnsiLowerCase(FileName));
-  Result := FFileNameCRC32;
-end;
-
-function TMediaItem.GetHasImage: Boolean;
-begin
-  Result := (Image <> nil) and not Image.Empty;
-end;
-
-function TMediaItem.GetInnerImage: Boolean;
-begin
-  Result := FileName = '?.JPEG';
-end;
-
-function TMediaItem.InitNewInstance: TMediaItem;
-begin
-  Result := TMediaItem.Create;
-end;
-
-procedure TMediaItem.LoadGeoInfo(Latitude, Longitude: Double);
-begin
-  F(FGeoLocation);
-  FGeoLocation := TGeoLocation.Create;
-  FGeoLocation.Latitude := Latitude;
-  FGeoLocation.Longitude := Longitude;
-end;
-
-procedure TMediaItem.ReadExists;
-begin
-  if FileExistsSafe(FileName) then
-    Exists := 1
-  else
-    Exists := -1;
-end;
-
-procedure TMediaItem.ReadFromDS(DS: TDataSet);
-var
-  ThumbField: TField;
-  DA: TImageTableAdapter;
-begin
-  F(Image);
-  DA := TImageTableAdapter.Create(DS);
-  try
-    ID := DA.ID;
-    Name := DA.Name;
-    FOriginalFileName := DA.FileName;
-    if FolderView then
-      FileName := ExtractFilePath(ParamStr(0)) + FOriginalFileName
-    else
-      FileName := ProcessPath(FOriginalFileName, False);
-    KeyWords := DA.KeyWords;
-    FileSize := DA.FileSize;
-    Rotation := DA.Rotation;
-    Rating := DA.Rating;
-    Access := DA.Access;
-    Attr := DA.Attributes;
-    Comment := DA.Comment;
-    Date := DA.Date;
-    Time := DA.Time;
-    IsDate := DA.IsDate;
-    IsTime := DA.IsTime;
-    Groups := DA.Groups;
-    LongImageID := DA.LongImageID;
-    Width := DA.Width;
-    Height := DA.Height;
-
-    ThumbField := DA.Thumb;
-    Encrypted := (ThumbField <> nil) and ValidCryptBlobStreamJPG(ThumbField);
-    Include := DA.Include;
-    Links := DA.Links;
-
-  finally
-    F(DA);
-  end;
-  InfoLoaded := True;
-end;
-
-procedure TMediaItem.WriteToDS(DS: TDataSet);
-var
-  DA: TImageTableAdapter;
-begin
-  DA := TImageTableAdapter.Create(DS);
-  try
-    DA.Name := Name;
-    DA.FileName := FOriginalFileName;
-    DA.KeyWords := KeyWords;
-    DA.FileSize := FileSize;
-    DA.Rotation := Rotation;
-    DA.Rating := Rating;
-    DA.Access := Access;
-    DA.Attributes := Attr;
-    DA.Comment := Comment;
-    DA.Date := DateOf(Date);
-    DA.Time := TimeOf(Time);
-    DA.IsDate := IsDate;
-    DA.IsTime := IsTime;
-    DA.Groups := Groups;
-    DA.LongImageID := LongImageID;
-    DA.Width := Width;
-    DA.Height := Height;
-    DA.Include := Include;
-    DA.Links := Links;
-  finally
-    F(DA);
-  end;
-end;
 
 { TSearchDataExtension }
 
@@ -611,27 +314,6 @@ begin
   Self.Icon := Icon;
   Self.Description := Description;
   Self.Order := Order;
-end;
-
-{ TEventValues }
-
-procedure TEventValues.ReadFromInfo(Info: TMediaItem);
-begin
-  Self.FileName := AnsiLowerCase(Info.FileName);
-  Self.ID := Info.ID;
-  Self.Rotation := Info.Rotation;
-  Self.Rating := Info.Rating;
-  Self.Comment := Info.Comment;
-  Self.KeyWords := Info.KeyWords;
-  Self.Access := Info.Access;
-  Self.Attr := Info.Attr;
-  Self.Date := Info.Date;
-  Self.IsDate := Info.IsDate;
-  Self.IsTime := Info.IsTime;
-  Self.Time := TimeOf(Info.Time);
-  Self.Groups := Info.Groups;
-  Self.IsEncrypted := Info.Encrypted;
-  Self.Include := Info.Include;
 end;
 
 end.

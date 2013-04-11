@@ -424,7 +424,7 @@ begin
   end;
 end;
 
-function LinkType(LinkTypeN : integer) : String;
+function LinkType(LinkTypeN: Integer) : String;
 begin
   Result := TA('Unknown');
   if LinkTypeN = LINK_TYPE_ID then

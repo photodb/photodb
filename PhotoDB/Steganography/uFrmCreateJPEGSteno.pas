@@ -27,13 +27,11 @@ uses
 
   CCR.Exif,
 
-  UnitDBDeclare,
   DBCMenu,
   UnitDBFileDialogs,
   UnitDBKernel,
 
   uFrameWizardBase,
-  uDBPopupMenuInfo,
   uDBUtils,
   uMemory,
   uJpegUtils,
@@ -41,6 +39,7 @@ uses
   uConstants,
   uCryptUtils,
   uDBBaseTypes,
+  uDBEntities,
   uAssociations,
   uStenography,
   uTranslateUtils,

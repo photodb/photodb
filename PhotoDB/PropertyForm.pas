@@ -71,7 +71,6 @@ uses
   uListViewUtils,
   uDBForm,
   uInterfaces,
-  uDBPopupMenuInfo,
   uConstants,
   uShellIntegration,
   uGraphicUtils,
@@ -1105,7 +1104,7 @@ end;
 
 procedure TPropertiesForm.Searchforit1Click(Sender: TObject);
 var
-  PR: TImageDBRecordA;
+  PR: TMediaInfo;
 begin
   if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
@@ -1281,7 +1280,7 @@ end;
 
 procedure TPropertiesForm.EndAdding(Sender: TObject);
 var
-  PR : TImageDBRecordA;
+  PR : TMediaInfo;
 begin
   Adding_now := False;
   Pr := GetimageIDW(DBKernel.DBContext, FileName, False, True);
@@ -1524,7 +1523,7 @@ begin
   end;
   FFilesInfo.Assign(Data);
 
-  UpdateDataFromDB(FContext, Data);
+  FMediaRepository.UpdateMediaInfosFromDB(Data);
 
   for I := 0 to FFilesInfo.Count - 1 do
     if FFilesInfo[I].ID = 0 then
@@ -2033,7 +2032,7 @@ procedure TPropertiesForm.LinkClick(Sender: TObject);
 var
   N: Integer;
   LI: TLinksInfo;
-  TIRA: TImageDBRecordA;
+  TIRA: TMediaInfo;
   P: TPoint;
   S, DN: string;
 
@@ -2162,7 +2161,7 @@ begin
     begin
       IDMenu1.Visible := True;
       ID := StrToIntDef(LI[N].LinkValue, 0);
-      MenuInfo := GetMenuInfoByID(FContext, ID);
+      MenuInfo := FMediaRepository.GetMenuItemsByID(ID);
       try
         MenuInfo.IsPlusMenu := False;
         MenuInfo.IsListItem := False;
@@ -2178,7 +2177,7 @@ begin
     if LI[N].Tag and LINK_TAG_VALUE_VAR_NOT_SELECT = 0 then
     begin
       IDMenu1.Visible := True;
-      MenuInfo := GetMenuInfoByStrTh(FContext, DeCodeExtID(LI[N].LinkValue));
+      MenuInfo := FMediaRepository.GetMenuInfosByUniqId(DeCodeExtID(LI[N].LinkValue));
       try
         MenuInfo.IsPlusMenu := False;
         MenuInfo.IsListItem := False;
@@ -2253,7 +2252,7 @@ procedure TPropertiesForm.OpenFolder1Click(Sender: TObject);
 var
   N: Integer;
   FN, DN: string;
-  TIRA: TImageDBRecordA;
+  TIRA: TMediaInfo;
 begin
   N := PmLinks.Tag;
   DN := '';
