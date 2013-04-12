@@ -17,14 +17,14 @@ uses
   CCR.Exif.XMPUtils,
 
   GraphicEx,
-  RAWImage,
   GraphicCrypt,
   UnitDBDeclare,
 
   uMemory,
-  uTiffImage,
   uErrors,
   uConstants,
+  uTiffImage,
+  uRAWImage,
   uAnimatedJPEG,
   uSettings,
   uAssociations,
@@ -756,7 +756,7 @@ begin
   try
     Result := DB_IMAGE_ROTATE_0;
     try
-      if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
+      if IsRAWSupport and IsRAWImageFile(FileName) then
       begin
         //image will be rotated at load;
         Exit;

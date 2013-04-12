@@ -18,7 +18,6 @@ uses
 
   GraphicEx,
   GraphicCrypt,
-  RAWImage,
   UnitDBDeclare,
 
   uTiffImage,
@@ -32,6 +31,7 @@ uses
   uGraphicUtils,
   uPortableDeviceUtils,
   uSettings,
+  uRAWImage,
   uBitmapUtils,
   uJpegUtils,
   uTranslate,

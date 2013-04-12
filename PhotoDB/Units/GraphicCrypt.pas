@@ -22,12 +22,12 @@ uses
   DECUtil,
   DECCipher,
   GIFImage,
-  RAWImage,
   GraphicEx,
 
   uAssociations,
   uShellIntegration,
   uTiffImage,
+  uRAWImage,
   uConstants,
   uTranslate,
   uStrongCrypt,

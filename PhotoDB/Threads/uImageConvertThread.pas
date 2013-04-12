@@ -23,7 +23,6 @@ uses
   UnitDBDeclare,
   GDIPlusRotate,
   GIFImage,
-  RAWImage,
 
   uTiffImage,
   uLogger,

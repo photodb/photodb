@@ -24,7 +24,6 @@ uses
   GraphicCrypt,
   UnitLinksSupport,
   ProgressActionUnit,
-  RAWImage,
   UnitDBCommonGraphics,
 
   uDBConnection,
@@ -44,6 +43,7 @@ uses
   uDBBaseTypes,
   uMemory,
   uJpegUtils,
+  uRAWImage,
   uAssociations,
   uDBImageUtils,
   uCDMappingTypes,
@@ -350,25 +350,6 @@ begin
     end;
   finally
     F(Dirs);
-  end;
-end;
-
-procedure ExecuteQuery(Context: IDBContext; SQL: string);
-var
-  DS: TDataSet;
-begin
-  DS := Context.CreateQuery;
-  try
-    SetSQL(DS, SQL);
-    try
-      ExecSQL(DS);
-      EventLog('::ExecuteSQLExecOnCurrentDB()/ExecSQL OK [' + SQL + ']');
-    except
-      on E: Exception do
-        EventLog(':ExecuteSQLExecOnCurrentDB()/ExecSQL throw exception: ' + E.message);
-    end;
-  finally
-    FreeDS(DS);
   end;
 end;
 

@@ -9,7 +9,6 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.PngImage,
 
-  RAWImage,
   GraphicCrypt,
 
   uTime,
@@ -25,6 +24,7 @@ uses
   uPortableDeviceUtils,
   uBitmapUtils,
   uGraphicUtils,
+  uRAWImage,
   uPNGUtils,
   uJpegUtils,
   uExifInfo,

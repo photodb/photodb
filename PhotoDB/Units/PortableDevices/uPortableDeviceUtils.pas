@@ -6,11 +6,12 @@ uses
   StrUtils,
   Graphics,
   Classes,
+
   uPortableClasses,
   uPortableDeviceManager,
   uConstants,
-  RAWImage,
-  uMemory;
+  uMemory,
+  uRAWImage;
 
 type
   TPortableGraphicHelper = class helper for TGraphic

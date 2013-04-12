@@ -139,7 +139,7 @@
         </DelphiCompile>
         <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
-        <DCCReference Include="Units\uTime.pas"/>
+        <DCCReference Include="Units\System\uTime.pas"/>
         <DCCReference Include="Threads\uSplashThread.pas"/>
         <DCCReference Include="Threads\uLanguageLoadThread.pas"/>
         <DCCReference Include="Threads\uLoadStyleThread.pas"/>
@@ -278,7 +278,7 @@
         <DCCReference Include="External\Formats\GraphicEx\GraphicCompression.pas"/>
         <DCCReference Include="External\Formats\GraphicEx\GraphicStrings.pas"/>
         <DCCReference Include="External\Formats\GraphicEx\MZLib.pas"/>
-        <DCCReference Include="External\Formats\DelphiDcraw\RAWImage.pas"/>
+        <DCCReference Include="Units\Formats\uRAWImage.pas"/>
         <DCCReference Include="External\Formats\GIFImage.pas"/>
         <DCCReference Include="ImageEditor\ColorToolUnit.pas"/>
         <DCCReference Include="ImageEditor\CropToolUnit.pas"/>
@@ -337,7 +337,7 @@
         <DCCReference Include="Units\uThreadForm.pas"/>
         <DCCReference Include="Threads\uThreadEx.pas"/>
         <DCCReference Include="Threads\uAssociatedIcons.pas"/>
-        <DCCReference Include="Units\uLogger.pas"/>
+        <DCCReference Include="Units\System\uLogger.pas"/>
         <DCCReference Include="Units\uConstants.pas"/>
         <DCCReference Include="Units\Utils\uStringUtils.pas"/>
         <DCCReference Include="Threads\UnitLoadDBKernelIconsThread.pas"/>
@@ -345,7 +345,7 @@
         <DCCReference Include="Units\uFastLoad.pas"/>
         <DCCReference Include="Units\uResources.pas"/>
         <DCCReference Include="Threads\uExplorerThreadPool.pas"/>
-        <DCCReference Include="Units\uGOM.pas"/>
+        <DCCReference Include="Units\System\uGOM.pas"/>
         <DCCReference Include="Units\uListViewUtils.pas"/>
         <DCCReference Include="External\Formats\FreeImage\FreeBitmap.pas"/>
         <DCCReference Include="External\Formats\FreeImage\FreeImage.pas"/>
@@ -353,7 +353,7 @@
         <DCCReference Include="Units\uDBDrawing.pas"/>
         <DCCReference Include="Units\uList64.pas"/>
         <DCCReference Include="Units\uW7TaskBar.pas"/>
-        <DCCReference Include="Units\uMath.pas"/>
+        <DCCReference Include="Units\System\uMath.pas"/>
         <DCCReference Include="External\Crypt\DECv5.2\DECCipher.pas"/>
         <DCCReference Include="External\Crypt\DECv5.2\DECData.pas"/>
         <DCCReference Include="External\Crypt\DECv5.2\DECFmt.pas"/>
@@ -361,7 +361,7 @@
         <DCCReference Include="External\Crypt\DECv5.2\DECRandom.pas"/>
         <DCCReference Include="External\Crypt\DECv5.2\DECUtil.pas"/>
         <DCCReference Include="Units\uStrongCrypt.pas"/>
-        <DCCReference Include="Units\uMemory.pas"/>
+        <DCCReference Include="Units\System\uMemory.pas"/>
         <DCCReference Include="Units\uDBForm.pas"/>
         <DCCReference Include="Units\uTranslate.pas"/>
         <DCCReference Include="Threads\uImageConvertThread.pas"/>
@@ -393,7 +393,7 @@
         <DCCReference Include="Units\uDBTypes.pas"/>
         <DCCReference Include="Units\Utils\uActivationUtils.pas"/>
         <DCCReference Include="Units\uDBFileTypes.pas"/>
-        <DCCReference Include="Units\uRuntime.pas"/>
+        <DCCReference Include="Units\System\uRuntime.pas"/>
         <DCCReference Include="Units\uDBGraphicTypes.pas"/>
         <DCCReference Include="Units\uStenography.pas"/>
         <DCCReference Include="Units\Utils\uInternetUtils.pas"/>
@@ -434,10 +434,10 @@
             <Form>FrmConvertationSettings</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
-        <DCCReference Include="Units\uInterfaces.pas"/>
-        <DCCReference Include="Units\uDBAdapter.pas"/>
+        <DCCReference Include="Units\Interfaces\uInterfaces.pas"/>
+        <DCCReference Include="Units\Database\uDBAdapter.pas"/>
         <DCCReference Include="Units\uCDMappingTypes.pas"/>
-        <DCCReference Include="Units\uMemoryEx.pas"/>
+        <DCCReference Include="Units\System\uMemoryEx.pas"/>
         <DCCReference Include="Units\uDBShellUtils.pas"/>
         <DCCReference Include="Units\uDBImageUtils.pas"/>
         <DCCReference Include="uFormSteganography.pas">
@@ -456,10 +456,10 @@
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Threads\uStenoLoadImageThread.pas"/>
-        <DCCReference Include="Units\uIME.pas"/>
-        <DCCReference Include="Units\uExifUtils.pas"/>
+        <DCCReference Include="Units\System\uIME.pas"/>
+        <DCCReference Include="Units\Utils\uExifUtils.pas"/>
         <DCCReference Include="Threads\uExifPatchThread.pas"/>
-        <DCCReference Include="Units\uTiffImage.pas"/>
+        <DCCReference Include="Units\Formats\uTiffImage.pas"/>
         <DCCReference Include="Units\Utils\uJpegUtils.pas"/>
         <DCCReference Include="Units\Utils\uBitmapUtils.pas"/>
         <DCCReference Include="Units\Utils\uIconUtils.pas"/>
@@ -534,8 +534,7 @@
         </DCCReference>
         <DCCReference Include="Units\Formats\uAnimatedJPEG.pas"/>
         <DCCReference Include="Units\uBufferedFileStream.pas"/>
-        <DCCReference Include="Units\uInterfaceManager.pas"/>
-        <DCCReference Include="Units\uUpTime.pas"/>
+        <DCCReference Include="Units\System\uUpTime.pas"/>
         <DCCReference Include="Units\uGeoLocation.pas"/>
         <DCCReference Include="Units\uBrowserEmbedDraw.pas"/>
         <DCCReference Include="Units\WebJS\IntfDocHostUIHandler.pas"/>
@@ -588,7 +587,7 @@
         <DCCReference Include="Units\Formats\uFreeImageIO.pas"/>
         <DCCReference Include="Units\Providers\uExplorerProvidersInit.pas"/>
         <DCCReference Include="Units\uExifInfo.pas"/>
-        <DCCReference Include="Units\uFormInterfaces.pas"/>
+        <DCCReference Include="Units\Interfaces\uFormInterfaces.pas"/>
         <DCCReference Include="Units\Formats\uFreeImageImage.pas"/>
         <DCCReference Include="Units\PDB.uVCLRewriters.pas"/>
         <DCCReference Include="Units\uDBInfoEditorUtils.pas"/>
@@ -608,7 +607,7 @@
         <DCCReference Include="Units\uSearchQuery.pas"/>
         <DCCReference Include="Units\Controls\uMonthCalendar.pas"/>
         <DCCReference Include="Units\Controls\uEXIFDisplayControl.pas"/>
-        <DCCReference Include="Units\uProgramStatInfo.pas"/>
+        <DCCReference Include="Units\System\uProgramStatInfo.pas"/>
         <DCCReference Include="Units\Utils\uImageListUtils.pas"/>
         <DCCReference Include="Units\uSysInfo.pas"/>
         <DCCReference Include="Units\uCommandLine.pas"/>

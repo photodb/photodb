@@ -3,11 +3,10 @@ unit UnitViewerThread;
 interface
 
 uses
-  uLogger,
   Windows,
+  ActiveX,
   Classes,
   Graphics,
-  GraphicCrypt,
   SysUtils,
   Forms,
   JPEG,
@@ -17,12 +16,13 @@ uses
   Dmitry.Utils.Files,
 
   GIFImage,
-  ActiveX,
-  RAWImage,
+  GraphicCrypt,
 
   uConstants,
   uMemory,
+  uLogger,
   uPNGUtils,
+  uRAWImage,
   uDBThread,
   uGraphicUtils,
   uViewerTypes,

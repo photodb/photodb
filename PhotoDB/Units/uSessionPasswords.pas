@@ -92,7 +92,7 @@ end;
 
 procedure TSessionPasswords.AddForSession(Pass: String);
 var
-  I : integer;
+  I: Integer;
 begin
   FSync.Enter;
   try

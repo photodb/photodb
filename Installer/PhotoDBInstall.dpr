@@ -15,8 +15,8 @@ uses
   ZLib,
   uUnpackUtils in 'uUnpackUtils.pas',
   uUserUtils in 'uUserUtils.pas',
-  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
-  uMemory in '..\PhotoDB\Units\uMemory.pas',
+  uAppUtils in '..\PhotoDB\Units\Utils\uAppUtils.pas',
+  uMemory in '..\PhotoDB\Units\System\uMemory.pas',
   uIsAdmin in 'uIsAdmin.pas';
 
 {$R PhotoDBInstall.res}

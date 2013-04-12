@@ -13,7 +13,6 @@ uses
 
   Dmitry.Graphics.Utils,
 
-  RAWImage,
   GraphicCrypt,
 
   uGraphicUtils,
@@ -22,6 +21,7 @@ uses
   uConstants,
   uDBThread,
   uAssociations,
+  uRAWImage,
   uJpegUtils,
   uBitmapUtils,
   uAnimatedJPEG,

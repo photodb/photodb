@@ -16,7 +16,7 @@ uses
   {$IFDEF PHOTODB}
   GraphicEx,
   GifImage,
-  RAWImage,
+  uRAWImage,
   uTiffImage,
   uAnimatedJPEG,
   uFreeImageImage,

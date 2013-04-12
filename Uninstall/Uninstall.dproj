@@ -86,9 +86,9 @@
         </DCCReference>
         <DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uLogger.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uLogger.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uMemory.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uFormUtils.pas"/>
         <DCCReference Include="..\Installer\uInstallTypes.pas"/>
         <DCCReference Include="..\Installer\uInstallScope.pas"/>
@@ -113,26 +113,26 @@
         <DCCReference Include="..\Installer\uAssociationActions.pas"/>
         <DCCReference Include="..\Installer\uUpdatingWindowsActions.pas"/>
         <DCCReference Include="uSelfDeleteAction.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uRuntime.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uGOM.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uRuntime.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uGOM.pas"/>
         <DCCReference Include="uUninstallProcess.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uStringUtils.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uActivationUtils.pas"/>
         <DCCReference Include="..\Installer\uIsAdmin.pas"/>
         <DCCReference Include="..\Installer\uInstallUtils.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uAppUtils.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uIME.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uIME.pas"/>
         <DCCReference Include="..\Installer\uUserUtils.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uConfiguration.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uTime.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uTime.pas"/>
         <DCCReference Include="..\PhotoDB\Units\MSXML2_TLB.pas"/>
         <DCCReference Include="..\Installer\uStillImage.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uSettings.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uUpTime.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uUpTime.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uXMLUtils.pas"/>
         <DCCReference Include="uUninstallCurrentUser.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uThemesUtils.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uProgramStatInfo.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uProgramStatInfo.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

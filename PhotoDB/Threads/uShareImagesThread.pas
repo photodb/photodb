@@ -16,9 +16,6 @@ uses
 
   CCR.Exif,
 
-  UnitDBDeclare,
-  RAWImage,
-
   uConstants,
   uRuntime,
   uMemory,

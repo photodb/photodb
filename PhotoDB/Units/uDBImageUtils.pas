@@ -7,12 +7,12 @@ uses
   Vcl.Graphics,
 
   GraphicCrypt,
-  RAWImage,
 
   uMemory,
   uSessionPasswords,
   uAssociations,
   uJpegUtils,
+  uRAWImage,
   uPortableDeviceUtils,
   uExifUtils,
   uBitmapUtils,

@@ -16,9 +16,9 @@ uses
   Dmitry.Graphics.Types,
   Dmitry.Utils.Files,
 
-  RAWImage,
   GIFImage,
-
+          
+  uRAWImage,
   uBitmapUtils,
   uJpegUtils,
   uPngUtils,

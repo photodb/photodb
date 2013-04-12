@@ -13,14 +13,12 @@ uses
 
   CCR.Exif,
 
-  RAWImage,
-
-  uThreadForm,
   uMemory,
+  uLogger,
+  uThreadForm,
   uExplorerPortableDeviceProvider,
   uAssociations,
   uImportPicturesUtils,
-  uLogger,
   uThreadEx;
 
 type

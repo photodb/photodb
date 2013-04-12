@@ -1,4 +1,4 @@
-unit RAWImage;
+unit uRAWImage;
 
 interface
 
@@ -42,7 +42,6 @@ type
     constructor Create; override;
     procedure LoadFromStream(Stream: TStream); override;
     procedure LoadFromFile(const Filename: string); override;
-    function LoadThumbnailFromFile(const FileName: string; Width, Height: Integer) : boolean;
     procedure Assign(Source: TPersistent); override;
     property IsPreview: Boolean read FIsPreview write SetIsPreview;
     property GraphicWidth: Integer read FWidth;
@@ -232,39 +231,6 @@ begin
     PD := ScanLine[I];
     for J := 0 to W - 1 do
       PD[J] := PS[J];
-  end;
-end;
-
-function TRAWImage.LoadThumbnailFromFile(const FileName: string; Width, Height: Integer): Boolean;
-var
-  RawBitmap: TFreeWinBitmap;
-  RawThumb: TFreeWinBitmap;
-  W, H: Integer;
-begin
-  Result := True;
-  FIsPreview := True;
-
-  RawBitmap := TFreeWinBitmap.Create;
-  try
-    RawBitmap.LoadU(FileName, RAW_PREVIEW);
-    RawThumb := TFreeWinBitmap.Create;
-    try
-      FWidth := RawBitmap.GetWidth;
-      FHeight := RawBitmap.GetHeight;
-      W := FWidth;
-      H := FHeight;
-      ProportionalSize(Width, Height, W, H);
-      RawBitmap.MakeThumbnail(W, H, RawThumb);
-      LoadFromFreeImage(RawThumb);
-    finally
-      F(RawThumb);
-    end;
-    RawBitmap.Clear;
-    RawBitmap.LoadU(FileName, FIF_LOAD_NOPIXELS);
-    FRealWidth := FreeImage_GetWidth(RawBitmap.Dib);
-    FRealHeight := FreeImage_GetHeight(RawBitmap.Dib);
-  finally
-    F(RawBitmap);
   end;
 end;
 

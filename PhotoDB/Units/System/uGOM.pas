@@ -17,7 +17,6 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure FreeObj(Obj: TObject);
     procedure AddObj(Obj: TObject);
     procedure RemoveObj(Obj: TObject);
     function IsObj(Obj: TObject): Boolean;
@@ -68,17 +67,6 @@ begin
   F(FObjects);
   F(FSync);
   inherited;
-end;
-
-procedure TManagerObjects.FreeObj(Obj: TObject);
-begin
-  FSync.Enter;
-  try
-    RemoveObj(Obj);
-    F(Obj);
-  finally
-    FSync.Leave;
-  end;
 end;
 
 function TManagerObjects.IsObj(Obj: TObject): Boolean;

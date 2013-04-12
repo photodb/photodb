@@ -23,12 +23,12 @@ uses
 
   GIFImage,
   GraphicEx,
-  RAWImage,
   GraphicCrypt,
 
   uConstants,
   uMemory,
   uRuntime,
+  uRAWImage,
   uAnimatedJPEG,
   uJpegUtils,
   uBitmapUtils,

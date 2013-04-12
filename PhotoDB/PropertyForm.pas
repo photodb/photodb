@@ -44,7 +44,6 @@ uses
   Effects,
   GraphicCrypt,
   UnitLinksSupport,
-  RAWImage,
 
   DropTarget,
   DropSource,
@@ -60,6 +59,7 @@ uses
 
   uTranslateUtils,
   uGUIDUtils,
+  uRAWImage,
   uRawExif,
   uLogger,
   uBitmapUtils,
@@ -1161,7 +1161,7 @@ begin
   FDateTimeInFileExists := FFileDate <> 0;
   if not FDateTimeInFileExists then
   begin
-    if RAWImage.IsRAWSupport and IsRAWImageFile(FileName) then
+    if IsRAWSupport and IsRAWImageFile(FileName) then
     begin
       RAWExif := TRAWExif.Create;
       try

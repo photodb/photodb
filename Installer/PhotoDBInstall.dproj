@@ -100,8 +100,8 @@
         </DelphiCompile>
         <DCCReference Include="uUnpackUtils.pas"/>
         <DCCReference Include="uUserUtils.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uAppUtils.pas"/>
-        <DCCReference Include="..\PhotoDB\Units\uMemory.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\Utils\uAppUtils.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uMemory.pas"/>
         <DCCReference Include="uIsAdmin.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
