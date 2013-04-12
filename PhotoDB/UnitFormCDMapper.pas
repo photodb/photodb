@@ -20,15 +20,15 @@ uses
   Data.DB,
 
   UnitCDMappingSupport,
-  CommonDBSupport,
-  UnitDBKernel,
 
   uLogger,
   uDBForm,
   uMemory,
   uDBIcons,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uShellIntegration,
   uConstants,
   uFormInterfaces,
@@ -99,9 +99,9 @@ end;
 
 procedure TFormCDMapper.FormCreate(Sender: TObject);
 var
-  Icon : TIcon;
+  Icon: TIcon;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   PopupMenuCDActions.Images := Icons.ImageList;
   Icon := TIcon.Create;
   try

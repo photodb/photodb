@@ -82,10 +82,10 @@ uses
   CmpUnit,
   UnitCDMappingSupport,
   ShellContextMenu,
-  CommonDBSupport,
   UnitRefreshDBRecordsThread,
   UnitCryptingImagesThread,
-  UnitDBKernel,
+  UnitDBDeclare,
+  UnitDBFileDialogs,
 
   wfsU,
   uExplorerFolderImages,
@@ -96,8 +96,6 @@ uses
   uGUIDUtils,
   uPrivateHelper,
   uLockedFileNotifications,
-  UnitDBDeclare,
-  UnitDBFileDialogs,
   uFormListView,
   uIconUtils,
   uBitmapUtils,
@@ -160,8 +158,10 @@ uses
   uThreadTask,
   uInterfaces,
   uInternetUtils,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uDatabaseDirectoriesUpdater,
   uPathProvideTreeView,
   uDBInfoEditorUtils,
@@ -3042,7 +3042,7 @@ begin
   DBIndex := TMenuItem(Sender).Tag;
 
   if FDatabases.Count > DBIndex then
-    DBKernel.SelectDB(Self, FDatabases[DBIndex].Path);
+    DBManager.SelectDB(Self, FDatabases[DBIndex].Path);
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -7990,7 +7990,7 @@ begin
   Options.Password := Password;
   Options.EncryptOptions := CRYPT_OPTIONS_NORMAL;
 
-  TCryptingImagesThread.Create(Owner, DBKernel.DBContext, Options);
+  TCryptingImagesThread.Create(Owner, DBManager.DBContext, Options);
 end;
 
 procedure TExplorerForm.ResetPassword1Click(Sender: TObject);
@@ -12663,7 +12663,7 @@ end;
 
 procedure TExplorerForm.LoadContext;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FPeopleRepository := FContext.People;
   FGroupsRepository := FContext.Groups;
   FMediaRepository := FContext.Media;
@@ -12751,12 +12751,10 @@ end;
 
 procedure TExplorerForm.LoadDefaultCollectionPictureSize;
 var
-  Context: IDBContext;
   SettingsRepository: ISettingsRepository;
   Settings: TSettings;
 begin
-  Context := DBKernel.DBContext;
-  SettingsRepository := Context.Settings;
+  SettingsRepository := FContext.Settings;
 
   Settings := SettingsRepository.Get;
   try

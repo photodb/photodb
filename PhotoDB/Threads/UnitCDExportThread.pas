@@ -15,8 +15,6 @@ uses
   Dmitry.Utils.Files,
 
   UnitCDMappingSupport,
-  UnitDBKernel,
-  CommonDBSupport,
 
   uLogger,
   uConstants,
@@ -26,9 +24,11 @@ uses
   uDBThread,
   uMobileUtils,
   uMemory,
-  uDBEntities,
   uDBUtils,
+  uDBConnection,
   uDBContext,
+  uDBManager,
+  uDBEntities,
   uCDMappingTypes,
   uTranslate,
   uResourceUtils,
@@ -243,7 +243,7 @@ begin
           StrParam := Directory;
           Synchronize(CreatePortableDB);
           DestinationCollectionPath := Directory + Mapping.CDLabel + '.photodb';
-          if DBKernel.CreateDBbyName(DestinationCollectionPath) = 0 then
+          if TDBManager.CreateDBbyName(DestinationCollectionPath) = 0 then
           begin
             FDestination := TDBContext.Create(DestinationCollectionPath);
 

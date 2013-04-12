@@ -26,7 +26,6 @@ uses
   Dmitry.Controls.WebLink,
 
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -36,6 +35,7 @@ uses
   uShellIntegration,
   uDBBaseTypes,
   uDBUtils,
+  uDBManager,
   uSettings,
   uCollectionEvents;
 
@@ -247,7 +247,7 @@ begin
     try
       OldFile := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[0, I];
       NewFile := ExtractFilePath(FFiles[I - 1]) + ValueListEditor1.Cells[1, I];
-      RenamefileWithDB(DBKernel.DBContext, KernelEventCallBack, OldFile, NewFile, FIDS[I - 1], False);
+      RenamefileWithDB(DBManager.DBContext, KernelEventCallBack, OldFile, NewFile, FIDS[I - 1], False);
     except
       on E: Exception do
         MessageBoxDB(Handle, Format(L('An error occurred while renaming file "%s" to "%s"! Error message: %s'), [OldFile, NewFile, E.message]),

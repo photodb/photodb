@@ -1,4 +1,4 @@
-unit UnitDBKernel;
+unit uDBManager;
 
 interface
 
@@ -17,7 +17,6 @@ uses
   Vcl.Imaging.Jpeg,
 
   UnitDBDeclare,
-  CommonDBSupport,
   UnitINI,
 
   Dmitry.CRC32,
@@ -26,7 +25,6 @@ uses
 
   uMemory,
   uShellIntegration,
-  uDBScheme,
   uLogger,
   uConstants,
   uTime,
@@ -36,27 +34,28 @@ uses
   uAppUtils,
   uTranslate,
   uDBForm,
+  uDBConnection,
+  uDBScheme,
+  uDBContext,
   uDBEntities,
   uRuntime,
   uStringUtils,
   uSettings,
   uProgramStatInfo,
-  uVCLHelpers,
-  uDBContext;
+  uVCLHelpers;
 
 type
-  TDBKernel = class(TObject)
+  TDBManager = class(TObject)
   private
     { Private declarations }
     FDBContext: IDBContext;
-    procedure HandleError(E: Exception);
+    class procedure HandleError(E: Exception);
   public
     { Public declarations }
     constructor Create;
     destructor Destroy; override;
 
-
-    function CreateDBbyName(FileName: string): Integer;
+    class function CreateDBbyName(FileName: string): Integer;
     procedure SetDataBase(DatabaseFileName: string);
     function LoadDefaultCollection: Boolean;
     function CreateSampleDefaultCollection: string;
@@ -68,19 +67,19 @@ type
   end;
 
 var
-  DBKernel: TDBKernel = nil;
+  DBManager: TDBManager = nil;
 
 implementation
 
 { TDBKernel }
 
-constructor TDBKernel.Create;
+constructor TDBManager.Create;
 begin
   inherited;
   FDBContext := nil;
 end;
 
-function TDBKernel.CreateDBbyName(FileName: string): Integer;
+class function TDBManager.CreateDBbyName(FileName: string): Integer;
 begin
   Result := 0;
   CreateDirA(ExtractFileDir(FileName));
@@ -108,14 +107,14 @@ begin
   ProgramStatistics.DBUsed;
 end;
 
-class procedure TDBKernel.CreateExampleDB(FileName: string);
+class procedure TDBManager.CreateExampleDB(FileName: string);
 var
   NewGroup: TGroup;
   ImagesDir: string;
   DBContext: IDBContext;
   GroupsRepository: IGroupsRepository;
 begin
-  DBKernel.CreateDBbyName(FileName);
+  CreateDBbyName(FileName);
 
   DBContext := TDBContext.Create(FileName);
   GroupsRepository := DBContext.Groups;
@@ -188,13 +187,13 @@ begin
   end;
 end;
 
-destructor TDBKernel.Destroy;
+destructor TDBManager.Destroy;
 begin
   FDBContext := nil;
   inherited;
 end;
 
-function TDBKernel.SelectDB(Caller: TDBForm; DB: string): Boolean;
+function TDBManager.SelectDB(Caller: TDBForm; DB: string): Boolean;
 var
   EventInfo: TEventValues;
 begin
@@ -203,7 +202,7 @@ begin
   begin
     if TDBScheme.IsValidCollectionFile(DB) then
     begin
-      DBKernel.SetDataBase(DB);
+      SetDataBase(DB);
       CollectionEvents.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
       Result := True;
       Exit;
@@ -211,7 +210,7 @@ begin
   end;
 end;
 
-procedure TDBKernel.SetDataBase(DatabaseFileName: string);
+procedure TDBManager.SetDataBase(DatabaseFileName: string);
 var
   Reg: TBDRegistry;
 begin
@@ -229,7 +228,7 @@ begin
   end;
 end;
 
-function TDBKernel.LoadDefaultCollection: Boolean;
+function TDBManager.LoadDefaultCollection: Boolean;
 var
   CollectionFileName: string;
 begin
@@ -251,18 +250,18 @@ begin
   Result := FDBContext.IsValid;
 end;
 
-function TDBKernel.CreateSampleDefaultCollection: string;
+function TDBManager.CreateSampleDefaultCollection: string;
 begin
   //if program was uninstalled with registered databases - restore database or create new database
   Result := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
   if not FileExistsSafe(Result) then
     CreateExampleDB(Result);
 
-  //TODOL DBKernel.AddDB(TA('My collection'), Result, Application.ExeName + ',0');
-  DBKernel.SetDataBase(Result);
+  //TODO: DBKernel.AddDB(TA('My collection'), Result, Application.ExeName + ',0');
+  SetDataBase(Result);
 end;
 
-procedure TDBKernel.HandleError(E: Exception);
+class procedure TDBManager.HandleError(E: Exception);
 begin
   TThread.Synchronize(nil,
     procedure
@@ -276,6 +275,6 @@ end;
 
 initialization
 finalization
-  F(DBKernel);
+  F(DBManager);
 
 end.

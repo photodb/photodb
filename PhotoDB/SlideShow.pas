@@ -47,7 +47,6 @@ uses
   ToolWin,
   GraphicCrypt,
   FormManegerUnit,
-  UnitDBKernel,
   DBCMenu,
   ShellContextMenu,
   GIFImage,
@@ -90,8 +89,10 @@ uses
   uShellNamespaceUtils,
   uThemesUtils,
   uDBIcons,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uAnimationHelper,
   uImageZoomHelper,
   uPhotoShelf,
@@ -484,7 +485,6 @@ uses
   UnitViewerThread,
   ImEditor,
   PrintMainForm,
-  CommonDBSupport,
   UnitSlideShowScanDirectoryThread,
   UnitSlideShowUpdateInfoThread,
   uFormCreatePerson,
@@ -620,7 +620,7 @@ end;
 
 procedure TViewer.LoadContext;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FSettingsRepository := FContext.Settings;
   FPeopleRepository := FContext.People;
   FMediaRepository := FContext.Media;
@@ -1486,9 +1486,6 @@ var
   I: Integer;
   OldHoverFace: TFaceDetectionResultItem;
   FaceRect: TRect;
-
-  Context: IDBContext;
-  SettingsRepository: ISettingsRepository;
   Settings: TSettings;
 begin
   StartPoint := Point(X, Y);

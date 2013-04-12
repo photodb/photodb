@@ -29,7 +29,6 @@ uses
 
   DBCMenu,
   UnitDBFileDialogs,
-  UnitDBKernel,
 
   uFrameWizardBase,
   uDBUtils,
@@ -40,6 +39,7 @@ uses
   uCryptUtils,
   uDBBaseTypes,
   uDBEntities,
+  uDBManager,
   uAssociations,
   uStenography,
   uTranslateUtils,
@@ -258,7 +258,7 @@ begin
   Info := TMediaItemCollection.Create;
   try
     Rec := TMediaItem.CreateFromFile(ImageFileName);
-    uDBUtils.GetInfoByFileNameA(DBKernel.DBContext, ImageFileName, False, Rec);
+    uDBUtils.GetInfoByFileNameA(DBManager.DBContext, ImageFileName, False, Rec);
     Rec.Selected := True;
 
     Info.IsPlusMenu := False;

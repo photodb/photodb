@@ -25,9 +25,6 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.Controls.SaveWindowPos,
 
-  UnitDBKernel,
-  UnitDBDeclare,
-
   uConstants,
   uThreadForm,
   uThreadTask,
@@ -38,6 +35,7 @@ uses
   uFormInterfaces,
   uDBEntities,
   uDBContext,
+  uDBManager,
   uGraphicUtils;
 
 type
@@ -253,7 +251,7 @@ end;
 
 procedure TFormFindPerson.FormCreate(Sender: TObject);
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FPeopleRepository := FContext.People;
 
   FInfo := nil;

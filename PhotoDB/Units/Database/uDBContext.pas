@@ -9,12 +9,12 @@ uses
   Data.DB,
   Dmitry.CRC32,
 
-  CommonDBSupport,
   UnitINI,
 
   uConstants,
   uDBForm,
   uSettings,
+  uDBConnection,
   uDBClasses,
   uDBScheme,
   uDBEntities;

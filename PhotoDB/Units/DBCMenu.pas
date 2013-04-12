@@ -24,7 +24,6 @@ uses
   Dmitry.Utils.Files,
   Dmitry.PathProviders,
 
-  CommonDBSupport,
   ProgressActionUnit,
   PrintMainForm,
   ShellContextMenu,
@@ -35,7 +34,6 @@ uses
   UnitDBDeclare,
   UnitDBFileDialogs,
   CmpUnit,
-  UnitDBKernel,
 
   uRuntime,
   uMemoryEx,
@@ -56,8 +54,10 @@ uses
   uDBBaseTypes,
   uDBForm,
   uDBUtils,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uDBAdapter,
   uPortableDeviceUtils,
   uShellNamespaceUtils,
@@ -523,7 +523,7 @@ var
   Context: IDBContext;
   MediaRepository: IMediaRepository;
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   MediaRepository := Context.Media;
 
   FD := DBOpenPictureDialog.Create;
@@ -815,7 +815,7 @@ var
   EventInfo: TEventValues;
   Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
 
   SetLength(ArDates, 0);
   SetLength(ArIsDates, 0);
@@ -841,7 +841,6 @@ begin
 
   if Changed and not CheckDBReadOnly then
   begin
-    Context := DBKernel.DBContext;
     FQuery := Context.CreateQuery;
     try
    // [BEGIN] Date Support
@@ -965,7 +964,7 @@ begin
   if ID_OK = MessageBoxDB(0, TA('Do you really want ot delete this info from DB?', DBMenuID),
     TA('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
         if Finfo[I].Attr = Db_attr_duplicate then
@@ -1033,7 +1032,7 @@ begin
   if ID_OK = MessageBoxDB(0, L('Do you really want to delete this info from collection?'), L('Confirm'),
     TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     FQuery := Context.CreateQuery;
     SQL_ := 'UPDATE $DB$ SET Attr=' + Inttostr(Db_attr_not_exists) + ' WHERE ID in (';
@@ -1084,7 +1083,7 @@ begin
   if IdOk = MessageBoxDB(0, L('Do you really want to delete this info from collection?'),
     L('Confirm'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
   begin
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     FQuery := Context.CreateQuery;
     try
@@ -1134,7 +1133,7 @@ begin
       CollectionEvents.DoIDEvent(FOwner, FInfo[FInfo.Position].ID, [EventID_Param_Image], EventInfo);
   end else
   begin
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
     MediaRepository := Context.Media;
 
     Query := Context.CreateQuery;
@@ -1226,7 +1225,7 @@ var
   GroupsRepository: IGroupsRepository;
 begin
   Result := DB_IC_GROUPS;
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   GroupsRepository := Context.Groups;
 
   FGroup := GroupsRepository.GetByCode(GroupCode, True);
@@ -1279,7 +1278,7 @@ var
   IDs: string;
   Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
 
   FBusy := True;
   try
@@ -1467,7 +1466,7 @@ begin
   if CheckDBReadOnly then
     Exit;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   MediaRepository := Context.Media;
 
   FBusy := True;
@@ -1623,7 +1622,7 @@ begin
   if CheckDBReadOnly then
     Exit;
   Options.Info := FInfo;
-  TRefreshDBRecordsThread.Create(DBKernel.DBContext, FOwner, Options);
+  TRefreshDBRecordsThread.Create(DBManager.DBContext, FOwner, Options);
 end;
 
 procedure TDBPopupMenu.RefreshThumItemPopUpMenu(Sender: TObject);
@@ -1696,7 +1695,7 @@ begin
   Str := (Sender as TMenuItem).Caption.Replace('&', '');
   NewRating := StrToInt(Str);
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
 
   FQuery := Context.CreateQuery;
   try
@@ -1741,7 +1740,7 @@ begin
   if CheckDBReadOnly then
     Exit;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   MediaRepository := Context.Media;
 
   NewRotate := (Sender as Tmenuitem).Tag;

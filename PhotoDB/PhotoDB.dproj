@@ -307,7 +307,7 @@
         <DCCReference Include="ImageEditor\OptimizeImageUnit.pas"/>
         <DCCReference Include="ImageEditor\effects\UnitResampleFilters.pas"/>
         <DCCReference Include="Units\uVistaFuncs.pas"/>
-        <DCCReference Include="Units\UnitDBKernel.pas"/>
+        <DCCReference Include="Units\Database\uDBManager.pas"/>
         <DCCReference Include="Units\CmpUnit.pas"/>
         <DCCReference Include="Units\DBCMenu.pas"/>
         <DCCReference Include="Units\ExplorerTypes.pas"/>
@@ -321,7 +321,7 @@
         <DCCReference Include="Units\GDIPlusRotate.pas"/>
         <DCCReference Include="Units\UnitGroupsTools.pas"/>
         <DCCReference Include="Units\UnitSQLOptimizing.pas"/>
-        <DCCReference Include="Units\CommonDBSupport.pas"/>
+        <DCCReference Include="Units\Database\uDBConnection.pas"/>
         <DCCReference Include="Units\acWorkRes.pas"/>
         <DCCReference Include="Units\UnitPropeccedFilesSupport.pas"/>
         <DCCReference Include="Units\UnitINI.pas"/>

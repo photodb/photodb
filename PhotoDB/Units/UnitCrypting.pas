@@ -14,13 +14,13 @@ uses
 
   UnitDBDeclare,
   uCollectionEvents,
-  CommonDBSupport,
   uDBForm,
   uMemory,
   uDBAdapter,
   uStrongCrypt,
   GraphicCrypt,
   uDBContext,
+  uDBConnection,
   uErrors;
 
 function EncryptImageByFileName(Context: IDBContext; Caller: TDBForm; FileName: string; ID: Integer; Password: string; Options: Integer;

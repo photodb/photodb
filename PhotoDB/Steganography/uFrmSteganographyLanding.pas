@@ -19,7 +19,6 @@ uses
   Dmitry.CRC32,
   Dmitry.Utils.Files,
 
-  UnitDBKernel,
   UnitDBFileDialogs,
   GraphicCrypt,
 

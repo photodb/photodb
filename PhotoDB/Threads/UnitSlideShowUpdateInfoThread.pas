@@ -8,11 +8,10 @@ uses
   SysUtils,
   DB,
 
-  CommonDBSupport,
-
   uThreadForm,
   uThreadEx,
   uMemory,
+  uDBConnection,
   uDBContext,
   uDBEntities,
   uExifUtils,

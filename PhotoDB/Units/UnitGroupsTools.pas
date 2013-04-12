@@ -9,7 +9,6 @@ uses
   DB,
   Forms,
 
-  CommonDBSupport,
   ProgressActionUnit,
 
   uConstants,
@@ -18,6 +17,7 @@ uses
   uTranslate,
   uShellIntegration,
   uRuntime,
+  uDBConnection,
   uDBContext,
   uDBEntities;
 

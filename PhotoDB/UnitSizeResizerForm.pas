@@ -21,7 +21,6 @@ uses
   Vcl.Imaging.JPEG,
 
   UnitDBDeclare,
-  UnitDBKernel,
   UnitDBFileDialogs,
   UnitPropeccedFilesSupport,
 
@@ -50,6 +49,7 @@ uses
   uDBThread,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uPortableDeviceUtils,
   uThemesUtils,
   uProgramStatInfo,
@@ -359,7 +359,7 @@ var
   Ext: TFileAssociation;
   PathImage: TBitmap;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
 
   FCreatingResize := True;
   FIgnoreInput := False;

@@ -113,7 +113,7 @@ uses
   OptimizeImageUnit in 'ImageEditor\OptimizeImageUnit.pas',
   UnitResampleFilters in 'ImageEditor\effects\UnitResampleFilters.pas',
   uVistaFuncs in 'Units\uVistaFuncs.pas',
-  UnitDBKernel in 'Units\UnitDBKernel.pas',
+  uDBManager in 'Units\Database\uDBManager.pas',
   CmpUnit in 'Units\CmpUnit.pas',
   DBCMenu in 'Units\DBCMenu.pas',
   ExplorerTypes in 'Units\ExplorerTypes.pas',
@@ -127,7 +127,7 @@ uses
   GDIPlusRotate in 'Units\GDIPlusRotate.pas',
   UnitGroupsTools in 'Units\UnitGroupsTools.pas',
   UnitSQLOptimizing in 'Units\UnitSQLOptimizing.pas',
-  CommonDBSupport in 'Units\CommonDBSupport.pas',
+  uDBConnection in 'Units\Database\uDBConnection.pas',
   acWorkRes in 'Units\acWorkRes.pas',
   UnitPropeccedFilesSupport in 'Units\UnitPropeccedFilesSupport.pas',
   UnitINI in 'Units\UnitINI.pas',
@@ -485,12 +485,12 @@ begin
       FindRunningVersion;
 
     EventLog('TDBKernel.Create');
-    DBKernel := TDBKernel.Create;
+    DBManager := TDBManager.Create;
 
     TLoad.Instance.StartDBKernelIconsThread;
     if not DBTerminating and not GetParamStrDBBool('/install') then
     begin
-      if not DBKernel.LoadDefaultCollection then
+      if not DBManager.LoadDefaultCollection then
       begin
         //TODO: notify user that database is invalid!
         DBTerminating := True;
@@ -499,13 +499,13 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
     try
-      TCommandLine.ProcessServiceCommands(DBKernel.DBContext);
-      TCommandLine.ProcessUserCommandLine(DBKernel.DBContext);
+      TCommandLine.ProcessServiceCommands(DBManager.DBContext);
+      TCommandLine.ProcessUserCommandLine(DBManager.DBContext);
     finally
       CMDInProgress := False;
     end;

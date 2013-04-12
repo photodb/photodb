@@ -6,11 +6,10 @@ uses
   System.SysUtils,
   Data.DB,
 
-  CommonDBSupport,
-
   uConstants,
   uMemory,
   uLogger,
+  uDBConnection,
   uDBClasses;
 
 const

@@ -17,7 +17,6 @@ uses
 
   CmpUnit,
   EasyListView,
-  CommonDBSupport,
   UnitDBDeclare,
   GraphicCrypt,
   UnitLinksSupport,
@@ -26,6 +25,7 @@ uses
   uMemory,
   uRuntime,
   uList64,
+  uDBConnection,
   uDBAdapter,
   uBitmapUtils,
   uCDMappingTypes,
@@ -84,7 +84,7 @@ type
     constructor CreateFromFile(FileName: string);
     procedure ReadExists;
     destructor Destroy; override;
-    procedure ReadFromDS(DS: TDataSet);
+    procedure ReadFromDS(DS: TDataSet); override;
     procedure WriteToDS(DS: TDataSet);
     function Copy: TMediaItem; virtual;
     function FileExists: Boolean;
@@ -294,7 +294,7 @@ type
     procedure Clear;
     procedure FreeItems;
     procedure Add(Person: TPerson);
-    procedure ReadFromDS(DS: TDataSet);
+    procedure ReadFromDS(DS: TDataSet); override;
     procedure DeleteAt(I: Integer);
     procedure RemoveByID(PersonID: Integer);
     property Count: Integer read GetCount;
@@ -1534,8 +1534,6 @@ begin
 end;
 
 function TPerson.CreatePreview(Width, Height: Integer): TBitmap;
-var
-  B: TBitmap;
 begin
   if (FPreview = nil) or (FPreviewSize.cx <> Width) or (FPreviewSize.cy <> Height) then
   begin

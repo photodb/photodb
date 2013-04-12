@@ -11,8 +11,6 @@ uses
   Dmitry.Utils.Files,
 
   UnitDBFileDialogs,
-  UnitDBDeclare,
-  UnitDBKernel,
 
   uShellIntegration,
   uMemory,
@@ -22,6 +20,7 @@ uses
   uDBUtils,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uCDMappingTypes;
 
 type
@@ -312,7 +311,7 @@ begin
         AddRealDirectory(Files[I], nil);
       if FileExistsEx(Files[I]) then
       begin
-        if not GetInfoByFileNameA(DBKernel.DBContext, Files[I], False, Info) then
+        if not GetInfoByFileNameA(DBManager.DBContext, Files[I], False, Info) then
           AddRealFile(Files[I])
         else
           AddImageFile(DBFilePath(Info.FileName, Info.ID));

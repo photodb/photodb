@@ -14,7 +14,6 @@ uses
   Dmitry.PathProviders.MyComputer,
 
   UnitDBDeclare,
-  UnitDBKernel,
 
   uPeopleRepository,
   uBitmapUtils,
@@ -30,6 +29,7 @@ uses
   uDBClasses,
   uDBEntities,
   uDBContext,
+  uDBManager,
   uCollectionEvents;
 
 type
@@ -131,7 +131,7 @@ begin
 
   Item := TPersonItem(Items[0]);
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   PeopleRepository := Context.People;
 
   P := PeopleRepository.GetPersonByName(Item.PersonName);
@@ -188,7 +188,7 @@ var
 begin
   Result := False;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   PeopleRepository := Context.People;
 
   Person := TPerson.Create;
@@ -236,7 +236,7 @@ begin
 
   if Item is TPersonsItem then
   begin
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
     PeopleRepository := Context.People;
 
     Persons := TPersonCollection.Create;
@@ -284,7 +284,7 @@ begin
 
   Item := TPersonItem(Items[0]);
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   PeopleRepository := Context.People;
 
   Result := PeopleRepository.RenamePerson(Item.PersonName, Options.NewName);
@@ -316,7 +316,7 @@ begin
   if Items.Count = 0 then
     Exit;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   PeopleRepository := Context.People;
 
   P := PeopleRepository.GetPersonByName(TPersonItem(Items[0]).PersonName);
@@ -432,7 +432,7 @@ begin
   Result := False;
   F(FImage);
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   PeopleRepository := Context.People;
 
   Person := PeopleRepository.GetPersonByName(FPersonName);

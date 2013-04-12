@@ -13,13 +13,12 @@ uses
   ComCtrls,
   ImgList,
 
-  UnitDBKernel,
-
   uMemory,
   uMemoryEx,
   uDBIcons,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uBitmapUtils,
   uDBForm,
   uConstants;
@@ -70,7 +69,7 @@ end;
 
 procedure TFormSelectGroup.FormCreate(Sender: TObject);
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FGroupsRepository := FContext.Groups;
 
   Groups := FGroupsRepository.GetAll(True, True);

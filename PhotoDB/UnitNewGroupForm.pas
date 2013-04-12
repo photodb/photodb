@@ -30,7 +30,6 @@ uses
 
   GraphicSelectEx,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uEditorTypes,
   uRuntime,
@@ -44,6 +43,7 @@ uses
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uShellIntegration,
   uDialogUtils,
   uThemesUtils,
@@ -251,7 +251,7 @@ procedure TNewGroupForm.FormCreate(Sender: TObject);
 var
   SettingsRepository: ISettingsRepository;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FGroupsRepository := FContext.Groups;
   SettingsRepository := FContext.Settings;
 

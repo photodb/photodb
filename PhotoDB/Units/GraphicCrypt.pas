@@ -19,7 +19,6 @@ uses
   Dmitry.Utils.Files,
   Dmitry.Memory,
 
-  CommonDBSupport,
   DECUtil,
   DECCipher,
   GIFImage,
@@ -34,6 +33,7 @@ uses
   uStrongCrypt,
   uTransparentEncryption,
   uErrors,
+  uDBConnection,
   uActivationUtils,
   uGraphicUtils,
   uProgramStatInfo,

@@ -54,14 +54,10 @@ type
 
 implementation
 
-uses
-  UnitDBKernel;
-
 function L(S: string): string;
 begin
   Result := TTranslateManager.Instance.TA(S, 'EXIF');
 end;
-
 
 (**
 Convert a tag to a C string

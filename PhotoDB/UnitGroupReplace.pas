@@ -19,7 +19,6 @@ uses
 
   Dmitry.Controls.WatermarkedEdit,
 
-  UnitDBKernel,
   UnitGroupsReplace,
 
   uMemory,
@@ -29,6 +28,7 @@ uses
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uSettings,
   uShellIntegration,
   uFormInterfaces;
@@ -158,7 +158,7 @@ end;
 procedure TFormGroupReplace.FormCreate(Sender: TObject);
 begin
   RegGroups := TGroups.Create;
-  FDBContext := DBKernel.DBContext;
+  FDBContext := DBManager.DBContext;
   FGroupsRepository := FDBContext.Groups;
 
   RecreateGroupsList;

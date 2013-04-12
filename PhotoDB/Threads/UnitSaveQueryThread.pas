@@ -14,17 +14,16 @@ uses
   Dmitry.CRC32,
   Dmitry.Utils.Files,
 
-  CommonDBSupport,
-  UnitDBKernel,
-
   uConstants,
   uDBUtils,
   uShellIntegration,
   uMemory,
   uTranslate,
   uDBThread,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uResourceUtils,
   uThreadForm,
   uThreadEx,
@@ -183,7 +182,7 @@ begin
         FDestinationPath := IncludeTrailingBackslash(FDestinationPath);
 
         FDBFileName := FDestinationPath + SaveToDBName + '.photodb';
-        if DBKernel.CreateDBbyName(FDBFileName) <> 0 then
+        if TDBManager.CreateDBbyName(FDBFileName) <> 0 then
           Exit;
 
         Destination := TDBContext.Create(FDBFileName);

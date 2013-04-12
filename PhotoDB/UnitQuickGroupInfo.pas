@@ -24,14 +24,13 @@ uses
   Dmitry.Controls.WebLinkList,
   Dmitry.Controls.WebLink,
 
-  UnitDBKernel,
-
   uMemory,
   uConstants,
   uBitmapUtils,
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uShellIntegration,
   uThemesUtils,
   uVCLHelpers,
@@ -198,7 +197,7 @@ end;
 
 procedure TFormQuickGroupInfo.FormCreate(Sender: TObject);
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FGroupsRepository := FContext.Groups;
   Loadlanguage;
   BtnEdit.AdjustButtonWidth;

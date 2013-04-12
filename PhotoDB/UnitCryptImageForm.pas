@@ -25,7 +25,6 @@ uses
 
   GraphicCrypt,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uFormInterfaces,
   uSessionPasswords,
@@ -33,6 +32,7 @@ uses
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uShellIntegration,
   uSettings,
   uActivationUtils,
@@ -172,7 +172,7 @@ procedure TCryptImageForm.FormCreate(Sender: TObject);
 var
   FPassIcon: HIcon;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
 
   if TActivationManager.Instance.IsDemoMode then
     SetDefaultCipherClass(TCipher_2DES);

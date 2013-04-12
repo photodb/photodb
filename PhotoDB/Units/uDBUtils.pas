@@ -20,7 +20,6 @@ uses
 
   CCR.Exif,
 
-  CommonDBSupport,
   UnitDBDeclare,
   GraphicCrypt,
   UnitLinksSupport,
@@ -28,6 +27,7 @@ uses
   RAWImage,
   UnitDBCommonGraphics,
 
+  uDBConnection,
   uDBClasses,
   uDBContext,
   uDBEntities,

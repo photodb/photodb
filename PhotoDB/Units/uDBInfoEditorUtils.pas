@@ -9,12 +9,10 @@ uses
   Data.DB,
 
   UnitDBDeclare,
-  CommonDBSupport,
   CmpUnit,
   UnitLinksSupport,
   UnitSQLOptimizing,
   ProgressActionUnit,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -22,9 +20,11 @@ uses
   uDatabaseDirectoriesUpdater,
   uDBForm,
   uCollectionEvents,
+  uDBConnection,
   uDBClasses,
   uDBContext,
-  uDBEntities;
+  uDBEntities,
+  uDBManager;
 
 type
   TUserDBInfoInput = class
@@ -105,7 +105,7 @@ var
   end;
 
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
 
   WorkQuery := Context.CreateQuery;
   try
@@ -410,7 +410,7 @@ var
   Params: TEventFields;
   Context: IDBContext;
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
 
   UC := Context.CreateUpdate(ImageTable);
   try

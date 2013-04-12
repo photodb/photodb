@@ -9,7 +9,6 @@ uses
   Vcl.Graphics,
   Vcl.Imaging.PngImage,
 
-  UnitDBKernel,
   RAWImage,
   GraphicCrypt,
 
@@ -21,6 +20,7 @@ uses
   uIImageViewer,
   uDBThread,
   uDBEntities,
+  uDBManager,
   uImageLoader,
   uPortableDeviceUtils,
   uBitmapUtils,
@@ -227,7 +227,7 @@ begin
         if AppSettings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
         begin
           if CanDetectFacesOnImage(FInfo.FileName, FGraphic) then
-            FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, DBKernel.DBContext, FGraphic, FInfo)
+            FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, DBManager.DBContext, FGraphic, FInfo)
           else
             FinishDetectionFaces;
         end else

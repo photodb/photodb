@@ -1,4 +1,4 @@
-unit CommonDBSupport;
+unit uDBConnection;
 
 interface
 
@@ -27,9 +27,7 @@ uses
   uAppUtils,
   uSettings,
   uSplashThread,
-  uShellUtils,
-
-  UnitDBCommon;
+  uShellUtils;
 
 const
   DB_TABLE_UNKNOWN         = 0;
@@ -118,7 +116,7 @@ var
   FSync: TCriticalSection = nil;
 
 const
- ErrorCodeProviderNotFound = $800A0E7A;
+  ErrorCodeProviderNotFound = $800A0E7A;
 
   Jet40ProviderName = 'Microsoft.Jet.OLEDB.4.0';
   ACE12ProviderName = 'Microsoft.ACE.OLEDB.12.0';
@@ -522,22 +520,6 @@ begin
   end;
 end;
 
-function ActiveSQL(SQL : TDataSet; Active: Boolean): Boolean;
-begin
-  try
-    if (SQL is TADOQuery) then
-      (SQL as TADOQuery).Active := Active;
-  except
-    on E: Exception do
-    begin
-      EventLog(':ActiveSQL() throw exception: ' + E.message);
-      Result := False;
-      Exit;
-    end;
-  end;
-  Result := SQL <> nil;
-end;
-
 function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
 begin
   FSync.Enter;
@@ -551,7 +533,7 @@ begin
   end;
 end;
 
-function GetTable(Table: String; TableID: Integer = DB_TABLE_UNKNOWN) : TDataSet;
+function GetTable(Table: String; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
 begin
   FSync.Enter;
   try
@@ -767,7 +749,7 @@ end;
 
 procedure PackTable(FileName: string);
 begin
-  CommonDBSupport.TryRemoveConnection(FileName, True);
+  TryRemoveConnection(FileName, True);
   CompactDatabase_JRO(FileName, '', '')
 end;
 

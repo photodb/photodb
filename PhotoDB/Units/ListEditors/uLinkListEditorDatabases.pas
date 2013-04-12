@@ -21,8 +21,6 @@ uses
 
   UnitDBDeclare,
   UnitDBFileDialogs,
-  UnitDBKernel,
-  CommonDBSupport,
   UnitINI,
 
   uConstants,
@@ -31,9 +29,11 @@ uses
   uStringUtils,
   uDBForm,
   uDBTypes,
+  uDBConnection,
   uDBScheme,
   uDBEntities,
   uDBContext,
+  uDBManager,
   uVclHelpers,
   uIconUtils,
   uTranslate,
@@ -387,7 +387,7 @@ var
         if GetExt(FileName) <> 'PHOTODB' then
           FileName := FileName + '.photodb';
 
-        DBKernel.CreateExampleDB(FileName);
+        TDBManager.CreateExampleDB(FileName);
 
         Data := TDatabaseInfo.Create(GetFileNameWithoutExt(FileName), FileName, Application.ExeName + ',0', '');
       end;
@@ -437,7 +437,7 @@ var
   end;
 
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
 
   if Data = nil then
   begin

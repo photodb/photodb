@@ -25,7 +25,6 @@ uses
   Dmitry.Controls.LoadingSign,
 
   UnitDBFileDialogs,
-  UnitDBKernel,
   GraphicCrypt,
   DBCMenu,
 
@@ -39,6 +38,7 @@ uses
   uFrameWizardBase,
   uDBUtils,
   uDBEntities,
+  uDBManager,
   uDBBaseTypes,
   uProgramStatInfo,
   uPortableDeviceUtils;
@@ -396,7 +396,7 @@ begin
   Info := TMediaItemCollection.Create;
   try
     Rec := TMediaItem.CreateFromFile(ImageFileName);
-    uDBUtils.GetInfoByFileNameA(DBKernel.DBContext, ImageFileName, False, Rec);
+    uDBUtils.GetInfoByFileNameA(DBManager.DBContext, ImageFileName, False, Rec);
     Rec.Selected := True;
 
     Info.IsPlusMenu := False;

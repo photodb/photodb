@@ -59,7 +59,6 @@ uses
   DragDropFile,
   UnitDBDeclare,
   UnitDBFileDialogs,
-  UnitDBKernel,
 
   uInterfaces,
   uBitmapUtils,
@@ -78,6 +77,7 @@ uses
   uDBUtils,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uDBTypes,
   uDBFileTypes,
   uConstants,
@@ -2110,7 +2110,7 @@ begin
     Exit;
   end;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   MediaRepository := Context.Media;
 
   SavePictureDialog := DBSavePictureDialog.Create;
@@ -2434,7 +2434,7 @@ procedure TImageEditor.Properties1Click(Sender: TObject);
 var
   PR: TMediaInfo;
 begin
-  Pr := GetImageIDW(DBKernel.DBContext, CurrentFileName, False, True);
+  Pr := GetImageIDW(DBManager.DBContext, CurrentFileName, False, True);
   if Pr.Count <> 0 then
     PropertyManager.NewIDProperty(Pr.Ids[0]).Execute(Pr.Ids[0])
   else

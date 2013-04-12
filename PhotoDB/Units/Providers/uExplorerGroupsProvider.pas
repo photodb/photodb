@@ -12,9 +12,7 @@ uses
   Dmitry.PathProviders,
   Dmitry.PathProviders.MyComputer,
 
-  uBitmapUtils,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -23,10 +21,12 @@ uses
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uFormInterfaces,
   uCollectionEvents,
   uTranslate,
   uStringUtils,
+  uBitmapUtils,
   uJpegUtils;
 
 type
@@ -140,7 +140,7 @@ begin
   if GroupItem = nil then
     Exit;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   GroupsRepository := Context.Groups;
 
   Group := GroupsRepository.GetByName(GroupItem.GroupName, False);
@@ -189,7 +189,7 @@ var
 begin
   Result := False;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   GroupsRepository := Context.Groups;
 
   Group := GroupsRepository.GetByName(ExtractGroupName(Item.Path), True);
@@ -238,7 +238,7 @@ begin
 
   if Item is TGroupsItem then
   begin
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
     GroupsRepository := Context.Groups;
 
     Groups := GroupsRepository.GetAll(True, True);
@@ -281,7 +281,7 @@ begin
   if Items.Count = 0 then
     Exit;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   GroupsRepository := Context.Groups;
 
   Item := Items[0] as TGroupItem;
@@ -440,7 +440,7 @@ var
 begin
   F(FImage);
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   GroupsRepository := Context.Groups;
   Group := GroupsRepository.GetByName(GroupName, True);
   try

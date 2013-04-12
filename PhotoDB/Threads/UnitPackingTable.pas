@@ -8,7 +8,10 @@ uses
   Sysutils,
   ComObj,
   ActiveX,
+
   UnitDBDeclare,
+
+  uDBConnection,
   uDBThread,
   uDBForm;
 
@@ -35,9 +38,6 @@ type
   end;
 
 implementation
-
-uses
-  CommonDBSupport;
 
 procedure PackingTable.AddTextLine;
 begin

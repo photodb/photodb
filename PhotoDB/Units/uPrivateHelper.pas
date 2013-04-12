@@ -11,11 +11,10 @@ uses
 
   Dmitry.CRC32,
 
-  CommonDBSupport,
-  UnitDBKernel,
-
   uConstants,
   uMemory,
+  uDBConnection,
+  uDBManager,
   uDBThread;
 
 type
@@ -160,7 +159,7 @@ begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try
-    Query := DBKernel.DBContext.CreateQuery(dbilRead);
+    Query := DBManager.DBContext.CreateQuery(dbilRead);
     try
       ReadOnlyQuery(Query);
       SetSQL(Query, Format('SELECT DISTINCT FolderCRC from $DB$ WHERE Access = %d', [Db_access_private]));

@@ -13,10 +13,9 @@ uses
 
   Dmitry.Utils.System,
 
-  CommonDBSupport,
-
   uMemory,
   uStringUtils,
+  uDBConnection,
   uRuntime;
 
 type

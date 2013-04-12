@@ -44,9 +44,7 @@ uses
   Effects,
   GraphicCrypt,
   UnitLinksSupport,
-  CommonDBSupport,
   RAWImage,
-  UnitDBKernel,
 
   DropTarget,
   DropSource,
@@ -79,8 +77,10 @@ uses
   uRuntime,
   uDBUtils,
   uDBTypes,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uActivationUtils,
   uSettings,
   uAssociations,
@@ -797,7 +797,7 @@ end;
 procedure TPropertiesForm.FormCreate(Sender: TObject);
 begin
   EditLinkForm := nil;
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FGroupsRepository := FContext.Groups;
   FMediaRepository := FContext.Media;
 
@@ -1108,7 +1108,7 @@ var
 begin
   if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
-    Pr := GetImageIDW(DBKernel.DBContext, FileName, True, True);
+    Pr := GetImageIDW(DBManager.DBContext, FileName, True, True);
     if Pr.Count <> 0 then
       Execute(Pr.Ids[0])
     else
@@ -1283,7 +1283,7 @@ var
   PR : TMediaInfo;
 begin
   Adding_now := False;
-  Pr := GetimageIDW(DBKernel.DBContext, FileName, False, True);
+  Pr := GetimageIDW(FContext, FileName, False, True);
   if Pr.Count <> 0 then
     Execute(Pr.Ids[0])
   else

@@ -7,9 +7,8 @@ uses
 
   Dmitry.Utils.System,
 
-  CommonDBSupport,
-
   uMemory,
+  uDBConnection,
   uDBEntities,
   uStringUtils;
 

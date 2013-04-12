@@ -33,8 +33,6 @@ uses
   Dmitry.PathProviders,
 
   UnitDBDeclare,
-  CommonDBSupport,
-  UnitDBKernel,
 
   uFaceDetection,
   uPeopleRepository,
@@ -44,8 +42,10 @@ uses
   uDBIcons,
   uThreadEx,
   uDBThread,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uThreadForm,
   u2DUtils,
   uConstants,
@@ -485,7 +485,7 @@ end;
 
 procedure TFormCreatePerson.FormCreate(Sender: TObject);
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FGroupsRepository := FContext.Groups;
   FPeopleRepository := FContext.People;
   FInfo := nil;

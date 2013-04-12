@@ -14,11 +14,11 @@ uses
 
   UnitPropeccedFilesSupport,
   UnitCrypting,
-  CommonDBSupport,
   UnitDBDeclare,
 
   uGOM,
   uDBForm,
+  uDBConnection,
   uDBContext,
   uLogger,
   uDBThread,

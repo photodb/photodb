@@ -19,10 +19,8 @@ uses
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
-  CommonDBSupport,
   UnitINI,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uRuntime,
@@ -36,9 +34,11 @@ uses
   wfsU,
   uGOM,
   uDBTypes,
+  uDBConnection,
   uDBUtils,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uLogger,
   uCounters,
   uFormInterfaces,
@@ -213,8 +213,8 @@ function UpdaterStorage: TUpdaterStorage;
 begin
   if FUpdaterStorage = nil then
   begin
-    FUpdaterStorage := TUpdaterStorage.Create(DBKernel.DBContext);
-    FUpdaterStorage.RestoreStorage(DBKernel.DBContext);
+    FUpdaterStorage := TUpdaterStorage.Create(DBManager.DBContext);
+    FUpdaterStorage.RestoreStorage(DBManager.DBContext);
   end;
 
   Result := FUpdaterStorage;
@@ -406,7 +406,7 @@ end;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
 begin
   //TODO: check if file is inside collection
-  TDatabaseDirectoriesUpdater.Create(DBKernel.DBContext, DirectoryPath);
+  TDatabaseDirectoriesUpdater.Create(DBManager.DBContext, DirectoryPath);
 end;
 
 { TDatabaseDirectory }

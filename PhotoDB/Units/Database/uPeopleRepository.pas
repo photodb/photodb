@@ -15,7 +15,6 @@ uses
 
   Dmitry.Utils.System,
 
-  UnitDBKernel,
   UnitDBDeclare,
   CmpUnit,
 

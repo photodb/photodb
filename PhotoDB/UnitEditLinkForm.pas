@@ -29,7 +29,6 @@ uses
   UnitLinksSupport,
   UnitDBFileDialogs,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -37,6 +36,7 @@ uses
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uShellIntegration,
   uAssociations,
   uDBIcons,
@@ -205,7 +205,7 @@ var
   Context: IDBContext;
   MediaRepository: IMediaRepository;
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   MediaRepository := Context.Media;
 
   case CbLinkType.ItemIndex of
@@ -307,7 +307,7 @@ var
   Context: IDBContext;
   MediaRepository: IMediaRepository;
 begin
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   MediaRepository := Context.Media;
 
   case CbLinkType.ItemIndex of

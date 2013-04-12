@@ -29,13 +29,13 @@ uses
   CmpUnit,
   UnitGroupsTools,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uMemory,
   uBitmapUtils,
   uDBForm,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uShellIntegration,
   uVCLHelpers,
   uGraphicUtils,
@@ -199,7 +199,7 @@ end;
 
 procedure TEditGroupsForm.FormCreate(Sender: TObject);
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FGroupsRepository := FContext.Groups;
 
   FGroups := nil;

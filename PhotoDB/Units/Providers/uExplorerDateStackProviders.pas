@@ -14,17 +14,16 @@ uses
   Dmitry.PathProviders,
   Dmitry.PathProviders.MyComputer,
 
-  CommonDBSupport,
-  UnitDBKernel,
-
   uConstants,
   uMemory,
   uTranslate,
   uExplorerPathProvider,
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uDateUtils;
 
 type
@@ -239,7 +238,7 @@ begin
 
   if Item is TDateStackItem then
   begin
-    Context :=  DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     FDateRangeDS := Context.CreateQuery(dbilRead);
     try
@@ -265,7 +264,7 @@ begin
 
   if Item is TGroupItem then
   begin
-    Context :=  DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     GI := TGroupItem(Item);
     FDateRangeDS := Context.CreateQuery(dbilRead);
@@ -295,7 +294,7 @@ begin
 
   if Item is TPersonItem then
   begin
-    Context :=  DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     PI := TPersonItem(item);
     FDateRangeDS := Context.CreateQuery(dbilRead);
@@ -328,7 +327,7 @@ begin
 
   if Item is TDateStackYearItem then
   begin
-    Context :=  DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     YI := TDateStackYearItem(Item);
 
@@ -375,7 +374,7 @@ begin
 
   if Item is TDateStackMonthItem then
   begin
-    Context :=  DBKernel.DBContext;
+    Context := DBManager.DBContext;
 
     MI := TDateStackMonthItem(Item);
 

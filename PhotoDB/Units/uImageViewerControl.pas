@@ -36,7 +36,6 @@ uses
   GIFImage,
   Effects,
   DBCMenu,
-  UnitDBKernel,
 
   uMemory,
   uConstants,
@@ -59,6 +58,7 @@ uses
   uDBIcons,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uSettings,
   uExifInfo,
   uPortableDeviceUtils,
@@ -2352,7 +2352,7 @@ end;
 
 procedure TImageViewerControl.ChangeContext;
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
   FPeopleRepository := FContext.People;
 end;
 

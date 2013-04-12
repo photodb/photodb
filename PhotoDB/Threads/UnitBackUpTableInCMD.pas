@@ -10,12 +10,12 @@ uses
   Dmitry.Utils.Files,
 
   UnitDBDeclare,
-  UnitDBKernel,
 
   uMemory,
   uDBThread,
   uDBForm,
   uDBContext,
+  uDBManager,
   uRuntime,
   uConstants,
   uTranslate,
@@ -59,7 +59,7 @@ begin
     Options.WriteLineProc := nil;
     Options.WriteLnLineProc := nil;
     Options.OnEnd := nil;
-    Options.FileName := DBKernel.DBContext.CollectionFileName;
+    Options.FileName := DBManager.DBContext.CollectionFileName;
     Options.OwnerForm := nil;
     BackUpTableInCMD.Create(Options);
   end;
@@ -88,7 +88,7 @@ begin
   inherited;
   FreeOnTerminate := True;
 
-  Context := DBKernel.DBContext;
+  Context := DBManager.DBContext;
   Directory := ExcludeTrailingBackslash(GetAppDataDirectory + BackUpFolder);
   CreateDirA(Directory);
   try

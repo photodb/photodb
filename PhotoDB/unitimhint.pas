@@ -33,7 +33,6 @@ uses
   DragDrop,
   UnitHintCeator,
   UnitDBDeclare,
-  UnitDBKernel,
 
   uConstants,
   uMemory,
@@ -47,6 +46,7 @@ uses
   uDBIcons,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uAnimationHelper,
   uThemesUtils,
   uTranslateUtils,
@@ -408,7 +408,7 @@ begin
     W := ImageBuffer.Width;
     H := ImageBuffer.Height;
 
-    Context := DBKernel.DBContext;
+    Context := DBManager.DBContext;
     SettingsRepository := Context.Settings;
     Settings := SettingsRepository.Get;
     try

@@ -33,7 +33,6 @@ uses
   DragDropFile,
   UnitCDMappingSupport,
   UnitDBFileDialogs,
-  UnitDBKernel,
 
   uAssociatedIcons,
   uDBIcons,
@@ -41,6 +40,7 @@ uses
   uCDMappingTypes,
   uDBForm,
   uDBContext,
+  uDBManager,
   uShellIntegration,
   uRuntime,
   uConstants,
@@ -155,7 +155,7 @@ end;
 
 procedure TFormCDExport.FormCreate(Sender: TObject);
 begin
-  FContext := DBKernel.DBContext;
+  FContext := DBManager.DBContext;
 
   CDListView.DoubleBuffered := True;
 

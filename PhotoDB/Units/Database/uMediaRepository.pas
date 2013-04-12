@@ -7,11 +7,10 @@ uses
 
   Dmitry.CRC32,
 
-  CommonDBSupport,
-
   uConstants,
   uMemory,
   uDBClasses,
+  uDBConnection,
   uDBContext,
   uDBEntities;
 

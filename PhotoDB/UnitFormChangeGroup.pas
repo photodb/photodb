@@ -32,9 +32,8 @@ uses
   GraphicSelectEx,
   UnitGroupsTools,
   UnitDBCommon,
-  UnitDBKernel,
 
-  uRuntime,
+  uMemory,
   uEditorTypes,
   uInterfaces,
   uBitmapUtils,
@@ -48,7 +47,7 @@ uses
   uDBIcons,
   uDBContext,
   uDBEntities,
-  uMemory,
+  uDBManager,
   uThemesUtils,
   uProgramStatInfo,
   uFormInterfaces;
@@ -133,7 +132,7 @@ end;
 
 procedure TFormChangeGroup.FormCreate(Sender: TObject);
 begin
-  FDBContext := DBKernel.DBContext;
+  FDBContext := DBManager.DBContext;
   FGroupsRepository := FDBContext.Groups;
   FSettingsRepository := FDBContext.Settings;
 

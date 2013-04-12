@@ -36,8 +36,6 @@ uses
   UnitDBDeclare,
   EasyListview,
   UnitDBCommon,
-  CommonDBSupport,
-  UnitDBKernel,
   UnitBitmapImageList,
 
   uGraphicUtils,
@@ -62,7 +60,9 @@ uses
   uRuntime,
   uDBUtils,
   uDBContext,
+  uDBConnection,
   uDBEntities,
+  uDBManager,
   uAssociations,
   uJpegUtils,
   uShellThumbnails,
@@ -574,7 +574,7 @@ begin
 
         DBFolder := NormalizeDBStringLike(NormalizeDBString(DBFolderToSearch));
 
-        Context := DBKernel.DBContext;
+        Context := DBManager.DBContext;
         SettingsRepository := Context.Settings;
 
         FQuery := Context.CreateQuery(dbilRead);
@@ -1614,7 +1614,7 @@ begin
           CalcStringCRC32(AnsiLowerCase(DBFolder), Crc);
           DBFolder := IncludeTrailingBackslash(DBFolder);
 
-          Context := DBKernel.DBContext;
+          Context := DBManager.DBContext;
 
           Query := Context.CreateQuery(dbilRead);
           ReadOnlyQuery(Query);

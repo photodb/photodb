@@ -17,7 +17,6 @@ uses
   Dmitry.Utils.Files,
 
   GIFImage,
-  CommonDBSupport,
   ActiveX,
   RAWImage,
 
@@ -30,6 +29,7 @@ uses
   uJpegUtils,
   uBitmapUtils,
   uSettings,
+  uDBConnection,
   uDBContext,
   uDBEntities,
   uFaceDetection,

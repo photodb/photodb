@@ -17,12 +17,10 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
 
-  CommonDBSupport,
-  UnitDBDeclare,
-
   uFrameWizardBase,
   uMemory,
   uDBUtils,
+  uDBConnection,
   uDBEntities,
   uJpegUtils,
   uBItmapUtils,

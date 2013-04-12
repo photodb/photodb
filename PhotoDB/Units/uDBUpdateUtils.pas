@@ -17,7 +17,6 @@ uses
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
-  CommonDBSupport,
   GraphicCrypt,
   UnitDBDeclare,
   CmpUnit,
@@ -36,6 +35,7 @@ uses
   uTranslate,
   uSettings,
   uExifUtils,
+  uDBConnection,
   uDBClasses,
   uDBContext,
   uDBEntities,

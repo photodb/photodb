@@ -18,12 +18,10 @@ uses
   Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
-  CommonDBSupport,
   EasyListView,
   UnitDBDeclare,
   UnitDBCommon,
   UnitBackUpTableInCMD,
-  UnitDBKernel,
 
   uAppUtils,
   uLogger,
@@ -39,7 +37,9 @@ uses
   uShellIntegration,
   uRuntime,
   uDBUtils,
+  uDBConnection,
   uDBContext,
+  uDBManager,
   uSettings,
   uAssociations,
   uDBCustomThread,
@@ -429,7 +429,8 @@ begin
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
 
   DBThreadManager.WaitForAllThreads(60000);
-  TryRemoveConnection(DBKernel.DBContext.CollectionFileName, True);
+  if DBManager.DBContext <> nil then
+    TryRemoveConnection(DBManager.DBContext.CollectionFileName, True);
 
   FormManager := nil;
 
@@ -509,11 +510,11 @@ begin
   begin
     AppSettings.ClearCache;
     TPeopleRepository.ClearCache;
-    UpdaterStorage.CleanUpDatabase(DBKernel.DBContext);
+    UpdaterStorage.CleanUpDatabase(DBManager.DBContext);
     UpdaterStorage.SaveStorage;
-    UpdaterStorage.RestoreStorage(DBKernel.DBContext);
+    UpdaterStorage.RestoreStorage(DBManager.DBContext);
     if FDirectoryWatcher <> nil then
-      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBKernel.DBContext);
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBManager.DBContext);
   end;
 
   if ID <= 0 then
@@ -530,7 +531,7 @@ begin
     SetNewIDFileData];
 
   if UpdateInfoParams * Params <> [] then
-    ExifPatchManager.AddPatchInfo(DBKernel.DBContext, ID, Params, Value);
+    ExifPatchManager.AddPatchInfo(DBManager.DBContext, ID, Params, Value);
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
@@ -555,7 +556,7 @@ begin
     if (FCheckCount = 5) and not FolderView then
     begin
       FDirectoryWatcher := TUserDirectoriesWatcher.Create;
-      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBKernel.DBContext);
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBManager.DBContext);
     end;
 
     if (FCheckCount = 10) then // after 1sec. set normal priority
@@ -592,7 +593,7 @@ begin
     if (FCheckCount = 50) and not FolderView then // after 4 sec.
     begin
       //todo: restart it when db has changed
-      Context := DBKernel.DBContext;
+      Context := DBManager.DBContext;
       MediaRepository := Context.Media;
 
       if AppSettings.ReadboolW('DBCheck', ExtractFileName(Context.CollectionFileName), True) = True then

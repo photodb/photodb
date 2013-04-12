@@ -10,9 +10,6 @@ uses
 
   Dmitry.Graphics.Utils,
 
-  UnitDBKernel,
-  UnitDBDeclare,
-
   uBitmapUtils,
   uDBThread,
   uMemory,

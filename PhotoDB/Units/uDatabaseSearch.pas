@@ -14,17 +14,17 @@ uses
 
   Dmitry.Utils.System,
 
-  CommonDBSupport,
   UnitDBDeclare,
   GraphicCrypt,
-  UnitDBKernel,
 
   uMemory,
   uConstants,
   uDBBaseTypes,
   uDBUtils,
+  uDBConnection,
   uDBContext,
   uDBEntities,
+  uDBManager,
   uStringUtils,
   uTranslate,
   uJpegUtils,
@@ -104,7 +104,7 @@ implementation
 
 constructor TDatabaseSearch.Create(AOwner: TThreadEx; ASearchParams: TSearchQuery);
 begin
-  FDBContext := DBKernel.DBContext;
+  FDBContext := DBManager.DBContext;
   FPeopleRepository := FDBContext.People;
   FMediaRepository := FDBContext.Media;
   FCurrentQueryType := QT_TEXT;
