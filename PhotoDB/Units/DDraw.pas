@@ -17,14 +17,16 @@
 
 unit DDraw;
 
-{$INCLUDE COMSWITCH.INC}
+{$MINENUMSIZE 4}
+{$ALIGN ON}
 {$DEFINE UNICODE}
+{$DEFINE D2COM}
 
 interface
 
 uses
 {$IFDEF D2COM}
-  OLE2,
+  OlE2,
 {$ENDIF}
   Windows;
 

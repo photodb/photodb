@@ -139,7 +139,6 @@ uses
   uShellNamespaceUtils,
   uManagerExplorer,
   uExplorerPastePIDLsThread,
-  uPathProviderUtils,
   uPortableDeviceManager,
   uPortableClasses,
   uFaceDetection,
@@ -6688,7 +6687,7 @@ var
 
   function ExecuteProvider(FileName: string): Boolean;
   begin
-    Result := ExecuteProviderFeature(Self, FileName, PATH_FEATURE_PROPERTIES);
+    Result := PathProviderManager.ExecuteFeature(Self, FileName, PATH_FEATURE_PROPERTIES);
   end;
 
 begin

@@ -206,7 +206,7 @@
         <DCCReference Include="UnitJPEGOptions.pas">
             <Form>FormJpegOptions</Form>
         </DCCReference>
-        <DCCReference Include="Units\dx\DX_Alpha.pas">
+        <DCCReference Include="DX_Alpha.pas">
             <Form>DirectShowForm</Form>
         </DCCReference>
         <DCCReference Include="UnitFormInternetUpdating.pas">
@@ -251,7 +251,7 @@
         <DCCReference Include="Printer\PrinterProgress.pas">
             <Form>FormPrinterProgress</Form>
         </DCCReference>
-        <DCCReference Include="Units\UnitActionsForm.pas">
+        <DCCReference Include="UnitActionsForm.pas">
             <Form>ActionsForm</Form>
         </DCCReference>
         <DCCReference Include="UnitBigImagesSize.pas">
@@ -339,7 +339,7 @@
         <DCCReference Include="Threads\uAssociatedIcons.pas"/>
         <DCCReference Include="Units\uLogger.pas"/>
         <DCCReference Include="Units\uConstants.pas"/>
-        <DCCReference Include="Units\uStringUtils.pas"/>
+        <DCCReference Include="Units\Utils\uStringUtils.pas"/>
         <DCCReference Include="Threads\UnitLoadDBKernelIconsThread.pas"/>
         <DCCReference Include="Threads\UnitLoadCRCCheckThread.pas"/>
         <DCCReference Include="Units\uFastLoad.pas"/>
@@ -371,7 +371,7 @@
         <DCCReference Include="Threads\uMultiCPUThreadManager.pas"/>
         <DCCReference Include="Units\uFormListView.pas"/>
         <DCCReference Include="Threads\uDBThread.pas"/>
-        <DCCReference Include="Units\uGraphicUtils.pas"/>
+        <DCCReference Include="Units\Utils\uGraphicUtils.pas"/>
         <DCCReference Include="Units\uPrivateHelper.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.Consts.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.IPTC.pas"/>
@@ -379,26 +379,26 @@
         <DCCReference Include="External\CCR.Exif\CCR.Exif.StreamHelper.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.TagIDs.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.XMPUtils.pas"/>
-        <DCCReference Include="Units\uPNGUtils.pas"/>
-        <DCCReference Include="Units\uFormUtils.pas"/>
+        <DCCReference Include="Units\Utils\uPNGUtils.pas"/>
+        <DCCReference Include="Units\Utils\uFormUtils.pas"/>
         <DCCReference Include="..\Installer\uShellUtils.pas"/>
         <DCCReference Include="..\Installer\uInstallTypes.pas"/>
         <DCCReference Include="..\Installer\uInstallScope.pas"/>
         <DCCReference Include="Units\uDBBaseTypes.pas"/>
         <DCCReference Include="Units\uDBUtils.pas"/>
         <DCCReference Include="..\Installer\uAssociations.pas"/>
-        <DCCReference Include="Units\uAppUtils.pas"/>
+        <DCCReference Include="Units\Utils\uAppUtils.pas"/>
         <DCCReference Include="ImageEditor\uEditorTypes.pas"/>
         <DCCReference Include="Units\uShellIntegration.pas"/>
         <DCCReference Include="Units\uDBTypes.pas"/>
-        <DCCReference Include="Units\uActivationUtils.pas"/>
+        <DCCReference Include="Units\Utils\uActivationUtils.pas"/>
         <DCCReference Include="Units\uDBFileTypes.pas"/>
         <DCCReference Include="Units\uRuntime.pas"/>
         <DCCReference Include="Units\uDBGraphicTypes.pas"/>
         <DCCReference Include="Units\uStenography.pas"/>
-        <DCCReference Include="Units\uInternetUtils.pas"/>
+        <DCCReference Include="Units\Utils\uInternetUtils.pas"/>
         <DCCReference Include="Units\uViewerTypes.pas"/>
-        <DCCReference Include="Units\dx\uDXUtils.pas"/>
+        <DCCReference Include="Units\Utils\uDXUtils.pas"/>
         <DCCReference Include="Wizards\uFrameWizardBase.pas">
             <Form>FrameWizardBase</Form>
             <DesignClass>TFrame</DesignClass>
@@ -428,8 +428,8 @@
         <DCCReference Include="External\CCR.Exif\CCR.Exif.BaseUtils.pas"/>
         <DCCReference Include="External\CCR.Exif\CCR.Exif.TiffUtils.pas"/>
         <DCCReference Include="Units\uCryptUtils.pas"/>
-        <DCCReference Include="Units\uResourceUtils.pas"/>
-        <DCCReference Include="Units\uMobileUtils.pas"/>
+        <DCCReference Include="Units\Utils\uResourceUtils.pas"/>
+        <DCCReference Include="Units\Utils\uMobileUtils.pas"/>
         <DCCReference Include="Convertation\uFrmConvertationSettings.pas">
             <Form>FrmConvertationSettings</Form>
             <DesignClass>TFrame</DesignClass>
@@ -460,9 +460,9 @@
         <DCCReference Include="Units\uExifUtils.pas"/>
         <DCCReference Include="Threads\uExifPatchThread.pas"/>
         <DCCReference Include="Units\uTiffImage.pas"/>
-        <DCCReference Include="Units\uJpegUtils.pas"/>
-        <DCCReference Include="Units\uBitmapUtils.pas"/>
-        <DCCReference Include="Units\uIconUtils.pas"/>
+        <DCCReference Include="Units\Utils\uJpegUtils.pas"/>
+        <DCCReference Include="Units\Utils\uBitmapUtils.pas"/>
+        <DCCReference Include="Units\Utils\uIconUtils.pas"/>
         <DCCReference Include="Units\uWinThumbnails.pas"/>
         <DCCReference Include="Units\uShellThumbnails.pas"/>
         <DCCReference Include="Units\uMachMask.pas"/>
@@ -476,9 +476,9 @@
         <DCCReference Include="uFormCreatePerson.pas">
             <Form>FormCreatePerson</Form>
         </DCCReference>
-        <DCCReference Include="Units\u2DUtils.pas"/>
-        <DCCReference Include="Units\uDBClasses.pas"/>
-        <DCCReference Include="Units\uDateUtils.pas"/>
+        <DCCReference Include="Units\Utils\u2DUtils.pas"/>
+        <DCCReference Include="Units\Database\uDBClasses.pas"/>
+        <DCCReference Include="Units\Utils\uDateUtils.pas"/>
         <DCCReference Include="uFormSelectPerson.pas">
             <Form>FormFindPerson</Form>
         </DCCReference>
@@ -492,7 +492,7 @@
             <Form>FormPersonSuggest</Form>
         </DCCReference>
         <DCCReference Include="Threads\uDBCustomThread.pas"/>
-        <DCCReference Include="Units\uGUIDUtils.pas"/>
+        <DCCReference Include="Units\Utils\uGUIDUtils.pas"/>
         <DCCReference Include="Units\uErrors.pas"/>
         <DCCReference Include="uFormEditObject.pas">
             <Form>FormEditObject</Form>
@@ -511,7 +511,7 @@
         <DCCReference Include="Units\PortableDevices\uPortableDeviceManager.pas"/>
         <DCCReference Include="Units\MSXML2_TLB.pas"/>
         <DCCReference Include="Units\PortableDevices\uPortableDeviceUtils.pas"/>
-        <DCCReference Include="Units\uShellNamespaceUtils.pas"/>
+        <DCCReference Include="Units\Utils\uShellNamespaceUtils.pas"/>
         <DCCReference Include="Units\uManagerExplorer.pas"/>
         <DCCReference Include="Threads\uExplorerPastePIDLsThread.pas"/>
         <DCCReference Include="uFormImportImages.pas">
@@ -521,19 +521,18 @@
             <Form>FormMoveFilesProgress</Form>
         </DCCReference>
         <DCCReference Include="Threads\uThreadImportPictures.pas"/>
-        <DCCReference Include="Units\uPathUtils.pas"/>
+        <DCCReference Include="Units\Utils\uPathUtils.pas"/>
         <DCCReference Include="Threads\uImportScanThread.pas"/>
         <DCCReference Include="Threads\uImportSeriesPreview.pas"/>
         <DCCReference Include="Units\uCounters.pas"/>
         <DCCReference Include="uFormImportPicturesSettings.pas">
             <Form>FormImportPicturesSettings</Form>
         </DCCReference>
-        <DCCReference Include="Units\uImportPicturesUtils.pas"/>
+        <DCCReference Include="Units\Utils\uImportPicturesUtils.pas"/>
         <DCCReference Include="uPicturesImportPatternEdit.pas">
             <Form>PicturesImportPatternEdit</Form>
         </DCCReference>
         <DCCReference Include="Units\Formats\uAnimatedJPEG.pas"/>
-        <DCCReference Include="Units\uPathProviderUtils.pas"/>
         <DCCReference Include="Units\uBufferedFileStream.pas"/>
         <DCCReference Include="Units\uInterfaceManager.pas"/>
         <DCCReference Include="Units\uUpTime.pas"/>
@@ -544,7 +543,7 @@
         <DCCReference Include="Units\WebJS\uWebJSExternalContainer.pas"/>
         <DCCReference Include="Units\WebJS\uWebNullContainer.pas"/>
         <DCCReference Include="Units\WebJS\WebJS_TLB.pas"/>
-        <DCCReference Include="Units\uThemesUtils.pas"/>
+        <DCCReference Include="Units\Utils\uThemesUtils.pas"/>
         <DCCReference Include="Units\Styles\uDateTimePickerStyleHookXP.pas"/>
         <DCCReference Include="Units\Styles\uEditStyleHookColor.pas"/>
         <DCCReference Include="Units\Styles\uHSLUtils.pas"/>
@@ -555,7 +554,7 @@
         </DCCReference>
         <DCCReference Include="Units\uPhotoShelf.pas"/>
         <DCCReference Include="Units\Providers\uExplorerShelfProvider.pas"/>
-        <DCCReference Include="Units\uXMLUtils.pas"/>
+        <DCCReference Include="Units\Utils\uXMLUtils.pas"/>
         <DCCReference Include="Units\Share\uGoogleOAuth.pas"/>
         <DCCReference Include="Units\Share\uPhotoShareInterfaces.pas"/>
         <DCCReference Include="Units\Share\uPicasaProvider.pas"/>
@@ -575,7 +574,7 @@
             <Form>FormShareSettings</Form>
         </DCCReference>
         <DCCReference Include="Units\Styles\uProgressBarStyleHookMarquee.pas"/>
-        <DCCReference Include="Units\uUninstallUtils.pas"/>
+        <DCCReference Include="Units\Utils\uUninstallUtils.pas"/>
         <DCCReference Include="Units\uInternetProxy.pas"/>
         <DCCReference Include="Units\Styles\uVCLStylesOneLoadSpeedUp.pas"/>
         <DCCReference Include="External\lcms2dll.pas"/>
@@ -610,7 +609,7 @@
         <DCCReference Include="Units\Controls\uMonthCalendar.pas"/>
         <DCCReference Include="Units\Controls\uEXIFDisplayControl.pas"/>
         <DCCReference Include="Units\uProgramStatInfo.pas"/>
-        <DCCReference Include="Units\uImageListUtils.pas"/>
+        <DCCReference Include="Units\Utils\uImageListUtils.pas"/>
         <DCCReference Include="Units\uSysInfo.pas"/>
         <DCCReference Include="Units\uCommandLine.pas"/>
         <DCCReference Include="uFormShareLink.pas">
@@ -634,8 +633,8 @@
             <Form>FormSelectLocation</Form>
         </DCCReference>
         <DCCReference Include="Units\uDBUpdateUtils.pas"/>
-        <DCCReference Include="Units\uSiteUtils.pas"/>
-        <DCCReference Include="Units\uTranslateUtils.pas"/>
+        <DCCReference Include="Units\Utils\uSiteUtils.pas"/>
+        <DCCReference Include="Units\Utils\uTranslateUtils.pas"/>
         <DCCReference Include="Units\uDialogUtils.pas"/>
         <DCCReference Include="uFormUpdateStatus.pas">
             <Form>FormUpdateStatus</Form>

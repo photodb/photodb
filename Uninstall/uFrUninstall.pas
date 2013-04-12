@@ -62,8 +62,7 @@ begin
 
   FDeletingColectionBlockWarning := True;
   try
-    if ID_YES <> TaskDialogEx(0, L('Do you really want to delete all collection files (*.photodb)?'), TA('Warning'), '', TD_BUTTON_YESNO,
-      TD_ICON_WARNING, False) then
+    if ID_YES <> TaskDialog(0, L('Do you really want to delete all collection files (*.photodb)?'), TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING) then
       CbDeleteAllRegisteredCollection.Checked := False;
   finally
     FDeletingColectionBlockWarning := False;

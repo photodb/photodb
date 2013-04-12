@@ -49,7 +49,6 @@ uses
   uPrivateHelper,
   uDBIcons,
   uTranslate,
-  uPathProviderUtils,
   uShellIntegration,
   uDBBaseTypes,
   uDBForm,
@@ -1586,7 +1585,7 @@ begin
             PropertyManager.NewFileProperty(CI.FileName).ExecuteFileNoEx(CI.FileName);
         end else
         begin
-          ExecuteProviderFeature(FOwner, CI.FileName, PATH_FEATURE_PROPERTIES);
+          PathProviderManager.ExecuteFeature(FOwner, CI.FileName, PATH_FEATURE_PROPERTIES);
         end;
       end;
     end else

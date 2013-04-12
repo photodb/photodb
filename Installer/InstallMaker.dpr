@@ -13,7 +13,7 @@ uses
   uInstallScope in 'uInstallScope.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uInstallZip in 'uInstallZip.pas',
-  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
+  uAppUtils in '..\PhotoDB\Units\Utils\uAppUtils.pas',
   uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas';
 
 {$R ..\PhotoDB\Resources\PhotoDBInstall.res}

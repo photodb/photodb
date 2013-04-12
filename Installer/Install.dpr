@@ -24,7 +24,7 @@ uses
   uInstallFrame in 'uInstallFrame.pas' {InstallFrame: TFrame},
   uFrLicense in 'uFrLicense.pas' {FrmLicence: TFrame},
   uFrAdvancedOptions in 'uFrAdvancedOptions.pas' {FrmAdvancedOptions: TFrame},
-  uFormUtils in '..\PhotoDB\Units\uFormUtils.pas',
+  uFormUtils in '..\PhotoDB\Units\Utils\uFormUtils.pas',
   uInstallThread in 'uInstallThread.pas',
   uGOM in '..\PhotoDB\Units\uGOM.pas',
   uInstallActions in 'uInstallActions.pas',
@@ -47,10 +47,10 @@ uses
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
   uInstallProcess in 'uInstallProcess.pas',
   uSetupDatabaseActions in 'uSetupDatabaseActions.pas',
-  uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
+  uStringUtils in '..\PhotoDB\Units\Utils\uStringUtils.pas',
   uLangUtils in 'uLangUtils.pas',
   uUserUtils in 'uUserUtils.pas',
-  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
+  uAppUtils in '..\PhotoDB\Units\Utils\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',
   uIsAdmin in 'uIsAdmin.pas',
   uInstallRuntime in 'uInstallRuntime.pas',
@@ -58,8 +58,8 @@ uses
   uTime in '..\PhotoDB\Units\uTime.pas',
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
   uStillImage in 'uStillImage.pas',
-  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas',
-  uThemesUtils in '..\PhotoDB\Units\uThemesUtils.pas';
+  uXMLUtils in '..\PhotoDB\Units\Utils\uXMLUtils.pas',
+  uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

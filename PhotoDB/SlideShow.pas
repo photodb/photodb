@@ -82,7 +82,6 @@ uses
   u2DUtils,
   uVCLHelpers,
   uAnimatedJPEG,
-  uPathProviderUtils,
   uPortableClasses,
   uPortableDeviceUtils,
   uPortableDeviceManager,
@@ -3302,7 +3301,7 @@ begin
       PropertyManager.NewFileProperty(Item.FileName).ExecuteFileNoEx(Item.FileName);
   end else
   begin
-    ExecuteProviderFeature(Self, Item.FileName, PATH_FEATURE_PROPERTIES)
+    PathProviderManager.ExecuteFeature(Self, Item.FileName, PATH_FEATURE_PROPERTIES)
   end;
 end;
 

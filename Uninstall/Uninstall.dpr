@@ -18,7 +18,7 @@ uses
   uLogger in '..\PhotoDB\Units\uLogger.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uMemory in '..\PhotoDB\Units\uMemory.pas',
-  uFormUtils in '..\PhotoDB\Units\uFormUtils.pas',
+  uFormUtils in '..\PhotoDB\Units\Utils\uFormUtils.pas',
   uInstallTypes in '..\Installer\uInstallTypes.pas',
   uInstallScope in '..\Installer\uInstallScope.pas',
   UnitINI in '..\PhotoDB\Units\UnitINI.pas',
@@ -39,12 +39,11 @@ uses
   uRuntime in '..\PhotoDB\Units\uRuntime.pas',
   uGOM in '..\PhotoDB\Units\uGOM.pas',
   uUninstallProcess in 'uUninstallProcess.pas',
-  uStringUtils in '..\PhotoDB\Units\uStringUtils.pas',
-  uActivationUtils in '..\PhotoDB\Units\uActivationUtils.pas',
-  uImageSource in '..\PhotoDB\Units\uImageSource.pas',
+  uStringUtils in '..\PhotoDB\Units\Utils\uStringUtils.pas',
+  uActivationUtils in '..\PhotoDB\Units\Utils\uActivationUtils.pas',
   uIsAdmin in '..\Installer\uIsAdmin.pas',
   uInstallUtils in '..\Installer\uInstallUtils.pas',
-  uAppUtils in '..\PhotoDB\Units\uAppUtils.pas',
+  uAppUtils in '..\PhotoDB\Units\Utils\uAppUtils.pas',
   uIME in '..\PhotoDB\Units\uIME.pas',
   uUserUtils in '..\Installer\uUserUtils.pas',
   uConfiguration in '..\PhotoDB\Units\uConfiguration.pas',
@@ -53,9 +52,9 @@ uses
   uStillImage in '..\Installer\uStillImage.pas',
   uSettings in '..\PhotoDB\Units\uSettings.pas',
   uUpTime in '..\PhotoDB\Units\uUpTime.pas',
-  uXMLUtils in '..\PhotoDB\Units\uXMLUtils.pas',
+  uXMLUtils in '..\PhotoDB\Units\Utils\uXMLUtils.pas',
   uUninstallCurrentUser in 'uUninstallCurrentUser.pas',
-  uThemesUtils in '..\PhotoDB\Units\uThemesUtils.pas',
+  uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas',
   uProgramStatInfo in '..\PhotoDB\Units\uProgramStatInfo.pas';
 
 {$R *.res}
@@ -77,8 +76,7 @@ begin
 
   Application.Initialize;
 
-  If ID_YES = TaskDialogEx(0, TA('Do you really want to delete Photo Database 4.0?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO,
-    TD_ICON_WARNING, False) then
+  If ID_YES = TaskDialog(0, TA('Do you really want to delete Photo Database 4.0?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING) then
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);
