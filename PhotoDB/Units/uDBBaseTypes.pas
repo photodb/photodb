@@ -35,7 +35,10 @@ type
     Terminate : Boolean;
   end;
 
-  TCallBackProgressEvent = procedure(Sender : TObject; var Info : TProgressCallBackInfo) of object;
+  TCallBackProgressEvent = procedure(Sender: TObject; var Info: TProgressCallBackInfo) of object;
+
+type
+  TSimpleCallBackProgressRef = reference to procedure(Sender: TObject; Total, Value: Int64);
 
 implementation
 

@@ -8,6 +8,8 @@ uses
   System.Classes,
   System.Win.Registry,
 
+  Dmitry.Utils.System,
+
   uConstants,
   uTransparentEncryption,
   uFormInterfaces,
@@ -36,20 +38,6 @@ begin
   Result := AppSettings.ReadString(cMediaAssociationsData + '\' + Extension, '');
   if Result = cMediaPlayerDefaultId then
     Result := GetPlayerInternalPath;
-end;
-
-function ExpandEnvironment(const strValue: string): string;
-var
-  chrResult: array[0..1023] of Char;
-  wrdReturn: DWORD;
-begin
-  wrdReturn := ExpandEnvironmentStrings(PChar(strValue), chrResult, 1024);
-  if wrdReturn = 0 then
-    Result := strValue
-  else
-  begin
-    Result := Trim(chrResult);
-  end;
 end;
 
 function ShellPlayEncryptedMediaFile(const FileName: string): Boolean;

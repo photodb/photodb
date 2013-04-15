@@ -25,6 +25,9 @@ http://answers.microsoft.com/ru-ru/windows/forum/windows_7-system/%D0%BA%D0%B0%D
 Save list view for each folder;
 - Edit person form edit image link;
 - Update in packground if thumbnail size was changed;
+- Person edit -> change logo links in bottom;
+- MapViewOfFileEx remove warning;
+- Image application add to default "open with" dialog;
 
 - Site
  Free activation form on the site

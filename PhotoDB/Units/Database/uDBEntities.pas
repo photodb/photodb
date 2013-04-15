@@ -88,7 +88,7 @@ type
     procedure WriteToDS(DS: TDataSet);
     function Copy: TMediaItem; virtual;
     function FileExists: Boolean;
-    procedure SaveToEvent(EventValues: TEventValues);
+    procedure SaveToEvent(var EventValues: TEventValues);
     procedure LoadGeoInfo(Latitude, Longitude: Double);
     procedure Assign(Item: TMediaItem; MoveImage: Boolean = False); reintroduce;
     property InnerImage: Boolean read GetInnerImage;
@@ -571,7 +571,7 @@ begin
   InfoLoaded := True;
 end;
 
-procedure TMediaItem.SaveToEvent(EventValues: TEventValues);
+procedure TMediaItem.SaveToEvent(var EventValues: TEventValues);
 begin
   EventValues.FileName := AnsiLowerCase(Self.FileName);
   EventValues.ID := Self.ID;

@@ -379,7 +379,8 @@ uses
   uSettingsRepository in 'Units\Database\uSettingsRepository.pas',
   uDBEntities in 'Units\Database\uDBEntities.pas',
   uGroupsRepository in 'Units\Database\uGroupsRepository.pas',
-  uMediaRepository in 'Units\Database\uMediaRepository.pas';
+  uMediaRepository in 'Units\Database\uMediaRepository.pas',
+  uFormBackgroundTaskStatus in 'uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -497,6 +498,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
+  Application.CreateForm(TFormBackgroundTaskStatus, FormBackgroundTaskStatus);
   Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------

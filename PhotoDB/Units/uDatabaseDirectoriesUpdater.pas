@@ -281,7 +281,6 @@ begin
     FolderList.Add(DD);
   end;
 
-
   FolderList.Sort(TComparer<TDatabaseDirectory>.Construct(
      function (const L, R: TDatabaseDirectory): Integer
      begin

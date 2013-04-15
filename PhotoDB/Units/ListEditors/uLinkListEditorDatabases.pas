@@ -86,7 +86,7 @@ function UpdateDatabaseQuery(FileName: string): Boolean;
 var
   Msg: string;
 begin
-  Msg := FormatEx(TA('Collection &quot;{0}&quot; should be updated to work with this program version. After updating this collection may not work with previous program versions. Update now?', 'Explorer'), [FileName]);
+  Msg := FormatEx(TA('Collection "{0}" should be updated to work with this program version. After updating this collection may not work with previous program versions. Update now?', 'Explorer'), [FileName]);
 
   Result := ID_YES = MessageBoxDB(Screen.ActiveFormHandle, Msg, TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
 end;
@@ -184,7 +184,7 @@ begin
         if TDBScheme.IsOldColectionFile(DB.Path) then
         begin
           if UpdateDatabaseQuery(DB.Path) then
-            TDBScheme.UpdateCollection(DB.Path);
+            TDBScheme.UpdateCollection(DB.Path, 0);
         end;
 
         if TDBScheme.IsValidCollectionFile(DB.Path) then
@@ -384,6 +384,8 @@ var
       begin
         FileName := SaveDialog.FileName;
 
+        FDeletedCollections.Remove(FileName, False);
+
         if GetExt(FileName) <> 'PHOTODB' then
           FileName := FileName + '.photodb';
 
@@ -417,11 +419,13 @@ var
         if TDBScheme.IsOldColectionFile(FileName) then
         begin
           if UpdateDatabaseQuery(FileName) then
-            TDBScheme.UpdateCollection(FileName);
+            TDBScheme.UpdateCollection(FileName, 0);
         end;
 
         if TDBScheme.IsValidCollectionFile(FileName) then
         begin
+          FDeletedCollections.Remove(FileName, False);
+
           SettingsRepository := Context.Settings;
           Settings := SettingsRepository.Get;
           try
@@ -541,7 +545,11 @@ var
   DialogResult: Integer;
   Text: string;
   FileName: string;
+  DI: TDatabaseInfo;
 begin
+  for DI in TList<TDatabaseInfo>(Sender.DataList) do
+    FDeletedCollections.Remove(DI.Path, False);
+
   if FDeletedCollections.Count = 0 then
     Exit(True);
 

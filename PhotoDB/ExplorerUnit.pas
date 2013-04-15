@@ -8663,10 +8663,8 @@ begin
           Path := Reg.ReadString('Path');
         if Reg.ValueExists('Icon') then
           Icon := Reg.ReadString('Icon');
-        if Reg.ValueExists('Icon') then
-          Icon := Reg.ReadString('Icon');
         if Reg.ValueExists('SortOrder') then
-          SortOrder := Reg.ReadInteger('Icon');
+          SortOrder := Reg.ReadInteger('SortOrder');
 
         if Path <> '' then
         begin

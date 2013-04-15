@@ -9,6 +9,7 @@ uses
   System.Math,
   Winapi.Windows,
   Data.DB,
+  Data.Win.ADODB,
   Vcl.Graphics,
   Vcl.Imaging.Jpeg,
 
@@ -54,6 +55,50 @@ type
   end;
 
 type
+  TDBParam = class(TObject)
+  private
+    FName: string;
+  public
+    property Name: string read FName write FName;
+  end;
+
+  TDBStringParam = class(TDBParam)
+    Value: string;
+  end;
+
+  TDBIntegerParam = class(TDBParam)
+    Value: Integer;
+  end;
+
+  TDBDateTimeParam = class(TDBParam)
+    Value: TDateTime;
+  end;
+
+  TQueryType = (
+    QT_TEXT
+    //QT_W_SCAN_FILE //unsupported :(
+  );
+
+  TDBQueryParams = class(TObject)
+  private
+    FParamList: TList;
+    FQuery: string;
+    FQueryType: TQueryType;
+    FCanBeEstimated: Boolean;
+    FData: TObject;
+  public
+    function AddDateTimeParam(Name: string; Value: TDateTime) : TDBDateTimeParam;
+    function AddIntParam(Name: string; Value: Integer) : TDBIntegerParam;
+    function AddStringParam(Name: string; Value: string) : TDBStringParam;
+    constructor Create;
+    destructor Destroy; override;
+    procedure ApplyToDS(DS: TDataSet);
+    property Query: string read FQuery write FQuery;
+    property QueryType: TQueryType read FQueryType write FQueryType;
+    property CanBeEstimated: Boolean read FCanBeEstimated write FCanBeEstimated;
+    property Data: TObject read FData;
+  end;
+
   TDatabaseSearch = class;
 
   TEstimateCountUpdateHandler = procedure(Sender: TDatabaseSearch; Count: Integer) of object;
@@ -99,6 +144,73 @@ type
   end;
 
 implementation
+
+{ TDBQueryParams }
+
+function TDBQueryParams.AddDateTimeParam(Name: string; Value: TDateTime) : TDBDateTimeParam;
+begin
+  Result := TDBDateTimeParam.Create;
+  Result.Name := Name;
+  Result.Value := Value;
+  FParamList.Add(Result);
+end;
+
+function TDBQueryParams.AddIntParam(Name: string;
+  Value: Integer): TDBIntegerParam;
+begin
+  Result := TDBIntegerParam.Create;
+  Result.Name := Name;
+  Result.Value := Value;
+  FParamList.Add(Result);
+end;
+
+function TDBQueryParams.AddStringParam(Name, Value: string): TDBStringParam;
+begin
+  Result := TDBStringParam.Create;
+  Result.Name := Name;
+  Result.Value := Value;
+  FParamList.Add(Result);
+end;
+
+procedure TDBQueryParams.ApplyToDS(DS: TDataSet);
+var
+  I : Integer;
+  Paramert : TParameter;
+  DBParam : TDBParam;
+begin
+  SetSQL(DS, Query);
+  for I := 0 to FParamList.Count - 1 do
+  begin
+    DBParam := FParamList[I];
+    Paramert := nil;
+    if DS is TADOQuery then
+      Paramert := TADOQuery(DS).Parameters.FindParam(DBParam.name);
+    if Paramert <> nil then
+    begin
+      if DBParam is TDBDateTimeParam then
+        Paramert.Value := TDBDateTimeParam(DBParam).Value;
+      if DBParam is TDBIntegerParam then
+        Paramert.Value := TDBIntegerParam(DBParam).Value;
+      if DBParam is TDBStringParam then
+        Paramert.Value := TDBStringParam(DBParam).Value;
+    end;
+  end;
+end;
+
+constructor TDBQueryParams.Create;
+begin
+  FParamList := TList.Create;
+  FQueryType := QT_TEXT;
+  FCanBeEstimated := True;
+  FData := nil;
+end;
+
+destructor TDBQueryParams.Destroy;
+begin
+  FreeList(FParamList);
+  F(FData);
+  inherited;
+end;
 
 { TDatabaseSearch }
 

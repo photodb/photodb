@@ -51,7 +51,7 @@ begin
   try
     FText := L('Packing collection files...');
     SynchronizeEx(AddTextLine);
-    PackTable(FOptions.FileName);
+    PackTable(FOptions.FileName, nil);
     FText := L('Packing completed...');
     SynchronizeEx(AddTextLine);
   finally

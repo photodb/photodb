@@ -183,6 +183,14 @@ type
     function Execute(Title, StartPath: string; out PathItem: TPathItem; AllowVirtualItems: Boolean): Boolean;
   end;
 
+  IBackgroundTaskStatusForm = interface(IFormInterface)
+    ['{22AFC874-9408-45C1-9F83-04F490B928F1}']
+    function ShowModal: Integer;
+    procedure SetProgress(Max, Position: Int64);
+    procedure SetText(Text: string);
+    procedure CloseForm;
+  end;
+
   TListElementType = (leWebLink, leInfoLabel);
   TListElements = TDictionary<TListElementType, TControl>;
 
@@ -260,6 +268,7 @@ function CDMapperForm: ICDMapperForm;
 function SelectLocationForm: ISelectLocationForm;
 function LinkItemSelectForm: ILinkItemSelectForm;
 function FormUpdateStatus: IFormUpdateStatus;
+function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
 
 implementation
 
@@ -392,6 +401,11 @@ end;
 function FormUpdateStatus: IFormUpdateStatus;
 begin
   Result := FormInterfaces.GetSingleForm<IFormUpdateStatus>(True);
+end;
+
+function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
+begin
+  Result := FormInterfaces.CreateForm<IBackgroundTaskStatusForm>();
 end;
 
 { TFormInterfaces }

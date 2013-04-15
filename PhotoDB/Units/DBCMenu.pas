@@ -6,13 +6,14 @@ uses
   Generics.Defaults,
   Generics.Collections,
   Winapi.ShlObj,
-  System.Math,
-  System.Types,
   Winapi.ShellApi,
   Winapi.CommCtrl,
   Winapi.Windows,
+  System.Math,
+  System.Types,
   System.SysUtils,
   System.Classes,
+  System.Win.Registry,
   Vcl.Forms,
   Vcl.ActnPopup,
   Vcl.Graphics,
@@ -40,6 +41,7 @@ uses
   uTime,
   uIconUtils,
   uLogger,
+  uAppUtils,
   uCDMappingTypes,
   uMemory,
   uBitmapUtils,
@@ -560,6 +562,94 @@ begin
   SteganographyForm.HideData(FInfo[FInfo.Position].FileName);
 end;
 
+procedure LoadDefaultExecutableList(Data: TList<TExecutableInfo>);
+var
+  Registry: TRegistry;
+  Keys: TStringList;
+  Key, Handler, ExeHandler, Executable: string;
+  Applications: TDictionary<string, string>;
+  VersionInfo: TEXEVersionData;
+  Path, Icon, Parameters: string;
+
+  function GetExecutable(Handler: string): string;
+  var
+    I: Integer;
+    Param: string;
+  begin
+    Result := '';
+    for I := 0 to 255 do
+    begin
+      Param := ParamStrCustom(Handler, I).TrimEnd([',', ' ']);
+
+      if Param = '' then
+        Break;
+
+      if Param.ToLower.Contains('rundll32') then
+        Continue;
+
+      Exit(Param);
+    end;
+  end;
+
+  function GetParameters(Handler: string): string;
+  var
+    P: PChar;
+  begin
+    P := PChar(Handler);
+    Result := GetParamStr(P, Result);
+  end;
+
+begin
+  Registry := TRegistry.Create(KEY_READ);
+  Keys := TStringList.Create;
+  Applications := TDictionary<string, string>.Create;
+  try
+    Registry.RootKey := HKEY_CLASSES_ROOT;
+    Registry.OpenKeyReadOnly('\');
+    Registry.GetKeyNames(Keys);
+    for Key in Keys do
+      if Key[1] = '.' then
+      begin
+        Registry.CloseKey;
+        if Registry.OpenKeyReadOnly('\' + Key) then
+          if Registry.ValueExists('PerceivedType') then
+            if Registry.ReadString('PerceivedType') = 'image' then
+            begin
+              Handler := Registry.ReadString('');
+              Registry.CloseKey;
+              if Registry.OpenKeyReadOnly(Handler + '\Shell\Open\Command') then
+              begin
+                ExeHandler := Registry.ReadString('');
+                if Pos('photodb', AnsiLowerCase(ExeHandler)) > 0 then
+                 Continue;
+
+                ExeHandler := ExpandEnvironment(ExeHandler);
+                if not Applications.ContainsKey(ExeHandler) then
+                begin
+                  try
+                    Executable := GetExecutable(ExeHandler);
+
+                    VersionInfo := GetEXEVersionData(Executable);
+                    Applications.Add(ExeHandler, VersionInfo.FileDescription);
+
+                    Path := ParamStrCustom(ExeHandler, 0);
+                    Icon := Executable + ',0';
+                    Parameters := GetParameters(ExeHandler);
+                    Data.Add(TExecutableInfo.Create(VersionInfo.FileDescription, Path, Icon, Parameters, True, Data.Count));
+                  except
+                    Continue;
+                  end;
+                end;
+              end;
+            end;
+      end;
+  finally
+    F(Registry);
+    F(Keys);
+    F(Applications);
+  end;
+end;
+
 procedure ReadUserTools(Data: TList<TExecutableInfo>);
 var
   I,
@@ -618,6 +708,9 @@ begin
   finally
     F(Reg);
   end;
+
+  if Data.Count = 0 then
+    LoadDefaultExecutableList(Data);
 
   Data.Sort(TComparer<TExecutableInfo>.Construct(
      function (const L, R: TExecutableInfo): Integer
@@ -1808,13 +1901,28 @@ procedure TDBPopupMenu.UserMenuItemPopUpMenu(Sender: TObject);
 var
   I: Integer;
   Params, ExeFile, ExeParams: string;
+  DllApplication: Boolean;
 begin
+  ExeFile := FUserMenu[(Sender as TMenuItem).Tag].Path;
+  ExeParams := FUserMenu[(Sender as TMenuItem).Tag].Parameters;
+
+  DllApplication := Pos('rundll32', AnsiLowerCase(ExeFile)) > 0;
+
   for I := 0 to Finfo.Count - 1 do
     if FInfo[I].Selected then
-      Params := ' "' + Finfo[I].FileName + '" ';
+    begin
+      if DllApplication then
+      begin
+        Params := FInfo[I].FileName;
+        Break;
+      end;
 
-  ExeFile := FUserMenu[(Sender as TMenuItem).Tag].Path;
-  ExeParams := StringReplace(FUserMenu[(Sender as TMenuItem).Tag].Parameters, '%1', Params, [RfReplaceAll, RfIgnoreCase]);
+      Params := ' "' + Finfo[I].FileName + '" ';
+    end;
+
+  Params := Trim(Params);
+  ExeParams := StringReplace(ExeParams, '"%1"', Params, [RfReplaceAll, RfIgnoreCase]);
+  ExeParams := StringReplace(ExeParams, '%1', Params, [RfReplaceAll, RfIgnoreCase]);
   if ShellExecute(0, nil, PWideChar(ExeFile), PWideChar(ExeParams), nil, SW_SHOWNORMAL) < 32 then
     EventLog(':TDBPopupMenu::UserMenuItemPopUpMenu()/ShellExecute return < 32, path = ' + ExeFile + ' params = ' + ExeParams);
 end;

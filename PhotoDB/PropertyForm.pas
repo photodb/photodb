@@ -813,6 +813,7 @@ begin
   RegGroups := TGroups.Create;
   FShowenRegGroups := TGroups.Create;
   FNowGroups := TGroups.Create;
+  FOldGroups := TGroups.Create;
 
   SetLength(Links, 0);
   FReadingInfo := False;
@@ -1637,6 +1638,7 @@ begin
 
     F(FNowGroups);
     FNowGroups := TGroups.CreateFromString(FFilesInfo.CommonGroups);
+    F(FOldGroups);
     FOldGroups := FNowGroups.Clone;
 
     ItemLinks := FFilesInfo.CommonLinks;

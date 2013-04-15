@@ -14,7 +14,9 @@ function GetParamStrDBValueEx(CommandLine, ParamName: string): string;
 function GetParamStrDBValueV2(CommandLine, ParamName: string): string;
 function GetParamStrDBBool(ParamName: string): Boolean;
 function GetParamStrDBBoolEx(CommandLine, ParamName: string): Boolean;
+function GetParamStr(P: PChar; var Param: string): PChar;
 function ParamStrEx(Parameters: string; Index: Integer): string;
+function ParamStrCustom(Parameters: string; Index: Integer): string;
 
 implementation
 
@@ -98,6 +100,21 @@ begin
       if (Index <= 0) or (Result = '') then Break;
       Dec(Index);
     end;
+  end;
+end;
+
+function ParamStrCustom(Parameters: string; Index: Integer): string;
+var
+  P: PChar;
+begin
+  Result := '';
+
+  P := PChar(Parameters);
+  while True do
+  begin
+    P := GetParamStr(P, Result);
+    if (Index <= 0) or (Result = '') then Break;
+    Dec(Index);
   end;
 end;
 

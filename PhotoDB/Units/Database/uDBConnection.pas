@@ -23,9 +23,10 @@ uses
   uTime,
   uShellIntegration,
   uTranslate,
-  uResources,
   uAppUtils,
   uSettings,
+  uResources,
+  uDBBaseTypes,
   uSplashThread,
   uShellUtils;
 
@@ -41,77 +42,54 @@ type
   TDBIsolationLevel = (dbilReadWrite, dbilRead, dbilExclusive);
 
 type
-  TADODBConnection = class(TObject)
+  TADOConnectionEx = class(TADOConnection)
+  private
+    FFileName: string;
   public
-    ADOConnection: TADOConnection;
-    FileName: string;
-    RefCount: Integer;
-    ThreadID: THandle;
-    IsolatationLevel: TDBIsolationLevel;
+    property FileName: string read FFileName write FFileName;
   end;
 
-  TADOConnections = class(TObject)
+type
+  TDBConnection = class(TObject)
+  private
+    FFileName: string;
+    FFreeOnClose: Boolean;
+    FThreadID: DWORD;
+    FIsolationLevel: TDBIsolationLevel;
+    FIsBusy: Boolean;
+    FADOConnection: TADOConnectionEx;
+  public
+    constructor Create(FileName: string; IsolationLevel: TDBIsolationLevel);
+    destructor Destroy; override;
+
+    procedure Reuse;
+    procedure Detach;
+
+    property FreeOnClose: Boolean read FFreeOnClose write FFreeOnClose;
+    property ThreadID: DWORD read FThreadID;
+    property FileName: string read FFileName;
+    property IsolationLevel: TDBIsolationLevel read FIsolationLevel;
+    property IsBusy: Boolean read FIsBusy;
+    property Connection: TADOConnectionEx read FADOConnection;
+  end;
+
+  TConnectionManager = class(TObject)
   private
     FConnections: TList;
     FSync: TCriticalSection;
     function GetCount: Integer;
-    function GetValueByIndex(Index: Integer): TADODBConnection;
+    function GetValueByIndex(Index: Integer): TDBConnection;
   public
     constructor Create;
     destructor Destroy; override;
     procedure RemoveAt(Index: Integer);
-    function Add: TADODBConnection;
+    function Add(FileName: string; IsolationLevel: TDBIsolationLevel): TDBConnection;
     property Count: Integer read GetCount;
-    property Items[Index: Integer]: TADODBConnection read GetValueByIndex; default;
-  end;
-
-  TDBParam = class(TObject)
-  private
-    FName: string;
-  public
-    property Name: string read FName write FName;
-  end;
-
-  TDBStringParam = class(TDBParam)
-    Value: string;
-  end;
-
-  TDBIntegerParam = class(TDBParam)
-    Value: Integer;
-  end;
-
-  TDBDateTimeParam = class(TDBParam)
-    Value: TDateTime;
-  end;
-
-type
-  TQueryType = (
-    QT_TEXT
-    //QT_W_SCAN_FILE //unsupported :(
-  );
-
-  TDBQueryParams = class(TObject)
-  private
-    FParamList: TList;
-    FQuery: string;
-    FQueryType: TQueryType;
-    FCanBeEstimated: Boolean;
-    FData: TObject;
-  public
-    function AddDateTimeParam(Name: string; Value: TDateTime) : TDBDateTimeParam;
-    function AddIntParam(Name: string; Value: Integer) : TDBIntegerParam;
-    function AddStringParam(Name: string; Value: string) : TDBStringParam;
-    constructor Create;
-    destructor Destroy; override;
-    procedure ApplyToDS(DS: TDataSet);
-    property Query: string read FQuery write FQuery;
-    property QueryType: TQueryType read FQueryType write FQueryType;
-    property CanBeEstimated: Boolean read FCanBeEstimated write FCanBeEstimated;
-    property Data: TObject read FData;
+    property Items[Index: Integer]: TDBConnection read GetValueByIndex; default;
   end;
 
 var
-  ADOConnections: TADOConnections = nil;
+  ADOConnections: TConnectionManager = nil;
   DBLoadInitialized: Boolean = False;
   FSync: TCriticalSection = nil;
 
@@ -155,43 +133,37 @@ const
   ACE14ConnectionString: string =
                             'Provider=Microsoft.ACE.OLEDB.14.0;Data Source=%s;Persist Security Info=False';
 
-procedure FreeDS(var DS: TDataSet);
-function ADOInitialize(Dbname: string; ForseNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TADOConnection;
 
-function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet; overload;
+function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
+function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
 
-function GetConnectionString(ConnectionString: string; Dbname: string; IsolationMode: TDBIsolationLevel): string; overload;
-function GetConnectionString(Dbname: string; IsolationMode: TDBIsolationLevel): string; overload;
-
-function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet; overload;
-
-procedure SetSQL(SQL: TDataSet; SQLText: String);
+function TryOpenCDS(DS: TDataSet): Boolean;
+function OpenDS(DS: TDataSet): Boolean;
+procedure ForwardOnlyQuery(DS: TDataSet);
+procedure ReadOnlyQuery(DS: TDataSet);
+procedure SetSQL(SQL: TDataSet; SQLText: string);
 procedure ExecSQL(SQL: TDataSet);
+
+procedure FreeDS(var DS: TDataSet);
 
 procedure LoadParamFromStream(Query: TDataSet; index: Integer; Stream: TStream; FT: TFieldType);
 procedure SetDateParam(Query: TDataSet; name: string; Date: TDateTime);
 procedure SetBoolParam(Query: TDataSet; Index: Integer; Bool: Boolean);
 procedure SetStrParam(Query: TDataSet; Index: Integer; Value: string);
 procedure SetIntParam(Query: TDataSet; Index: Integer; Value: Integer);
-
-function GetBlobStream(F : TField; Mode : TBlobStreamMode) : TStream;
-procedure AssignParam(Query : TDataSet; index : integer; Value : TPersistent);
+function GetBlobStream(F: TField; Mode: TBlobStreamMode) : TStream;
+procedure AssignParam(Query: TDataSet; Index: Integer; Value: TPersistent);
 
 procedure CreateMSAccessDatabase(FileName: string);
-procedure TryRemoveConnection(Dbname: string; Delete: Boolean = False);
-procedure RemoveADORef(ADOConnection: TADOConnection);
+procedure TryRemoveConnection(FileName: string; Delete: Boolean = False);
+procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef);
 
-procedure PackTable(FileName: string);
 function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
 function NormalizeDBString(S: string): string;
 function NormalizeDBStringLike(S: string): string;
-function TryOpenCDS(DS: TDataSet): Boolean;     
-function OpenDS(DS: TDataSet): Boolean;
-procedure ForwardOnlyQuery(DS: TDataSet);
-procedure ReadOnlyQuery(DS: TDataSet);
+
 function DBReadOnly: Boolean;
 procedure NotifyOleException(E: Exception);
-function GetProviderConnectionString(ProviderName: string): string;
 
 implementation
 
@@ -241,10 +213,41 @@ begin
   NotifyUserAboutErorrsInProviders;
 end;
 
+function GetConnectionString(ConnectionString: string; Dbname: string; IsolationMode: TDBIsolationLevel): string;
+var
+  Isolation: string;
+begin
+  Isolation := 'Share Deny None';
+  if IsolationMode = dbilRead then
+    Isolation := 'Read';
+  if IsolationMode = dbilExclusive then
+    Isolation := 'Share Exclusive';
+
+  Result := StringReplace(ConnectionString, '%MODE%', Isolation, [rfReplaceAll, rfIgnoreCase]);
+  Result := Format(Result, [Dbname]);
+end;
+
+function GetProviderConnectionString(ProviderName: string): string;
+begin
+  if ProviderName = '' then
+    RaiseProviderNotFoundException;
+
+  if (ProviderName = ACE12ProviderName) or GetParamStrDBBool('/ace12') then
+    Exit(ACE12ConnectionString);
+
+  if (ProviderName = ACE14ProviderName) or GetParamStrDBBool('/ace14') then
+    Exit(ACE14ConnectionString);
+
+  if FolderView and DBReadOnly then
+    Exit(Jet40ReadOnlyConnectionString);
+
+  Result := Jet40ConnectionString;
+end;
+
 function IsProviderValidAndCanBeUsed(ProviderName: string): Boolean;
 var
   DBFileName, ConnectionString: string;
-  Connection: TADOConnection;
+  Connection: TADOConnectionEx;
   List: TStrings;
 begin
   Result := True;
@@ -254,10 +257,9 @@ begin
   CreateMSAccessDatabase(DBFileName);
   try
     //test database by reading it
-    Connection := TADOConnection.Create(nil);
+    Connection := TADOConnectionEx.Create(nil);
     try
-      Connection := TADOConnection.Create(nil);
-
+      Connection.FileName  := DBFileName;
       ConnectionString := GetProviderConnectionString(ProviderName);
       ConnectionString := GetConnectionString(ConnectionString, DBFileName, dbilReadWrite);
 
@@ -327,23 +329,6 @@ begin
   end;
 end;
 
-function GetProviderConnectionString(ProviderName: string): string;
-begin
-  if ProviderName = '' then
-    RaiseProviderNotFoundException;
-
-  if (ProviderName = ACE12ProviderName) or GetParamStrDBBool('/ace12') then
-    Exit(ACE12ConnectionString);
-
-  if (ProviderName = ACE14ProviderName) or GetParamStrDBBool('/ace14') then
-    Exit(ACE14ConnectionString);
-
-  if FolderView and DBReadOnly then
-    Exit(Jet40ReadOnlyConnectionString);
-
-  Result := Jet40ConnectionString;
-end;
-
 function ConnectionString: string;
 var
   Provider: string;
@@ -351,6 +336,125 @@ begin
   Provider := DataBaseProvider;
 
   Result := GetProviderConnectionString(Provider);
+end;
+
+function GetConnection(FileName: string; ForseNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TADOConnection;
+var
+  I: Integer;
+  DBConnection: TDBConnection;
+begin
+  FileName := AnsiLowerCase(FileName);
+
+  if not ForseNewConnection then
+    for I := 0 to ADOConnections.Count - 1 do
+    begin
+      DBConnection := ADOConnections[I];
+      if (DBConnection.FileName = FileName) and (DBConnection.IsolationLevel = IsolationLevel) and not DBConnection.IsBusy and not DBConnection.FreeOnClose then
+      begin
+        DBConnection.Reuse;
+        Result := DBConnection.Connection;
+        Exit;
+      end;
+    end;
+
+  DBConnection := ADOConnections.Add(FileName, IsolationLevel);
+  Result := DBConnection.Connection;
+end;
+
+procedure TryRemoveConnection(FileName: string; Delete: Boolean = false);
+var
+  I: Integer;
+begin
+  FileName := AnsiLowerCase(FileName);
+  for I := ADOConnections.Count - 1 downto 0 do
+  begin
+    if ADOConnections[I].FileName = FileName then
+      if (not ADOConnections[I].IsBusy) and Delete then
+      begin
+        ADOConnections[I].Free;
+        ADOConnections.RemoveAt(I);
+        Exit;
+      end;
+  end;
+end;
+
+procedure RemoveADORef(ADOConnection: TADOConnectionEx);
+const
+  MaxConnectionPoolRead = 5;
+  MaxConnectionPoolWrite = 1;
+
+var
+  I: Integer;
+  Connection: TDBConnection;
+  MaxConnectionPoolByLevel: Integer;
+  FileName: string;
+
+  function GetConnectionsCount(IsolationLevel: TDBIsolationLevel): Integer;
+  var
+    I: Integer;
+  begin
+    Result := 0;
+    for I := 0 to ADOConnections.Count - 1 do
+      if (not ADOConnections[I].IsBusy) and (ADOConnections[I].IsolationLevel = IsolationLevel) then
+        Inc(Result);
+  end;
+
+begin
+  if ADOConnections = nil then
+    Exit;
+
+  FileName := ADOConnection.FileName;
+  MaxConnectionPoolByLevel := 0;
+
+  for I := 0 to ADOConnections.Count - 1 do
+  begin
+    Connection := ADOConnections[I];
+    if Connection.Connection = ADOConnection then
+    begin
+      if Connection.IsolationLevel = dbilRead then
+        MaxConnectionPoolByLevel := MaxConnectionPoolRead;
+      if Connection.IsolationLevel = dbilReadWrite then
+        MaxConnectionPoolByLevel := MaxConnectionPoolWrite;
+
+      Connection.Detach;
+      Break;
+    end;
+  end;
+
+  //close old connections
+  for I := ADOConnections.Count - 1 downto 0 do
+  begin
+    Connection := ADOConnections[I];
+    if (not Connection.IsBusy) and (Connection.FreeOnClose) then
+    begin
+      Connection.Free;
+      ADOConnections.RemoveAt(I);
+      Break;
+    end;
+  end;
+
+  for I := ADOConnections.Count - 1 downto 0 do
+  begin
+    Connection := ADOConnections[I];
+    if (Connection.FileName = FileName) and not Connection.IsBusy and (GetConnectionsCount(Connection.IsolationLevel) > MaxConnectionPoolByLevel) then
+    begin
+      Connection.Free;
+      ADOConnections.RemoveAt(I);
+    end;
+  end;
+end;
+
+procedure CloseReadOnlyConnections(ADOConnection: TADOConnectionEx);
+var
+  I: Integer;
+  Connection: TDBConnection;
+begin
+  for I := ADOConnections.Count - 1 downto 0 do
+  begin
+    Connection := ADOConnections[I];
+    if (Connection.FileName = ADOConnection.FileName) and (Connection.IsolationLevel = dbilRead) then
+      Connection.FreeOnClose := True;
+  end;
 end;
 
 procedure ForwardOnlyQuery(DS: TDataSet);
@@ -471,29 +575,13 @@ begin
     (Query as TADOQuery).Parameters[Index].Value := Value;
 end;
 
-function GetConnectionString(ConnectionString: string; Dbname: string; IsolationMode: TDBIsolationLevel): string;
-var
-  Isolation: string;
-begin
-  Isolation := 'Share Deny None';
-  if IsolationMode = dbilRead then
-    Isolation := 'Read';
-  if IsolationMode = dbilExclusive then
-    Isolation := 'Share Exclusive';
-
-  Result := StringReplace(ConnectionString, '%MODE%', Isolation, [rfReplaceAll, rfIgnoreCase]);
-  Result := Format(Result, [Dbname]);
-end;
-
-function GetConnectionString(Dbname: string; IsolationMode: TDBIsolationLevel): string;
-begin
-  Result := GetConnectionString(ConnectionString, Dbname, IsolationMode);
-end;
-
 procedure ExecSQL(SQL: TDataSet);
 begin
   if (SQL is TADOQuery) then
+  begin
     (SQL as TADOQuery).ExecSQL;
+    CloseReadOnlyConnections((SQL as TADOQuery).Connection as TADOConnectionEx);
+  end;
 end;
 
 procedure SetSQL(SQL: TDataSet; SQLText : String);
@@ -525,7 +613,9 @@ begin
   FSync.Enter;
   try
     Result := TADOQuery.Create(nil);
-    (Result as TADOQuery).Connection := ADOInitialize(TableName, CreateNewConnection, IsolationLevel);
+    if IsolationLevel = dbilReadWrite then
+      IsolationLevel := dbilReadWrite;
+    (Result as TADOQuery).Connection := GetConnection(TableName, CreateNewConnection, IsolationLevel);
     if DBReadOnly then
       ReadOnlyQuery(Result);
   finally
@@ -538,7 +628,7 @@ begin
   FSync.Enter;
   try
     Result := TADODataSet.Create(nil);
-    (Result as TADODataSet).Connection := ADOInitialize(Table);
+    (Result as TADODataSet).Connection := GetConnection(Table);
     (Result as TADODataSet).CommandType := CmdTable;
     if TableID = DB_TABLE_GROUPS then
       (Result as TADODataSet).CommandText := 'Groups';
@@ -573,104 +663,6 @@ begin
   end;
 end;
 
-procedure TryRemoveConnection(dbname: string; Delete: Boolean = false);
-var
-  I: Integer;
-begin
-  dbname := AnsiLowerCase(dbname);
-  for I := ADOConnections.Count - 1 downto 0 do
-  begin
-    if ADOConnections[I].FileName = Dbname then
-      if (ADOConnections[I].RefCount = 0) and Delete then
-      begin
-        ADOConnections[I].ADOConnection.Close;
-        ADOConnections[I].ADOConnection.Free;
-        ADOConnections[I].Free;
-        ADOConnections.RemoveAt(I);
-        Exit;
-      end;
-  end;
-end;
-
-procedure RemoveADORef(ADOConnection: TADOConnection);
-const
-  MaxConnectionPoolByLevel = 0; //don't use connection pool - changes betwen connections could be visible after 1-2 sec
-
-var
-  I: Integer;
-  Conection: TADODBConnection;
-
-  function GetConnectionsCount(IsolationLevel: TDBIsolationLevel): Integer;
-  var
-    I: Integer;
-  begin
-    Result := 0;
-    for I := 0 to ADOConnections.Count - 1 do
-      if (ADOConnections[I].RefCount = 0) and (ADOConnections[I].IsolatationLevel = IsolationLevel) then
-        Inc(Result);
-  end;
-
-begin
-  if ADOConnections = nil then
-    Exit;
-
-  for I := 0 to ADOConnections.Count - 1 do
-    if ADOConnections[I].ADOConnection = ADOConnection then
-    begin
-      Dec(ADOConnections[I].RefCount);
-      Break;
-    end;
-
-  for I := ADOConnections.Count - 1 downto 0 do
-  begin
-    Conection := ADOConnections[I];
-    if (Conection.RefCount = 0) and (GetConnectionsCount(Conection.IsolatationLevel) > MaxConnectionPoolByLevel) then
-    begin
-      Conection.ADOConnection.Free;
-      Conection.Free;
-      ADOConnections.RemoveAt(I);
-    end;
-  end;
-end;
-
-function ADOInitialize(dbname: string; ForseNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TADOConnection;
-var
-  I: Integer;
-  DBConnection: TADODBConnection;
-  CurrentThreadId: THandle;
-begin
-  dbname := AnsiLowerCase(dbname);
-  CurrentThreadId := GetCurrentThreadId;
-  if not ForseNewConnection then
-    for I := 0 to ADOConnections.Count - 1 do
-    begin
-      DBConnection := ADOConnections[I];
-      if (DBConnection.FileName = dbname)
-        and (DBConnection.IsolatationLevel = IsolationLevel)
-        and ((DBConnection.ThreadID = CurrentThreadId) or (DBConnection.RefCount = 0)) then
-      begin
-        Inc(DBConnection.RefCount);
-        DBConnection.ThreadID := CurrentThreadId;
-
-        Result := DBConnection.ADOConnection;
-        Exit;
-      end;
-    end;
-
-  DBConnection := ADOConnections.Add;
-  DBConnection.FileName := AnsiLowerCase(dbname);
-  DBConnection.RefCount := 1;
-  DBConnection.IsolatationLevel := IsolationLevel;
-  DBConnection.ThreadID := CurrentThreadId;
-  DBConnection.ADOConnection := TADOConnection.Create(nil);
-  DBConnection.ADOConnection.ConnectionString := GetConnectionString(dbname, IsolationLevel);
-  DBConnection.ADOConnection.LoginPrompt := False;
-  if IsolationLevel = dbilRead then
-    DBConnection.ADOConnection.IsolationLevel := ilReadCommitted;
-
-  Result := DBConnection.ADOConnection;
-end;
-
 procedure FreeDS(var DS: TDataSet);
 var
   Connection: TADOConnection;
@@ -684,14 +676,14 @@ begin
     begin
       Connection := (DS as TADOQuery).Connection;
       F(DS);
-      RemoveADORef(Connection);
+      RemoveADORef(Connection as TADOConnectionEx);
       Exit;
     end;
     if DS is TADODataSet then
     begin
       Connection := (DS as TADODataSet).Connection;
       F(DS);
-      RemoveADORef(Connection);
+      RemoveADORef(Connection as TADOConnectionEx);
       Exit;
     end;
   finally
@@ -699,96 +691,130 @@ begin
   end;
 end;
 
-procedure CompactDatabase_JRO(DatabaseName:string; DestDatabaseName: string = ''; Password: string = '');
+procedure CompactDatabase_JRO(DatabaseName:string; DestDatabaseName: string; Password: string;
+  Progress: TSimpleCallBackProgressRef);
 const
    Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;';
 var
-  TempName : array[0..MAX_PATH] of Char; // имя временного файла
-  TempPath : string; // путь до него
-  Name : string;
+  TempName: array[0..MAX_PATH] of Char; // имя временного файла
+  TempPath: string; // путь до него
+  Name: string;
   Src,Dest : WideString;
-  V : Variant;
+  V: Variant;
+  WatchThread: TThread;
+  PackInProgress: Boolean;
+  TotalSize: Int64;
 begin
-   try
-     Src := Provider + 'Data Source=' + DatabaseName;
-     if DestDatabaseName <> '' then
-       Name := DestDatabaseName
-     else
-     begin
-       TempPath := ExtractFilePath(DatabaseName);
-       if TempPath = '' then
-         TempPath:=GetCurrentDir;
+  try
+    TotalSize := GetFileSize(DatabaseName);
 
-       Winapi.Windows.GetTempFileName(PWideChar(TempPath), 'mdb' , 0, TempName);
-       Name := StrPas(TempName);
-     end;
-     DeleteFile(Name);
-     Dest := Provider + 'Data Source=' + Name;
-     if Password<>'' then
-     begin
-       Src := Src + ';Jet OLEDB:Database Password=' + Password;
-       Dest := Dest + ';Jet OLEDB:Database Password=' + Password;
-     end;
+    Src := Provider + 'Data Source=' + DatabaseName;
+    if DestDatabaseName <> '' then
+      Name := DestDatabaseName
+    else
+    begin
+      TempPath := ExtractFilePath(DatabaseName);
+      if TempPath = '' then
+        TempPath:=GetCurrentDir;
 
-     V := CreateOleObject('jro.JetEngine');
-     try
-       V.CompactDatabase(Src,Dest);// сжимаем
-     finally
-       V := 0;
-     end;
-     if DestDatabaseName='' then
-     begin
-       DeleteFile(DatabaseName); //то удаляем не упакованную базу
-       RenameFile(Name,DatabaseName); // и переименовываем упакованную базу
-     end;
-   except
-    on e: Exception do
-      EventLog(':CompactDatabase_JRO() throw exception: '+e.Message);
-   end;
+      Winapi.Windows.GetTempFileName(PWideChar(TempPath), 'mdb' , 0, TempName);
+      Name := StrPas(TempName);
+    end;
+    DeleteFile(Name);
+    Dest := Provider + 'Data Source=' + Name;
+    if Password<>'' then
+    begin
+      Src := Src + ';Jet OLEDB:Database Password=' + Password;
+      Dest := Dest + ';Jet OLEDB:Database Password=' + Password;
+    end;
+
+    PackInProgress := True;
+    WatchThread := TThread.CreateAnonymousThread(
+      procedure
+      var
+        CurrentSize: Int64;
+      begin
+        while PackInProgress do
+        begin
+          Sleep(50);
+          if Assigned(Progress) then
+          begin
+            CurrentSize := GetFileSizeByName(Name);
+            if CurrentSize > TotalSize then
+              CurrentSize := TotalSize;
+
+            Progress(nil, TotalSize, CurrentSize);
+          end;
+        end;
+      end
+    );
+    WatchThread.Start;
+    WatchThread.FreeOnTerminate := True;
+
+    PackInProgress := True;
+    try
+
+      V := CreateOleObject('jro.JetEngine');
+      try
+        V.CompactDatabase(Src, Dest);// сжимаем
+      finally
+        V := 0;
+      end;
+
+    finally
+      PackInProgress := False;
+    end;
+
+    if DestDatabaseName='' then
+    begin
+      DeleteFile(DatabaseName); //то удаляем не упакованную базу
+      RenameFile(Name, DatabaseName); // и переименовываем упакованную базу
+    end;
+  except
+   on e: Exception do
+     EventLog(':CompactDatabase_JRO() throw exception: ' + e.Message);
+  end;
 end;
 
-procedure PackTable(FileName: string);
+procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef);
 begin
   TryRemoveConnection(FileName, True);
-  CompactDatabase_JRO(FileName, '', '')
+
+  CompactDatabase_JRO(FileName, '', '', Progress);
 end;
 
 { TADOConnections }
 
-function TADOConnections.Add: TADODBConnection;
+function TConnectionManager.Add(FileName: string; IsolationLevel: TDBIsolationLevel): TDBConnection;
 begin
-  Result := TADODBConnection.Create;
+  Result := TDBConnection.Create(FileName, IsolationLevel);
   FConnections.Add(Result);
 end;
 
-constructor TADOConnections.Create;
+constructor TConnectionManager.Create;
 begin
   FSync := TCriticalSection.Create;
   FConnections := TList.Create;
 end;
 
-destructor TADOConnections.Destroy;
-var
-  I: Integer;
+destructor TConnectionManager.Destroy;
 begin
-  for I := 0 to FConnections.Count - 1 do
-    TADODBConnection(FConnections[I]).ADOConnection.Free;
   FreeList(FConnections);
   F(FSync);
   inherited;
 end;
 
-function TADOConnections.GetCount: Integer;
+function TConnectionManager.GetCount: Integer;
 begin
   Result := FConnections.Count;
 end;
 
-function TADOConnections.GetValueByIndex(Index: Integer): TADODBConnection;
+function TConnectionManager.GetValueByIndex(Index: Integer): TDBConnection;
 begin
   Result := FConnections[Index];
 end;
 
-procedure TADOConnections.RemoveAt(Index: Integer);
+procedure TConnectionManager.RemoveAt(Index: Integer);
 begin
   if (Index > -1) and (Index < FConnections.Count) then
     FConnections.Delete(Index);
@@ -825,73 +851,6 @@ begin
   Result := Integer(CRC);
 end;
 
-{ TDBQueryParams }
-
-function TDBQueryParams.AddDateTimeParam(Name: string; Value: TDateTime) : TDBDateTimeParam;
-begin
-  Result := TDBDateTimeParam.Create;
-  Result.Name := Name;
-  Result.Value := Value;
-  FParamList.Add(Result);
-end;
-
-function TDBQueryParams.AddIntParam(Name: string;
-  Value: Integer): TDBIntegerParam;
-begin
-  Result := TDBIntegerParam.Create;
-  Result.Name := Name;
-  Result.Value := Value;
-  FParamList.Add(Result);
-end;
-
-function TDBQueryParams.AddStringParam(Name, Value: string): TDBStringParam;
-begin
-  Result := TDBStringParam.Create;
-  Result.Name := Name;
-  Result.Value := Value;
-  FParamList.Add(Result);
-end;
-
-procedure TDBQueryParams.ApplyToDS(DS: TDataSet);
-var
-  I : Integer;
-  Paramert : TParameter;
-  DBParam : TDBParam;
-begin
-  SetSQL(DS, Query);
-  for I := 0 to FParamList.Count - 1 do
-  begin
-    DBParam := FParamList[I];
-    Paramert := nil;
-    if DS is TADOQuery then
-      Paramert := TADOQuery(DS).Parameters.FindParam(DBParam.name);
-    if Paramert <> nil then
-    begin
-      if DBParam is TDBDateTimeParam then
-        Paramert.Value := TDBDateTimeParam(DBParam).Value;
-      if DBParam is TDBIntegerParam then
-        Paramert.Value := TDBIntegerParam(DBParam).Value;
-      if DBParam is TDBStringParam then
-        Paramert.Value := TDBStringParam(DBParam).Value;
-    end;
-  end;
-end;
-
-constructor TDBQueryParams.Create;
-begin
-  FParamList := TList.Create;
-  FQueryType := QT_TEXT;
-  FCanBeEstimated := True;
-  FData := nil;
-end;
-
-destructor TDBQueryParams.Destroy;
-begin
-  FreeList(FParamList);
-  F(FData);
-  inherited;
-end;
-
 function DBReadOnly: Boolean;
 var
   Attr: Integer;
@@ -921,13 +880,52 @@ begin
   end;
 end;
 
-initialization
+{ TDBConnection }
 
+constructor TDBConnection.Create(FileName: string; IsolationLevel: TDBIsolationLevel);
+begin
+  FFileName := AnsiLowerCase(FileName);
+  FIsolationLevel := IsolationLevel;
+  FThreadID := GetCurrentThreadId;
+  FreeOnClose := False;
+  FIsBusy := True;
+
+  FADOConnection := TADOConnectionEx.Create(nil);
+  FADOConnection.FileName := FileName;
+  FADOConnection.ConnectionString := GetConnectionString(ConnectionString, FileName, IsolationLevel);
+  FADOConnection.LoginPrompt := False;
+  if IsolationLevel = dbilRead then
+    FADOConnection.IsolationLevel := ilReadCommitted;
+end;
+
+destructor TDBConnection.Destroy;
+begin
+  F(FADOConnection);
+  inherited;
+end;
+
+procedure TDBConnection.Detach;
+begin
+  FIsBusy := False;
+end;
+
+procedure TDBConnection.Reuse;
+begin
+  if FreeOnClose then
+    raise Exception.Create(FormatEx('Connection should be destroyed! ThreadId = {0}', [ThreadID]));
+
+  if IsBusy then
+    raise Exception.Create(FormatEx('Connection is already in use in thread {0}!', [ThreadID]));
+
+  FIsBusy := True;
+  FThreadID := GetCurrentThreadId;
+end;
+
+initialization
   FSync := TCriticalSection.Create;
-  ADOConnections := TADOConnections.Create;
+  ADOConnections := TConnectionManager.Create;
 
 finalization
-
   F(ADOConnections);
   F(FSync);
 

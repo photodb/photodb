@@ -15,6 +15,7 @@ type
   TStringsHelper = class helper for TStrings
     function Join(JoinString: string): string;
     procedure AddRange(Range: TArray<string>);
+    procedure Remove(Value: string; CaseSensetive: Boolean);
   end;
 
 type
@@ -454,6 +455,25 @@ end;
 function TStringsHelper.Join(JoinString: string): string;
 begin
   Result := JoinList(Self, JoinString);
+end;
+
+procedure TStringsHelper.Remove(Value: string; CaseSensetive: Boolean);
+var
+  I: Integer;
+  S: string;
+begin
+  if not CaseSensetive then
+    Value := AnsiLowerCase(Value);
+
+  for I := Count - 1 downto 0 do
+  begin
+    S := Value;
+    if not CaseSensetive then
+      S := AnsiLowerCase(S);
+
+    if S = Value then
+      Delete(I);
+  end;
 end;
 
 procedure TStringReplacer.AddPattern(SubPattern, Value: string);

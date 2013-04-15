@@ -3,17 +3,52 @@ unit uDBScheme;
 interface
 
 uses
+  Winapi.ActiveX,
+  Generics.Collections,
   System.SysUtils,
+  System.Classes,
   Data.DB,
+
+  Dmitry.Utils.System,
 
   uConstants,
   uMemory,
   uLogger,
+  uTranslate,
+  uThreadTask,
   uDBConnection,
-  uDBClasses;
+  uDBClasses,
+  uDBBaseTypes,
+  uFormInterfaces;
 
 const
   CURRENT_DB_SCHEME_VERSION = 3;
+
+type
+  TCollectionUpdateTask = class
+  private
+    FFileName: string;
+  public
+    function Estimate: Integer; virtual;
+    function Text: string; virtual;
+    function Execute(Progress: TSimpleCallBackProgressRef; CurrentVersion: Integer): Integer; virtual;
+    constructor Create(FileName: string);
+    property FileName: string read FFileName;
+  end;
+
+  TPackCollectionTask = class(TCollectionUpdateTask)
+  public
+    function Estimate: Integer; override;
+    function Text: string; override;
+    function Execute(Progress: TSimpleCallBackProgressRef; CurrentVersion: Integer): Integer; override;
+  end;
+
+  TMigrateToV_003_Task = class(TCollectionUpdateTask)
+  public
+    function Estimate: Integer; override;
+    function Text: string; override;
+    function Execute(Progress: TSimpleCallBackProgressRef; CurrentVersion: Integer): Integer; override;
+  end;
 
 type
   TDBScheme = class
@@ -30,10 +65,10 @@ type
     class procedure UpdateCollectionVersion(CollectionFile: string; Version: Integer);
 
     //v2 is base version
-    class procedure MigrateToVersion003(CollectionFile: string);
+    class procedure MigrateToVersion003(CollectionFile: string; Progress: TSimpleCallBackProgressRef);
   public
     class function CreateCollection(CollectionFile: string): Boolean;
-    class function UpdateCollection(CollectionFile: string): Boolean;
+    class function UpdateCollection(CollectionFile: string; CurrentVersion: Integer): Boolean;
     class function IsValidCollectionFile(CollectionFile: string): Boolean;
     class function IsOldColectionFile(CollectionFile: string): Boolean;
   end;
@@ -51,12 +86,96 @@ begin
   CreateObjectsTable(CollectionFile);
   CreateObjectMappingTable(CollectionFile);
 
-  UpdateCollection(CollectionFile);
+  UpdateCollection(CollectionFile, 0);
 end;
 
-class function TDBScheme.UpdateCollection(CollectionFile: string): Boolean;
+type
+  TUpdateTaskList = TList<TCollectionUpdateTask>;
+
+class function TDBScheme.UpdateCollection(CollectionFile: string; CurrentVersion: Integer): Boolean;
+var
+  ProgressForm: IBackgroundTaskStatusForm;
+  TotalAmount: Int64;
+  ReadyAmount: Int64;
+  I: Integer;
+
+  Tasks: TList<TCollectionUpdateTask>;
+  WorkThread: TThread;
 begin
-  MigrateToVersion003(CollectionFile);
+  if CurrentVersion = 0 then
+    CurrentVersion := GetCollectionVersion(CollectionFile);
+
+  ProgressForm := BackgroundTaskStatusForm;
+
+  Tasks := TUpdateTaskList.Create;
+  try
+    Tasks.Add(TPackCollectionTask.Create(CollectionFile));
+    Tasks.Add(TMigrateToV_003_Task.Create(CollectionFile));
+    Tasks.Add(TPackCollectionTask.Create(CollectionFile));
+
+    TotalAmount := 0;
+    ReadyAmount := 0;
+    for I := 0 to Tasks.Count - 1 do
+      Inc(TotalAmount, Tasks[I].Estimate);
+
+    WorkThread := TThread.CreateAnonymousThread(
+      procedure
+      var
+        I: Integer;
+        CurrentAmount: Int64;
+        Task: TCollectionUpdateTask;
+      begin
+        //to call show modal before end of all update process
+        Sleep(100);
+
+        CoInitializeEx(nil, COM_MODE);
+        try
+          for I := 0 to Tasks.Count - 1 do
+          begin
+            Task := Tasks[I];
+            CurrentVersion := Task.Execute(
+              procedure(Sender: TObject; Total, Value: Int64)
+              begin
+                CurrentAmount := ReadyAmount + Round((Task.Estimate * Value) / Total);
+
+                TThread.Synchronize(nil,
+                  procedure
+                  begin
+                    ProgressForm.SetProgress(TotalAmount, CurrentAmount);
+                  end
+                );
+
+              end
+            , CurrentVersion);
+
+            ReadyAmount := ReadyAmount + Task.Estimate;
+
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                ProgressForm.SetProgress(TotalAmount, ReadyAmount);
+              end
+            );
+          end;
+
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              ProgressForm.CloseForm;
+            end
+          );
+        finally
+          CoUninitialize;
+        end;
+      end
+    );
+    WorkThread.FreeOnTerminate := True;
+    WorkThread.Start;
+
+    ProgressForm.ShowModal;
+  finally
+    FreeList(Tasks);
+  end;
 
   Result := True;
 end;
@@ -66,7 +185,7 @@ var
   Version: Integer;
 begin
   Version := GetCollectionVersion(CollectionFile);
-  Result := (1 > Version) and (Version < CURRENT_DB_SCHEME_VERSION);
+  Result := (1 < Version) and (Version < CURRENT_DB_SCHEME_VERSION);
 end;
 
 class function TDBScheme.IsValidCollectionFile(CollectionFile: string): Boolean;
@@ -230,11 +349,13 @@ begin
   end;
 end;
 
-class procedure TDBScheme.MigrateToVersion003(CollectionFile: string);
+class procedure TDBScheme.MigrateToVersion003(CollectionFile: string; Progress: TSimpleCallBackProgressRef);
+const
+  TotalActions = 33;
 var
   FQuery: TDataSet;
 
-  procedure Exec(SQL: string);
+  procedure Exec(SQL: string; CurrentAction: Integer);
   begin
     try
       SetSQL(FQuery, SQL);
@@ -244,62 +365,73 @@ var
         EventLog(e);
       //TODO: raise
     end;
+    Progress(nil, TotalActions, CurrentAction);
   end;
 
-  procedure AlterColumn(ColumnDefinition: string);
+  procedure AlterColumn(ColumnDefinition: string; CurrentAction: Integer);
   begin
-    Exec('ALTER TABLE ImageTable ALTER COLUMN ' + ColumnDefinition);
+    Exec('ALTER TABLE ImageTable ALTER COLUMN ' + ColumnDefinition, CurrentAction);
   end;
 
-  procedure DropColumn(ColumnName: string);
+  procedure DropColumn(ColumnName: string; CurrentAction: Integer);
   begin
-    Exec('ALTER TABLE ImageTable DROP COLUMN ' + ColumnName);
+    Exec('ALTER TABLE ImageTable DROP COLUMN ' + ColumnName, CurrentAction);
+  end;
+
+  procedure RemoveNull(ColumnName, Value: string; CurrentAction: Integer);
+  begin
+    Exec(FormatEx('UPDATE ImageTable SET {0} = {1} WHERE {0} IS NULL', [ColumnName, Value]), CurrentAction);
   end;
 
 begin
   FQuery := GetQuery(CollectionFile, True, dbilExclusive);
   try
-    Exec('DROP INDEX aID ON ImageTable');
-    Exec('DROP INDEX aFolderCRC ON ImageTable');
-    Exec('DROP INDEX aStrThCrc ON ImageTable');
+    Exec('DROP INDEX aID ON ImageTable', 1);
+    Exec('DROP INDEX aFolderCRC ON ImageTable', 2);
+    Exec('DROP INDEX aStrThCrc ON ImageTable', 3);
 
-    AlterColumn('ID Autoincrement NOT NULL');
-    AlterColumn('Name Character(255) NOT NULL');
-    AlterColumn('FFileName Memo NOT NULL');
-    AlterColumn('Comment Memo NOT NULL');
-    AlterColumn('IsDate Logical NOT NULL');
-    AlterColumn('DateToAdd Date NOT NULL');
-    AlterColumn('Rating INTEGER NOT NULL');
-    AlterColumn('Thum LONGBINARY NOT NULL');
-    AlterColumn('FileSize INTEGER NOT NULL');
-    AlterColumn('KeyWords Memo NOT NULL');
-    AlterColumn('Groups Memo NOT NULL');
-    AlterColumn('StrTh Character(100) NOT NULL');
-    AlterColumn('StrThCrc INTEGER NOT NULL');
-    AlterColumn('Attr INTEGER NOT NULL');
-    AlterColumn('Access INTEGER NOT NULL');
-    AlterColumn('Width INTEGER NOT NULL');
-    AlterColumn('Height INTEGER NOT NULL');
-    AlterColumn('Include Logical NOT NULL');
-    AlterColumn('Links Memo NOT NULL');
-    AlterColumn('aTime TIME NOT NULL');
-    AlterColumn('IsTime Logical NOT NULL');
-    AlterColumn('FolderCRC INTEGER NOT NULL');
-    AlterColumn('Rotated INTEGER NOT NULL');
+    AlterColumn('ID Autoincrement NOT NULL', 4);
+    AlterColumn('Name Character(255) NOT NULL', 5);
+    AlterColumn('FFileName Memo NOT NULL', 6);
+    AlterColumn('Comment Memo NOT NULL', 7);
+    AlterColumn('IsDate Logical NOT NULL', 8);
+    AlterColumn('DateToAdd Date NOT NULL', 9);
+    AlterColumn('Rating INTEGER NOT NULL', 10);
+    AlterColumn('Thum LONGBINARY NOT NULL', 11);
+    AlterColumn('FileSize INTEGER NOT NULL', 12);
+    AlterColumn('KeyWords Memo NOT NULL', 13);
+    AlterColumn('Groups Memo NOT NULL', 14);
+    AlterColumn('StrTh Character(100) NOT NULL', 15);
 
-    DropColumn('Owner');
-    DropColumn('Collection');
-    DropColumn('Colors');
+    RemoveNull('StrThCrc', '0', 16);
+    AlterColumn('StrThCrc INTEGER NOT NULL', 17);
+    AlterColumn('Attr INTEGER NOT NULL', 18);
+    AlterColumn('Access INTEGER NOT NULL', 19);
+    AlterColumn('Width INTEGER NOT NULL', 20);
+    AlterColumn('Height INTEGER NOT NULL', 21);
+    AlterColumn('Include Logical NOT NULL', 22);
+    AlterColumn('Links Memo NOT NULL', 23);
+    AlterColumn('aTime TIME NOT NULL', 24);
+    AlterColumn('IsTime Logical NOT NULL', 25);
+    AlterColumn('FolderCRC INTEGER NOT NULL', 26);
+    AlterColumn('Rotated INTEGER NOT NULL', 27);
 
-    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID) WITH PRIMARY DISALLOW NULL');
-    Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL');
-    Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL');
+    DropColumn('Owner', 28);
+    DropColumn('Collection', 29);
+    DropColumn('Colors', 30);
 
+    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID) WITH PRIMARY DISALLOW NULL', 31);
+    Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL', 32);
+    Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL', 33);
+
+    //AddColumn('Color(s) INTEGER(string) NULL', 34);
+    //AddColumn('Histogram Character(255) DEFAULT NULL', 35);
+    //AddCOlumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 36);
   finally
     FreeDS(FQuery);
   end;
 
-  UpdateCollectionVersion(CollectionFile, 003);
+  UpdateCollectionVersion(CollectionFile, 3);
 end;
 
 class function TDBScheme.CreateObjectsTable(CollectionFile: string): Boolean;
@@ -435,7 +567,7 @@ var
 begin
   Result := 0;
 
-  SC := TSelectCommand.Create(ImageTable, CollectionFile, True);
+  SC := TSelectCommand.Create(TableSettings, CollectionFile, True);
   try
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TCustomConditionParameter.Create('1 = 1'));
@@ -492,5 +624,69 @@ begin
   end;
 end;
 
+{ TCollectionUpdateTask }
+
+constructor TCollectionUpdateTask.Create(FileName: string);
+begin
+  FFileName := FileName;
+end;
+
+function TCollectionUpdateTask.Estimate: Integer;
+begin
+  Result := 1;
+end;
+
+function TCollectionUpdateTask.Execute(Progress: TSimpleCallBackProgressRef; CurrentVersion: Integer): Integer;
+begin
+  Result := 0;
+end;
+
+function TCollectionUpdateTask.Text: string;
+begin
+  Result := 'Task name';
+end;
+
+{ TPackCollectionTask }
+
+function TPackCollectionTask.Estimate: Integer;
+begin
+  Result := 100;
+end;
+
+function TPackCollectionTask.Execute(Progress: TSimpleCallBackProgressRef;
+  CurrentVersion: Integer): Integer;
+begin
+  Result := CurrentVersion;
+  PackTable(FileName, Progress);
+end;
+
+function TPackCollectionTask.Text: string;
+begin
+  Result := TA('Pack collection file', 'DBUpdate');
+end;
+
+{ TMigrateToV_003_Task }
+
+function TMigrateToV_003_Task.Estimate: Integer;
+begin
+  Result := 100;
+end;
+
+function TMigrateToV_003_Task.Execute(Progress: TSimpleCallBackProgressRef;
+  CurrentVersion: Integer): Integer;
+begin
+  Result := CurrentVersion;
+
+  if CurrentVersion < 3 then
+  begin
+    TDBScheme.MigrateToVersion003(FileName, Progress);
+    Result := 3;
+  end;
+end;
+
+function TMigrateToV_003_Task.Text: string;
+begin
+  Result := TA('Update to version 3', 'DBUpdate');
+end;
 
 end.
