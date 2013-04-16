@@ -21,6 +21,7 @@ uses
   Dmitry.Graphics.Types,
 
   uMemory,
+  uThemesUtils,
   uTranslate,
   Types;
 
@@ -316,6 +317,12 @@ end;
 
 procedure THelpPopup.FormCreate(Sender: TObject);
 begin
+  Color := Theme.HighlightColor;
+  MemText.Color := Theme.HighlightColor;
+  MemText.Font.Color := Theme.HighlightTextColor;
+
+  ImbClose.Color := Theme.HighlightColor;
+
   Copy1.Caption := TA('Copy', 'Help');
   FCallBack := nil;
   FOnCanCloseMessage := True;
@@ -349,13 +356,15 @@ var
   RGN: HRGN;
   Dx, Dy: Integer;
   PP: array [0 .. 3] of TPoint;
+  HintColor: TColor;
 begin
+  HintColor := Theme.HighlightColor; //$00FFFF
   Bitmap.Width := Width;
   Bitmap.Height := Height;
   Bitmap.Canvas.Brush.Color := $FFFFFF;
   Bitmap.Canvas.Pen.Color := $FFFFFF;
   Bitmap.Canvas.Rectangle(0, 0, Bitmap.Width, Bitmap.Height);
-  Bitmap.Canvas.Brush.Color := $00FFFF;
+  Bitmap.Canvas.Brush.Color := HintColor;
   Bitmap.Canvas.Pen.Color := $0;
   Dx := 50;
   Dy := 50;
@@ -367,8 +376,8 @@ begin
     PP[2]:=Point(0, 0);
     PP[3] := Point(Dx + 20, Dy);
     Bitmap.Canvas.Polygon(PP);
-    Bitmap.Canvas.Brush.Color := $00FFFF;
-    Bitmap.Canvas.Pen.Color := $00FFFF;
+    Bitmap.Canvas.Brush.Color := HintColor;
+    Bitmap.Canvas.Pen.Color := HintColor;
     Bitmap.Canvas.MoveTo(Dx + 20, Dy);
     Bitmap.Canvas.LineTo(Dx + 40, Dy);
   end;
@@ -379,8 +388,8 @@ begin
     PP[2]:=Point(0, Height - 1);
     PP[3] := Point(Dx + 20, Dy + Dh - 1);
     Bitmap.Canvas.Polygon(PP);
-    Bitmap.Canvas.Brush.Color := $00FFFF;
-    Bitmap.Canvas.Pen.Color := $00FFFF;
+    Bitmap.Canvas.Brush.Color := HintColor;
+    Bitmap.Canvas.Pen.Color := HintColor;
     Bitmap.Canvas.MoveTo(Dx + 20, Dy + Dh - 1);
     Bitmap.Canvas.LineTo(Dx + 40, Dy + Dh - 1);
   end;
@@ -391,8 +400,8 @@ begin
     PP[2] := Point(Width - 1, Height - 1);
     PP[3] := Point(Dx - 20 + Dw, Dy + Dh - 1);
     Bitmap.Canvas.Polygon(PP);
-    Bitmap.Canvas.Brush.Color:=$00FFFF;
-    Bitmap.Canvas.Pen.Color:=$00FFFF;
+    Bitmap.Canvas.Brush.Color:=HintColor;
+    Bitmap.Canvas.Pen.Color:=HintColor;
     Bitmap.Canvas.MoveTo(dx+dw- 20, Dy + Dh - 1);
     Bitmap.Canvas.LineTo(Dx + Dw - 40, Dy + Dh - 1);
   end;
@@ -403,8 +412,8 @@ begin
     PP[2] := Point(Width - 1, 0);
     PP[3] := Point(Dx - 20 + Dw, Dy);
     Bitmap.Canvas.Polygon(PP);
-    Bitmap.Canvas.Brush.Color := $00FFFF;
-    Bitmap.Canvas.Pen.Color := $00FFFF;
+    Bitmap.Canvas.Brush.Color := HintColor;
+    Bitmap.Canvas.Pen.Color := HintColor;
     Bitmap.Canvas.MoveTo(Dx - 20 + Dw, Dy);
     Bitmap.Canvas.LineTo(Dx - 40 + Dw, Dy);
   end;

@@ -49,9 +49,6 @@ type
     procedure CloseForm;
   end;
 
-var
-  FormBackgroundTaskStatus: TFormBackgroundTaskStatus;
-
 implementation
 
 {$R *.dfm}

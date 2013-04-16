@@ -137,7 +137,7 @@ begin
   begin
     BtShowActivationForm.Visible := False;
     MemoRegistrationInfo.Clear;
-    MemoRegistrationInfo.Lines.Add(Format(L('Standalone database created using "%s". In this program many features are disabled and these features are available in the full version.'), [ProductName]));
+    MemoRegistrationInfo.Lines.Add(Format(L('Standalone collection created using "%s". In this program many features are disabled and these features are available in the full version.'), [ProductName]));
     ShowModal;
     Exit;
   end;

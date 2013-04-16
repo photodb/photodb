@@ -815,6 +815,7 @@ type
     procedure TbbCreateObjectClick(Sender: TObject);
     procedure TbbClearClick(Sender: TObject);
     procedure DBitem1Click(Sender: TObject);
+    procedure PmListViewTypePopup(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -828,6 +829,7 @@ type
     NewFileNameGUID: TGUID;
     FormLoadEnd: Boolean;
     FPictureSize: Integer;
+    FThumbnailPictureSize: Integer;
     ListView: Integer;
     ElvMain: TEasyListView;
     RefreshIDList: TStrings;
@@ -1092,6 +1094,8 @@ type
     procedure RemoveUpdateID(FileName: string; CID: TGUID);
     procedure AddUpdateID(FileName: string);
     procedure DoBack;
+    procedure LoadFolderListView;
+    procedure SaveFolderListView;
     procedure SetNewPathW(WPath: TExplorerPath; Explorer: Boolean); override;
     procedure SetStringPath(Path: String; ChangeTreeView: Boolean); override;
     procedure ShowProgress;
@@ -5775,6 +5779,24 @@ begin
   Paste1.Visible := CanCopyFromClipboard;
 end;
 
+procedure TExplorerForm.PmListViewTypePopup(Sender: TObject);
+begin
+  case ListView of
+    LV_SMALLICONS:
+      SmallIcons1.Checked := True;
+    LV_ICONS:
+      Icons1.Checked := True;
+    LV_TITLES:
+      List1.Checked := True;
+    LV_TILE:
+      Tile2.Checked := True;
+    LV_GRID:
+      Grid1.Checked := True;
+    LV_THUMBS:
+      Thumbnails1.Checked := True;
+  end;
+end;
+
 procedure TExplorerForm.PmLocationsPopup(Sender: TObject);
 var
   Item: TEasyItem;
@@ -7719,15 +7741,10 @@ begin
      (WPath.PType = EXPLORER_ITEM_DRIVE) or
      (WPath.PType = EXPLORER_ITEM_SHARE) then
   begin
-    EventLog('ExplorerThreadNotifyDirectoryChange');
-    try
-      TW.I.Start(' -> DirectoryWatcher.StopWatch');
-      DirectoryWatcher.StopWatch;
-      TW.I.Start(' -> DirectoryWatcher.Start');
-      DirectoryWatcher.Start(S, Self, Self, StateID, False);
-    except
-      TW.I.Start(' -> EXCEPTION!!!');
-    end;
+    TW.I.Start(' -> DirectoryWatcher.StopWatch');
+    DirectoryWatcher.StopWatch;
+    TW.I.Start(' -> DirectoryWatcher.Start');
+    DirectoryWatcher.Start(S, Self, Self, StateID, False);
   end
   else if (WPath.PType = EXPLORER_ITEM_MYCOMPUTER) then
     S := MyComputer;
@@ -7747,6 +7764,8 @@ begin
     ClearList;
     ElvMain.Groups.Add;
   end;
+
+  LoadFolderListView;
 
   TW.I.Start('PATH parsing NewFormState');
   ListView1SelectItem(nil, nil, False);
@@ -10698,20 +10717,7 @@ end;
 procedure TExplorerForm.SetView(const Value: Integer);
 begin
   ListView := Value;
-  case ListView of
-    LV_SMALLICONS:
-      SmallIcons1.Checked := True;
-    LV_ICONS:
-      Icons1.Checked := True;
-    LV_TITLES:
-      List1.Checked := True;
-    LV_TILE:
-      Tile2.Checked := True;
-    LV_GRID:
-      Grid1.Checked := True;
-    LV_THUMBS:
-      Thumbnails1.Checked := True;
-  end;
+  SaveFolderListView;
   Reload;
 end;
 
@@ -12756,8 +12762,74 @@ begin
   Settings := SettingsRepository.Get;
   try
     FPictureSize := Settings.ThSize;
+    FThumbnailPictureSize := Settings.ThSize;
   finally
     F(Settings);
+  end;
+end;
+
+procedure TExplorerForm.LoadFolderListView;
+var
+  FRegPath: string;
+  View: Integer;
+  IconsSize: Integer;
+  DefaultView: Integer;
+  Reg: TBDRegistry;
+begin
+  DefaultView := LV_THUMBS;
+
+  if FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST then
+    DefaultView := LV_TILE;
+  if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+    DefaultView := LV_TILE;
+
+  FRegPath := MakeRegPath(FCurrentPath);
+  FRegPath := GetCollectionRootKey(FContext.CollectionFileName) + '\Views\' + FRegPath;
+
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    if Reg.OpenKey(FRegPath, False) then
+    begin
+      View := Reg.ReadInteger('View', DefaultView);
+      IconsSize := Reg.ReadInteger('ItemSize', FPictureSize);
+      if (View <> ListView) or (IconsSize <> FPictureSize) then
+      begin
+        ListView := View;
+        FPictureSize := IconsSize;
+        LoadSizes;
+      end;
+    end else
+    begin
+      if (DefaultView <> ListView) or (FPictureSize <> FThumbnailPictureSize) then
+      begin
+        ListView := DefaultView;
+        FPictureSize := FThumbnailPictureSize;
+        LoadSizes;
+      end;
+    end;
+
+  finally
+    F(Reg);
+  end;
+end;
+
+procedure TExplorerForm.SaveFolderListView;
+var
+  FRegPath: string;
+  Reg: TBDRegistry;
+begin
+  FRegPath := MakeRegPath(FCurrentPath);
+  FRegPath := GetCollectionRootKey(FContext.CollectionFileName) + '\Views\' + FRegPath;
+
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    if Reg.OpenKey(FRegPath, True) then
+    begin
+      Reg.WriteInteger('View', ListView);
+      Reg.WriteInteger('ItemSize', FPictureSize);
+    end;
+  finally
+    F(Reg);
   end;
 end;
 

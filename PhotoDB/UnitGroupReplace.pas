@@ -216,7 +216,7 @@ end;
 
 procedure TFormGroupReplace.SetText(GroupName: string);
 begin
-  WarningLabelText.Caption := Format(L('The database found a group named "%s". What to do with this group when you import an existing database?'), [GroupName]);
+  WarningLabelText.Caption := Format(L('A group "%s" was found in collection. What to do with this group when you import an existing collection?'), [GroupName]);
 end;
 
 procedure TFormGroupReplace.RbMergeWithClick(Sender: TObject);

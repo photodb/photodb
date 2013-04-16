@@ -243,7 +243,7 @@ begin
       FQuery.Active := True;
       FQuery.First;
       if FQuery.RecordCount > 0 then
-        if Ask or (ID_OK = MessageBoxDB(GetActiveWindow, Format(TA('This folder (%s) contains %d photos in the database!. Adjust the information in the database?', 'Explorer'),
+        if Ask or (ID_OK = MessageBoxDB(GetActiveWindow, Format(TA('This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?', 'Explorer'),
               [OldFileName, FQuery.RecordCount]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
         begin
 

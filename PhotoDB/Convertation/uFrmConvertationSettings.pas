@@ -182,9 +182,9 @@ end;
 procedure TFrmConvertationSettings.LoadLanguage;
 begin
   inherited;
-  LbInfo.Caption := L('You can adjust the size and compression quality of images in the database and other sizes of images');
-  LbDBImageSize.Caption := L('Default thumbnail size in database');
-  LbDBImageQuality.Caption := L('Compression quality of images stored in the database');
+  LbInfo.Caption := L('You can adjust the size and compression quality of images in the collection and other sizes of images');
+  LbDBImageSize.Caption := L('Default thumbnail size in collection');
+  LbDBImageQuality.Caption := L('Compression quality of images stored in the collection');
   LbPreviewImageSize.Caption := L('Image preview size');
   WlPreviewDBSize.Text := L('Preview');
   WlPreviewDBJpegQuality.Text := L('Preview');
@@ -255,7 +255,7 @@ begin
   //  RecordCount := TFormConvertingDB(Manager.Owner).RecordsCount;
 
   LbSingleImageSize.Caption := Format(L('Image size: %s'), [SizeInText(ImageSize)]);
-  LbDatabaseSize.Caption := Format(L('The size of new database (approximately): %s'),
+  LbDatabaseSize.Caption := Format(L('The size of new collection (approximately): %s'),
     [SizeInText(RecordCount * ImageSize)]);
 end;
 

@@ -19,6 +19,7 @@ uses
   uVistaFuncs,
   uAppUtils,
   uVCLHelpers,
+  uFastLoad,
   uShellNamespaceUtils;
 
 function MessageBoxDB(Handle: THandle; AContent, Title, ADescription: string; Buttons, Icon: Integer): Integer; overload;
@@ -56,6 +57,7 @@ end;
 
 function MessageBoxDB(Handle: THandle; AContent, Title: string; Buttons, Icon: Integer): Integer; overload;
 begin
+  TLoad.Instance.RequiredStyle;
   Result := MessageBoxDB(Handle, AContent, Title, '', Buttons, Icon);
 end;
 

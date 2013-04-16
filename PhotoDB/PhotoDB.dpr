@@ -498,8 +498,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.CreateForm(TFormBackgroundTaskStatus, FormBackgroundTaskStatus);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

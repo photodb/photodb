@@ -491,6 +491,7 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
+  Priority := tpLower;
 
   Inc(UserDirectoryUpdaterCount);
   CoInitializeEx(nil, COM_MODE);

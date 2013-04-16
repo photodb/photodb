@@ -181,7 +181,7 @@ begin
   BeginTranslate;
   try
     Caption := L('Export photos to a removable disk');
-    LabelInfo.Caption := L('This dialog will help you to transfer a portion of photos stored on your hard drive - on CD \ DVD drive.$nl$' + 'Thus the information about the photographs will remain in the database, and if you want to see photos of the program will ask you to insert the appropriate disc.$nl$' + 'Program does not record data on the disc, but only generates a folder designed to write to the disk. $nl$To write to disk data files using special software!');
+    LabelInfo.Caption := L('This dialog will help you to transfer a portion of photos stored on your hard drive - on CD \ DVD drive.$nl$' + 'Thus the information about the photographs will remain in the collection, and if you want to see photos of the program will ask you to insert the appropriate disc.$nl$' + 'Program does not record data on the disc, but only generates a folder designed to write to the disk. $nl$To write to disk data files using special software!');
     LabelCDLabel.Caption := L('Create CD\DVD image with name') + ':';
     EditLabel.WatermarkText := L('Name of drive');
     LabelPath.Caption := L('Location') + ':';
@@ -203,8 +203,8 @@ begin
     Rename1.Caption := L('Rename');
     AddItems1.Caption := L('Add');
     CheckBoxDeleteFiles.Caption := L('Delete original files after a successful export');
-    CheckBoxModifyDB.Caption := L('Adjust the information in the database after a successful export');
-    CheckBoxCreatePortableDB.Caption := L('Create portable database on disk');
+    CheckBoxModifyDB.Caption := L('Adjust the information in the collection after a successful export');
+    CheckBoxCreatePortableDB.Caption := L('Create portable collection on disk');
   finally
     EndTranslate;
   end;
@@ -458,7 +458,7 @@ begin
 
   if not Mapping.DirectoryHasDBFiles(Mapping.GetRoot) then
   begin
-    if ID_YES <> MessageBoxDB(Handle, L('The exported data can not have files associated with the current database! You may not have selected the correct database! Continue to export?'), L('Warning'), TD_BUTTON_YESNO,
+    if ID_YES <> MessageBoxDB(Handle, L('The exported data can not have files associated with the current collection! You may not have selected the correct collection! Continue to export?'), L('Warning'), TD_BUTTON_YESNO,
       TD_ICON_WARNING) then
       Exit;
   end;

@@ -1921,7 +1921,6 @@ begin
     end;
 
   Params := Trim(Params);
-  ExeParams := StringReplace(ExeParams, '"%1"', Params, [RfReplaceAll, RfIgnoreCase]);
   ExeParams := StringReplace(ExeParams, '%1', Params, [RfReplaceAll, RfIgnoreCase]);
   if ShellExecute(0, nil, PWideChar(ExeFile), PWideChar(ExeParams), nil, SW_SHOWNORMAL) < 32 then
     EventLog(':TDBPopupMenu::UserMenuItemPopUpMenu()/ShellExecute return < 32, path = ' + ExeFile + ' params = ' + ExeParams);

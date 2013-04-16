@@ -85,7 +85,7 @@ var
   DBPrefix: string;
 begin
   DBPrefix := ExtractFileName(CollectionFile) + '.' + IntToHex(StringCRC(CollectionFile), 8);
-  Result := GetRegRootKey + '\Collections\' + DBPrefix;
+  Result := GetRegRootKey + 'Collections\' + DBPrefix;
 end;
 
 function GetRegIniFileName: string;
