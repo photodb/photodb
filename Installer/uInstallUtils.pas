@@ -150,7 +150,7 @@ begin
   Result := StringReplace(Path, '{V}', ProductMajorVersionVersion, [rfIgnoreCase]);
   Result := StringReplace(Result, '{LNG}', AnsiLowerCase(TTranslateManager.Instance.Language), [rfIgnoreCase]);
   try
-    ProgramPath := CurrentInstall.DestinationPath;
+    ProgramPath := ExcludeTrailingPathDelimiter(CurrentInstall.DestinationPath);
     StartMenuPath := GetStartMenuPath;
     DesktopPath := GetDesktopPath;
 

@@ -9,42 +9,51 @@ uses
 type
   TInstallAction = class;
 
-  TActionCallback = procedure(Sender : TInstallAction; CurrentPoints, Total : Int64; var Terminate : Boolean) of object;
+  TActionCallback = procedure(Sender: TInstallAction; CurrentPoints, Total: Int64; var Terminate: Boolean) of object;
 
   TInstallAction = class(TObject)
+  private
+    FIsTerminated: Boolean;
   public
     constructor Create; virtual;
     function CalculateTotalPoints : Int64; virtual; abstract;
-    procedure Execute(Callback : TActionCallback); virtual; abstract;
+    procedure Execute(Callback: TActionCallback); virtual; abstract;
+    procedure Terminate;
+    property IsTerminated: Boolean read FIsTerminated;
   end;
 
   TInstallActionClass = class of TInstallAction;
 
   TInstallManager = class(TObject)
   private
-    FInstallScopeList : TList;
-    FTotal : Int64;
+    FInstallScopeList: TList;
+    FTotal: Int64;
     FCurrentlyDone : Int64;
-    FCalBack : TActionCallback;
+    FCalBack: TActionCallback;
     procedure InternalCallback(Sender : TInstallAction; CurrentPoints, Total : int64; var Terminate : Boolean);
   public
     constructor Create;
     destructor Destroy; override;
     class function Instance : TInstallManager;
     procedure RegisterScope(Scope : TInstallActionClass);
-    procedure ExecuteInstallActions(Callback : TActionCallback);
+    function ExecuteInstallActions(Callback : TActionCallback): Boolean;
   end;
 
 implementation
 
 var
-  InstallManagerInstance : TInstallManager = nil;
+  InstallManagerInstance: TInstallManager = nil;
 
 { TInstallAction }
 
 constructor TInstallAction.Create;
 begin
- //
+  FIsTerminated := False;
+end;
+
+procedure TInstallAction.Terminate;
+begin
+  FIsTerminated := True;
 end;
 
 { TInstallManager }
@@ -60,11 +69,12 @@ begin
   inherited;
 end;
 
-procedure TInstallManager.ExecuteInstallActions(Callback: TActionCallback);
+function TInstallManager.ExecuteInstallActions(Callback: TActionCallback): Boolean;
 var
   I: Integer;
   Action: TInstallAction;
 begin
+  Result := True;
   FCalBack := Callback;
   FTotal := 0;
   FCurrentlyDone := 0;
@@ -80,6 +90,10 @@ begin
   begin
     Action := TInstallAction(FInstallScopeList[I]);
     Action.Execute(InternalCallback);
+
+    if Action.IsTerminated then
+      Exit(False);
+
     Inc(FCurrentlyDone, Action.CalculateTotalPoints);
   end;
 end;

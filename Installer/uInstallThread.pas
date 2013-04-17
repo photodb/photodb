@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   Winapi.Windows,
   Winapi.ActiveX,
+
   uInstallTypes,
   uDBForm,
   uMemory,
@@ -14,6 +15,7 @@ uses
   uInstallUtils,
   uInstallScope,
   uActions,
+  uTranslate,
   uIME;
 
 type
@@ -27,9 +29,9 @@ type
     procedure Execute; override;
     procedure ExitSetup;
     procedure UpdateProgress;
-    procedure InstallCallBack(Sender : TInstallAction; CurrentPoints, Total : int64; var Terminate : Boolean);
+    procedure InstallCallBack(Sender: TInstallAction; CurrentPoints, Total: Int64; var Terminate : Boolean);
   public
-    constructor Create(Owner : TDBForm);
+    constructor Create(Owner: TDBForm);
   end;
 
 implementation
@@ -54,10 +56,11 @@ begin
   CoInitialize(nil);
   try
     try
-      TInstallManager.Instance.ExecuteInstallActions(InstallCallBack);
+      if not TInstallManager.Instance.ExecuteInstallActions(InstallCallBack) then
+        MessageBox(0, PChar(TA('Installation was aborted!', 'Setup')), PChar(TA('Error')), MB_OK);
     except
       on e: Exception do
-        MessageBox(0, PChar('Error: ' + e.Message), 'Error', MB_OK);
+        MessageBox(0, PChar('Error: ' + e.Message), PChar(TA('Error')), MB_OK);
     end;
   finally
     Synchronize(ExitSetup);
@@ -71,7 +74,7 @@ begin
 end;
 
 procedure TInstallThread.InstallCallBack(Sender: TInstallAction; CurrentPoints,
-  Total: int64; var Terminate: Boolean);
+  Total: Int64; var Terminate: Boolean);
 begin
   FTotal := Total;
   FCurrentlyDone := CurrentPoints;

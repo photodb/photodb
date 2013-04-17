@@ -18,6 +18,7 @@ uses
   uLogger in '..\PhotoDB\Units\System\uLogger.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uMemory in '..\PhotoDB\Units\System\uMemory.pas',
+  uMemoryEx in '..\PhotoDB\Units\System\uMemoryEx.pas',
   uFormUtils in '..\PhotoDB\Units\Utils\uFormUtils.pas',
   uInstallTypes in '..\Installer\uInstallTypes.pas',
   uInstallScope in '..\Installer\uInstallScope.pas',
@@ -55,7 +56,9 @@ uses
   uXMLUtils in '..\PhotoDB\Units\Utils\uXMLUtils.pas',
   uUninstallCurrentUser in 'uUninstallCurrentUser.pas',
   uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas',
-  uProgramStatInfo in '..\PhotoDB\Units\System\uProgramStatInfo.pas';
+  uProgramStatInfo in '..\PhotoDB\Units\System\uProgramStatInfo.pas',
+  uFormBusyApplications in 'uFormBusyApplications.pas' {FormBusyApplications},
+  uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas';
 
 {$R *.res}
 {$R Commands.res}
@@ -76,7 +79,7 @@ begin
 
   Application.Initialize;
 
-  If ID_YES = TaskDialog(0, TA('Do you really want to delete Photo Database 4.0?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING) then
+  If ID_YES = TaskDialog(0, TA('Do you really want to delete Photo Database 4.5?', 'System'), TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING) then
   begin
     Application.MainFormOnTaskbar := True;
     Application.CreateForm(TFrmMain, FrmMain);

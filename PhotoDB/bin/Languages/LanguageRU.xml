@@ -105,6 +105,9 @@
 	<translate name="Uninstall options" value="Настройки удаления" />
 	<translate name="Do you really want to delete all collection files (*.photodb)?" value="Вы действительно хотите удалить все файлы коллекций (*.photodb)?" />
 	<translate name="Photo Database 4.5 Setup" value="Установка Photo Database 4.5" />
+	<translate name="Please close the following application to continue uninstall:" value="Пожалуйста, закройте следующие приложения для продолжения:" />
+	<translate name="Close applications" value="закрытие приложений" />
+	<translate name="Installation was aborted!" value="Установка была прервана!" />	
   </scope>
   <scope name="Associations">
 	<translate name="All supported formats" value="Все поддерживаемые форматы" />

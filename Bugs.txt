@@ -1,43 +1,52 @@
 Read forums of concurents
 
 Features ready:
-  [F] Explorer tasks panel review;
-  [F] Folder list in bottom menu;
-  [F] Application list in menu review;
-[CR] DB -> Collection in RU
-- Crash in weblink reading from memory
-[B] Hint color
+- Explorer tasks panel review;
+- Folder list in bottom menu;
+- Application list in menu review;
+- DB -> Collection in RU;
+- Crash in weblink reading from memory;
+- Hint color;
 - ShowMessageBox wait for style!
-Save list view for each folder;
+- Save list view for each folder;
+- DB indexes and nullable fields review, Review;
+- MapViewOfFileEx implement -> decode block using this pointer;
+- Dll could be attached to some process (install update);
 
 Bugs:
-- Dll could be attached to some process (install update)
-http://answers.microsoft.com/ru-ru/windows/forum/windows_7-system/%D0%BA%D0%B0%D0%BA/132df38c-5efa-4880-a957-094b96dbcccf
+[Support]
 - InternetUpdate window position of cursor, size;
 - InternetUpdate automatically?
+- Person edit -> change logo links in bottom;
+
+[BUGZ]
+!!!Play encrypted video -> AV + add directory?
+
+[New]
 - Portable persons;
 - Persons to EXIF (using XML string);
-[F] Import set password;
-[F] resize - raw use preview checkbox;
-[F] png watermarks;
+- Import set password;
+
+[Images processing]
+[U] Actions fix
+- resize - raw use preview checkbox;
+- png watermarks;
+
+[Collection]
 - Change database check update thread;
 - Encrypted images after enter password - add to database from all user directories;
-[F] Explorer preview zoom? (icons could be hidden)
-[F] Update info in bottom => remove update form;
-[B] DB indexes and nullable fields review, Review
-[U] Actions fix
-- Edit person form edit image link;
+- Update info in bottom => remove update form;
 - Update in packground if thumbnail size was changed;
-- Person edit -> change logo links in bottom;
-- MapViewOfFileEx implement -> decode block using this pointer;
 
-- Site
+[Maybe]
+- Explorer preview zoom? (icons could be hidden)
+
+[Site]
  Free activation form on the site
- Site search
 
 Possible CRs:
 - Viewcounter for images;
-[F] Prevew pane for Video, non-image files;
+- Prevew pane for Video, non-image files;
 
 [F] Add new styles;
 [F] Player russian (in registry);
@@ -45,5 +54,3 @@ Possible CRs:
 [CR] Private group -> Hidden group;
 [F] DB Search - count indicator;
 - Explorer shift button fix?
-
-TODO:

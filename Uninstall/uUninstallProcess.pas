@@ -14,6 +14,7 @@ implementation
 initialization
 
   TInstallManager.Instance.RegisterScope(TInstallCloseApplication);
+  TInstallManager.Instance.RegisterScope(TInstallCloseRelatedApplications);
   TInstallManager.Instance.RegisterScope(TUninstallShortCuts);
   TInstallManager.Instance.RegisterScope(TInstallAssociations);
   TInstallManager.Instance.RegisterScope(TUnInstallStillImageHandler);

@@ -386,6 +386,9 @@ var
 begin
   FQuery := GetQuery(CollectionFile, True, dbilExclusive);
   try
+    CreateObjectsTable(CollectionFile);
+    CreateObjectMappingTable(CollectionFile);
+
     Exec('DROP INDEX aID ON ImageTable', 1);
     Exec('DROP INDEX aFolderCRC ON ImageTable', 2);
     Exec('DROP INDEX aStrThCrc ON ImageTable', 3);

@@ -254,11 +254,24 @@ end;
 
 function MapViewOfFileExHookProc(hFileMappingObject: THandle; dwDesiredAccess: DWORD;
                                 dwFileOffsetHigh, dwFileOffsetLow: DWORD; dwNumberOfBytesToMap: SIZE_T; lpBaseAddress: Pointer): Pointer; stdcall;
+var
+  Data: Pointer;
 begin
   if lpBaseAddress = nil then
     Exit(MapViewOfFileHookProc(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap));
 
-  NotifyEncryptionError('MapViewOfFileEx, lpBaseAddress');
+  if IsInternalFileMapping(hFileMappingObject) then
+  begin
+    Data := GetInternalFileMapping(hFileMappingObject, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap);
+    try
+      Result := lpBaseAddress;
+      CopyMemory(Result, Data, dwNumberOfBytesToMap);
+    finally
+      FreeMem(Data);
+    end;
+    Exit;
+  end;
+
   Result := MapViewOfFileExNextHook(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap, lpBaseAddress);
 end;
 

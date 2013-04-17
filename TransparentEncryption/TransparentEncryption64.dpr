@@ -20,7 +20,7 @@ uses
   FastMM4 in '..\PhotoDB\External\FastMM\FastMM4.pas',
   FastMM4Messages in '..\PhotoDB\External\FastMM\FastMM4Messages.pas',
   Winapi.Windows,
-  uMemory in '..\PhotoDB\Units\uMemory.pas',
+  uMemory in '..\PhotoDB\Units\System\uMemory.pas',
   DECCipher in '..\PhotoDB\External\Crypt\DECv5.2\DECCipher.pas',
   DECUtil in '..\PhotoDB\External\Crypt\DECv5.2\DECUtil.pas',
   DECFmt in '..\PhotoDB\External\Crypt\DECv5.2\DECFmt.pas',

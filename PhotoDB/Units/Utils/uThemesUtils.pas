@@ -149,7 +149,7 @@ begin
   if StyleServices.Enabled then
     Result := StyleServices.GetStyleFontColor(sfListItemTextNormal)
   else
-    Result := clWindow;
+    Result := clWindowText;
 end;
 
 function TDatabaseTheme.GetListFontSelectedColor: TColor;
@@ -157,7 +157,7 @@ begin
   if StyleServices.Enabled then
     Result := StyleServices.GetStyleFontColor(sfListItemTextSelected)
   else
-    Result := clWindowText;
+    Result := clHighlightText;
 end;
 
 function TDatabaseTheme.GetListSelectedColor: TColor;
