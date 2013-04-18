@@ -37,6 +37,7 @@ uses
   uMemory,
   uFrameWizardBase,
   uDBUtils,
+  uDBContext,
   uDBEntities,
   uDBManager,
   uDBBaseTypes,
@@ -392,11 +393,17 @@ var
   Info: TMediaItemCollection;
   Rec: TMediaItem;
   Menus: TArMenuItem;
+  Context: IDBContext;
+  MediaRepository: IMediaRepository;
 begin
   Info := TMediaItemCollection.Create;
   try
     Rec := TMediaItem.CreateFromFile(ImageFileName);
-    uDBUtils.GetInfoByFileNameA(DBManager.DBContext, ImageFileName, False, Rec);
+
+    Context := DBManager.DBContext;
+    MediaRepository := Context.Media;
+    MediaRepository.UpdateMediaFromDB(Rec, False);
+
     Rec.Selected := True;
 
     Info.IsPlusMenu := False;

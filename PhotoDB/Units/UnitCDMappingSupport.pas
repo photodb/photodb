@@ -302,7 +302,10 @@ procedure TCDIndexMapping.AddRealItemsToCurrentDirectory(Files: TStrings);
 var
   I: Integer;
   Info: TMediaItem;
+  MediaRepository: IMediaRepository;
 begin
+  MediaRepository := FContext.Media;
+
   Info := TMediaItem.Create;
   try
     for I := 0 to Files.Count - 1 do
@@ -311,7 +314,9 @@ begin
         AddRealDirectory(Files[I], nil);
       if FileExistsEx(Files[I]) then
       begin
-        if not GetInfoByFileNameA(DBManager.DBContext, Files[I], False, Info) then
+        Info.FileName := Files[I];
+
+        if not MediaRepository.UpdateMediaFromDB(Info, False) then
           AddRealFile(Files[I])
         else
           AddImageFile(DBFilePath(Info.FileName, Info.ID));

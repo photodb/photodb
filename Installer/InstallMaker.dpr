@@ -9,7 +9,7 @@ uses
   Dmitry.Utils.System,
   uInstallTypes in 'uInstallTypes.pas',
   acWorkRes in '..\PhotoDB\Units\acWorkRes.pas',
-  uMemory in '..\PhotoDB\Units\uMemory.pas',
+  uMemory in '..\PhotoDB\Units\System\uMemory.pas',
   uInstallScope in 'uInstallScope.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uInstallZip in 'uInstallZip.pas',

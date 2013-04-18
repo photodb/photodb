@@ -33,6 +33,7 @@ type
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
     function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
+    function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
   end;
 
 implementation
@@ -278,6 +279,32 @@ begin
         F(SC);
       end;
     end;
+  end;
+end;
+
+function TMediaRepository.UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
+var
+  SC: TSelectCommand;
+begin
+  Result := False;
+
+  SC := FContext.CreateSelect(ImageTable);
+  try
+    if Media.ID > 0 then
+      SC.AddWhereParameter(TIntegerParameter.Create('ID', Media.ID))
+    else
+    begin
+      SC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(Media.FileName, True)));
+      SC.AddParameter(TStringParameter.Create('Name', ExtractFileName(Media.FileName)));
+    end;
+
+    if SC.Execute > 0 then
+    begin
+      Media.ReadFromDS(SC.DS);
+      Media.Tag := EXPLORER_ITEM_IMAGE;
+    end;
+  finally
+    F(SC);
   end;
 end;
 

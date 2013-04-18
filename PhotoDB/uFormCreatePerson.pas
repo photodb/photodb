@@ -89,6 +89,7 @@ type
     ImOK: TImage;
     ImInvalid: TImage;
     ImWarning: TImage;
+    WlEditImage: TWebLink;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
@@ -105,6 +106,7 @@ type
     procedure TmrCkeckNameTimer(Sender: TObject);
     procedure WedNameExit(Sender: TObject);
     procedure WlPersonNameStatusClick(Sender: TObject);
+    procedure WlEditImageClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -503,6 +505,9 @@ begin
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_PERSON_RELOAD_GROUPS');
   FixFormPosition;
 
+  WlEditImage.RefreshBuffer(True);
+  WlEditImage.LoadFromResource('IMEDITOR');
+  WlEditImage.Left := PbPhoto.Left + PbPhoto.Width div 2 - WlEditImage.Width div 2;
   WlPersonNameStatus.Left := LsNameCheck.Left;
 end;
 
@@ -547,6 +552,7 @@ begin
     BtnOk.Caption := L('Ok');
     MiLoadOtherImage.Caption := L('Load other image');
     MiEditImage.Caption := L('Edit image');
+    WlEditImage.Text := L('Change picture');
   finally
     EndTranslate;
   end;
@@ -738,6 +744,16 @@ begin
     Key := 0;
     BtnOkClick(Sender);
   end;
+end;
+
+procedure TFormCreatePerson.WlEditImageClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := WlEditImage.ClientRect.TopLeft;
+  P := WlEditImage.ClientToScreen(P);
+  P.Y := P.Y + WlEditImage.Height;
+  PmImageOptions.Popup(P.X, P.Y);
 end;
 
 procedure TFormCreatePerson.WllGroupsDblClick(Sender: TObject);

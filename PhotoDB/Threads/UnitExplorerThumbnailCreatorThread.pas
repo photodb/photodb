@@ -102,6 +102,7 @@ var
   MinC, MaxC: Integer;
   FHistogramm: TGistogrammData;
   PI: TPathItem;
+  MediaRepository: IMediaRepository;
 begin
   inherited;
   try
@@ -187,7 +188,8 @@ begin
 
             FInfo.Image := TJPEGImage.Create;
             try
-              GetInfoByFileNameA(FContext, FInfo.FileName, True, FInfo);
+              MediaRepository := FContext.Media;
+              MediaRepository.UpdateMediaFromDB(FInfo, True);
 
               if FInfo.HasImage then
               begin

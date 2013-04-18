@@ -32,7 +32,7 @@ uses
 
   uConstants,
   uMemory,
-  uDBUtils,
+  uMediaInfo,
   uDBForm,
   uDBContext,
   uDBEntities,
@@ -254,7 +254,7 @@ begin
         try
           OpenPictureDialog.Filter := TFileAssociations.Instance.FullFilter;
           if OpenPictureDialog.Execute then
-            EdValue.Text := CodeExtID(GetImageIDW(Context, OpenPictureDialog.FileName, False, True).ImTh);
+            EdValue.Text := CodeExtID(GetImageIDW(Context, OpenPictureDialog.FileName, True).ImTh);
 
         finally
           F(OpenPictureDialog);
@@ -334,7 +334,7 @@ begin
       end;
     LINK_TYPE_ID_EXT:
       begin
-        EdValue.Text := CodeExtID(GetImageIDW(Context, DropFileTarget1.Files[0], False, True).ImTh);
+        EdValue.Text := CodeExtID(GetImageIDW(Context, DropFileTarget1.Files[0], True).ImTh);
       end;
   end;
 end;

@@ -17,6 +17,7 @@ uses
   uFrmLanguage in 'uFrmLanguage.pas' {FormLanguage},
   uInstallTypes in 'uInstallTypes.pas',
   uMemory in '..\PhotoDB\Units\System\uMemory.pas',
+  uMemoryEx in '..\PhotoDB\Units\System\uMemoryEx.pas',
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
@@ -59,7 +60,9 @@ uses
   MSXML2_TLB in '..\PhotoDB\Units\MSXML2_TLB.pas',
   uStillImage in 'uStillImage.pas',
   uXMLUtils in '..\PhotoDB\Units\Utils\uXMLUtils.pas',
-  uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas';
+  uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas',
+  uInstallCloseRelatedApplications in 'uInstallCloseRelatedApplications.pas',
+  uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}

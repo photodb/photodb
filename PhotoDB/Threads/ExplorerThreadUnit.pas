@@ -1448,6 +1448,7 @@ var
   FBS: TStream;
   CryptedFile: Boolean;
   JPEG: TJpegImage;
+  MediaRepository: IMediaRepository;
 begin
   TempBitmap := nil;
   IsBigImage := False;
@@ -1486,7 +1487,10 @@ begin
       end;
     end;
   end else
-    GetInfoByFileNameA(FContext, CurrentFile, ExplorerInfo.View = LV_THUMBS, FInfo);
+  begin
+    MediaRepository := FContext.Media;
+    MediaRepository.UpdateMediaFromDB(FInfo, ExplorerInfo.View = LV_THUMBS);
+  end;
 
   FInfo.InfoLoaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;

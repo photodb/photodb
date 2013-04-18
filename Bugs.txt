@@ -12,15 +12,10 @@ Features ready:
 - DB indexes and nullable fields review, Review;
 - MapViewOfFileEx implement -> decode block using this pointer;
 - Dll could be attached to some process (install update);
-
-Bugs:
-[Support]
 - InternetUpdate window position of cursor, size;
-- InternetUpdate automatically?
 - Person edit -> change logo links in bottom;
 
-[BUGZ]
-!!!Play encrypted video -> AV + add directory?
+Bugs:
 
 [New]
 - Portable persons;

@@ -76,6 +76,7 @@ uses
   uDBGraphicTypes,
   uRuntime,
   uDBUtils,
+  uMediaInfo,
   uDBTypes,
   uDBConnection,
   uDBContext,
@@ -1109,7 +1110,7 @@ var
 begin
   if FShowInfoType = SHOW_INFO_FILE_NAME then
   begin
-    Pr := GetImageIDW(DBManager.DBContext, FileName, True, True);
+    Pr := GetImageIDW(DBManager.DBContext, FileName, True);
     if Pr.Count <> 0 then
       Execute(Pr.Ids[0])
     else
@@ -1284,7 +1285,7 @@ var
   PR : TMediaInfo;
 begin
   Adding_now := False;
-  Pr := GetimageIDW(FContext, FileName, False, True);
+  Pr := GetimageIDW(FContext, FileName, True);
   if Pr.Count <> 0 then
     Execute(Pr.Ids[0])
   else
@@ -2849,9 +2850,11 @@ var
 begin
   Info := TMediaItem.Create;
   try
-    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
+    Info.FileName := LinkDropFiles[0];
+    FMediaRepository.UpdateMediaFromDB(Info, False);
+
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Processing');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2883,9 +2886,11 @@ var
 begin
   Info := TMediaItem.Create;
   try
-    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
+    Info.FileName := LinkDropFiles[0];
+    FMediaRepository.UpdateMediaFromDB(Info, False);
+
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Original');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2911,7 +2916,7 @@ end;
 procedure TPropertiesForm.AddImThProcessingImageAndAddOriginalToProcessingPhoto1Click(
   Sender: TObject);
 var
-  Info : TMediaItem;
+  Info: TMediaItem;
   LinkInfo: TLinkInfo;
   LinksInfo: TLinksInfo;
   Query: TDataSet;
@@ -2920,9 +2925,11 @@ var
 begin
   Info := TMediaItem.Create;
   try
-    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
+    Info.FileName := LinkDropFiles[0];
+    FMediaRepository.UpdateMediaFromDB(Info, False);
+
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Processing');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);
@@ -2961,7 +2968,7 @@ end;
 procedure TPropertiesForm.AddOriginalImThAndAddProcessngToOriginalImTh1Click(
   Sender: TObject);
 var
-  Info : TMediaItem;
+  Info: TMediaItem;
   LinkInfo: TLinkInfo;
   LinksInfo: TLinksInfo;
   Query: TDataSet;
@@ -2970,9 +2977,11 @@ var
 begin
   Info := TMediaItem.Create;
   try
-    GetInfoByFileNameA(FContext, LinkDropFiles[0], False, Info);
+    Info.FileName := LinkDropFiles[0];
+    FMediaRepository.UpdateMediaFromDB(Info, False);
+
     if Info.LongImageID = '' then
-      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], False, True).ImTh;
+      Info.LongImageID := GetImageIDW(FContext, LinkDropFiles[0], True).ImTh;
     LinkInfo.LinkType := LINK_TYPE_ID_EXT;
     LinkInfo.LinkName := L('Original');
     LinkInfo.LinkValue := CodeExtID(Info.LongImageID);

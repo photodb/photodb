@@ -36,6 +36,7 @@ uses
   uDBTypes,
   uDBConnection,
   uDBUtils,
+  uMediaInfo,
   uDBContext,
   uDBEntities,
   uDBManager,

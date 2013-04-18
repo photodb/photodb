@@ -33,6 +33,7 @@ type
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
     function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
+    function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
   end;
 
   IGroupsRepository = interface

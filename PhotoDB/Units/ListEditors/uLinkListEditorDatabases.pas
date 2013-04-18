@@ -67,8 +67,6 @@ type
   end;
 
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
-procedure ReadUserCollections(Collections: TList<TDatabaseInfo>);
-procedure SaveUserCollections(Collections: TList<TDatabaseInfo>);
 
 implementation
 
@@ -81,15 +79,6 @@ const
   CHANGE_DB_DESC_LABEL      = 6;
   CHANGE_DB_UPDATE_OPTIONS  = 7;
   CHANGE_DB_PREVIEW_OPTIONS = 7;
-
-function UpdateDatabaseQuery(FileName: string): Boolean;
-var
-  Msg: string;
-begin
-  Msg := FormatEx(TA('Collection "{0}" should be updated to work with this program version. After updating this collection may not work with previous program versions. Update now?', 'Explorer'), [FileName]);
-
-  Result := ID_YES = MessageBoxDB(Screen.ActiveFormHandle, Msg, TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING);
-end;
 
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 var
@@ -110,104 +99,6 @@ begin
     end;
   finally
     Editor := nil;
-  end;
-end;
-
-procedure ReadUserCollections(Collections: TList<TDatabaseInfo>);
-var
-  Reg: TBDRegistry;
-  List: TStrings;
-  I: Integer;
-  Icon, FileName, Description: string;
-begin
-  List := TStringList.Create;
-  try
-    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    try
-      Reg.OpenKey(RegRoot + 'dbs', True);
-      Reg.GetKeyNames(List);
-      for I := 0 to List.Count - 1 do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(RegRoot + 'dbs\' + List[I], True);
-        if Reg.ValueExists('Icon') and Reg.ValueExists('FileName') then
-        begin
-          Icon := Reg.ReadString('Icon');
-          FileName := Reg.ReadString('FileName');
-          Description := Reg.ReadString('Description');
-          Collections.Add(TDatabaseInfo.Create(List[I], FileName, Icon, Description, Reg.ReadInteger('Order')));
-        end;
-      end;
-    finally
-      F(Reg);
-    end;
-  finally
-    F(List);
-  end;
-
-  Collections.Sort(TComparer<TDatabaseInfo>.Construct(
-     function (const L, R: TDatabaseInfo): Integer
-     begin
-       Result := L.Order - R.Order;
-     end
-  ));
-end;
-
-procedure SaveUserCollections(Collections: TList<TDatabaseInfo>);
-var
-  Reg: TBDRegistry;
-  List: TStrings;
-  I: Integer;
-  DB: TDatabaseInfo;
-  Settings: TSettings;
-  Context: IDBContext;
-  SettingsRepository: ISettingsRepository;
-begin
-  List := TStringList.Create;
-  try
-    Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-    try
-      Reg.OpenKey(RegRoot + 'dbs', True);
-      Reg.GetKeyNames(List);
-      for I := 0 to List.Count - 1 do
-        Reg.DeleteKey(List[I]);
-
-      for DB in Collections do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(RegRoot + 'dbs\' + DB.Title, True);
-        Reg.WriteString('FileName', DB.Path);
-        Reg.WriteString('Icon', DB.Icon);
-        Reg.WriteString('Description', DB.Description);
-        Reg.WriteInteger('Order', Collections.IndexOf(DB));
-
-        if TDBScheme.IsOldColectionFile(DB.Path) then
-        begin
-          if UpdateDatabaseQuery(DB.Path) then
-            TDBScheme.UpdateCollection(DB.Path, 0);
-        end;
-
-        if TDBScheme.IsValidCollectionFile(DB.Path) then
-        begin
-          Context := TDBContext.Create(DB.Path);
-          SettingsRepository := Context.Settings;
-
-          Settings := SettingsRepository.Get;
-          try
-            Settings.Name := DB.Title;
-            Settings.Description := DB.Description;
-            SettingsRepository.Update(Settings);
-          finally
-            F(Settings);
-          end;
-        end;
-      end;
-
-    finally
-      F(Reg);
-    end;
-  finally
-    F(List);
   end;
 end;
 
@@ -418,7 +309,7 @@ var
 
         if TDBScheme.IsOldColectionFile(FileName) then
         begin
-          if UpdateDatabaseQuery(FileName) then
+          if TDBManager.UpdateDatabaseQuery(FileName) then
             TDBScheme.UpdateCollection(FileName, 0);
         end;
 

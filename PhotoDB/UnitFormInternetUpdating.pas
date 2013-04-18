@@ -78,7 +78,8 @@ begin
   else
     Caption := Format(L('New version is available - %s'), [ReleaseToString(FInfo.Release)]);
 
-  RedInfo.Lines.Text := FInfo.ReleaseText;
+  RedInfo.Lines.Text := Trim(FInfo.ReleaseText);
+  RedInfo.SelStart := 0;
   DownloadURL := FInfo.UrlToDownload;
   Show;
 end;

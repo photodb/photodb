@@ -75,6 +75,7 @@ uses
   uShellIntegration,
   uRuntime,
   uDBUtils,
+  uMediaInfo,
   uDBContext,
   uDBEntities,
   uDBManager,
@@ -2434,7 +2435,7 @@ procedure TImageEditor.Properties1Click(Sender: TObject);
 var
   PR: TMediaInfo;
 begin
-  Pr := GetImageIDW(DBManager.DBContext, CurrentFileName, False, True);
+  Pr := GetImageIDW(DBManager.DBContext, CurrentFileName, True);
   if Pr.Count <> 0 then
     PropertyManager.NewIDProperty(Pr.Ids[0]).Execute(Pr.Ids[0])
   else

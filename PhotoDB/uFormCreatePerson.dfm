@@ -30,7 +30,7 @@ object FormCreatePerson: TFormCreatePerson
     Left = 8
     Top = 8
     Width = 254
-    Height = 304
+    Height = 284
     PopupMenu = PmImageOptions
     OnClick = WedNameExit
     OnPaint = PbPhotoPaint
@@ -327,6 +327,25 @@ object FormCreatePerson: TFormCreatePerson
     OnClick = WlPersonNameStatusClick
     ImageIndex = 0
     IconWidth = 0
+    UseEnterColor = False
+    EnterColor = clBlack
+    EnterBould = False
+    TopIconIncrement = 0
+    UseSpecIconSize = True
+    HightliteImage = False
+    StretchImage = True
+    CanClick = True
+  end
+  object WlEditImage: TWebLink
+    Left = 96
+    Top = 298
+    Width = 81
+    Height = 16
+    Cursor = crHandPoint
+    PopupMenu = PmImageOptions
+    Text = 'WlEditImage'
+    OnClick = WlEditImageClick
+    ImageIndex = 0
     UseEnterColor = False
     EnterColor = clBlack
     EnterBould = False

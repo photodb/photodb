@@ -7,6 +7,7 @@ uses
   uUninstallActions,
   uSelfDeleteAction,
   uAssociationActions,
+  uInstallCloseRelatedApplications,
   uUninstallCurrentUser;
 
 implementation

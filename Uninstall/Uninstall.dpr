@@ -57,8 +57,9 @@ uses
   uUninstallCurrentUser in 'uUninstallCurrentUser.pas',
   uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas',
   uProgramStatInfo in '..\PhotoDB\Units\System\uProgramStatInfo.pas',
-  uFormBusyApplications in 'uFormBusyApplications.pas' {FormBusyApplications},
-  uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas';
+  uFormBusyApplications in '..\Installer\uFormBusyApplications.pas' {FormBusyApplications},
+  uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas',
+  uInstallCloseRelatedApplications in '..\Installer\uInstallCloseRelatedApplications.pas';
 
 {$R *.res}
 {$R Commands.res}

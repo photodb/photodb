@@ -1406,7 +1406,7 @@ begin
   FExtendedSearchParams := nil;
   FExtendedSearchPersons := nil;
   FDatabases := TList<TDatabaseInfo>.Create;
-  ReadUserCollections(FDatabases);
+  TDBManager.ReadUserCollections(FDatabases);
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -4219,7 +4219,9 @@ begin
         end;
       end;
 
-      if FI.FileType = EXPLORER_ITEM_GROUP then
+      if FI.FileType in [EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_DRIVE,
+        EXPLORER_ITEM_NETWORK, EXPLORER_ITEM_DEVICE, EXPLORER_ITEM_SHELF, EXPLORER_ITEM_CALENDAR,
+        EXPLORER_ITEM_GROUP_LIST, EXPLORER_ITEM_PERSON_LIST] then
       begin
         DetailsCount := 1;
         Result.Details[1] := 1;
@@ -12682,7 +12684,7 @@ var
   LB: TLayeredBitmap;
 begin
   FreeList(FDatabases, False);
-  ReadUserCollections(FDatabases);
+  TDBManager.ReadUserCollections(FDatabases);
 
   IconFileName := '';
   TbDatabase.Visible := FDatabases.Count > 1;
@@ -12778,6 +12780,16 @@ var
 begin
   DefaultView := LV_THUMBS;
 
+  if FCurrentTypePath = EXPLORER_ITEM_NETWORK then
+    DefaultView := LV_TILE;
+  if FCurrentTypePath = EXPLORER_ITEM_WORKGROUP then
+    DefaultView := LV_TILE;
+  if FCurrentTypePath = EXPLORER_ITEM_COMPUTER then
+    DefaultView := LV_TILE;
+  if FCurrentTypePath = EXPLORER_ITEM_CALENDAR then
+    DefaultView := LV_TILE;
+  if FCurrentTypePath = EXPLORER_ITEM_PERSON then
+    DefaultView := LV_TILE;
   if FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST then
     DefaultView := LV_TILE;
   if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
@@ -12840,7 +12852,7 @@ begin
   Editor := TLinkListEditorDatabases.Create(Self);
   try
     if LinkItemSelectForm.Execute(450, L('List of collections'), TList<TDataObject>(FDatabases), Editor) then
-      SaveUserCollections(FDatabases);
+      TDBManager.SaveUserCollections(FDatabases);
 
     LoadDBList;
   finally

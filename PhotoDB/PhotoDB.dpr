@@ -9,7 +9,7 @@ program PhotoDB;
 {$IFEND}
 
 uses
-  FastMM4,
+  ScaleMM2 in 'External\scalemm\ScaleMM2.pas',
   {$IFDEF DEBUG}
   ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
   {$ENDIF}
@@ -380,7 +380,16 @@ uses
   uDBEntities in 'Units\Database\uDBEntities.pas',
   uGroupsRepository in 'Units\Database\uGroupsRepository.pas',
   uMediaRepository in 'Units\Database\uMediaRepository.pas',
-  uFormBackgroundTaskStatus in 'uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus};
+  uFormBackgroundTaskStatus in 'uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus},
+  smmFunctions in 'External\scalemm\smmFunctions.pas',
+  smmGlobal in 'External\scalemm\smmGlobal.pas',
+  smmLargeMemory in 'External\scalemm\smmLargeMemory.pas',
+  smmLogging in 'External\scalemm\smmLogging.pas',
+  smmMediumMemory in 'External\scalemm\smmMediumMemory.pas',
+  smmSmallMemory in 'External\scalemm\smmSmallMemory.pas',
+  smmStatistics in 'External\scalemm\smmStatistics.pas',
+  smmTypes in 'External\scalemm\smmTypes.pas',
+  uMediaInfo in 'Units\uMediaInfo.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -490,15 +499,12 @@ begin
     if not DBTerminating and not GetParamStrDBBool('/install') then
     begin
       if not DBManager.LoadDefaultCollection then
-      begin
-        //TODO: notify user that database is invalid!
-        DBTerminating := True;
-      end;
+        DBManager.CreateSampleDefaultCollection;
     end;
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

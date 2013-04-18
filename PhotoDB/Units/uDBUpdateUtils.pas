@@ -27,7 +27,7 @@ uses
   uRuntime,
   uMemory,
   uDBTypes,
-  uDBUtils,
+  uMediaInfo,
   uStringUtils,
   uShellIntegration,
   uLogger,

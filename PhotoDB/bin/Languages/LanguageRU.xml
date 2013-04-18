@@ -106,7 +106,7 @@
 	<translate name="Do you really want to delete all collection files (*.photodb)?" value="Вы действительно хотите удалить все файлы коллекций (*.photodb)?" />
 	<translate name="Photo Database 4.5 Setup" value="Установка Photo Database 4.5" />
 	<translate name="Please close the following application to continue uninstall:" value="Пожалуйста, закройте следующие приложения для продолжения:" />
-	<translate name="Close applications" value="закрытие приложений" />
+	<translate name="Close applications" value="Закрытие приложений" />
 	<translate name="Installation was aborted!" value="Установка была прервана!" />	
   </scope>
   <scope name="Associations">
@@ -1595,6 +1595,7 @@
 	<translate name="Person name is unique!" value="Имя персоны - уникальное!"/>
 	<translate name="Person name already in use!" value="Данное имя уже используется!"/>
 	<translate name="Person name is required!" value="Имя персоны - обязательное поле!"/>
+	<translate name="Change picture" value="Сменить изображение"/>	
   </scope>
   <scope name="SelectPerson">
 	<translate name="Select person" value="Выбор персоны"/>
@@ -1654,6 +1655,7 @@
 	<translate name="hidden" value="скрытые"/>
 	<translate name="private" value="личные"/>
 	<translate name=", including {0}" value=", включая {0}" />
+	<translate name="{0} free of {1}" value="{0} свободно из {1}"/>
   </scope>
   <scope name="EditObject">
 	<translate name="Edit text" value="Редактировать текст"/>

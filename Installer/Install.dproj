@@ -93,6 +93,7 @@
         </DCCReference>
         <DCCReference Include="uInstallTypes.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemory.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uMemoryEx.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
@@ -147,6 +148,8 @@
         <DCCReference Include="uStillImage.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uXMLUtils.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uThemesUtils.pas"/>
+        <DCCReference Include="uInstallCloseRelatedApplications.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\Utils\uIconUtils.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

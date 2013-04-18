@@ -430,6 +430,7 @@ begin
     //AddColumn('Color(s) INTEGER(string) NULL', 34);
     //AddColumn('Histogram Character(255) DEFAULT NULL', 35);
     //AddCOlumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 36);
+    //AddCOlumn('ViewCount INTEGER NOT NULL DEFAULT 0', 37);
   finally
     FreeDS(FQuery);
   end;

@@ -77,7 +77,6 @@ begin
 
       if not (Now - LastCheckDate > 7) then
         Exit;
-
     end;
 
     try

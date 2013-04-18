@@ -266,7 +266,7 @@ begin
   SetLength(FAssociatedIcons, 3 * 4);
 
   FAssociatedIcons[0].Ext := '';
-  FindIcon(HInstance, 'Directory', 16, 32, FAssociatedIcons[0].Icon); // GetShellImage(ProgramDir,16);
+  FindIcon(HInstance, 'Directory', 16, 32, FAssociatedIcons[0].Icon);
   FAssociatedIcons[0].SelfIcon := True;
   FAssociatedIcons[0].Size := 16;
 

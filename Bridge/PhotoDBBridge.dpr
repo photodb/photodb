@@ -14,7 +14,7 @@ uses
   ComServ,
   uAutoplayHandler in 'uAutoplayHandler.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',
-  uMemory in '..\PhotoDB\Units\uMemory.pas';
+  uMemory in '..\PhotoDB\Units\System\uMemory.pas';
 
 var
   Frm: TForm;

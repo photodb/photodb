@@ -25,6 +25,8 @@ uses
   uGUIDUtils,
   uDBContext,
   uDBEntities,
+  uTranslate,
+  uTranslateUtils,
 
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
@@ -492,6 +494,7 @@ end;
 constructor TExplorerFileInfo.CreateFromPathItem(PI: TPathItem);
 var
   CN: string;
+  FreeSpace, TotalSpace: Int64;
 begin
   inherited Create;
   FileName := PI.Path;
@@ -505,7 +508,15 @@ begin
   CN := PI.ClassName;
 
   if PI is TDriveItem then
-    FileType := EXPLORER_ITEM_DRIVE
+  begin
+    FileType := EXPLORER_ITEM_DRIVE;
+
+    FreeSpace  := DiskFree(Ord(PI.Path[1]) - 64);
+    TotalSpace := DiskSize(Ord(PI.Path[1]) - 64);
+
+    if TotalSpace > 0 then
+      Comment := FormatEx(TA('{0} free of {1}', 'Path'), [SizeInText(FreeSpace), SizeInText(TotalSpace)]);
+  end
   else if PI is THomeItem then
     FileType := EXPLORER_ITEM_MYCOMPUTER
   else if PI is TGroupsItem then
