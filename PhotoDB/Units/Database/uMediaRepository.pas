@@ -295,8 +295,9 @@ begin
     else
     begin
       SC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(Media.FileName, True)));
-      SC.AddParameter(TStringParameter.Create('Name', ExtractFileName(Media.FileName)));
+      SC.AddWhereParameter(TStringParameter.Create('Name', ExtractFileName(Media.FileName)));
     end;
+    SC.AddParameter(TAllParameter.Create());
 
     if SC.Execute > 0 then
     begin

@@ -389,7 +389,8 @@ uses
   smmSmallMemory in 'External\scalemm\smmSmallMemory.pas',
   smmStatistics in 'External\scalemm\smmStatistics.pas',
   smmTypes in 'External\scalemm\smmTypes.pas',
-  uMediaInfo in 'Units\uMediaInfo.pas';
+  uMediaInfo in 'Units\uMediaInfo.pas',
+  uColorUtils in 'Units\Utils\uColorUtils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

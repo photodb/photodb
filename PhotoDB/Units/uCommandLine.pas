@@ -85,7 +85,7 @@ begin
       if (AppSettings.ReadProperty('Starting', 'ApplicationStarted') = '1') then
       begin
         CloseSplashWindow;
-        if ID_OK = MessageBoxDB(Application.MainFormHandle, TA('There was an error closing previous instance of this program! Check database file for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
+        if ID_OK = MessageBoxDB(Application.MainFormHandle, TA('Previous instance of the Photo Database was unexpected terminated. Check collection for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
         begin
           AppSettings.WriteBool('StartUp', 'Pack', False);
           Application.CreateForm(TCMDForm, CMDForm);

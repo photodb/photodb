@@ -327,10 +327,14 @@ end;
 function IsFileInCollectionDirectories(CollectionFile: string; FileName: string): Boolean;
 var
   FolderList: TList<TDatabaseDirectory>;
+  I: Integer;
 begin
   FolderList := TList<TDatabaseDirectory>.Create;
   try
     ReadDatabaseDirectories(FolderList, FileName);
+
+    for I := 0 to FolderList.Count - 1 do
+
   finally
     F(FolderList);
   end;
@@ -916,6 +920,7 @@ begin
           if Res.Count = 0 then
           begin
             TDatabaseUpdateManager.AddFile(FDBContext, Info, Res);
+            Continue;
           end;
 
           if Res.Count = 1 then

@@ -76,6 +76,7 @@
 	<translate name="Home page" value="Домашняя страница" />
 	<translate name="Please, activate the program to encrypt files larger than 1Gb!" value="Пожалуйста, активируйте программу, чтобы шифровать файлы более 1Gb!" />
 	<translate name="Transparent encryption isn't available on mobile verison." value="Прозрачное шифрование недоступно в мобильной версии." />
+	<translate name="Previous instance of the Photo Database was unexpected terminated. Check collection for errors?" value="Предыдущий запуск прораммы был неожиданно завершён. Проверить коллекцию на наличие ошибок?" />
   </scope>
   <scope name="Setup">
 	<translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
