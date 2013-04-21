@@ -43,11 +43,13 @@ type
 implementation
 
 uses
+{$IFNDEF TESTS}
   UnitLoadDBKernelIconsThread,
   UnitLoadCRCCheckThread,
   UnitLoadPersonsThread,
-  uDBThread,
-  uLoadStyleThread;
+  uLoadStyleThread,
+{$ENDIF}
+  uDBThread;
 
 var
   SLoadInstance: TLoad = nil;
@@ -79,36 +81,44 @@ procedure TLoad.StartDBKernelIconsThread;
 var
   T: TDBThread;
 begin
+{$IFNDEF TESTS}
   T := TLoadDBKernelIconsThread.Create(nil, True);
   LoadDBKernelIconsThreadID := T.UniqID;
   T.Start;
+{$ENDIF}
 end;
 
 procedure TLoad.StartPersonsThread;
 var
   T: TDBThread;
 begin
+{$IFNDEF TESTS}
   T := TLoadPersonsThread.Create(nil, True);
   LoadPersonsThreadID := T.UniqID;
   T.Start;
+{$ENDIF}
 end;
 
 procedure TLoad.StartStyleThread;
 var
   T: TDBThread;
 begin
+{$IFNDEF TESTS}
   T := TLoadStyleThread.Create(nil, True);
   LoadStyleThreadID := T.UniqID;
   T.Start;
+{$ENDIF}
 end;
 
 procedure TLoad.StartCRCCheckThread;
 var
   T: TDBThread;
 begin
+{$IFNDEF TESTS}
   T := TLoadCRCCheckThread.Create(nil, True);
   LoadCRCCheckThreadID := T.UniqID;
   T.Start;
+{$ENDIF}
 end;
 
 procedure TLoad.Stop;

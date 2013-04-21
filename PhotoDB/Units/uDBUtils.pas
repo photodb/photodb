@@ -41,7 +41,6 @@ uses
   uDBBaseTypes,
   uMemory,
   uAssociations,
-  uDBImageUtils,
   uCDMappingTypes,
   uDBForm,
   uCollectionEvents,

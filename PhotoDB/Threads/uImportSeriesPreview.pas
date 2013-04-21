@@ -18,7 +18,8 @@ uses
   uThreadEx,
   uMemory,
   uIconUtils,
-  uDBImageUtils,
+  uImageLoader,
+  uDBEntities,
   uPortableDeviceUtils;
 
 type
@@ -67,6 +68,8 @@ var
   Data: TObject;
   PI: TPathItem;
   FIcon: TIcon;
+  MediaItem: TMediaItem;
+  ImageInfo: ILoadImageInfo;
 begin
   FreeOnTerminate := True;
   CoInitializeEx(nil, COINIT_MULTITHREADED);
@@ -108,10 +111,16 @@ begin
             end;
           end else
           begin
-            if ExtractFilePreview(FData[I].Path, FImageSize, FImageSize, FBitmap) then
-            begin
-              if SynchronizeEx(UpdatePreview) then
-                FBitmap := nil;
+            MediaItem := TMediaItem.CreateFromFile(FData[I].Path);
+            try
+              if LoadImageFromPath(MediaItem, 1, '', [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo, FImageSize, FImageSize) then
+              begin
+                FBitmap := ImageInfo.GenerateBitmap(MediaItem, FImageSize, FImageSize, pf32bit, clNone, [ilboFreeGraphic, ilboRotate, ilboApplyICCProfile, ilboQualityResize]);
+                if (FBitmap <> nil) and SynchronizeEx(UpdatePreview) then
+                  FBitmap := nil;
+              end;
+            finally
+              F(MediaItem);
             end;
           end;
         finally

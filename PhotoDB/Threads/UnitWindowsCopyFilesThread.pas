@@ -63,8 +63,6 @@ type
 
 implementation
 
-uses ExplorerUnit;
-
 { TWindowsCopyFilesThread }
 
 constructor TWindowsCopyFilesThread.Create(Context: IDBContext; Handle: Hwnd; Src: TStrings; Dest: string; Move, AutoRename: Boolean;

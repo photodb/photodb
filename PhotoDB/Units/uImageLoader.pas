@@ -173,7 +173,7 @@ begin
 
     MSICC := nil;
 
-    LoadToMemory := not (GraphicClass = TRAWImage);
+    LoadToMemory := not (GraphicClass = TRAWImage) and (ilfEXIF in Flags);
     if (GraphicClass = TPSDGraphic) then
       LoadToMemory := False;
     if IsDevicePath(Info.FileName) then
@@ -235,7 +235,7 @@ begin
 
       if ((S <> nil) and (S.Size > 0)) or LoadOnlyExif then
       begin
-        if Flags * [ilfICCProfile, ilfEXIF] <> [] then
+        if Flags * [ilfICCProfile, ilfEXIF, ilfGraphic] <> [] then
         begin
           if not LoadOnlyExif then
             S.Seek(0, soFromBeginning);
@@ -245,51 +245,54 @@ begin
             RawExif := TRAWExif.Create;
 
           try
-            if LoadOnlyExif then
+            if Flags * [ilfEXIF] <> [] then
             begin
-              ExifData.LoadFromFileEx(Info.FileName, False);
-              if RawExif <> nil then
-                RawExif.LoadFromFile(Info.FileName);
-            end else
-            begin
-              ExifData.LoadFromGraphic(S);
-              if RawExif <> nil then
+              if LoadOnlyExif then
               begin
-                S.Seek(0, soFromBeginning);
-                RawExif.LoadFromStream(S);
-              end;
-            end;
-
-            if not ExifData.Empty then
-            begin
-              if not (ilfDontUpdateInfo in Flags) then
+                ExifData.LoadFromFileEx(Info.FileName, False);
+                if RawExif <> nil then
+                  RawExif.LoadFromFile(Info.FileName);
+              end else
               begin
-                Info.HasExifHeader := True;
-                if (ExifData.DateTime > 0) and (YearOf(ExifData.DateTime) >= cMinEXIFYear) then
+                ExifData.LoadFromGraphic(S);
+                if RawExif <> nil then
                 begin
-                  Info.Date := DateOf(ExifData.DateTime);
-                  Info.Time := TimeOf(ExifData.DateTime);
+                  S.Seek(0, soFromBeginning);
+                  RawExif.LoadFromStream(S);
                 end;
               end;
 
-              if (ilfEXIF in Flags) then
-                EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-
-              if (ilfICCProfile in Flags) then
+              if not ExifData.Empty then
               begin
-                if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
-                  or (ExifData.ColorSpace = csICCProfile) then
+                if not (ilfDontUpdateInfo in Flags) then
                 begin
-                  if ExifData.HasICCProfile then
+                  Info.HasExifHeader := True;
+                  if (ExifData.DateTime > 0) and (YearOf(ExifData.DateTime) >= cMinEXIFYear) then
                   begin
-                    MSICC := TMemoryStream.Create;
-                    ExifData.ExtractICCProfile(MSICC);
+                    Info.Date := DateOf(ExifData.DateTime);
+                    Info.Time := TimeOf(ExifData.DateTime);
                   end;
-                  if MSICC = nil then
+                end;
+
+                if (ilfEXIF in Flags) then
+                  EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+
+                if (ilfICCProfile in Flags) then
+                begin
+                  if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
+                    or (ExifData.ColorSpace = csICCProfile) then
                   begin
-                    XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
-                    if XMPICCProperty <> nil then
-                      XMPICCPrifile := XMPICCProperty.ReadValue();
+                    if ExifData.HasICCProfile then
+                    begin
+                      MSICC := TMemoryStream.Create;
+                      ExifData.ExtractICCProfile(MSICC);
+                    end;
+                    if MSICC = nil then
+                    begin
+                      XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
+                      if XMPICCProperty <> nil then
+                        XMPICCPrifile := XMPICCProperty.ReadValue();
+                    end;
                   end;
                 end;
               end;
@@ -323,7 +326,6 @@ begin
 
                 if not Graphic.Empty then
                 begin
-
                   //load ICC profile from PNG image
                   if (Graphic is TPngImage) and (ilfICCProfile in Flags) and (MSICC = nil) then
                     ApplyPNGIccProfile(TPngImage(Graphic), DisplayProfileName);

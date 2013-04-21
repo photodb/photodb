@@ -84,6 +84,13 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <DCC_DcuOutput>dcu</DCC_DcuOutput>
+        <DCC_ExeOutput>bin</DCC_ExeOutput>
+        <Manifest_File>None</Manifest_File>
+        <DCC_Define>PHOTODB;TESTS;$(DCC_Define)</DCC_Define>
+        <DCC_UnitSearchPath>D:\Dmitry\Dmitry;..\External\Mustangpeak\EasyListview\Source;..\External\Controls\DragDrop\Source;..\Resources;..\External\Mustangpeak\Common Library\Source;..\..\DBIcons;..\;..\Units;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Debugger_RunParams>/NoLogo</Debugger_RunParams>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -99,6 +106,125 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="TestMediaInfo.pas"/>
+        <DCCReference Include="..\Units\MSXML2_TLB.pas"/>
+        <DCCReference Include="..\Threads\uSplashThread.pas"/>
+        <DCCReference Include="..\Units\Utils\uActivationUtils.pas"/>
+        <DCCReference Include="..\Units\System\uMath.pas"/>
+        <DCCReference Include="..\Units\uConstants.pas"/>
+        <DCCReference Include="..\Units\System\uRuntime.pas"/>
+        <DCCReference Include="..\Units\System\uTime.pas"/>
+        <DCCReference Include="..\Units\System\uLogger.pas"/>
+        <DCCReference Include="..\Units\System\uMemory.pas"/>
+        <DCCReference Include="..\Units\uMediaInfo.pas"/>
+        <DCCReference Include="..\Units\Utils\uBitmapUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uGraphicUtils.pas"/>
+        <DCCReference Include="..\Units\Formats\uRAWImage.pas"/>
+        <DCCReference Include="..\Units\Formats\uTiffImage.pas"/>
+        <DCCReference Include="..\Units\Formats\uAnimatedJPEG.pas"/>
+        <DCCReference Include="..\Units\Utils\uJpegUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uPNGUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uXMLUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uFormUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uStringUtils.pas"/>
+        <DCCReference Include="..\..\Installer\uShellUtils.pas"/>
+        <DCCReference Include="..\Units\uTranslate.pas"/>
+        <DCCReference Include="..\External\lcms2dll.pas"/>
+        <DCCReference Include="..\Units\uICCProfile.pas"/>
+        <DCCReference Include="..\Units\System\uProgramStatInfo.pas"/>
+        <DCCReference Include="..\Units\CmpUnit.pas"/>
+        <DCCReference Include="..\Units\uList64.pas"/>
+        <DCCReference Include="..\Units\Utils\uGUIDUtils.pas"/>
+        <DCCReference Include="..\Units\uDBUtils.pas"/>
+        <DCCReference Include="..\Units\Database\uDBAdapter.pas"/>
+        <DCCReference Include="..\Units\Database\uDBConnection.pas"/>
+        <DCCReference Include="..\Units\Database\uDBEntities.pas"/>
+        <DCCReference Include="..\Units\Database\uDBContext.pas"/>
+        <DCCReference Include="..\Units\Database\uDBClasses.pas"/>
+        <DCCReference Include="..\Units\Database\uDBScheme.pas"/>
+        <DCCReference Include="..\Units\Database\uSettingsRepository.pas"/>
+        <DCCReference Include="..\Units\Database\uGroupsRepository.pas"/>
+        <DCCReference Include="..\Units\Database\uMediaRepository.pas"/>
+        <DCCReference Include="..\Units\Database\uPeopleRepository.pas"/>
+        <DCCReference Include="..\Units\Interfaces\uInterfaces.pas"/>
+        <DCCReference Include="..\Units\uDBTypes.pas"/>
+        <DCCReference Include="..\Units\UnitDBCommonGraphics.pas"/>
+        <DCCReference Include="..\Units\uCDMappingTypes.pas"/>
+        <DCCReference Include="..\Units\uBufferedFileStream.pas"/>
+        <DCCReference Include="..\Units\Utils\u2DUtils.pas"/>
+        <DCCReference Include="..\Units\uFaceDetection.pas"/>
+        <DCCReference Include="..\Threads\uFaceDetectionThread.pas"/>
+        <DCCReference Include="..\Threads\uThreadTask.pas"/>
+        <DCCReference Include="..\Threads\uThreadEx.pas"/>
+        <DCCReference Include="..\Units\uThreadForm.pas"/>
+        <DCCReference Include="..\Threads\UnitWindowsCopyFilesThread.pas"/>
+        <DCCReference Include="..\Units\Utils\uIconUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uDateUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uExifUtils.pas"/>
+        <DCCReference Include="..\Units\uDBBaseTypes.pas"/>
+        <DCCReference Include="..\Units\UnitDBCommon.pas"/>
+        <DCCReference Include="..\Units\UnitLinksSupport.pas"/>
+        <DCCReference Include="..\Units\GraphicCrypt.pas"/>
+        <DCCReference Include="..\Units\uSessionPasswords.pas"/>
+        <DCCReference Include="..\Units\uCollectionEvents.pas"/>
+        <DCCReference Include="..\External\Formats\GIFImage.pas"/>
+        <DCCReference Include="..\Units\UnitCrypting.pas"/>
+        <DCCReference Include="..\External\Crypt\DECv5.2\DECCipher.pas"/>
+        <DCCReference Include="..\External\Crypt\DECv5.2\DECData.pas"/>
+        <DCCReference Include="..\External\Crypt\DECv5.2\DECFmt.pas"/>
+        <DCCReference Include="..\External\Crypt\DECv5.2\DECHash.pas"/>
+        <DCCReference Include="..\External\Crypt\DECv5.2\DECRandom.pas"/>
+        <DCCReference Include="..\External\Crypt\DECv5.2\DECUtil.pas"/>
+        <DCCReference Include="..\Units\uStrongCrypt.pas"/>
+        <DCCReference Include="..\External\Formats\GraphicEx\GraphicEx.pas"/>
+        <DCCReference Include="..\External\Formats\GraphicEx\GraphicColor.pas"/>
+        <DCCReference Include="..\External\Formats\GraphicEx\GraphicCompression.pas"/>
+        <DCCReference Include="..\External\Formats\GraphicEx\GraphicStrings.pas"/>
+        <DCCReference Include="..\External\Formats\GraphicEx\MZLib.pas"/>
+        <DCCReference Include="..\..\Installer\uAssociations.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.Consts.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.IPTC.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.StreamHelper.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.TagIDs.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.XMPUtils.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.BaseUtils.pas"/>
+        <DCCReference Include="..\External\CCR.Exif\CCR.Exif.TiffUtils.pas"/>
+        <DCCReference Include="..\External\Formats\FreeImage\FreeBitmap.pas"/>
+        <DCCReference Include="..\External\Formats\FreeImage\FreeImage.pas"/>
+        <DCCReference Include="..\Units\Formats\uFreeImageIO.pas"/>
+        <DCCReference Include="..\Units\Formats\uFreeImageImage.pas"/>
+        <DCCReference Include="..\Units\uDBGraphicTypes.pas"/>
+        <DCCReference Include="..\Units\UnitINI.pas"/>
+        <DCCReference Include="..\Units\uSettings.pas"/>
+        <DCCReference Include="..\Units\uConfiguration.pas"/>
+        <DCCReference Include="..\Units\uShellIntegration.pas"/>
+        <DCCReference Include="..\Units\uVistaFuncs.pas"/>
+        <DCCReference Include="..\Units\Utils\uAppUtils.pas"/>
+        <DCCReference Include="..\Units\uVCLHelpers.pas"/>
+        <DCCReference Include="..\Units\uFastLoad.pas"/>
+        <DCCReference Include="..\Threads\uDBCustomThread.pas"/>
+        <DCCReference Include="..\Units\Utils\uThemesUtils.pas"/>
+        <DCCReference Include="..\Threads\uDBThread.pas"/>
+        <DCCReference Include="..\Units\System\uGOM.pas"/>
+        <DCCReference Include="..\Units\System\uIME.pas"/>
+        <DCCReference Include="..\Units\Utils\uShellNamespaceUtils.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uPortableDeviceManager.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uPortableClasses.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uWIAClasses.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uWIAInterfaces.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uWPDClasses.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uWPDInterfaces.pas"/>
+        <DCCReference Include="..\Units\PortableDevices\uPortableDeviceUtils.pas"/>
+        <DCCReference Include="..\Units\ShellContextMenu.pas"/>
+        <DCCReference Include="..\Units\uDBForm.pas"/>
+        <DCCReference Include="..\Units\Interfaces\uFormInterfaces.pas"/>
+        <DCCReference Include="..\Units\UnitDBDeclare.pas"/>
+        <DCCReference Include="..\Units\uLockedFileNotifications.pas"/>
+        <DCCReference Include="..\Units\uErrors.pas"/>
+        <DCCReference Include="..\Units\uTransparentEncryption.pas"/>
+        <DCCReference Include="..\Units\uResources.pas"/>
+        <DCCReference Include="..\Units\Utils\uColorUtils.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -154,6 +280,10 @@
                 <Source>
                     <Source Name="MainSource">PhotoDBTests.dpr</Source>
                 </Source>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </Delphi.Personality>
             <Deployment/>
             <Platforms>
@@ -165,6 +295,7 @@
                 <TestFramework>DUnit / Delphi Win32</TestFramework>
                 <TestRunner>GUI</TestRunner>
                 <SourceProjectName>D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PhotoDB.dproj</SourceProjectName>
+                <TestProjectName/>
             </UnitTesting>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

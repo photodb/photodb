@@ -3,6 +3,7 @@ unit uMediaInfo;
 interface
 
 uses
+  Generics.Collections,
   System.SysUtils,
   System.Classes,
   System.Math,
@@ -23,6 +24,7 @@ uses
   uLogger,
   uDBBaseTypes,
   uSettings,
+  uColorUtils,
   uDBConnection,
   uDBAdapter,
   uDBContext,
@@ -30,8 +32,8 @@ uses
   uRAWImage,
   uBitmapUtils,
   uJpegUtils,
+  uImageLoader,
   uGraphicUtils,
-  uDBImageUtils,
   uCDMappingTypes,
   uSessionPasswords;
 
@@ -50,17 +52,18 @@ type
     ChangedRotate: array of Boolean;
     Attr: array of Integer;
 
-    UsedFileNameSearch: Boolean;
-    IsError: Boolean;
-    ErrorText: string;
+    Colors: TArray<TColor>;
   end;
 
   TMediaInfoArray = array of TMediaInfo;
 
+  TImageInfoOption = (iioPreview, iioColors{, iioFaces});
+  TImageInfoOptions = set of TImageInfoOption;
 
 function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
 function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; OnlyImTh: Boolean = False): TMediaInfoArray;
 function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TMediaInfo;
+function GenerateImageInfo(FileName: string; Options: TImageInfoOptions; ThumbnailSize: Integer; JpegCompressionQuality: TJPEGQualityRange): TMediaInfo;
 
 implementation
 
@@ -247,14 +250,64 @@ begin
   FreeDS(FQuery);
 end;
 
+function GenerateImageInfo(FileName: string; Options: TImageInfoOptions; ThumbnailSize: Integer; JpegCompressionQuality: TJPEGQualityRange): TMediaInfo;
+var
+  Bmp: TBitmap;
+  MediaItem: TMediaItem;
+  ImageInfo: ILoadImageInfo;
+  Colors: TList<TColor>;
+  LoadFlags: TImageLoadFlags;
+begin
+  FillChar(Result, SizeOf(Result), 0);
+
+  Colors := TList<TColor>.Create;
+  try
+    MediaItem := TMediaItem.CreateFromFile(FileName);
+    LoadFlags := [ilfGraphic, ilfThrowError, ilfDontUpdateInfo];
+    if iioColors in Options then
+      LoadFlags := LoadFlags + [ilfICCProfile];
+
+    if LoadImageFromPath(MediaItem, 1, '', [ilfGraphic, ilfThrowError, ilfDontUpdateInfo], ImageInfo) then
+    begin
+      Result.ImageWidth := ImageInfo.GraphicWidth;
+      Result.ImageHeight := ImageInfo.GraphicHeight;
+      Result.IsEncrypted := ImageInfo.IsImageEncrypted;
+      Result.Password := ImageInfo.Password;
+
+      Bmp := ImageInfo.GenerateBitmap(MediaItem, ThumbnailSize, ThumbnailSize, pf24bit, clWhite, []);
+      try
+        if Bmp <> nil then
+        begin
+          if iioPreview in Options then
+          begin
+            Result.Jpeg := TJpegImage.Create;
+            Result.Jpeg.CompressionQuality := JpegCompressionQuality;
+            Result.Jpeg.Assign(Bmp);
+            Result.Jpeg.JPEGNeeded;
+            AssignGraphic(Bmp, Result.Jpeg);
+          end;
+
+          Result.ImTh := BitmapToString(Bmp);
+
+          if iioColors in Options then
+          begin
+            ImageInfo.AppllyICCProfile(Bmp);
+            FindPaletteColorsOnImage(Bmp, Colors);
+            Result.Colors := Colors.ToArray();
+          end;
+        end;
+      finally
+        F(Bmp);
+      end;
+    end;
+  finally
+    F(Colors);
+  end;
+end;
+
 function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
 var
-  Bmp, Thbmp: TBitmap;
-  PassWord,
   Imth: string;
-  IsEncrypted: Boolean;
-  G: TGraphic;
-
   JpegCompressionQuality: TJPEGQualityRange;
   ThumbnailSize: Integer;
 
@@ -277,85 +330,17 @@ begin
   Result.Password := '';
   Result.ImTh := '';
   Result.Count := 0;
-  Result.UsedFileNameSearch := False;
-  Result.IsError := False;
   Result.Jpeg := nil;
   Result.ImageWidth := 0;
   Result.ImageHeight := 0;
 
-  G := nil;
-  try
-    try
-      LoadGraphic(FileName, G, IsEncrypted, PassWord);
-      Result.IsEncrypted := IsEncrypted;
-      Result.Password := Password;
-      if G = nil then
-        Exit;
-    except
-      on E: Exception do
-      begin
-        EventLog(E);
-        Result.IsError := True;
-        Result.ErrorText := E.message;
-        Exit;
-      end;
-    end;
+  Result := GenerateImageInfo(FileName, [], ThumbnailSize, JpegCompressionQuality);
+  //TODO: fix memory leaks
 
-    Result.ImageWidth := G.Width;
-    Result.ImageHeight := G.Height;
-    try
-      JpegScale(G, ThumbnailSize, ThumbnailSize);
-      Result.Jpeg := TJpegImage.Create;
-      Result.Jpeg.CompressionQuality := JpegCompressionQuality;
-      Thbmp := TBitmap.Create;
-      try
-        Thbmp.PixelFormat := pf24bit;
-        Bmp := TBitmap.Create;
-        try
-          Bmp.PixelFormat := pf24bit;
-
-          if (G is TRAWImage) then
-            TRAWImage(G).DisplayDibSize := True;
-
-          if Max(G.Width, G.Height) > ThumbnailSize then
-          begin
-            if G.Width > G.Height then
-              Thbmp.SetSize(ThumbnailSize, Round(ThumbnailSize * (G.Height / G.Width)))
-            else
-              Thbmp.SetSize(Round(ThumbnailSize * (G.Width / G.Height)), ThumbnailSize);
-
-          end else
-            Thbmp.SetSize(G.Width, G.Height);
-
-          LoadImageX(G, Bmp, $FFFFFF);
-          F(G);
-          DoResize(Thbmp.Width, Thbmp.Height, Bmp, Thbmp);
-        finally
-          F(Bmp);
-        end;
-        Result.Jpeg.Assign(Thbmp);
-        Result.Jpeg.JPEGNeeded;
-        AssignGraphic(Thbmp, Result.Jpeg);
-        Imth := BitmapToString(Thbmp);
-      finally
-        F(Thbmp);
-      end;
-
-      if OnlyImTh then
-        Result.ImTh := Imth
-      else
-        Result := GetImageIDTh(Context, Imth);
-    except
-      on E: Exception do
-      begin
-        EventLog(E);
-        Result.IsError := True;
-        Result.ErrorText := E.message;
-      end;
-    end;
-  finally
-    F(G);
-  end;
+  if OnlyImTh then
+    Result.ImTh := Imth
+  else
+    Result := GetImageIDTh(Context, Imth);
 end;
 
 procedure UpdateImageThInLinks(Context: IDBContext; OldImageTh, NewImageTh: string);
@@ -424,74 +409,6 @@ begin
     end;
   finally
     FreeDS(Table);
-  end;
-end;
-
-function GetInfoByFileNameA(Context: IDBContext; FileName: string; LoadThum: Boolean; Info: TMediaItem): Boolean;
-var
-  FQuery: TDataSet;
-  FBS: TStream;
-  Folder, QueryString, S: string;
-  CRC: Cardinal;
-begin
-  Result := False;
-  Info.FileName := FileName;
-  FQuery := Context.CreateQuery(dbilRead);
-  try
-    FileName := AnsiLowerCase(FileName);
-    FileName := ExcludeTrailingBackslash(FileName);
-
-    if FolderView then
-    begin
-      Folder := ExtractFileDir(FileName);
-      Delete(Folder, 1, Length(ProgramDir));
-      Folder := ExcludeTrailingBackslash(Folder);
-      S := FileName;
-      Delete(S, 1, Length(ProgramDir));
-    end else
-    begin
-      Folder := ExtractFileDir(FileName);
-      Folder := ExcludeTrailingBackslash(Folder);
-      S := FileName;
-    end;
-    CalcStringCRC32(Folder, CRC);
-    QueryString := 'Select * from $DB$ where FolderCRC=' + IntToStr(Integer(CRC)) + ' and Name = :name';
-    SetSQL(FQuery, QueryString);
-    SetStrParam(FQuery, 0, ExtractFileName(S));
-    TryOpenCDS(FQuery);
-
-    if not TryOpenCDS(FQuery) or (FQuery.RecordCount = 0) then
-      Exit;
-
-    Result := True;
-    Info.ReadFromDS(FQuery);
-    Info.Tag := EXPLORER_ITEM_IMAGE;
-
-    if LoadThum then
-    begin
-      if Info.Image = nil then
-        Info.Image := TJpegImage.Create;
-
-      if ValidCryptBlobStreamJPG(FQuery.FieldByName('thum')) then
-      begin
-        DeCryptBlobStreamJPG(FQuery.FieldByName('thum'),
-          SessionPasswords.FindForBlobStream(FQuery.FieldByName('thum')), Info.Image);
-        Info.Encrypted := True;
-        if (Info.Image <> nil) and (not Info.Image.Empty) then
-          Info.Tag := 1;
-
-      end else
-      begin
-        FBS := GetBlobStream(FQuery.FieldByName('thum'), BmRead);
-        try
-          Info.Image.LoadFromStream(FBS);
-        finally
-          F(FBS);
-        end;
-      end;
-    end;
-  finally
-    FreeDS(FQuery);
   end;
 end;
 

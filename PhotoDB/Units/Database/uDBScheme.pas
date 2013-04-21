@@ -427,10 +427,9 @@ begin
     Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL', 32);
     Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL', 33);
 
-    //AddColumn('Color(s) INTEGER(string) NULL', 34);
-    //AddColumn('Histogram Character(255) DEFAULT NULL', 35);
-    //AddCOlumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 36);
-    //AddCOlumn('ViewCount INTEGER NOT NULL DEFAULT 0', 37);
+    //AddColumn('Colors string Character(50) NOT NULL DEFAULT ''''', 34);
+    //AddColumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 35);
+    //AddColumn('ViewCount INTEGER NOT NULL DEFAULT 0', 36);
   finally
     FreeDS(FQuery);
   end;

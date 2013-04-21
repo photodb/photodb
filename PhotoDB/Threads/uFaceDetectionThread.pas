@@ -127,9 +127,6 @@ function CanDetectFacesOnImage(FileName: string; Graphic: TGraphic): Boolean;
 
 implementation
 
-uses
-  SlideShow;
-
 var
   FManager: TFaceDetectionDataManager = nil;
 

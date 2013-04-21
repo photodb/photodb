@@ -12,6 +12,7 @@ uses
   System.Classes,
   System.Math,
   Vcl.Forms,
+  Vcl.Imaging.Jpeg,
   Data.DB,
   Xml.Xmldom,
 
@@ -877,8 +878,23 @@ var
   Info: TMediaItem;
   Res: TMediaInfo;
   MediaRepository: IMediaRepository;
+ { SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
+
+  JpegCompressionQuality: TJPEGQualityRange;
+  ThumbnailSize: Integer;  }
 begin
   MediaRepository := FDBContext.Media;
+ {
+  SettingsRepository := FDBContext.Settings;
+
+  Settings := SettingsRepository.Get;
+  try
+    JpegCompressionQuality := Settings.DBJpegCompressionQuality;
+    ThumbnailSize := Settings.ThSize;
+  finally
+    F(Settings);
+  end;     }
 
   try
     Infos := TMediaItemCollection.Create;
