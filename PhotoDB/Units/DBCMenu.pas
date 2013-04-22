@@ -50,6 +50,7 @@ uses
   uConstants,
   uPrivateHelper,
   uDBIcons,
+  uPathUtils,
   uTranslate,
   uShellIntegration,
   uDBBaseTypes,
@@ -166,10 +167,11 @@ end;
 
 procedure TDBPopupMenu.ApplyActions(FileName: string);
 var
+  I: Integer;
   Editor: TImageEditor;
   Item: TMediaItem;
   FD: DBSaveDialog;
-  FinalFIleName: string;
+  FinalFIleName, Folder: string;
 begin
   JpegOptionsForm.Execute;
 
@@ -188,12 +190,14 @@ begin
         FD.Filter := TFileAssociations.Instance.GetGraphicClassExt(TJPEGImage);
         if FD.Execute then
         begin
+          FinalFileName := ChangeFileExt(FD.FileName, '.jpg');
           Editor.Show;
 
           if Editor.OpenFileName(Item.FileName) then
           begin
             Editor.ReadActionsFile(FileName);
-            Editor.SaveImageFile(FD.FileName);
+            Editor.SaveImageFile(FinalFileName, True);
+            Editor.WaitForActions;
           end;
         end;
 
@@ -202,25 +206,32 @@ begin
       end;
     end else
     begin
-(*
-       $folder=GetOpenDirectory("Please select directory to place for processed files","");
-        $de=DirectoryExists($folder);
-        if ($de=true)
-        {
-          SAVE_VAR($sID,$folder);
-          $FileDoneCounter=0;
-          $FileName=GetStringItem($ar,$FileDoneCounter);
-          $len=ArrayStringLength($ar);
-          $fn=ExtractFileName($FileName);
-          $NewFileName=$folder+"\"+$fn;
-          $form=NewImageEditor;
-          ShowDBForm($form);
-          ImageEditorOpenFileName($form,$FileName);
+      Item := FInfo[FInfo.Position];
+      Folder := DBSelectDir(Editor.Handle, L('Please select directory to place for processed files'), ExtractFileDir(Item.FileName));
+      if Folder <> '' then
+      begin
+        Editor.Show;
 
-          SAVE_VAR($sID,$FileDoneCounter);
-          ImageEditorRegisterCallBack($form,$sID,"CallBackProc");
-          ExecuteActions($form,$FILE,$NewFileName);
-*)
+        for I := 0 to FInfo.Count - 1 do
+        begin
+          Item := FInfo[I];
+          if not Item.Selected then
+            Continue;
+
+          if not FileExistsSafe(Item.FileName) then
+            Continue;
+
+          FinalFileName := TPath.Combine(Folder, ExtractFileName(ChangeFileExt(Item.FileName, '.jpg')));
+
+          if Editor.OpenFileName(Item.FileName, True) then
+          begin
+            Editor.ReadActionsFile(FileName);
+            Editor.SaveImageFile(FinalFileName, True);
+            if not Editor.WaitForActions then
+              Break;
+          end;
+        end;
+      end;
     end;
 
   finally

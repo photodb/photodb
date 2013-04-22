@@ -9,7 +9,8 @@ program PhotoDB;
 {$IFEND}
 
 uses
-  ScaleMM2 in 'External\scalemm\ScaleMM2.pas',
+  FastMM4 in 'External\FastMM\FastMM4.pas',
+  FastMM4Messages in 'External\FastMM\FastMM4Messages.pas',
   {$IFDEF DEBUG}
   ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
   {$ENDIF}
@@ -380,14 +381,14 @@ uses
   uMediaRepository in 'Units\Database\uMediaRepository.pas',
   uPeopleRepository in 'Units\Database\uPeopleRepository.pas',
   uFormBackgroundTaskStatus in 'uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus},
-  smmFunctions in 'External\scalemm\smmFunctions.pas',
+{  smmFunctions in 'External\scalemm\smmFunctions.pas',
   smmGlobal in 'External\scalemm\smmGlobal.pas',
   smmLargeMemory in 'External\scalemm\smmLargeMemory.pas',
   smmLogging in 'External\scalemm\smmLogging.pas',
   smmMediumMemory in 'External\scalemm\smmMediumMemory.pas',
   smmSmallMemory in 'External\scalemm\smmSmallMemory.pas',
   smmStatistics in 'External\scalemm\smmStatistics.pas',
-  smmTypes in 'External\scalemm\smmTypes.pas',
+  smmTypes in 'External\scalemm\smmTypes.pas',  }
   uMediaInfo in 'Units\uMediaInfo.pas',
   uColorUtils in 'Units\Utils\uColorUtils.pas';
 

@@ -66,6 +66,7 @@ uses
   uJpegUtils,
   uGUIDUtils,
   uMemory,
+  uMemoryEx,
   uManagerExplorer,
   uCDMappingTypes,
   uLogger,
@@ -224,6 +225,7 @@ type
     FIsEditImage: Boolean;
     FIsEditImageDone: Boolean;
     FEditImage: TBitmap;
+    FWaitForActions: Boolean;
     procedure SetCloseOnFailture(const Value: boolean);
     function CheckEditingMode: Boolean;
     procedure LoadLanguage;
@@ -270,10 +272,12 @@ type
     FStatusProgress: TProgressBar;
     WindowID: TGUID;
     ToolClass: TToolsPanelClass;
-    function OpenFileName(FileName: string): Boolean;
+    function OpenFileName(FileName: string; EraseCurrentImage: Boolean = False): Boolean;
     procedure SaveImageFile(FileName: string; AfterEnd: Boolean = False);
     procedure ReadActions(Actions: TStrings);
     procedure ReadActionsFile(FileName: string);
+    function WaitForActions: Boolean;
+
     function EditImage(Image: TBitmap): Boolean; override;
     function EditFile(Image: string; BitmapOut: TBitmap): Boolean; override;
     procedure MakeImage(ResizedWindow: Boolean = False); override;
@@ -815,7 +819,7 @@ begin
     OpenFileName(DropFileTarget1.Files[0]);
 end;
 
-function TImageEditor.OpenFileName(FileName: String): Boolean;
+function TImageEditor.OpenFileName(FileName: string; EraseCurrentImage: Boolean = False): Boolean;
 var
   G: TGraphic;
   Res: Integer;
@@ -828,7 +832,7 @@ begin
   if not CheckEditingMode then
     Exit;
 
-  if ImageHistory.CanBack then
+  if not EraseCurrentImage and ImageHistory.CanBack then
   begin
     Res := MessageBoxDB(Handle, L('Image was changed, save changes?'), L('Warning'), TD_BUTTON_YESNO, TD_ICON_WARNING);
     if Res = ID_YES then
@@ -855,7 +859,8 @@ begin
 
           G := FImageInfo.ExtractGraphic;
 
-          (ActionForm as TActionsForm).Reset;
+          if ActionForm <> nil then
+            (ActionForm as TActionsForm).Reset;
           if not G.Empty then
             LoadProgramImageFormat(G);
         end;
@@ -1018,10 +1023,11 @@ begin
   FStatusProgress.Position := 0;
 end;
 
-procedure TImageEditor.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TImageEditor.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caHide;
+
+  FWaitForActions := False;
 
   if not FIsEditImage then
     DestroyTimer.Enabled := True;
@@ -1719,13 +1725,12 @@ begin
   end;
 
   UnRegisterMainForm(Self);
-  ActionForm.Release;
+  R(ActionForm);
   SaveWindowPos1.SavePosition;
   F(CurrentImage);
   F(Buffer);
   F(ImageHistory);
   F(NewActions);
-
 end;
 
 procedure TImageEditor.ZoomOutLinkClick(Sender: TObject);
@@ -1849,7 +1854,8 @@ var
   SAction: string;
 begin
   SAction := ImageHistory.Actions[ImageHistory.Position];
-  TActionsForm(ActionForm).AddAction(SAction, Action);
+  if ActionForm <> nil then
+    TActionsForm(ActionForm).AddAction(SAction, Action);
 
   FSaved := False;
   UndoLink.Enabled := ImageHistory.CanBack;
@@ -1928,6 +1934,15 @@ begin
   Image.Assign(ImageHistory.DoBack);
   F(CurrentImage);
   SetPointerToNewImage(Image);
+end;
+
+function TImageEditor.WaitForActions: Boolean;
+begin
+  FWaitForActions := True;
+  while FWaitForActions or (ToolClass <> nil) do
+    Application.ProcessMessages;
+
+  Result := (NewActionsCounter = -1) and Visible;
 end;
 
 procedure TImageEditor.WndProc(var Message: TMessage);
@@ -2639,11 +2654,20 @@ procedure TImageEditor.FormCloseQuery(Sender: TObject;
 var
   Result: Integer;
 begin
+  if FWaitForActions then
+  begin
+    CanClose := False;
+    Hide;
+    FWaitForActions := False;
+    Exit;
+  end;
+
   if ForseSave or FIsEditImage then
   begin
     CanClose := True;
     Exit;
   end;
+
   if ImageHistory.CanBack and not FSaved then
   begin
     Result := MessageBoxDB(Handle, L('Image was changed, save changes?'), L('Warning'), TD_BUTTON_YESNOCANCEL,
@@ -2812,7 +2836,8 @@ end;
 
 procedure TImageEditor.Actions1Click(Sender: TObject);
 begin
-  ActionForm.Show;
+  if ActionForm <> nil then
+    ActionForm.Show;
 end;
 
 procedure TImageEditor.ReadActions(Actions: TStrings);
@@ -2859,13 +2884,19 @@ var
 begin
   F(ToolClass);
 
+  if not Visible then
+    Exit;
+
   Inc(NewActionsCounter);
   if NewActionsCounter > NewActions.Count - 1 then
   begin
     EnableControls(Self);
     if SaveAfterEndActions then
       SaveImageFile(SaveAfterEndActionsFileName);
+
     NewActionsCounter := -1;
+    FWaitForActions := False;
+
     Exit;
   end;
   Action := NewActions[NewActionsCounter];

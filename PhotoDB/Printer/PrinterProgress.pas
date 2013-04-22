@@ -10,7 +10,6 @@ uses
   Graphics,
   Controls,
   Forms,
-  Dialogs,
   StdCtrls,
   ExtCtrls,
 

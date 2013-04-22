@@ -15,7 +15,6 @@ uses
   SysUtils,
   ExtCtrls,
   Controls,
-  Dialogs,
   uGOM,
   uEditorTypes,
   uMemory;

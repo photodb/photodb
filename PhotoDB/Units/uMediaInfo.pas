@@ -57,7 +57,7 @@ type
 
   TMediaInfoArray = array of TMediaInfo;
 
-  TImageInfoOption = (iioPreview, iioColors{, iioFaces});
+  TImageInfoOption = (iioPreview, iioColors{, iioHistogram, iioFaces});
   TImageInfoOptions = set of TImageInfoOption;
 
 function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
@@ -314,8 +314,9 @@ var
   SettingsRepository: ISettingsRepository;
   Settings: TSettings;
 begin
-  SettingsRepository := Context.Settings;
+  FillChar(Result, SizeOf(Result), 0);
 
+  SettingsRepository := Context.Settings;
   Settings := SettingsRepository.Get;
   try
     JpegCompressionQuality := Settings.DBJpegCompressionQuality;
@@ -325,14 +326,6 @@ begin
   end;
 
   DoProcessPath(FileName);
-
-  Result.IsEncrypted := False;
-  Result.Password := '';
-  Result.ImTh := '';
-  Result.Count := 0;
-  Result.Jpeg := nil;
-  Result.ImageWidth := 0;
-  Result.ImageHeight := 0;
 
   Result := GenerateImageInfo(FileName, [], ThumbnailSize, JpegCompressionQuality);
   //TODO: fix memory leaks

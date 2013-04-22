@@ -101,7 +101,7 @@ begin
       //S := CodeExtID(MediaInfo.ImTh);
       S := DeCodeExtID(ValidImgThs[I]);
       if MediaInfo.ImTh <> S then
-      //  raise Exception.Create('Invalid uniq id for image: ' + FileName + sLineBreak + 'Original: ' + S + sLineBreak + 'New: ' + MediaInfo.ImTh);
+        raise Exception.Create('Invalid uniq id for image: ' + FileName + sLineBreak + 'Original: ' + S + sLineBreak + 'New: ' + MediaInfo.ImTh);
     end;
   finally
     F(Files);

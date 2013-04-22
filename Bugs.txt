@@ -23,7 +23,6 @@ Bugs:
 - Import set password;
 
 [Images processing]
-[U] Actions fix
 - resize - raw use preview checkbox;
 - png watermarks;
 

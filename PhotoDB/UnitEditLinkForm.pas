@@ -10,7 +10,6 @@ uses
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.Forms,
-  Vcl.Dialogs,
   Vcl.ExtCtrls,
   Vcl.StdCtrls,
   Vcl.ComCtrls,

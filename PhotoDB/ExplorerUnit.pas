@@ -4619,7 +4619,7 @@ begin
     PnNavigation.Color := Theme.EditColor;
 
   //tabs
-  FLeftTabs := [eltsInfo, eltsExplorer];
+  FLeftTabs := [eltsExplorer];
   if TbSearch.Down then
     FLeftTabs := FLeftTabs + [eltsSearch];
 
