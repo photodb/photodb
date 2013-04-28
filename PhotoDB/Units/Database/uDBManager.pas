@@ -29,7 +29,6 @@ uses
   uConstants,
   uTime,
   uCollectionEvents,
-  uSplashThread,
   uShellUtils,
   uAppUtils,
   uTranslate,

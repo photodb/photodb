@@ -95,7 +95,7 @@ type
 
     //middle-level
     function CreateSelect(TableName: string): TSelectCommand;
-    function CreateUpdate(TableName: string): TUpdateCommand;
+    function CreateUpdate(TableName: string; Background: Boolean = False): TUpdateCommand;
     function CreateInsert(TableName: string): TInsertCommand;
     function CreateDelete(TableName: string): TDeleteCommand;
 
@@ -132,7 +132,7 @@ type
 
     //middle-level
     function CreateSelect(TableName: string): TSelectCommand;
-    function CreateUpdate(TableName: string): TUpdateCommand;
+    function CreateUpdate(TableName: string; Background: Boolean = False): TUpdateCommand;
     function CreateInsert(TableName: string): TInsertCommand;
     function CreateDelete(TableName: string): TDeleteCommand;
 
@@ -228,9 +228,11 @@ begin
   Result := TSelectCommand.Create(TableName, FCollectionFile, False, dbilRead);
 end;
 
-function TDBContext.CreateUpdate(TableName: string): TUpdateCommand;
+function TDBContext.CreateUpdate(TableName: string; Background: Boolean = False): TUpdateCommand;
+const
+  Isolations: array[Boolean] of TDBIsolationLevel = (dbilReadWrite, dbilBackgroundWrite);
 begin
-  Result := TUpdateCommand.Create(TableName, FCollectionFile);
+  Result := TUpdateCommand.Create(TableName, FCollectionFile, Isolations[Background]);
 end;
 
 function TDBContext.CreateDelete(TableName: string): TDeleteCommand;

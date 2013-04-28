@@ -5,10 +5,15 @@ interface
 uses
   Generics.Collections,
   System.Math,
+  System.SysUtils,
+  System.Classes,
   Winapi.Windows,
   Vcl.Graphics,
 
-  Dmitry.Graphics.Types;
+  Dmitry.Graphics.Types,
+
+  uMemory,
+  uStringUtils;
 
 type
   THLS = record
@@ -23,7 +28,25 @@ type
     SMin, SMax: Byte;
   end;
 
-procedure FindPaletteColorsOnImage(B: TBitmap; Colors: TList<TColor>);
+const
+  ColorCount = 15;
+  cBlackWhiteIndex = 13;
+  cColoredIndex = 14;
+
+  clBlackWhite = $01000000;
+  clColored    = $02000000;
+
+type
+  TPaletteArray = array[0..ColorCount - 1] of TColor;
+  TPaletteHLSArray = array[0..ColorCount - 1] of TColorRange;
+
+const
+  PaletteColorNames: array[0..ColorCount - 1] of string = ('Red', 'Red', 'Orange', 'Yellow', 'Green', 'Teal', 'Blue', 'Purple', 'Pink', 'White', 'Gray', 'Black', 'Brown', 'Black and white', 'Colored');
+
+procedure FindPaletteColorsOnImage(B: TBitmap; Colors: TList<TColor>; MaxColors: Integer);
+function ColorPaletteToString(Color: TColor): string;
+function ColorsToString(Colors: TArray<TColor>): string;
+procedure FillColors(var Palette: TPaletteArray; var PaletteHLS: TPaletteHLSArray);
 
 implementation
 
@@ -110,29 +133,12 @@ begin
 end;}
 {$R+}
 
-procedure FindPaletteColorsOnImage(B: TBitmap; Colors: TList<TColor>);
+procedure FillColors(var Palette: TPaletteArray; var PaletteHLS: TPaletteHLSArray);
 const
   clOrange = $0066FF;
-  clPink = $BF98FF;
-  clBrown = $185488;
-
-  ColorCount = 13;
-
-var
-  P: PARGB;
-  I, J, K: Integer;
-
-  CR: TColorRange;
-  Palette: array[0..ColorCount - 1] of TColor;
-  PaletteHLS: array[0..ColorCount - 1] of TColorRange;
-  Weights: array[0..ColorCount - 1] of Double;
-  MaxWeight, MaxWeightLimit: Double;
-  HLS: THLS;
-  MaxIndex: Integer;
+  clPink   = $BF98FF;
+  clBrown  = $185488;
 begin
-  if B.Empty then
-    Exit;
-
   Palette[0] := clRed;
   PaletteHLS[0].HMin := 0;
   PaletteHLS[0].HMax := 10;
@@ -236,7 +242,45 @@ begin
   PaletteHLS[12].SMin := 30;
   PaletteHLS[12].SMax := 150;
 
+  Palette[13] := clBlackWhite;
+  PaletteHLS[13].HMin := 0;
+  PaletteHLS[13].HMax := 255;
+  PaletteHLS[13].LMin := 0;
+  PaletteHLS[13].LMax := 255;
+  PaletteHLS[13].SMin := 0;
+  PaletteHLS[13].SMax := 40;
+
+  Palette[14] := clColored;
+  PaletteHLS[14].HMin := 0;
+  PaletteHLS[14].HMax := 255;
+  PaletteHLS[14].LMin := 0;
+  PaletteHLS[14].LMax := 255;
+  PaletteHLS[14].SMin := 41;
+  PaletteHLS[14].SMax := 255;
+end;
+
+procedure FindPaletteColorsOnImage(B: TBitmap; Colors: TList<TColor>; MaxColors: Integer);
+var
+  P: PARGB;
+  I, J, K: Integer;
+  MinWeight: Integer;
+
+  CR: TColorRange;
+  Palette: TPaletteArray;
+  PaletteHLS: TPaletteHLSArray;
+  Weights: array[0..ColorCount - 1] of Double;
+
+  MaxWeight, MaxWeightLimit: Double;
+  HLS: THLS;
+  MaxIndex: Integer;
+begin
+  if B.Empty then
+    Exit;
+
   FillChar(Weights, SizeOf(Weights), 0);
+  MinWeight := B.Width * B.Height div 100;
+
+  FillColors(Palette, PaletteHLS);
 
   for I := 0 to B.Height - 1 do
   begin
@@ -260,78 +304,69 @@ begin
   Weights[0] := 0;
 
   MaxWeight := 0.0;
-  MaxIndex := 0;
-  for K := 0 to ColorCount - 1 do
+  MaxIndex := -1;
+  for K := 0 to ColorCount - 3 do
   begin
-    if MaxWeight < Weights[K] then
+    if (MaxWeight < Weights[K]) and (Weights[K] > MinWeight) then
     begin
       MaxWeight := Weights[K];
       MaxIndex := K;
     end;
   end;
-  Colors.Add(Palette[MaxIndex]);
-
-  MaxWeightLimit := MaxWeight / 100;
-
-  Weights[MaxIndex] := 0.0;
-
-  MaxWeight := 0.0;
-  MaxIndex := 0;
-  for K := 0 to ColorCount - 1 do
+  if (MaxIndex > -1) then
   begin
-    if MaxWeight < Weights[K] then
-    begin
-      MaxWeight := Weights[K];
-      MaxIndex := K;
-    end;
-  end;
-  if MaxWeight > MaxWeightLimit then
     Colors.Add(Palette[MaxIndex]);
 
-  Weights[MaxIndex] := 0.0;
+    MaxWeightLimit := MaxWeight / 100;
 
-  MaxWeight := 0.0;
-  MaxIndex := 0;
-  for K := 0 to ColorCount - 1 do
-  begin
-    if MaxWeight < Weights[K] then
+    for I := 0 to MaxColors - 3 do
     begin
-      MaxWeight := Weights[K];
-      MaxIndex := K;
+      Weights[MaxIndex] := 0.0;
+      MaxWeight := 0.0;
+      MaxIndex := 0;
+      for K := 0 to ColorCount - 3 do
+      begin
+        if (MaxWeight < Weights[K]) and (Weights[K] > MinWeight) then
+        begin
+          MaxWeight := Weights[K];
+          MaxIndex := K;
+        end;
+      end;
+      if MaxWeight > MaxWeightLimit then
+        Colors.Add(Palette[MaxIndex]);
     end;
   end;
-  if MaxWeight > MaxWeightLimit then
-    Colors.Add(Palette[MaxIndex]);
 
-  Weights[MaxIndex] := 0.0;
+  if (Weights[cColoredIndex] = 0) and (Weights[cBlackWhiteIndex] > MinWeight) then
+    Colors.Add(clBlackWhite)
+  else
+    if Weights[cBlackWhiteIndex] / Weights[cColoredIndex] > 100 then
+       Colors.Add(clBlackWhite);
+end;
 
-  MaxWeight := 0.0;
-  MaxIndex := 0;
-  for K := 0 to ColorCount - 1 do
-  begin
-    if MaxWeight < Weights[K] then
-    begin
-      MaxWeight := Weights[K];
-      MaxIndex := K;
-    end;
+function ColorPaletteToString(Color: TColor): string;
+begin
+  if Color = clBlackWhite then
+    Result := 'BW'
+  else
+    Result := IntToHex(Color, 6);
+end;
+
+function ColorsToString(Colors: TArray<TColor>): string;
+var
+  Color: TColor;
+  SL: TStringList;
+begin
+  Result := '';
+  SL := TStringList.Create;
+  try
+    for Color in Colors do
+      SL.Add(ColorPaletteToString(Color));
+
+    Result := SL.Join('#');
+  finally
+    F(SL);
   end;
-  if MaxWeight > MaxWeightLimit then
-    Colors.Add(Palette[MaxIndex]);
-  Weights[MaxIndex] := 0.0;
-
-  MaxWeight := 0.0;
-  MaxIndex := 0;
-  for K := 0 to ColorCount - 1 do
-  begin
-    if MaxWeight < Weights[K] then
-    begin
-      MaxWeight := Weights[K];
-
-      MaxIndex := K;
-    end;
-  end;
-  if MaxWeight > MaxWeightLimit then
-    Colors.Add(Palette[MaxIndex]);
 end;
 
 end.

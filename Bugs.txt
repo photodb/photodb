@@ -14,6 +14,8 @@ Features ready:
 - Dll could be attached to some process (install update);
 - InternetUpdate window position of cursor, size;
 - Person edit -> change logo links in bottom;
+- Search for image colors;
+- Update in packground if thumbnail size was changed;
 
 Bugs:
 
@@ -21,6 +23,7 @@ Bugs:
 - Portable persons;
 - Persons to EXIF (using XML string);
 - Import set password;
+- Viewcounter for images;
 
 [Images processing]
 - resize - raw use preview checkbox;
@@ -30,7 +33,6 @@ Bugs:
 - Change database check update thread;
 - Encrypted images after enter password - add to database from all user directories;
 - Update info in bottom => remove update form;
-- Update in packground if thumbnail size was changed;
 
 [Maybe]
 - Explorer preview zoom? (icons could be hidden)
@@ -39,7 +41,6 @@ Bugs:
  Free activation form on the site
 
 Possible CRs:
-- Viewcounter for images;
 - Prevew pane for Video, non-image files;
 
 [F] Add new styles;

@@ -19,6 +19,7 @@ uses
   uDBConnection,
   uDBClasses,
   uDBBaseTypes,
+  uSplashThread,
   uFormInterfaces;
 
 const
@@ -102,6 +103,8 @@ var
   Tasks: TList<TCollectionUpdateTask>;
   WorkThread: TThread;
 begin
+  CloseSplashWindow;
+
   if CurrentVersion = 0 then
     CurrentVersion := GetCollectionVersion(CollectionFile);
 
@@ -351,7 +354,7 @@ end;
 
 class procedure TDBScheme.MigrateToVersion003(CollectionFile: string; Progress: TSimpleCallBackProgressRef);
 const
-  TotalActions = 33;
+  TotalActions = 42;
 var
   FQuery: TDataSet;
 
@@ -383,6 +386,11 @@ var
     Exec(FormatEx('UPDATE ImageTable SET {0} = {1} WHERE {0} IS NULL', [ColumnName, Value]), CurrentAction);
   end;
 
+  procedure AddColumn(ColumnDefinition: string; CurrentAction: Integer);
+  begin
+    Exec('ALTER TABLE ImageTable ADD COLUMN ' + ColumnDefinition, CurrentAction);
+  end;
+
 begin
   FQuery := GetQuery(CollectionFile, True, dbilExclusive);
   try
@@ -394,7 +402,7 @@ begin
     Exec('DROP INDEX aStrThCrc ON ImageTable', 3);
 
     AlterColumn('ID Autoincrement NOT NULL', 4);
-    AlterColumn('Name Character(255) NOT NULL', 5);
+    AlterColumn('Name TEXT(255) NOT NULL', 5);
     AlterColumn('FFileName Memo NOT NULL', 6);
     AlterColumn('Comment Memo NOT NULL', 7);
     AlterColumn('IsDate Logical NOT NULL', 8);
@@ -427,9 +435,16 @@ begin
     Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL', 32);
     Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL', 33);
 
-    //AddColumn('Colors string Character(50) NOT NULL DEFAULT ''''', 34);
-    //AddColumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 35);
-    //AddColumn('ViewCount INTEGER NOT NULL DEFAULT 0', 36);
+    AddColumn('[Colors] TEXT(50) NOT NULL', 34);
+    AddColumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 35);
+    AddColumn('ViewCount INTEGER NOT NULL DEFAULT 0', 36);
+    AddColumn('Histogram LONGBINARY NULL', 37);
+    AddColumn('DateUpdated Date NOT NULL', 38);
+
+    RemoveNull('Colors', '""', 39);
+    RemoveNull('PreviewSize', '0', 40);
+    RemoveNull('ViewCount', '0', 41);
+    RemoveNull('DateUpdated', '"01-01-2000"', 42);
   finally
     FreeDS(FQuery);
   end;

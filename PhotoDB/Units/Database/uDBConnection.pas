@@ -39,7 +39,7 @@ const
   DB_TABLE_SETTINGS        = 5;
 
 type
-  TDBIsolationLevel = (dbilReadWrite, dbilRead, dbilExclusive);
+  TDBIsolationLevel = (dbilReadWrite, dbilRead, dbilExclusive, dbilBackgroundWrite);
 
 type
   TADOConnectionEx = class(TADOConnection)
@@ -382,6 +382,7 @@ procedure RemoveADORef(ADOConnection: TADOConnectionEx);
 const
   MaxConnectionPoolRead = 5;
   MaxConnectionPoolWrite = 1;
+  MaxConnectionPoolBackgroundWrite = 1;
 
 var
   I: Integer;
@@ -415,6 +416,8 @@ begin
         MaxConnectionPoolByLevel := MaxConnectionPoolRead;
       if Connection.IsolationLevel = dbilReadWrite then
         MaxConnectionPoolByLevel := MaxConnectionPoolWrite;
+      if Connection.IsolationLevel = dbilBackgroundWrite then
+        MaxConnectionPoolByLevel := MaxConnectionPoolBackgroundWrite;
 
       Connection.Detach;
       Break;
@@ -613,8 +616,7 @@ begin
   FSync.Enter;
   try
     Result := TADOQuery.Create(nil);
-    if IsolationLevel = dbilReadWrite then
-      IsolationLevel := dbilReadWrite;
+
     (Result as TADOQuery).Connection := GetConnection(TableName, CreateNewConnection, IsolationLevel);
     if DBReadOnly then
       ReadOnlyQuery(Result);
@@ -895,6 +897,8 @@ begin
   FADOConnection.ConnectionString := GetConnectionString(ConnectionString, FileName, IsolationLevel);
   FADOConnection.LoginPrompt := False;
   if IsolationLevel = dbilRead then
+    FADOConnection.IsolationLevel := ilReadCommitted;
+  if IsolationLevel = dbilBackgroundWrite then
     FADOConnection.IsolationLevel := ilReadCommitted;
 end;
 

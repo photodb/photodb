@@ -34,7 +34,7 @@ object ExplorerForm: TExplorerForm
     Left = 140
     Top = 48
     Width = 5
-    Height = 677
+    Height = 669
     Constraints.MaxWidth = 150
     ResizeStyle = rsUpdate
     OnCanResize = SplLeftPanelCanResize
@@ -47,7 +47,7 @@ object ExplorerForm: TExplorerForm
     Left = 145
     Top = 48
     Width = 1
-    Height = 677
+    Height = 669
     Align = alLeft
     Shape = bsRightLine
     Style = bsRaised
@@ -58,7 +58,7 @@ object ExplorerForm: TExplorerForm
     Left = 0
     Top = 48
     Width = 140
-    Height = 677
+    Height = 669
     Align = alLeft
     BevelOuter = bvNone
     ParentColor = True
@@ -68,8 +68,8 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 0
       Width = 140
-      Height = 648
-      ActivePage = TsInfo
+      Height = 640
+      ActivePage = TsDetailedSearch
       Align = alClient
       MultiLine = True
       ParentShowHint = False
@@ -79,13 +79,9 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
-          Top = 599
+          Top = 591
           Width = 132
           Height = 21
           Align = alBottom
@@ -124,14 +120,14 @@ object ExplorerForm: TExplorerForm
           Left = 0
           Top = 0
           Width = 132
-          Height = 620
+          Height = 612
           Align = alClient
           BevelOuter = bvNone
           ParentBackground = False
           TabOrder = 0
           DesignSize = (
             132
-            620)
+            612)
           object LbEditComments: TLabel
             Tag = 2
             Left = 8
@@ -343,15 +339,11 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
           Width = 132
-          Height = 620
+          Height = 612
           Align = alClient
           DefaultColWidth = 70
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
@@ -367,25 +359,20 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 612
         object PnESContainer: TPanel
           Left = 0
           Top = 0
           Width = 132
-          Height = 620
+          Height = 612
           Align = alClient
           BevelOuter = bvNone
           Ctl3D = True
           ParentBackground = False
           ParentCtl3D = False
           TabOrder = 0
-          ExplicitHeight = 612
           DesignSize = (
             132
-            620)
+            612)
           object BvRating: TBevel
             Left = 3
             Top = 75
@@ -405,6 +392,171 @@ object ExplorerForm: TExplorerForm
           object BvGroups: TBevel
             Left = 4
             Top = 185
+            Width = 126
+            Height = 2
+            Anchors = [akLeft, akTop, akRight]
+            Shape = bsBottomLine
+          end
+          object ShpColor1: TShape
+            Left = 3
+            Top = 237
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor2: TShape
+            Left = 23
+            Top = 237
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor3: TShape
+            Left = 43
+            Top = 237
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor4: TShape
+            Left = 63
+            Top = 237
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor5: TShape
+            Left = 83
+            Top = 237
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor7: TShape
+            Left = 3
+            Top = 260
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object BtnBlackWhite: TSpeedButton
+            Left = 3
+            Top = 215
+            Width = 122
+            Height = 16
+            AllowAllUp = True
+            GroupIndex = 1
+            Caption = 'Black-white'
+            Flat = True
+            Margin = 5
+            OnClick = BtnAnyColorClick
+          end
+          object BtnAnyColor: TSpeedButton
+            Left = 3
+            Top = 193
+            Width = 122
+            Height = 16
+            AllowAllUp = True
+            GroupIndex = 1
+            Down = True
+            Caption = 'Any color'
+            Flat = True
+            Margin = 5
+            OnClick = BtnAnyColorClick
+          end
+          object ShpColor8: TShape
+            Left = 23
+            Top = 260
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor9: TShape
+            Left = 43
+            Top = 260
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor10: TShape
+            Left = 63
+            Top = 260
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor11: TShape
+            Left = 83
+            Top = 260
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor6: TShape
+            Left = 103
+            Top = 237
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object ShpColor12: TShape
+            Left = 103
+            Top = 260
+            Width = 20
+            Height = 20
+            Pen.Color = clBtnFace
+            Pen.Width = 2
+            OnMouseDown = ShpColor1MouseDown
+            OnMouseEnter = ShpColor1MouseEnter
+            OnMouseLeave = ShpColor1MouseLeave
+          end
+          object BvColors: TBevel
+            Left = 4
+            Top = 286
             Width = 126
             Height = 2
             Anchors = [akLeft, akTop, akRight]
@@ -584,8 +736,8 @@ object ExplorerForm: TExplorerForm
             PaddingLeft = 0
           end
           object WlExtendedSearchDateFrom: TWebLink
-            Left = 3
-            Top = 193
+            Left = 1
+            Top = 294
             Width = 159
             Height = 16
             Cursor = crHandPoint
@@ -602,8 +754,8 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object WlExtendedSearchDateTo: TWebLink
-            Left = 3
-            Top = 215
+            Left = 1
+            Top = 316
             Width = 147
             Height = 16
             Cursor = crHandPoint
@@ -620,8 +772,8 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object WlExtendedSearchSortDescending: TWebLink
-            Left = 5
-            Top = 237
+            Left = 1
+            Top = 338
             Width = 21
             Height = 16
             Cursor = crHandPoint
@@ -637,8 +789,8 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object WlExtendedSearchSortBy: TWebLink
-            Left = 26
-            Top = 238
+            Left = 24
+            Top = 339
             Width = 123
             Height = 13
             Cursor = crHandPoint
@@ -658,8 +810,8 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object WlExtendedSearchOptions: TWebLink
-            Left = 3
-            Top = 259
+            Left = 1
+            Top = 360
             Width = 21
             Height = 16
             Cursor = crHandPoint
@@ -677,8 +829,8 @@ object ExplorerForm: TExplorerForm
             CanClick = True
           end
           object BtnSearch: TButton
-            Left = 45
-            Top = 257
+            Left = 43
+            Top = 358
             Width = 87
             Height = 24
             Anchors = [akTop, akRight]
@@ -692,7 +844,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnShelf: TPanel
       Left = 0
-      Top = 648
+      Top = 640
       Width = 140
       Height = 29
       Align = alBottom
@@ -1126,7 +1278,7 @@ object ExplorerForm: TExplorerForm
     Left = 146
     Top = 48
     Width = 870
-    Height = 677
+    Height = 669
     Align = alClient
     BevelOuter = bvNone
     FullRepaint = False
@@ -1136,7 +1288,7 @@ object ExplorerForm: TExplorerForm
       Left = 507
       Top = 33
       Width = 5
-      Height = 611
+      Height = 603
       ResizeStyle = rsUpdate
       Visible = False
       OnCanResize = SplRightPanelCanResize
@@ -1144,7 +1296,7 @@ object ExplorerForm: TExplorerForm
     end
     object PnFilter: TPanel
       Left = 0
-      Top = 644
+      Top = 636
       Width = 870
       Height = 33
       Align = alBottom
@@ -1226,7 +1378,7 @@ object ExplorerForm: TExplorerForm
         Width = 21
         Height = 21
         ImageNormal.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1317,7 +1469,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00EFC6
           B500D24F1A00}
         ImageEnter.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1408,7 +1560,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF7F500E8AA
           9300CC3B0500}
         ImageClick.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1499,7 +1651,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF6F400ECBA
           A700CC3B0500}
         ImageDisabled.Data = {
-          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
+          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1739,14 +1891,14 @@ object ExplorerForm: TExplorerForm
       Left = 512
       Top = 33
       Width = 358
-      Height = 611
+      Height = 603
       Align = alClient
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
       DesignSize = (
         358
-        611)
+        603)
       object SbCloseRightPanel: TSpeedButton
         Left = 325
         Top = 1
@@ -1787,7 +1939,7 @@ object ExplorerForm: TExplorerForm
         Left = 1
         Top = 1
         Width = 356
-        Height = 609
+        Height = 601
         ActivePage = TsMediaPreview
         Align = alClient
         TabOrder = 0
@@ -1800,7 +1952,7 @@ object ExplorerForm: TExplorerForm
             Left = 0
             Top = 0
             Width = 348
-            Height = 581
+            Height = 573
             Align = alClient
             BevelOuter = bvNone
             DoubleBuffered = True
@@ -1810,10 +1962,10 @@ object ExplorerForm: TExplorerForm
             TabOrder = 0
             DesignSize = (
               348
-              581)
+              573)
             object ToolBarPreview: TToolBar
               Left = 75
-              Top = 547
+              Top = 539
               Width = 263
               Height = 22
               Align = alNone
@@ -1905,7 +2057,7 @@ object ExplorerForm: TExplorerForm
             end
             object WlFaceCount: TWebLink
               Left = 24
-              Top = 552
+              Top = 544
               Width = 41
               Height = 13
               Cursor = crHandPoint
@@ -1945,7 +2097,7 @@ object ExplorerForm: TExplorerForm
             end
             object LsDetectingFaces: TLoadingSign
               Left = 3
-              Top = 550
+              Top = 542
               Width = 18
               Height = 18
               Visible = False
@@ -1961,18 +2113,13 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 573
           object PnGeoSearch: TPanel
             Left = 0
-            Top = 546
+            Top = 538
             Width = 348
             Height = 35
             Align = alBottom
             TabOrder = 0
-            ExplicitTop = 538
             DesignSize = (
               348
               35)
@@ -2071,14 +2218,14 @@ object ExplorerForm: TExplorerForm
       Left = 0
       Top = 33
       Width = 507
-      Height = 611
+      Height = 603
       Align = alLeft
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 3
       object StatusBarMain: TStatusBar
         Left = 0
-        Top = 591
+        Top = 583
         Width = 507
         Height = 20
         Panels = <
@@ -2104,7 +2251,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.871150289350000000
+      Date = 41177.922480011580000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2144,16 +2291,16 @@ object ExplorerForm: TExplorerForm
   end
   object PnBottomToolBar: TPanel
     Left = 0
-    Top = 725
+    Top = 717
     Width = 1016
-    Height = 19
+    Height = 27
     Align = alBottom
     AutoSize = True
     BevelOuter = bvNone
     TabOrder = 7
     object ToolBarBottom: TToolBar
       Left = 0
-      Top = -8
+      Top = 0
       Width = 1016
       Height = 27
       Align = alBottom
@@ -2170,7 +2317,6 @@ object ExplorerForm: TExplorerForm
       Transparent = True
       Wrapable = False
       OnResize = CoolBarBottomResize
-      ExplicitTop = 0
       object TbbCreateObject: TToolButton
         Left = 0
         Top = 0

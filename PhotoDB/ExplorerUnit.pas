@@ -152,6 +152,7 @@ uses
   uGeoLocation,
   uBrowserEmbedDraw,
 
+  uColorUtils,
   uThemesUtils,
   uPhotoShelf,
   uThreadTask,
@@ -186,6 +187,7 @@ type
   TPageControl = class(TPageControlNoBorder);
   TMonthCalendar = class(TMonthCalendarEx);
   TValueListEditor = class(TEXIFDisplayControl);
+  TShape = class(TShapeWithTransparentBorder);
 
 type
   TExplorerForm = class(TCustomExplorerForm, IWebJSExternal, IEncryptErrorHandlerForm, ICurrentImageSource, IDirectoryWatcher)
@@ -542,6 +544,21 @@ type
     ImPreview: TImage;
     TbbCreateObject: TToolButton;
     TbbClear: TToolButton;
+    ShpColor1: TShape;
+    ShpColor2: TShape;
+    ShpColor3: TShape;
+    ShpColor4: TShape;
+    ShpColor5: TShape;
+    ShpColor7: TShape;
+    BtnBlackWhite: TSpeedButton;
+    BtnAnyColor: TSpeedButton;
+    ShpColor8: TShape;
+    ShpColor9: TShape;
+    ShpColor10: TShape;
+    ShpColor11: TShape;
+    ShpColor6: TShape;
+    ShpColor12: TShape;
+    BvColors: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -816,6 +833,11 @@ type
     procedure TbbClearClick(Sender: TObject);
     procedure DBitem1Click(Sender: TObject);
     procedure PmListViewTypePopup(Sender: TObject);
+    procedure ShpColor1MouseEnter(Sender: TObject);
+    procedure ShpColor1MouseLeave(Sender: TObject);
+    procedure ShpColor1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure BtnAnyColorClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -3941,6 +3963,99 @@ end;
 procedure TExplorerForm.ShowUpdater1Click(Sender: TObject);
 begin
   //TODO: UpdaterDB.ShowWindowNow;
+end;
+
+procedure TExplorerForm.ShpColor1MouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  I: Integer;
+  Shape: TShape;
+  MultiSelect: Boolean;
+
+  function SelectedColorCount: Integer;
+  var
+    I: Integer;
+  begin
+    Result := 0;
+    for I := 0 to PnESContainer.ControlCount - 1 do
+      if (PnESContainer.Controls[I] is TShape) and (PnESContainer.Controls[I] <> Sender) then
+        Inc(Result, TShape(PnESContainer.Controls[I]).Tag);
+  end;
+
+  procedure SelectShape;
+  begin
+    Shape.Tag := 1;
+    Shape.Pen.Color := Theme.HighlightColor;
+
+    BtnAnyColor.AllowAllUp := True;
+    BtnBlackWhite.AllowAllUp := True;
+
+    BtnBlackWhite.Down := False;
+    BtnAnyColor.Down := False;
+  end;
+
+begin
+  Shape := TShape(Sender);
+
+  MultiSelect := [ssCtrl, ssShift] * Shift <> [];
+
+  if not MultiSelect then
+  begin
+    SelectShape;
+
+    if not MultiSelect then
+      for I := 0 to PnESContainer.ControlCount - 1 do
+        if (PnESContainer.Controls[I] is TShape) and (PnESContainer.Controls[I] <> Sender) then
+        begin
+          TShape(PnESContainer.Controls[I]).Pen.Color := Theme.PanelColor;
+          TShape(PnESContainer.Controls[I]).Tag := 0;
+        end;
+  end else
+  begin
+    if Shape.Tag = 1 then
+    begin
+      Shape.Tag := 0;
+      Shape.Pen.Color := Theme.PanelColor;
+
+      if SelectedColorCount = 0 then
+      begin
+        BtnAnyColor.Down := True;
+        BtnAnyColor.AllowAllUp := False;
+        BtnBlackWhite.AllowAllUp := False;
+      end;
+
+    end else
+      SelectShape;
+
+  end;
+end;
+
+procedure TExplorerForm.ShpColor1MouseEnter(Sender: TObject);
+begin
+  TShape(Sender).Pen.Color := Theme.HighlightColor;
+end;
+
+procedure TExplorerForm.ShpColor1MouseLeave(Sender: TObject);
+begin
+  if TShape(Sender).Tag = 1 then
+    TShape(Sender).Pen.Color := Theme.HighlightColor
+  else
+    TShape(Sender).Pen.Color := Theme.PanelColor;
+end;
+
+procedure TExplorerForm.BtnAnyColorClick(Sender: TObject);
+var
+  I: Integer;
+begin
+  BtnAnyColor.AllowAllUp := False;
+  BtnBlackWhite.AllowAllUp := False;
+
+  for I := 0 to PnESContainer.ControlCount - 1 do
+    if (PnESContainer.Controls[I] is TShape) then
+    begin
+      TShape(PnESContainer.Controls[I]).Pen.Color := Theme.PanelColor;
+      TShape(PnESContainer.Controls[I]).Tag := 0;
+    end;
 end;
 
 procedure TExplorerForm.MiUpdaterClick(Sender: TObject);
@@ -9532,6 +9647,7 @@ var
   IsExtendedPanelSearch,
   IsExtendedDBSearch: Boolean;
   Groups: TGroups;
+  Shape: TShape;
 begin
   IsExtendedPanelSearch := (Sender = EdExtendedSearchText) or (Sender = SbExtendedSearchStart) or (Sender = BtnSearch);
   IsExtendedDBSearch := IsExtendedPanelSearch and (FSearchMode = EXPLORER_SEARCH_DATABASE);
@@ -9600,6 +9716,16 @@ begin
       FExtendedSearchParams.Persons.Clear;
       for I := 0 to FExtendedSearchPersons.Count - 1 do
         FExtendedSearchParams.Persons.Add(FExtendedSearchPersons[I].Name);
+
+      FExtendedSearchParams.Colors.Clear;
+      for I := 1 to 12 do
+      begin
+        Shape := PnESContainer.FindChildByName<TShape>('ShpColor' + IntToStr(I));
+        if Shape.Tag = 1 then
+          FExtendedSearchParams.Colors.Add(ColorPaletteToString(Shape.Brush.Color));
+      end;
+      if BtnBlackWhite.Down then
+        FExtendedSearchParams.Colors.Add(ColorPaletteToString(clBlackWhite));
 
       SetNewPath(cDBSearchPath + FExtendedSearchParams.ToString, False);
 
@@ -11516,11 +11642,26 @@ begin
 end;
 
 procedure TExplorerForm.ExtendedSearchInit;
+var
+  Palette: TPaletteArray;
+  PaletteHLS: TPaletteHLSArray;
+  I: Integer;
+  Shape: TShape;
 begin
   if FExtendedSearchParams = nil then
   begin
     try
       BeginScreenUpdate(TsDetailedSearch.Handle);
+
+      FillColors(Palette, PaletteHLS);
+      for I := 1 to 12 do
+      begin
+        Shape := PnESContainer.FindChildByName<TShape>('ShpColor' + IntToStr(I));
+        Shape.Brush.Color := Palette[I];
+        Shape.Pen.Color :=  Theme.PanelColor;
+        Shape.Hint := TA(PaletteColorNames[I], 'Colors');
+        Shape.ShowHint := True;
+      end;
 
       PmESPerson.Images := Icons.ImageList;
       PmESGroup.Images := Icons.ImageList;
@@ -11556,6 +11697,9 @@ begin
 
       MiESShowHidden.Caption := L('Show hidden images');
       MiESShowPrivate.Caption := L('Show private images');
+
+      BtnAnyColor.Caption := L('Any color');
+      BtnBlackWhite.Caption := L('Black and white');
 
       FExtendedSearchParams := TDatabaseSearchParameters.Create;
       FExtendedSearchParams.DateFrom := MinDateTime;
@@ -12299,7 +12443,24 @@ begin
 
   BvGroups.Top := WllExtendedSearchGroups.AfterTop(5);
 
-  WlExtendedSearchDateFrom.Top := BvGroups.AfterTop(5);
+  BtnAnyColor.Top := BvGroups.AfterTop(5);
+  BtnBlackWhite.Top := BtnAnyColor.AfterTop(5);
+  ShpColor1.Top := BtnBlackWhite.AfterTop(5);
+  ShpColor2.Top := BtnBlackWhite.AfterTop(5);
+  ShpColor3.Top := BtnBlackWhite.AfterTop(5);
+  ShpColor4.Top := BtnBlackWhite.AfterTop(5);
+  ShpColor5.Top := BtnBlackWhite.AfterTop(5);
+  ShpColor6.Top := BtnBlackWhite.AfterTop(5);
+  ShpColor7.Top := BtnBlackWhite.AfterTop(25);
+  ShpColor8.Top := BtnBlackWhite.AfterTop(25);
+  ShpColor9.Top := BtnBlackWhite.AfterTop(25);
+  ShpColor10.Top := BtnBlackWhite.AfterTop(25);
+  ShpColor11.Top := BtnBlackWhite.AfterTop(25);
+  ShpColor12.Top := BtnBlackWhite.AfterTop(25);
+
+  BvColors.Top := ShpColor12.AfterTop(5);
+
+  WlExtendedSearchDateFrom.Top := BvColors.AfterTop(5);
   WlExtendedSearchDateTo.Top := WlExtendedSearchDateFrom.AfterTop(3);
   WlExtendedSearchSortDescending.Top := WlExtendedSearchDateTo.AfterTop(7);
   WlExtendedSearchSortBy.Top := WlExtendedSearchDateTo.AfterTop(7);

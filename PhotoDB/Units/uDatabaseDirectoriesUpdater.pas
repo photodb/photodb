@@ -10,6 +10,7 @@ uses
   System.SyncObjs,
   System.SysUtils,
   System.Classes,
+  System.DateUtils,
   System.Math,
   Vcl.Forms,
   Vcl.Imaging.Jpeg,
@@ -36,6 +37,7 @@ uses
   uGOM,
   uDBTypes,
   uDBConnection,
+  uDBClasses,
   uDBUtils,
   uMediaInfo,
   uDBContext,
@@ -111,6 +113,7 @@ type
     function IsDirectoryChangedOnDrive(Directory: string; ItemSizes: TList<Int64>; ItemsToAdd: TList<string>; ItemsToUpdate: TList<TUpdateTask>): Boolean;
     procedure AddItemsToDatabase(Items: TList<string>);
     procedure UpdateItemsInDatabase(Items: TList<TUpdateTask>);
+    function UpdateDatabaseItems: Boolean;
     function GetIsValidThread: Boolean;
     function CanAddFileAutomatically(FileName: string): Boolean;
     property IsValidThread: Boolean read GetIsValidThread;
@@ -492,6 +495,59 @@ begin
   inherited;
 end;
 
+function TDatabaseDirectoriesUpdater.UpdateDatabaseItems: Boolean;
+var
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
+  MediaItem: TMediaItem;
+  SC: TSelectCommand;
+begin
+  SettingsRepository := FDBContext.Settings;
+  Result := False;
+
+  Settings := SettingsRepository.Get;
+  SC := FDBContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TAllParameter.Create());
+    SC.TopRecords := 50;
+
+    SC.AddWhereParameter(TIntegerParameter.Create('PreviewSize', Settings.ThSize, paNotEquals));
+    SC.AddWhereParameter(TDateTimeParameter.Create('DateUpdated', IncDay(Now, -14), paLessThan));
+
+    SC.OrderBy('DateUpdated');
+    SC.OrderByDescending('DateToAdd');
+
+    SC.Execute;
+
+    while not SC.DS.EOF do
+    begin
+      if DBTerminating or not IsValidThread then
+        Exit(False);
+
+      Result := True;
+      MediaItem := TMediaItem.CreateFromDS(SC.DS);
+      try
+        try
+          if not UpdateImageRecord(FDBContext, nil, MediaItem.FileName, MediaItem.ID) then
+            MarkRecordAsUpdated(FDBContext, MediaItem.ID);
+        except
+          on e: Exception do
+          begin
+            EventLog(e);
+            MarkRecordAsUpdated(FDBContext, MediaItem.ID);
+          end;
+        end;
+      finally
+        F(MediaItem);
+      end;
+      SC.DS.Next;
+    end;
+  finally
+    F(Settings);
+    F(SC);
+  end;
+end;
+
 procedure TDatabaseDirectoriesUpdater.Execute;
 var
   FolderList: TList<TDatabaseDirectory>;
@@ -517,6 +573,9 @@ begin
   CoInitializeEx(nil, COM_MODE);
   try
     IsRescanMode := FRescanDirectory <> '';
+
+    if not IsRescanMode then
+      while UpdateDatabaseItems do;
 
     Directories := TQueue<string>.Create;
     ItemsToAdd := TList<string>.Create;

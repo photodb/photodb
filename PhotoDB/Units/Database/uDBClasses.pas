@@ -240,6 +240,8 @@ type
     function ExecuteSql(Sql: string; ForwardOnly: Boolean): Integer;
     constructor Create(TableName: string; CollectionFileName: string; Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
     destructor Destroy; override;
+    procedure OrderBy(FieldName: string);
+    procedure OrderByDescending(FieldName: string);
     property TopRecords: Integer read FTopRecords write FTopRecords;
     property Order: TOrderParameterCollection read FOrderParameterCollection;
   end;
@@ -741,6 +743,16 @@ begin
   if WhereParameters.Count > 0 then
     Result := Result + Format(' WHERE %s', [WhereParameters.AsCondition]);
   Result := Result + FOrderParameterCollection.AsOrderSQL;
+end;
+
+procedure TSelectCommand.OrderBy(FieldName: string);
+begin
+  Order.Add(TOrderParameter.Create(FieldName, False));
+end;
+
+procedure TSelectCommand.OrderByDescending(FieldName: string);
+begin
+  Order.Add(TOrderParameter.Create(FieldName, True));
 end;
 
 { TCustomFieldParameter }

@@ -10,16 +10,23 @@ type
   T255ByteArray = array [0 .. 255] of Byte;
   T255IntArray = array [0 .. 255] of Integer;
 
+  TImageHistogram = record
+    Gray: T255IntArray;
+    Red: T255IntArray;
+    Green: T255IntArray;
+    Blue: T255IntArray;
+  end;
+
   TGistogrammData = record
     Gray: T255IntArray;
     Red: T255IntArray;
     Green: T255IntArray;
     Blue: T255IntArray;
-    Loaded: Boolean;
-    Loading: Boolean;
     Max: Byte;
     LeftEffective: Byte;
     RightEffective: Byte;
+    Loaded: Boolean;
+    Loading: Boolean;
   end;
 
 type

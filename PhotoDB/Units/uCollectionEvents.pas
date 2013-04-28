@@ -86,9 +86,6 @@ end;
 
 procedure TCollectionEvents.DoIDEvent(Sender: TDBForm; ID: Integer; Params: TEventFields; Value: TEventValues);
 begin
-  if Sender = nil then
-    raise Exception.Create('Sender is null!');
-
   TThread.Synchronize(nil,
     procedure
     var
@@ -117,8 +114,6 @@ begin
           end;
         end;
       end;
-
-
     end
   );
 end;

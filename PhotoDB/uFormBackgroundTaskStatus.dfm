@@ -17,6 +17,7 @@ object FormBackgroundTaskStatus: TFormBackgroundTaskStatus
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnMouseDown = FormMouseDown
   PixelsPerInch = 96
   TextHeight = 40
   object LbMessage: TLabel

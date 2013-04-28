@@ -538,6 +538,9 @@ begin
         if FSearchParams.PersonsWhereOr <> '' then
           Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.PersonsWhereOr]);
 
+        if FSearchParams.ColorsWhere <> '' then
+          Result.Query := Result.Query + FormatEx(' AND ({0})', [FSearchParams.ColorsWhere]);
+
         if Sqlrwords.Count > 0 then
         begin
           Result.Query := Result.Query + ' AND not (';

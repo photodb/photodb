@@ -23,6 +23,7 @@ uses
   uRuntime,
   uLogger,
   uDBBaseTypes,
+  uDBGraphicTypes,
   uSettings,
   uColorUtils,
   uDBConnection,
@@ -53,16 +54,17 @@ type
     Attr: array of Integer;
 
     Colors: TArray<TColor>;
+    Histogram: TGistogrammData;
   end;
 
   TMediaInfoArray = array of TMediaInfo;
 
-  TImageInfoOption = (iioPreview, iioColors{, iioHistogram, iioFaces});
+  TImageInfoOption = (iioPreview, iioColors, iioHistogram{, iioFaces});
   TImageInfoOptions = set of TImageInfoOption;
 
 function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
 function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; OnlyImTh: Boolean = False): TMediaInfoArray;
-function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TMediaInfo;
+function GetImageDuplicates(DBContext: IDBContext; ImageTh: string): TMediaInfo;
 function GenerateImageInfo(FileName: string; Options: TImageInfoOptions; ThumbnailSize: Integer; JpegCompressionQuality: TJPEGQualityRange): TMediaInfo;
 
 implementation
@@ -113,7 +115,7 @@ begin
   end;
 end;
 
-function GetImageIDTh(DBContext: IDBContext; ImageTh: string): TMediaInfo;
+function GetImageDuplicates(DBContext: IDBContext; ImageTh: string): TMediaInfo;
 var
   FQuery: TDataSet;
   I: Integer;
@@ -251,6 +253,8 @@ begin
 end;
 
 function GenerateImageInfo(FileName: string; Options: TImageInfoOptions; ThumbnailSize: Integer; JpegCompressionQuality: TJPEGQualityRange): TMediaInfo;
+const
+  MaxPreviewSize = 500;
 var
   Bmp: TBitmap;
   MediaItem: TMediaItem;
@@ -261,23 +265,40 @@ begin
   FillChar(Result, SizeOf(Result), 0);
 
   Colors := TList<TColor>.Create;
+  MediaItem := TMediaItem.CreateFromFile(FileName);
   try
-    MediaItem := TMediaItem.CreateFromFile(FileName);
     LoadFlags := [ilfGraphic, ilfThrowError, ilfDontUpdateInfo];
     if iioColors in Options then
       LoadFlags := LoadFlags + [ilfICCProfile];
 
-    if LoadImageFromPath(MediaItem, 1, '', [ilfGraphic, ilfThrowError, ilfDontUpdateInfo], ImageInfo) then
+    if LoadImageFromPath(MediaItem, 1, '', [ilfGraphic, ilfDontUpdateInfo], ImageInfo) then
     begin
       Result.ImageWidth := ImageInfo.GraphicWidth;
       Result.ImageHeight := ImageInfo.GraphicHeight;
       Result.IsEncrypted := ImageInfo.IsImageEncrypted;
       Result.Password := ImageInfo.Password;
+      Result.Size := ThumbnailSize;
 
-      Bmp := ImageInfo.GenerateBitmap(MediaItem, ThumbnailSize, ThumbnailSize, pf24bit, clWhite, []);
+      Bmp := ImageInfo.GenerateBitmap(MediaItem, MaxPreviewSize, MaxPreviewSize, pf24bit, clWhite, []);
       try
         if Bmp <> nil then
         begin
+          Result.ImTh := BitmapToString(Bmp);
+
+          KeepProportions(Bmp, ThumbnailSize, ThumbnailSize);
+
+          if iioColors in Options then
+          begin
+            ImageInfo.AppllyICCProfile(Bmp);
+            FindPaletteColorsOnImage(Bmp, Colors, 3);
+            Result.Colors := Colors.ToArray();
+          end;
+
+          if iioHistogram in Options then
+          begin
+            Result.Histogram := FillHistogramma(Bmp);
+          end;
+
           if iioPreview in Options then
           begin
             Result.Jpeg := TJpegImage.Create;
@@ -287,14 +308,6 @@ begin
             AssignGraphic(Bmp, Result.Jpeg);
           end;
 
-          Result.ImTh := BitmapToString(Bmp);
-
-          if iioColors in Options then
-          begin
-            ImageInfo.AppllyICCProfile(Bmp);
-            FindPaletteColorsOnImage(Bmp, Colors);
-            Result.Colors := Colors.ToArray();
-          end;
         end;
       finally
         F(Bmp);
@@ -302,17 +315,18 @@ begin
     end;
   finally
     F(Colors);
+    F(MediaItem);
   end;
 end;
 
 function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
 var
-  Imth: string;
   JpegCompressionQuality: TJPEGQualityRange;
   ThumbnailSize: Integer;
 
   SettingsRepository: ISettingsRepository;
   Settings: TSettings;
+  DuplicatesInfo: TMediaInfo;
 begin
   FillChar(Result, SizeOf(Result), 0);
 
@@ -327,13 +341,17 @@ begin
 
   DoProcessPath(FileName);
 
-  Result := GenerateImageInfo(FileName, [], ThumbnailSize, JpegCompressionQuality);
-  //TODO: fix memory leaks
+  Result := GenerateImageInfo(FileName, [iioPreview, iioColors, iioHistogram], ThumbnailSize, JpegCompressionQuality);
 
-  if OnlyImTh then
-    Result.ImTh := Imth
-  else
-    Result := GetImageIDTh(Context, Imth);
+  if not OnlyImTh and (Result.Imth <> '') then
+  begin
+    DuplicatesInfo := GetImageDuplicates(Context, Result.Imth);
+    Result.IDs := DuplicatesInfo.IDs;
+    Result.FileNames := DuplicatesInfo.FileNames;
+    Result.ChangedRotate := DuplicatesInfo.ChangedRotate;
+    Result.Attr := DuplicatesInfo.Attr;
+    Result.Count := DuplicatesInfo.Count;
+  end;
 end;
 
 procedure UpdateImageThInLinks(Context: IDBContext; OldImageTh, NewImageTh: string);

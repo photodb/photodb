@@ -915,6 +915,9 @@ begin
 
     SQ.ShowPrivate := Parameters.ShowPrivate;
     SQ.ShowAllImages := Parameters.ShowHidden;
+
+    SQ.Colors.AddStrings(Parameters.Colors);
+
     DS := TDatabaseSearch.Create(Self, SQ);
     try
       DS.OnPacketReady := OnDatabasePacketReady;

@@ -1157,8 +1157,8 @@ procedure TSettings.ReadFromDS(DS: TDataSet);
 begin
   Version := DS.FieldByName('Version').AsInteger;
 
-  Name := DS.FieldByName('DBName').AsString;
-  Description := DS.FieldByName('DBDescription').AsString;
+  Name := Trim(DS.FieldByName('DBName').AsString);
+  Description := Trim(DS.FieldByName('DBDescription').AsString);
 
   DBJpegCompressionQuality := DS.FieldByName('DBJpegCompressionQuality').AsInteger;
   ThSize := DS.FieldByName('ThImageSize').AsInteger;
@@ -1464,7 +1464,10 @@ var
 begin
   for I := Count - 1 downto 0 do
     if Self[I].GroupCode = Group.GroupCode then
+    begin
       DeleteGroupAt(I);
+      Exit;
+    end;
 end;
 
 function TGroups.RemoveGroups(Groups: TGroups): TGroups;

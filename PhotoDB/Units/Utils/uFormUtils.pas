@@ -19,6 +19,7 @@ var
   zBf: TBlendFunction;
   TopLeft: TPoint;
   Bounds: TRect;
+  DC: HDC;
 begin
   if UpdateFormStyle then
     SetWindowLong(FormHandle, GWL_EXSTYLE, GetWindowLong(FormHandle, GWL_EXSTYLE) or WS_EX_LAYERED);
@@ -38,8 +39,13 @@ begin
 
   TopLeft := Point(Bounds.Left, Bounds.Top);
 
-  UpdateLayeredWindow(FormHandle, GetDC(0), @TopLeft, @zSize,
-    Bitmap32.Canvas.Handle, @zPoint, 0, @zBf, ULW_ALPHA);
+  DC := GetDC(0);
+  try
+    UpdateLayeredWindow(FormHandle, DC, @TopLeft, @zSize,
+      Bitmap32.Canvas.Handle, @zPoint, 0, @zBf, ULW_ALPHA);
+  finally
+    ReleaseDC(0, DC);
+  end;
 end;
 
 end.

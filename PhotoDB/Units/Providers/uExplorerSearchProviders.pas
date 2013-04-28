@@ -20,6 +20,7 @@ uses
   uConstants,
   uStringUtils,
   uDateUtils,
+  uColorUtils,
   uTranslate;
 
 type
@@ -83,6 +84,7 @@ type
   private
     FGroups: TStringList;
     FPersons: TStringList;
+    FColors: TStringList;
     FGroupsAnd: Boolean;
     FPersonsAnd: Boolean;
     procedure Init;
@@ -105,6 +107,7 @@ type
     procedure Parse(S: string);
     property Groups: TStringList read FGroups;
     property Persons: TStringList read FPersons;
+    property Colors: TStringList read FColors;
     property GroupsAnd: Boolean read FGroupsAnd write FGroupsAnd;
     property PersonsAnd: Boolean read FPersonsAnd write FPersonsAnd;
   end;
@@ -243,9 +246,34 @@ end;
 
 function TSearchItem.GetSearchDisplayText: string;
 var
+  I: Integer;
   Parameters: TDatabaseSearchParameters;
   ResultList: TStringList;
   SortMode, SortDirection: string;
+  ColorNames: TStrings;
+  Palette: TPaletteArray;
+  PaletteHLS: TPaletteHLSArray;
+
+  function FindColorName(ColorCode: string): string;
+  const
+    InvalidColor = $111111;
+  var
+    Color: TColor;
+    I: Integer;
+  begin
+    Result := ColorCode;
+    if ColorCode = 'BW' then
+      Result := TA('Black and white', 'Colors');
+
+    Color := HexToIntDef(ColorCode, InvalidColor);
+    if Color <> InvalidColor then
+    begin
+      for I := 0 to Length(Palette) - 1 do
+        if Palette[I] = Color then
+          Result := TA(PaletteColorNames[I], 'Colors');
+    end;
+  end;
+
 begin
   Parameters := TDatabaseSearchParameters.Create;
   ResultList := TStringList.Create;
@@ -291,6 +319,20 @@ begin
 
     if Trim(Parameters.Groups.Text) <> '' then
       ResultList.Add(FormatEx(L('with groups: {0}'), [Parameters.Groups.Join(IIF(Parameters.GroupsAnd, ' ' + L('and') + ' ', ' ' + L('or') + ' '))]));
+
+    if Trim(Parameters.Colors.Text) <> '' then
+    begin
+      ColorNames := TStringList.Create;
+      try
+        FillColors(Palette, PaletteHLS);
+        for I := 0 to Parameters.Colors.Count - 1 do
+          ColorNames.Add(FindColorName(Parameters.Colors[I]));
+
+        ResultList.Add(FormatEx(L('with colors: {0}'), [ColorNames.Join(' ' + L('and') + ' ')]));
+      finally
+        F(ColorNames);
+      end;
+    end;
 
     if ResultList.Count > 0 then
       Result := ResultList.Join(', ');
@@ -371,6 +413,7 @@ destructor TDatabaseSearchParameters.Destroy;
 begin
   F(FGroups);
   F(FPersons);
+  F(FColors);
   inherited;
 end;
 
@@ -378,6 +421,7 @@ procedure TDatabaseSearchParameters.Init;
 begin
   FGroups := TStringList.Create;
   FPersons := TStringList.Create;
+  FColors := TStringList.Create;
   Text := '';
   DateFrom := EncodeDate(cMinEXIFYear, 1, 1);
   DateTo := EncodeDate(2100, 1, 1);
@@ -432,6 +476,11 @@ begin
           Persons.AddRange(Value.Split([',']));
         end else if Key = 'PersonsMode' then
           PersonsAnd := Value = 'and'
+        else if Key = 'Colors' then
+        begin
+          Colors.Clear;
+          Colors.AddRange(Value.Split([',']));
+        end
         else if Key = 'Private' then
           ShowPrivate := (Value = '1') or (Value = 'true')
         else if Key = 'Hidden' then
@@ -476,6 +525,8 @@ begin
       Items.Add('Private=1');
     if ShowHidden then
       Items.Add('Hidden=1');
+    if Colors.Count > 0 then
+      Items.Add('Colors=' + Colors.Join(','));
 
     Result := Items.Join(';');
   finally

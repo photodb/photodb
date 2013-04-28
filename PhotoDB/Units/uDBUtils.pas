@@ -45,7 +45,8 @@ uses
   uDBForm,
   uCollectionEvents,
   uDBAdapter,
-  uExifUtils;
+  uExifUtils,
+  uColorUtils;
 
 type
   TDBKernelCallBack = procedure(ID: Integer; Params: TEventFields; Value: TEventValues) of object;
@@ -58,6 +59,7 @@ procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
 function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 
 function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
+procedure MarkRecordAsUpdated(DBContext: IDBContext; ID: Integer);
 
 procedure GetFileListByMask(DBContext: IDBContext; BeginFile, Mask: string;
   Info: TMediaItemCollection; var N: Integer; ShowPrivate: Boolean);
@@ -340,6 +342,21 @@ begin
   end;
 end;
 
+procedure MarkRecordAsUpdated(DBContext: IDBContext; ID: Integer);
+var
+  UC: TUpdateCommand;
+begin
+  UC := DBContext.CreateUpdate(ImageTable, True);
+  try
+    UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+    UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
+
+    UC.Execute;
+  finally
+    F(UC);
+  end;
+end;
+
 function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
 var
   Res: TMediaInfo;
@@ -347,7 +364,7 @@ var
   EventInfo: TEventValues;
   ExifData: TExifData;
   EF: TEventFields;
-  MS: TMemoryStream;
+  MS, HS: TMemoryStream;
   Info: TMediaItem;
 
   UC: TUpdateCommand;
@@ -382,6 +399,9 @@ var
 
 begin
   Result := False;
+  MS := nil;
+  HS := nil;
+
   if (ID = 0) or DBReadOnly then
     Exit;
 
@@ -410,7 +430,6 @@ begin
 
       if SC.Execute > 0 then
       begin
-        MS := nil;
         DA := TImageTableAdapter.Create(SC.DS);
         UC := DBContext.CreateUpdate(ImageTable);
         try
@@ -433,6 +452,15 @@ begin
           UC.AddParameter(TIntegerParameter.Create('Height', Res.ImageHeight));
           UC.AddParameter(TIntegerParameter.Create('FileSize', GetFileSizeByName(FileName)));
           UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(FileName, True)));
+
+          UC.AddParameter(TStringParameter.Create('Colors', ColorsToString(Res.Colors)));
+          UC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
+          UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
+
+          HS := TMemoryStream.Create;
+          HS.WriteBuffer(Res.Histogram, SizeOf(Res.Histogram));
+          HS.Seek(0, soFromBeginning);
+          UC.AddParameter(TStreamParameter.Create('Histogram', HS));
 
           ExifData := TExifData.Create;
           try
@@ -534,6 +562,7 @@ begin
           F(UC);
           F(DA);
           F(MS);
+          F(HS);
         end;
       end;
 

@@ -2055,7 +2055,7 @@ begin
       ViewFile(FMediaRepository.GetFileNameById(StrToIntDef(LI[N].LinkValue, 0)));
     LINK_TYPE_ID_EXT:
       begin
-        TIRA := GetimageIDTh(FContext, DeCodeExtID(LI[N].LinkValue));
+        TIRA := GetImageDuplicates(FContext, DeCodeExtID(LI[N].LinkValue));
         if TIRA.Count > 0 then
           ViewFile(TIRA.FileNames[0]);
       end;
@@ -2265,7 +2265,7 @@ begin
       FN := FMediaRepository.GetFileNameById(StrToIntDef(FPropertyLinks[N].LinkValue, 0));
     LINK_TYPE_ID_EXT:
       begin
-        TIRA := GetImageIDTh(FContext, DeCodeExtID(FPropertyLinks[N].LinkValue));
+        TIRA := GetImageDuplicates(FContext, DeCodeExtID(FPropertyLinks[N].LinkValue));
         if TIRA.Count > 0 then
           FN := TIRA.FileNames[0];
       end;

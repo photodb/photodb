@@ -74,6 +74,7 @@ type
   private
     function GetBoundsRectScreen: TRect;
   public
+    function FindChildByName<T: TControl>(Name: string): T;
     function FindChildByTag<T: TControl>(Tag: NativeInt): T;
     function FindChildByType<T: TControl>: T;
     function HasHandle(Handle: THandle): Boolean;
@@ -306,6 +307,21 @@ begin
 end;
 
 { TWinControlHelper }
+
+function TWinControlHelper.FindChildByName<T>(Name: string): T;
+var
+  I: Integer;
+begin
+  Result := default(T);
+  for I := 0 to ControlCount - 1 do
+  begin
+    if Controls[I].Name = Name then
+    begin
+      Result := Controls[I] as T;
+      Exit;
+    end;
+  end;
+end;
 
 function TWinControlHelper.FindChildByTag<T>(Tag: NativeInt): T;
 var

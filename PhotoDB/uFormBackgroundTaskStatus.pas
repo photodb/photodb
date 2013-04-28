@@ -33,6 +33,8 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     FLoadingState: Extended;
@@ -41,6 +43,7 @@ type
     function GetFormID: string; override;
     procedure InterfaceDestroyed; override;
     function DisableMasking: Boolean; override;
+    procedure HiTest(var Msg: TMessage); message WM_NCHITTEST;
   public
     { Public declarations }
     function ShowModal: Integer; override;
@@ -125,9 +128,20 @@ begin
   TmrRedraw.Enabled := False;
 end;
 
+procedure TFormBackgroundTaskStatus.FormMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+end;
+
 function TFormBackgroundTaskStatus.GetFormID: string;
 begin
   Result := 'BackgroundTaskStatus';
+end;
+
+procedure TFormBackgroundTaskStatus.HiTest(var Msg: TMessage);
+begin
+  Msg.Result := HTCAPTION;
 end;
 
 procedure TFormBackgroundTaskStatus.InterfaceDestroyed;

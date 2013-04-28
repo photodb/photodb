@@ -434,6 +434,8 @@
 	<translate name="Reset" value="Сброс" />
 	<translate name="Previous selections" value="Предыдущие выборы" />
 	<translate name="Other person" value="Другая персона" />
+	<translate name="Any color" value="Любого цвета" />
+	<translate name="Black and white" value="Чёрно-белые" />
 	<translate name="and" value="и" />
 	<translate name="or" value="или" />
 	<translate name="Sort by ID" value="Сортировать по ID" />
@@ -1642,6 +1644,7 @@
 	<translate name="date less than {0}" value="дата менее {0}"/>
 	<translate name="{0} on photo" value="{0} на фото"/>
 	<translate name="with groups: {0}" value="с группами {0}"/>
+	<translate name="with colors: {0}" value="с цветами {0}"/>
 	<translate name="and" value="и"/>
 	<translate name="or" value="или"/>
 	<translate name="ID" value="ID"/>
@@ -1658,6 +1661,20 @@
 	<translate name=", including {0}" value=", включая {0}" />
 	<translate name="{0} free of {1}" value="{0} свободно из {1}"/>
   </scope>
+  <scope name="Colors">
+	<translate name="Red" value="Красный"/>
+	<translate name="Orange" value="Оранжевый"/>
+	<translate name="Yellow" value="Жёлтый"/>
+	<translate name="Green" value="Зелёный"/>
+	<translate name="Teal" value="Бирюзовый"/>
+	<translate name="Blue" value="Голубой"/>
+	<translate name="Purple" value="Фиолетовый"/>
+	<translate name="Pink" value="Розовый"/>
+	<translate name="White" value="Белый"/>
+	<translate name="Gray" value="Серый"/>
+	<translate name="Black" value="Чёрный"/>
+	<translate name="Brown" value="Коричневый"/>
+  </scope>  
   <scope name="EditObject">
 	<translate name="Edit text" value="Редактировать текст"/>
 	<translate name="Create note" value="Создать заметку"/>

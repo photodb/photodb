@@ -20,8 +20,10 @@ type
     FGroupsAnd: Boolean;
     FPersons: TStringList;
     FPersonsAnd: Boolean;
+    FColors: TStringList;
     function GetGroupsWhere: string;
     function GetPersonsWhereOr: string;
+    function GetColorsWhere: string;
   public
     Query: string;
     RatingFrom: Integer;
@@ -44,6 +46,9 @@ type
     property Persons: TStringList read FPersons;
     property PersonsAnd: Boolean read FPersonsAnd write FPersonsAnd;
     property PersonsWhereOr: string read GetPersonsWhereOr;
+
+    property Colors: TStringList read FColors;
+    property ColorsWhere: string read GetColorsWhere;
   end;
 
 implementation
@@ -55,6 +60,7 @@ begin
   FPictureSize := PictureSize;
   FGroups := TStringList.Create;
   FPersons := TStringList.Create;
+  FColors := TStringList.Create;
   GroupsAnd := False;
   PersonsAnd := False;
 end;
@@ -63,6 +69,7 @@ destructor TSearchQuery.Destroy;
 begin
   F(FGroups);
   F(FPersons);
+  F(FColors);
 end;
 
 function TSearchQuery.EqualsTo(AQuery: TSearchQuery): Boolean;
@@ -71,6 +78,27 @@ begin
        and (AQuery.DateFrom = DateFrom) and (AQuery.DateTo = DateTo)
        and AQuery.Groups.Equals(Groups) and (AQuery.Query = Query)
        and (AQuery.SortMethod = SortMethod) and (AQuery.SortDecrement = SortDecrement);
+end;
+
+function TSearchQuery.GetColorsWhere: string;
+var
+  I: Integer;
+  SList: TStringList;
+begin
+  Result := '';
+  if Colors.Count > 0 then
+  begin
+    SList := TStringList.Create;
+    try
+      for I := 0 to Colors.Count - 1 do
+        if Colors[I] <> '' then
+          SList.Add(FormatEx('Colors like {0}', [NormalizeDBString(NormalizeDBStringLike('%' + Colors[I] + '%'))]));
+
+      Result := SList.Join(' AND ');
+    finally
+      F(SList);
+    end;
+  end;
 end;
 
 function TSearchQuery.GetGroupsWhere: string;
