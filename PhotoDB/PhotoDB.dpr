@@ -383,7 +383,8 @@ uses
   uMediaInfo in 'Units\uMediaInfo.pas',
   uColorUtils in 'Units\Utils\uColorUtils.pas',
   uImageViewCount in 'Units\uImageViewCount.pas',
-  uFormDBPreviewSettings in 'uFormDBPreviewSettings.pas' {FormDBPreviewSize};
+  uFormDBPreviewSettings in 'uFormDBPreviewSettings.pas' {FormDBPreviewSize},
+  uDatabaseInfoControl in 'Units\Controls\uDatabaseInfoControl.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -498,7 +499,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

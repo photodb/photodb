@@ -368,6 +368,7 @@ var
   MS, HS: TMemoryStream;
   UC: TUpdateCommand;
   FileName: string;
+  MediaFile: TMediaItem;
 
   function MapDBFileName(FileName: string): string;
   var
@@ -470,43 +471,43 @@ begin
         end;
         if AppSettings.Exif.ReadInfoFromExif then
         begin
-          Info := TMediaItem.CreateFromFile(FileName);
+          MediaFile := TMediaItem.CreateFromFile(FileName);
           try
-            UpdateImageRecordFromExif(Info);
+            UpdateImageRecordFromExif(MediaFile);
 
-            if (Info.Rating > 0) and (Info.Rating <> Info.Rating) then
+            if (MediaFile.Rating > 0) and (Info.Rating <> MediaFile.Rating) then
             begin
-              UC.AddParameter(TIntegerParameter.Create('Rating', Info.Rating));
+              UC.AddParameter(TIntegerParameter.Create('Rating', MediaFile.Rating));
 
               EF := EF + [EventID_Param_Rating];
-              EventInfo.Rating := Info.Rating;
+              EventInfo.Rating := MediaFile.Rating;
             end;
 
-            if (Info.Rotation > DB_IMAGE_ROTATE_0) and (Info.Rotation <> Info.Rotation) then
+            if (MediaFile.Rotation > DB_IMAGE_ROTATE_0) and (Info.Rotation <> MediaFile.Rotation) then
             begin
-              UC.AddParameter(TIntegerParameter.Create('Rotated', Info.Rotation));
+              UC.AddParameter(TIntegerParameter.Create('Rotated', MediaFile.Rotation));
 
               EF := EF + [EventID_Param_Rotate];
-              EventInfo.Rotation := Info.Rotation;
+              EventInfo.Rotation := MediaFile.Rotation;
             end;
 
-            if (Info.Comment <> '') and (Info.Comment <> Info.Comment) then
+            if (MediaFile.Comment <> '') and (Info.Comment <> MediaFile.Comment) then
             begin
-              UC.AddParameter(TStringParameter.Create('Comment', Info.Comment));
+              UC.AddParameter(TStringParameter.Create('Comment', MediaFile.Comment));
 
               EF := EF + [EventID_Param_Comment];
-              EventInfo.Comment := Info.Comment;
+              EventInfo.Comment := MediaFile.Comment;
             end;
 
-            if (Info.Keywords <> '') and (Info.Keywords <> Info.Keywords) then
+            if (MediaFile.Keywords <> '') and (Info.Keywords <> MediaFile.Keywords) then
             begin
-              UC.AddParameter(TStringParameter.Create('KeyWords', Info.Keywords));
+              UC.AddParameter(TStringParameter.Create('KeyWords', MediaFile.Keywords));
 
               EF := EF + [EventID_Param_KeyWords];
-              EventInfo.KeyWords := Info.KeyWords;
+              EventInfo.KeyWords := MediaFile.KeyWords;
             end;
           finally
-            F(Info);
+            F(MediaFile);
           end;
         end;
       except

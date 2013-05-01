@@ -657,6 +657,7 @@
         <DCCReference Include="uFormDBPreviewSettings.pas">
             <Form>FormDBPreviewSize</Form>
         </DCCReference>
+        <DCCReference Include="Units\Controls\uDatabaseInfoControl.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

@@ -177,6 +177,7 @@ uses
   uEXIFDisplayControl,
   uProgramStatInfo,
   uMonthCalendar,
+  uDatabaseInfoControl,
   uLinkListEditorFolders,
   uLinkListEditorDatabases;
 
@@ -304,7 +305,6 @@ type
     StenoGraphia1: TMenuItem;
     AddHiddenInfo1: TMenuItem;
     ExtractHiddenInfo1: TMenuItem;
-    CoolBarTop: TCoolBar;
     ToolBarMain: TToolBar;
     TbBack: TToolButton;
     TbForward: TToolButton;
@@ -510,7 +510,6 @@ type
     MiCDMapping: TMenuItem;
     ImDBList: TImageList;
     PmDBList: TPopupActionBar;
-    TbDatabase: TToolButton;
     PmLocations: TPopupActionBar;
     TbSort: TToolButton;
     TbPreviewInfoSeparator: TToolButton;
@@ -535,8 +534,6 @@ type
     PmCut: TPopupActionBar;
     MiCopyTo: TMenuItem;
     MiCutTo: TMenuItem;
-    MiCollectionsSeparator: TMenuItem;
-    MiCollections: TMenuItem;
     DimensionsLabel: TLabel;
     SizeLabel: TLabel;
     TypeLabel: TLabel;
@@ -559,6 +556,8 @@ type
     ShpColor6: TShape;
     ShpColor12: TShape;
     BvColors: TBevel;
+    PnTopMenu: TPanel;
+    TmrStartDatabases: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -838,6 +837,8 @@ type
     procedure ShpColor1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure BtnAnyColorClick(Sender: TObject);
+    procedure TmrStartDatabasesTimer(Sender: TObject);
+    procedure PnTopMenuResize(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -942,6 +943,7 @@ type
     FOldWidth: Integer;
     IsResizePreivew: Boolean;
     FDatabases: TList<TDatabaseInfo>;
+    FDatabaseInfo: TDatabaseInfoControl;
 
     procedure LoadContext;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
@@ -1558,8 +1560,6 @@ begin
   MiCDExport.Caption := L('Export images to CD');
   MiCDMapping.Caption := L('CD mapping');
 
-  MiCollections.Caption := L('Edit collections');
-
   PmHelp.Images := Icons.ImageList;
   PmOptions.Images := Icons.ImageList;
 
@@ -1573,8 +1573,6 @@ begin
 
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
-
-  MiCollections.ImageIndex := DB_IC_PHOTO_DATABASE;
 
   LoadDBList;
 
@@ -3501,8 +3499,12 @@ begin
 end;
 
 procedure TExplorerForm.TbHelpClick(Sender: TObject);
+var
+  APoint: TPoint;
 begin
-  DoHelp;
+  APoint := Point(TbHelp.Left, TbHelp.Top + TbHelp.Height);
+  APoint := ToolBarMain.ClientToScreen(APoint);
+  PmHelp.DoPopupEx(APoint.X, APoint.Y);
 end;
 
 procedure TExplorerForm.TbImportClick(Sender: TObject);
@@ -5971,9 +5973,6 @@ procedure TExplorerForm.PmOptionsPopup(Sender: TObject);
 begin
   MiUpdater.Visible := not FolderView;
   MiCDExport.Visible := not FolderView;
-
-  MiCollections.Visible := FDatabases.Count <= 1;
-  MiCollectionsSeparator.Visible := MiCollections.Visible;
 end;
 
 procedure TExplorerForm.ShowProgress;
@@ -7192,6 +7191,18 @@ begin
     TreeView; //just start tree without any selection
 end;
 
+procedure TExplorerForm.TmrStartDatabasesTimer(Sender: TObject);
+begin
+  TmrStartDatabases.Enabled := False;
+  FDatabaseInfo := TDatabaseInfoControl.Create(Self);
+  FDatabaseInfo.Parent := PnTopMenu;
+  ToolBarMain.Align := alNone;
+  FDatabaseInfo.Align := alRight;
+  FDatabaseInfo.LoadControl;
+  FDatabaseInfo.OnSelectClick := TbDatabaseClick;
+  PnTopMenuResize(Sender);
+end;
+
 procedure TExplorerForm.ShowHelp(Text, Link: string);
 begin
   WlLearnMoreLink.Text := Text;
@@ -8304,6 +8315,46 @@ begin
     BatchProcessingForm.ConvertImages(Self, List);
   finally
     F(List);
+  end;
+end;
+
+procedure TExplorerForm.PnTopMenuResize(Sender: TObject);
+var
+  I, TotalWidth, WidthDiff: Integer;
+  ToolButtonsToHide: TList<TToolButton>;
+  Button: TToolButton;
+begin
+  //Top toolbar width customization
+  TotalWidth := 0;
+  for I := 0 to ToolBarMain.ButtonCount - 1 do
+  begin
+    Button := ToolBarMain.Buttons[I];
+    Inc(TotalWidth, Button.Width);
+  end;
+
+  ToolButtonsToHide := TList<TToolButton>.Create;
+  try
+    ToolButtonsToHide.Add(TbUp);
+    ToolButtonsToHide.Add(TbForward);
+    ToolButtonsToHide.Add(TbZoomOut);
+    ToolButtonsToHide.Add(TbCut);
+    ToolButtonsToHide.Add(TbCopy);
+
+    WidthDiff := PnTopMenu.Width - TotalWidth;
+    if FDatabaseInfo <> nil then
+      Dec(WidthDiff, FDatabaseInfo.Width);
+
+    for I := 0 to ToolButtonsToHide.Count - 1 do
+    begin
+      if WidthDiff < 0 then
+        ToolButtonsToHide[I].Visible := False
+      else
+        ToolButtonsToHide[I].Visible := True;
+
+      Inc(WidthDiff, ToolButtonsToHide[I].Width);
+    end;
+  finally
+    F(ToolButtonsToHide);
   end;
 end;
 
@@ -11283,8 +11334,8 @@ procedure TExplorerForm.TbDatabaseClick(Sender: TObject);
 var
   APoint: TPoint;
 begin
-  APoint := Point(Tbdatabase.Left, Tbdatabase.Top + Tbdatabase.Height);
-  APoint := ToolBarMain.ClientToScreen(APoint);
+  APoint := Point(FDatabaseInfo.Left, FDatabaseInfo.Top + FDatabaseInfo.Height);
+  APoint := PnTopMenu.ClientToScreen(APoint);
   PmDBList.DoPopupEx(APoint.X, APoint.Y);
 end;
 
@@ -12851,7 +12902,6 @@ begin
   TDBManager.ReadUserCollections(FDatabases);
 
   IconFileName := '';
-  TbDatabase.Visible := FDatabases.Count > 1;
 
   ImDBList.Clear;
   PmDBList.Items.Clear;
@@ -12884,7 +12934,7 @@ begin
   if IconFileName = '' then
     IconFileName := Application.ExeName + ',0';
 
-  if TbDatabase.Visible then
+  {if TbDatabase.Visible then
   begin
     Ico := ExtractSmallIconByPath(IconFileName, not AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False));
     try
@@ -12903,7 +12953,7 @@ begin
     finally
       DestroyIcon(Ico);
     end;
-  end;
+  end; }
 
   MI := TMenuItem.Create(PmDBList);
   MI.Caption := '-';
@@ -12952,7 +13002,7 @@ begin
     DefaultView := LV_TILE;
   if FCurrentTypePath = EXPLORER_ITEM_CALENDAR then
     DefaultView := LV_TILE;
-  if FCurrentTypePath = EXPLORER_ITEM_PERSON then
+  if FCurrentTypePath = EXPLORER_ITEM_PERSON_LIST then
     DefaultView := LV_TILE;
   if FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST then
     DefaultView := LV_TILE;

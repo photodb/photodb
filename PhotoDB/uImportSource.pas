@@ -15,6 +15,7 @@ uses
   Vcl.Buttons,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
+  Vcl.Themes,
   Vcl.Imaging.PngImage,
 
   Dmitry.Utils.Files,
@@ -270,7 +271,7 @@ var
   procedure UpdateGlyph(Button: TSpeedButton);
   var
     Png: TPngImage;
-    B: TBitmap;
+    B, B24: TBitmap;
     Image: string;
     Font: TFont;
   begin
@@ -304,7 +305,17 @@ var
 
           DrawText32Bit(B, Name, Font, Rect(0, B.Height - 4 + Font.Height, B.Width, B.Height), DT_CENTER or DT_END_ELLIPSIS);
 
-          Button.Glyph := B;
+          if not TStyleManager.IsCustomStyleActive then
+          begin
+            B24 := TBitmap.Create;
+            try
+              LoadBMPImage32bit(B, B24, Theme.WindowColor);
+              Button.Glyph := B24;
+            finally
+              F(B24);
+            end;
+          end else
+            Button.Glyph := B;
         finally
           F(Font);
         end;
@@ -322,9 +333,9 @@ begin
   try
     Button := TSpeedButton.Create(Self);
     Button.Parent := Self;
-    Button.Width := 130;
-    Button.Height := 130 + 20;
-    Button.Top := 5;
+    Button.Width := 132;
+    Button.Height := 132 + 20;
+    Button.Top := 4;
     Button.OnClick := SelectSourceClick;
 
     BI := TButtonInfo.Create;
