@@ -421,14 +421,14 @@ begin
 end;
 
 procedure TLinkListEditorDatabases.OnPreviewOptionsClick(Sender: TObject);
-//var
-  //DI: TDatabaseInfo;
-  //Editor: TPanel;
+var
+  DI: TDatabaseInfo;
+  Editor: TPanel;
 begin
-  //Editor := TPanel(TControl(Sender).Parent);
-  //DI := TDatabaseInfo(Editor.Tag);
+  Editor := TPanel(TControl(Sender).Parent);
+  DI := TDatabaseInfo(Editor.Tag);
 
-  //TODO: ConvertDB(DI.Path);
+  CollectionPreviewSettings.Execute(DI.Path);
 end;
 
 function TLinkListEditorDatabases.OnApply(Sender: ILinkItemSelectForm): Boolean;

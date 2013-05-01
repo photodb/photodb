@@ -66,6 +66,7 @@ uses
   uAnimationHelper,
   uStringUtils,
   uTranslate,
+  uImageViewCount,
   uTranslateUtils;
 
 type
@@ -91,6 +92,8 @@ type
     FOnImageRequest: TRequireImageHandler;
     FImageFrameTimer: TTimer;
     FLockEventRotateFileList: TStrings;
+
+    FImageViewTimer: TTimer;
 
     FWlFaceCount: TWebLink;
     FLsDetectingFaces: TLoadingSign;
@@ -208,6 +211,8 @@ type
     procedure WlFaceCountMouseEnter(Sender: TObject);
     procedure WlFaceCountMouseLeave(Sender: TObject);
     procedure SelectCascade(Sender: TObject);
+
+    procedure ImageViewTimerOnTimer(Sender: TObject);
 
     procedure LsLoadingGetBackGround(Sender: TObject; X, Y, W, H: Integer; Bitmap: TBitmap);
 
@@ -358,6 +363,11 @@ begin
   ControlStyle := ControlStyle + [csOpaque, csPaintBlackOpaqueOnGlass];
 
   ChangeContext;
+
+  FImageViewTimer := TTimer.Create(Self);
+  FImageViewTimer.Enabled := False;
+  FImageViewTimer.Interval := 1000;
+  FImageViewTimer.OnTimer := ImageViewTimerOnTimer;
 
   FLsLoading := TLoadingSign.Create(Self);
   FLsLoading.Parent := Self;
@@ -730,6 +740,7 @@ begin
   UpdateFaceDetectionState;
 
   StopLoadingImage;
+  FImageViewTimer.Restart;
 end;
 
 procedure TImageViewerControl.LoadStaticImage(Item: TMediaItem; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
@@ -768,6 +779,7 @@ begin
   UpdateFaceDetectionState;
   StopLoadingImage;
   RecreateImage;
+  FImageViewTimer.Restart;
 end;
 
 procedure TImageViewerControl.FailedToLoadImage(ErrorMessage: string);
@@ -1477,6 +1489,13 @@ begin
     if FFullImage.Height <> 0 then
       Result.Y := Round(Y1 + P.Y * (Fh / FFullImage.Height));
   end;
+end;
+
+procedure TImageViewerControl.ImageViewTimerOnTimer(Sender: TObject);
+begin
+  FImageViewTimer.Enabled := False;
+  if Item.ID > 0 then
+    ImageViewCounter.ImageViewed(FContext, Item.ID);
 end;
 
 procedure TImageViewerControl.OnApplicationMessage(var Msg: TMsg;
@@ -2317,6 +2336,7 @@ end;
 
 procedure TImageViewerControl.StartLoadingImage;
 begin
+  FImageViewTimer.Enabled := False;
   FIsWaiting := True;
   FLsLoading.RecteateImage;
   FLsLoading.Show;

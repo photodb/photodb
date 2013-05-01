@@ -18,6 +18,7 @@ Features ready:
 - Update in packground if thumbnail size was changed;
 
 Bugs:
+- start with deleted db - create new;
 
 [New]
 - Portable persons;
@@ -32,7 +33,7 @@ Bugs:
 [Collection]
 - Change database check update thread;
 - Encrypted images after enter password - add to database from all user directories;
-- Update info in bottom => remove update form;
+- Update info in top/bottom => remove update form;
 
 [Maybe]
 - Explorer preview zoom? (icons could be hidden)

@@ -1340,44 +1340,17 @@
 	<translate name="The program is registered to" value="Зарегистрировано на"/>
 	<translate name="Standalone collection created using &quot;%s&quot;. In this program many features are disabled and these features are available in the full version." value="Автономная коллекция данных созданная с помощью &quot;%s&quot;. В этой программе отключены многие функции, доступные в полной версии."/>
   </scope>
-  <scope name="ConvertDB">
-	<translate name="Previous" value="Назад"/>
-	<translate name="Next" value="Далее"/>
-	<translate name="Finish" value="Финиш"/>
-	<translate name="Waiting" value="Ожидание"/>
+  <scope name="DBPreviewSettings">
+	<translate name="Preview settings" value="Настройки предпросмотров"/>
 	<translate name="Preview" value="Предпросмотр"/>
 	<translate name="Default thumbnail size in collection" value="Размер предпросмотров по умолчанию для хранения в коллекции"/>
 	<translate name="Compression quality of images stored in the collection" value="Качество сжатия изображений, хранимых в коллекции"/>
 	<translate name="Image preview size" value="Размер предпросмотра к изображениям"/>
-	<translate name="Start" value="Начать"/>
-	<translate name="Break" value="Прервать"/>
-	<translate name="Do you really want to close this wizard?" value="Вы действительно  хотите закрыть этот диалог?"/>
 	<translate name="Size: %s from %s" value="Размер: %s из %s"/>
-	<translate name="Processed %d from %d" value="Обработано %d из %d"/>
-	<translate name="Can't add some files to collection because password was not found!" value="Не удалось добавить некоторые файлы в коллекцию т.к. не был найден пароль!"/>
-	<translate name="Convert collection" value="Конвертировать коллекцию"/>
-	<translate name="This wizard will help you convert your collection from one format to another." value="Этот диалог поможет вам конвертировать вашу коллекцию данных из одного формата в другой."/>
-	<translate name="Current collection" value="Текущая коллекция"/>
-	<translate name="Convert to *.photodb (PhotoDB)" value="Конвертировать в *.photodb (PhotoDB)"/>
-	<translate name="Convert to *.db (Paradox)" value="Конвертировать в *.db (Paradox)"/>
-	<translate name="Please wait until convertation is in progress. This can take some time to complete..." value="Подождите, пока выполнится преобразование, это может потребовать несколько минут..."/>
-	<translate name="Current action" value="Текущее действие"/>
 	<translate name="You can adjust the size and compression quality of images in the collection and other sizes of images" value="Вы можете настроить размеры и качество сжатия изображений и другие размеры изображений"/>
-	<translate name="Do you really want to cancel current action?" value="Вы действительно хотите отменить текущее действие?"/>
-	<translate name="Convertation of the collection is completed!" value="Конвертирование завершено!"/>
 	<translate name="Image size: %s" value="Размер изображения: %s"/>
 	<translate name="The size of new collection (approximately): %s" value="Размер новой коллекции (ориентировочно): %s"/>
-	<translate name="Size" value="Размер"/>	
-	<translate name="Item #%d from %d" value="Запись #%d из %d" />
-	<translate name="Saving groups" value="Сохранение групп"/>
-	<translate name="Saving group: %s" value="Сохранение группы: %s"/>
-	<translate name="An error occurred during converting the collection! (%s)" value="Произошла ошибка во время конвертации коллекции! (%s)"/>
-	<translate name="Can not delete file %s, maybe he's busy with another program or process. Will use a different name (file_name_1)" value="Не удаётся удалить файл %s, возможно он занят другой программой или процессом. Будет использовано другое имя (имя_файла_1)"/>
-	<translate name="Converting the structure..." value="Конвертирование структуры..."/>
-	<translate name="Opening collection" value="Открытие коллекции"/>
-	<translate name="Creating collection" value="Создание коллекции"/>
-	<translate name="Creating collection: success!" value="Создание коллекции успешно завершено"/>
-	<translate name="Update collection configuration is complete!" value="Обновление настроек коллекции завершено!"/>
+	<translate name="Size" value="Размер"/>
   </scope>
   <scope name="Options">
 	<translate name="Options" value="Настройки"/>
@@ -1674,6 +1647,7 @@
 	<translate name="Gray" value="Серый"/>
 	<translate name="Black" value="Чёрный"/>
 	<translate name="Brown" value="Коричневый"/>
+	<translate name="Black and white" value="Чёрно-белый"/>
   </scope>  
   <scope name="EditObject">
 	<translate name="Edit text" value="Редактировать текст"/>

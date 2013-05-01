@@ -134,8 +134,8 @@ const
                             'Provider=Microsoft.ACE.OLEDB.14.0;Data Source=%s;Persist Security Info=False';
 
 
-function GetTable(Table: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
-function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
+function GetTable(CollectionFileName: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
+function GetQuery(CollectionFileName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
 
 function TryOpenCDS(DS: TDataSet): Boolean;
 function OpenDS(DS: TDataSet): Boolean;
@@ -611,13 +611,13 @@ begin
   end;
 end;
 
-function GetQuery(TableName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
+function GetQuery(CollectionFileName: string; CreateNewConnection: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite): TDataSet;
 begin
   FSync.Enter;
   try
     Result := TADOQuery.Create(nil);
 
-    (Result as TADOQuery).Connection := GetConnection(TableName, CreateNewConnection, IsolationLevel);
+    (Result as TADOQuery).Connection := GetConnection(CollectionFileName, CreateNewConnection, IsolationLevel);
     if DBReadOnly then
       ReadOnlyQuery(Result);
   finally
@@ -625,12 +625,12 @@ begin
   end;
 end;
 
-function GetTable(Table: String; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
+function GetTable(CollectionFileName: string; TableID: Integer = DB_TABLE_UNKNOWN): TDataSet;
 begin
   FSync.Enter;
   try
     Result := TADODataSet.Create(nil);
-    (Result as TADODataSet).Connection := GetConnection(Table);
+    (Result as TADODataSet).Connection := GetConnection(CollectionFileName);
     (Result as TADODataSet).CommandType := CmdTable;
     if TableID = DB_TABLE_GROUPS then
       (Result as TADODataSet).CommandText := 'Groups';

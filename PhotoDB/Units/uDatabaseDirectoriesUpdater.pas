@@ -528,7 +528,7 @@ begin
       MediaItem := TMediaItem.CreateFromDS(SC.DS);
       try
         try
-          if not UpdateImageRecord(FDBContext, nil, MediaItem.FileName, MediaItem.ID) then
+          if not UpdateImageRecordEx(FDBContext, nil, MediaItem, Settings) then
             MarkRecordAsUpdated(FDBContext, MediaItem.ID);
         except
           on e: Exception do

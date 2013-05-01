@@ -278,7 +278,7 @@ begin
     Exit;
 
   FillChar(Weights, SizeOf(Weights), 0);
-  MinWeight := B.Width * B.Height div 100;
+  MinWeight := B.Width * B.Height div 50;
 
   FillColors(Palette, PaletteHLS);
 
@@ -319,7 +319,7 @@ begin
 
     MaxWeightLimit := MaxWeight / 100;
 
-    for I := 0 to MaxColors - 3 do
+    for I := 0 to MaxColors - 2 do
     begin
       Weights[MaxIndex] := 0.0;
       MaxWeight := 0.0;

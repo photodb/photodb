@@ -28,11 +28,13 @@ type
     function GetAction: string;
   protected
     function GetValue: Variant; virtual; abstract;
+    function GetUpdateExpression: string; virtual;
   public
     constructor Create(Name: string; Action: TParameterAction);
     property Value: Variant read GetValue;
     property Name: string read FName;
     property Action: string read GetAction;
+    property UpdateExpression: string read GetUpdateExpression;
   end;
 
   TAllParameter = class(TParameter)
@@ -47,6 +49,7 @@ type
     FExpression: string;
   protected
     function GetValue: Variant; override;
+    function GetUpdateExpression: string; override;
   public
     constructor Create(Expression: string);
     property Expression: string read FExpression;
@@ -306,7 +309,7 @@ begin
   FWhereParameters.Add(Parameter);
 end;
 
-constructor TSqlCommand.Create(CollectionFileName: string;  Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
+constructor TSqlCommand.Create(CollectionFileName: string; Async: Boolean = False; IsolationLevel: TDBIsolationLevel = dbilReadWrite);
 begin
   FCollectionFile := CollectionFileName;
   FParameters := FParameterCollection.Create;
@@ -411,6 +414,11 @@ begin
       Result := 'LIKE';
   end;
 
+end;
+
+function TParameter.GetUpdateExpression: string;
+begin
+   Result := Format('[%s] = :%s', [Name, Name]);
 end;
 
 { TDeleteCommand }
@@ -518,7 +526,7 @@ begin
   SL := TStringList.Create;
   try
     for I := 0 to Count - 1 do
-      SL.Add(Format('[%s] = :%s', [Items[I].Name, Items[I].Name]));
+      SL.Add(Items[I].UpdateExpression);
 
     Result := ' ' + SL.Join(', ') + ' ';
   finally
@@ -761,6 +769,11 @@ constructor TCustomFieldParameter.Create(Expression: string);
 begin
   inherited Create('', paNone);
   FExpression := Expression;
+end;
+
+function TCustomFieldParameter.GetUpdateExpression: string;
+begin
+  Result := Expression;
 end;
 
 function TCustomFieldParameter.GetValue: Variant;

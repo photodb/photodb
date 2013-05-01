@@ -136,7 +136,7 @@ begin
     Graphic := nil;
     try
 
-      if not FInfo.InnerImage and not LoadImageFromPath(FInfo, -1, Password, [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo, ThHintSize, ThHintSize) then
+      if not FInfo.InnerImage and not LoadImageFromPath(FInfo, -1, Password, [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo, MaxImageHintPreviewSize, MaxImageHintPreviewSize) then
         Exit;
 
       if ImageInfo <> nil then
@@ -170,7 +170,7 @@ begin
       end else
       begin
         if not FInfo.InnerImage then
-          JPEGScale(Graphic, ThHintSize, ThHintSize);
+          JPEGScale(Graphic, MaxImageHintPreviewSize, MaxImageHintPreviewSize);
 
         Bitmap := TBitmap.Create;
         try
@@ -186,7 +186,7 @@ begin
           FW := Bitmap.Width;
           FH := Bitmap.Height;
           if not FInfo.InnerImage then
-            ProportionalSize(ThHintSize, ThHintSize, FW, FH);
+            ProportionalSize(MaxImageHintPreviewSize, MaxImageHintPreviewSize, FW, FH);
 
           FB := TBitmap.Create;
           try

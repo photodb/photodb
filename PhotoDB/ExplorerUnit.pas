@@ -8308,16 +8308,19 @@ begin
 end;
 
 procedure TExplorerForm.CoolBarBottomResize(Sender: TObject);
-
 var
   I, TotalWidth, WidthDiff: Integer;
   ToolButtonsToHide: TList<TToolButton>;
+  Button: TToolButton;
 begin
   //Bottom toolbar width customization
   TotalWidth := 0;
   for I := 0 to ToolBarBottom.ButtonCount - 1 do
-    if ToolBarBottom.Buttons[I].Tag = BAR_ITEM_VISIBLE then
-      Inc(TotalWidth, ToolBarBottom.Buttons[I].Width);
+  begin
+    Button := ToolBarBottom.Buttons[I];
+    if (Button.Tag = BAR_ITEM_VISIBLE) or (Button = TbbEncrypt) then
+      Inc(TotalWidth, Button.Width);
+  end;
 
   ToolButtonsToHide := TList<TToolButton>.Create;
   try

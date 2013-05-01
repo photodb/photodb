@@ -62,8 +62,8 @@ type
   TImageInfoOption = (iioPreview, iioColors, iioHistogram{, iioFaces});
   TImageInfoOptions = set of TImageInfoOption;
 
-function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
-function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; OnlyImTh: Boolean = False): TMediaInfoArray;
+function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean; Settings: TSettings = nil): TMediaInfo;
+function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; OnlyImTh: Boolean = False; Settings: TSettings = nil): TMediaInfoArray;
 function GetImageDuplicates(DBContext: IDBContext; ImageTh: string): TMediaInfo;
 function GenerateImageInfo(FileName: string; Options: TImageInfoOptions; ThumbnailSize: Integer; JpegCompressionQuality: TJPEGQualityRange): TMediaInfo;
 
@@ -158,7 +158,7 @@ begin
   end;
 end;
 
-function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; OnlyImTh: Boolean = False): TMediaInfoArray;
+function GetImageIDWEx(DBContext: IDBContext; Images: TMediaItemCollection; OnlyImTh: Boolean = False; Settings: TSettings = nil): TMediaInfoArray;
 var
   K, I, L, Len: Integer;
   FQuery: TDataSet;
@@ -169,7 +169,7 @@ begin
   SetLength(ThImS, L);
   SetLength(Result, L);
   for I := 0 to L - 1 do
-    ThImS[I] := GetImageIDW(DBContext, Images[I].FileName, True);
+    ThImS[I] := GetImageIDW(DBContext, Images[I].FileName, True, Settings);
 
   FQuery := DBContext.CreateQuery(dbilRead);
 
@@ -319,24 +319,30 @@ begin
   end;
 end;
 
-function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean): TMediaInfo;
+function GetImageIDW(Context: IDBContext; FileName: string; OnlyImTh: Boolean; Settings: TSettings = nil): TMediaInfo;
 var
   JpegCompressionQuality: TJPEGQualityRange;
   ThumbnailSize: Integer;
 
   SettingsRepository: ISettingsRepository;
-  Settings: TSettings;
   DuplicatesInfo: TMediaInfo;
 begin
   FillChar(Result, SizeOf(Result), 0);
 
-  SettingsRepository := Context.Settings;
-  Settings := SettingsRepository.Get;
-  try
+  if Settings <> nil then
+  begin
     JpegCompressionQuality := Settings.DBJpegCompressionQuality;
     ThumbnailSize := Settings.ThSize;
-  finally
-    F(Settings);
+  end else
+  begin
+    SettingsRepository := Context.Settings;
+    Settings := SettingsRepository.Get;
+    try
+      JpegCompressionQuality := Settings.DBJpegCompressionQuality;
+      ThumbnailSize := Settings.ThSize;
+    finally
+      F(Settings);
+    end;
   end;
 
   DoProcessPath(FileName);

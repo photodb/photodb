@@ -48,7 +48,7 @@ begin
   try
     UC.AddParameter(TIntegerParameter.Create('DBJpegCompressionQuality', Settings.DBJpegCompressionQuality));
     UC.AddParameter(TIntegerParameter.Create('ThImageSize', Settings.ThSize));
-    UC.AddParameter(TIntegerParameter.Create('ThHintSize', Settings.ThHintSize));
+    //UC.AddParameter(TIntegerParameter.Create('ThHintSize', Settings.ThHintSize));
     //UC.AddParameter(TIntegerParameter.Create('ThSizePanelPreview', Settings.ThSizePanelPreview));
     UC.AddParameter(TStringParameter.Create('DBName', Settings.Name));
     UC.AddParameter(TStringParameter.Create('DBDescription', Settings.Description));

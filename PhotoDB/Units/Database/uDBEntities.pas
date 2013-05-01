@@ -357,7 +357,6 @@ type
 
     DBJpegCompressionQuality: Byte;
     ThSize: Integer;
-    ThHintSize: Integer;
 
     constructor Create;
     function Copy: TSettings;
@@ -1142,7 +1141,6 @@ begin
 
   Result.DBJpegCompressionQuality := DBJpegCompressionQuality;
   Result.ThSize := ThSize;
-  Result.ThHintSize := ThHintSize;
 end;
 
 constructor TSettings.Create;
@@ -1150,7 +1148,6 @@ begin
   Version := 0;
   DBJpegCompressionQuality := 75;
   ThSize := 200;
-  ThHintSize := 400;
 end;
 
 procedure TSettings.ReadFromDS(DS: TDataSet);
@@ -1162,7 +1159,6 @@ begin
 
   DBJpegCompressionQuality := DS.FieldByName('DBJpegCompressionQuality').AsInteger;
   ThSize := DS.FieldByName('ThImageSize').AsInteger;
-  ThHintSize := DS.FieldByName('ThHintSize').AsInteger;
 end;
 
 {$ENDREGION}

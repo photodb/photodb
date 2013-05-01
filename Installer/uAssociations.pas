@@ -830,7 +830,6 @@ begin
       if I <> 0 then
         FExtensionList := FExtensionList + '|';
 
-      //TODO: check all uses
       FExtensionList := FExtensionList + Association.Extension;
 
       if OldGroup <> Association.Group then

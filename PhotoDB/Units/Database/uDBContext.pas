@@ -34,6 +34,7 @@ type
     function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
+    procedure IncMediaCounter(ID: Integer);
   end;
 
   IGroupsRepository = interface
@@ -99,7 +100,6 @@ type
     function CreateInsert(TableName: string): TInsertCommand;
     function CreateDelete(TableName: string): TDeleteCommand;
 
-    //todo: high-level
     //repositories
     function Settings: ISettingsRepository;
     function Groups: IGroupsRepository;

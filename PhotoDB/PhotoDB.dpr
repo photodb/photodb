@@ -218,7 +218,6 @@ uses
   uCryptUtils in 'Units\uCryptUtils.pas',
   uResourceUtils in 'Units\Utils\uResourceUtils.pas',
   uMobileUtils in 'Units\Utils\uMobileUtils.pas',
-  uFrmConvertationSettings in 'Convertation\uFrmConvertationSettings.pas' {FrmConvertationSettings: TFrame},
   uInterfaces in 'Units\Interfaces\uInterfaces.pas',
   uDBAdapter in 'Units\Database\uDBAdapter.pas',
   uCDMappingTypes in 'Units\uCDMappingTypes.pas',
@@ -383,7 +382,8 @@ uses
   uFormBackgroundTaskStatus in 'uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus},
   uMediaInfo in 'Units\uMediaInfo.pas',
   uColorUtils in 'Units\Utils\uColorUtils.pas',
-  uImageViewCount in 'Units\uImageViewCount.pas';
+  uImageViewCount in 'Units\uImageViewCount.pas',
+  uFormDBPreviewSettings in 'uFormDBPreviewSettings.pas' {FormDBPreviewSize};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -498,7 +498,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

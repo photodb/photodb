@@ -53,7 +53,7 @@ uses
   uRuntime;
 
 const
-  ThHintSize = 400;
+  MaxImageHintPreviewSize = 400;
 
 type
   TImHint = class(TDBForm)
@@ -113,8 +113,6 @@ type
 
 implementation
 
-uses
-  FormManegerUnit;
 
 {$R *.dfm}
 
@@ -273,7 +271,7 @@ begin
       DisplayWidth := G.Height;
     end;
     if not IsAnimated then
-      ProportionalSize(ThHintSize, ThHintSize, DisplayWidth, DisplayHeight);
+      ProportionalSize(MaxImageHintPreviewSize, MaxImageHintPreviewSize, DisplayWidth, DisplayHeight);
 
     ImageBuffer := TBitmap.Create;
     AnimatedBuffer := TBitmap.Create;

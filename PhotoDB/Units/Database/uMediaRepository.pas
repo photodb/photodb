@@ -34,6 +34,7 @@ type
     function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
+    procedure IncMediaCounter(ID: Integer);
   end;
 
 implementation
@@ -209,6 +210,20 @@ begin
   MediaItem := GetMenuItemByID(ID);
   if MediaItem <> nil then
     Result.Add(MediaItem);
+end;
+
+procedure TMediaRepository.IncMediaCounter(ID: Integer);
+var
+  UC: TUpdateCommand;
+begin
+  UC := FContext.CreateUpdate(ImageTable, True);
+  try
+    UC.AddParameter(TCustomFieldParameter.Create('[ViewCount] = [ViewCount] + 1'));
+    UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+    UC.Execute;
+  finally
+    F(UC);
+  end;
 end;
 
 function TMediaRepository.GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;

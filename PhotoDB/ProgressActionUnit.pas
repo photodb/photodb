@@ -319,7 +319,7 @@ begin
   begin
     Top := Screen.WorkAreaHeight - Height;
     Left := Screen.WorkAreaWidth - Width;
-    // TODO: in options
+
     AlphaBlend := True;
     AlphaBlendValue := 220;
   end;

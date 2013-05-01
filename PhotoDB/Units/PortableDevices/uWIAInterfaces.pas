@@ -182,9 +182,8 @@ typedef struct _WIA_DEV_CAP {
   WIA_FORMAT_INFO = _WIA_FORMAT_INFO;
   PWIA_FORMAT_INFO = ^WIA_FORMAT_INFO;
 
-  PWIA_EXTENDED_TRANSFER_INFO = Pointer; //TODO: implement
+  PWIA_EXTENDED_TRANSFER_INFO = Pointer;
   IEnumWIA_FORMAT_INFO = interface(IUnknown)
-    //TODO: implement
   end;
 
   IWiaDataTransfer = interface(IUnknown)

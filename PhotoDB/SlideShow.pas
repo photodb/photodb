@@ -95,6 +95,7 @@ uses
   uAnimationHelper,
   uImageZoomHelper,
   uPhotoShelf,
+  uImageViewCount,
   uFormInterfaces,
   uSessionPasswords,
   uCollectionEvents;
@@ -216,6 +217,7 @@ type
     Createnote1: TMenuItem;
     TbConvert: TToolButton;
     TbExplore: TToolButton;
+    TmrViewCount: TTimer;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Double; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -305,6 +307,7 @@ type
     procedure TbExploreClick(Sender: TObject);
     procedure MiCurrentPersonAvatarClick(Sender: TObject);
     procedure FormDblClick(Sender: TObject);
+    procedure TmrViewCountTimer(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -644,6 +647,8 @@ begin
     TbRotateCCW.Enabled := not IsDevicePath(Item.FileName);
     TbRotateCW.Enabled := not IsDevicePath(Item.FileName);
     UpdateCrypted;
+    //Start only on full image rady
+    TmrViewCount.Enabled := False;
 
     //try fast load image
     if not FForwardThreadReady and not FullScreenNow then
@@ -3430,6 +3435,7 @@ begin
   FOverlayBuffer := TBitmap.Create;
   RecreateDrawImage(Self);
   PrepareNextImage;
+  TmrViewCount.Restart;
 end;
 
 procedure TViewer.SetLoading(const Value: Boolean);
@@ -3491,6 +3497,7 @@ begin
   FHoverFace := nil;
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
+  TmrViewCount.Restart;
 end;
 
 procedure TViewer.ImageFrameTimerTimer(Sender: TObject);
@@ -4074,6 +4081,13 @@ begin
     TbRating.ImageIndex := 21
   else
     TbRating.ImageIndex :=20;
+end;
+
+procedure TViewer.TmrViewCountTimer(Sender: TObject);
+begin
+  TmrViewCount.Enabled := False;
+  if Item.ID <> 0 then
+    ImageViewCounter.ImageViewed(FContext, Item.ID);
 end;
 
 procedure TViewer.MakePagesLinks;

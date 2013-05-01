@@ -80,6 +80,7 @@ begin
   if GetParamStrDBBool('/close') then
     StopApplication;
 
+  {$IFNDEF DEBUG}
   if not FolderView and not DBTerminating then
     if not GetParamStrDBBool('/NoFaultCheck') then
       if (AppSettings.ReadProperty('Starting', 'ApplicationStarted') = '1') then
@@ -93,6 +94,7 @@ begin
           R(CMDForm);
         end;
       end;
+  {$ENDIF}
 
   if not FolderView and not DBTerminating then
     if GetParamStrDBBool('/PACKTABLE') or AppSettings.ReadBool('StartUp', 'Pack', False) then

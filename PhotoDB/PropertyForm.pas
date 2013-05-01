@@ -3000,7 +3000,6 @@ begin
     SetLength(LinksInfo, 1);
     LinksInfo[0].LinkType := LINK_TYPE_ID_EXT;
     LinksInfo[0].LinkName := L('Processing');
-    // TODO:[0]
     LinksInfo[0].LinkValue := CodeExtID(FFilesInfo[0].LongImageID);
     ReplaceLinks('', CodeLinksInfo(LinksInfo), Info.Links);
     Query := FContext.CreateQuery;

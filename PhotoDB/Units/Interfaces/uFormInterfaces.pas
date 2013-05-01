@@ -227,6 +227,11 @@ type
     procedure HideForm;
   end;
 
+  IFormCollectionPreviewSettings =  interface(IFormInterface)
+    ['{AC28FCD4-E07B-4FC5-BB42-03E91989457B}']
+    function Execute(CollectionFileName: string): Boolean;
+  end;
+
 type
   TFormInterfaces = class(TObject)
   private
@@ -269,6 +274,7 @@ function SelectLocationForm: ISelectLocationForm;
 function LinkItemSelectForm: ILinkItemSelectForm;
 function FormUpdateStatus: IFormUpdateStatus;
 function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
+function CollectionPreviewSettings: IFormCollectionPreviewSettings;
 
 implementation
 
@@ -406,6 +412,11 @@ end;
 function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
 begin
   Result := FormInterfaces.CreateForm<IBackgroundTaskStatusForm>();
+end;
+
+function CollectionPreviewSettings: IFormCollectionPreviewSettings;
+begin
+  Result := FormInterfaces.CreateForm<IFormCollectionPreviewSettings>();
 end;
 
 { TFormInterfaces }

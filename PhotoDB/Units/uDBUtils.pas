@@ -59,6 +59,7 @@ procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
 function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 
 function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
+function UpdateImageRecordEx(DBContext: IDBContext; Caller: TDBForm; Info: TMediaItem; Settings: TSettings): Boolean;
 procedure MarkRecordAsUpdated(DBContext: IDBContext; ID: Integer);
 
 procedure GetFileListByMask(DBContext: IDBContext; BeginFile, Mask: string;
@@ -357,7 +358,7 @@ begin
   end;
 end;
 
-function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
+function UpdateImageRecordEx(DBContext: IDBContext; Caller: TDBForm; Info: TMediaItem; Settings: TSettings): Boolean;
 var
   Res: TMediaInfo;
   I, Attribute: Integer;
@@ -365,11 +366,8 @@ var
   ExifData: TExifData;
   EF: TEventFields;
   MS, HS: TMemoryStream;
-  Info: TMediaItem;
-
   UC: TUpdateCommand;
-  SC: TSelectCommand;
-  DA: TImageTableAdapter;
+  FileName: string;
 
   function MapDBFileName(FileName: string): string;
   var
@@ -397,183 +395,193 @@ var
       Delete(Result, 1, ExtractFilePath(Application.ExeName).Length);
   end;
 
+
 begin
   Result := False;
   MS := nil;
   HS := nil;
 
-  if (ID = 0) or DBReadOnly then
+  if (Info.ID = 0) or DBReadOnly then
     Exit;
 
-  FileName := MapDBFileName(FileName);
+  FileName := MapDBFileName(Info.FileName);
 
-  Res := GetImageIDW(DBContext, FileName, False);
+  Res := GetImageIDW(DBContext, FileName, False, Settings);
   if Res.Jpeg = nil then
     Exit;
 
   try
     EF := [];
-    EventInfo.ID := ID;
+    EventInfo.ID := Info.ID;
     EventInfo.JPEGImage := Res.Jpeg;
     EventInfo.FileName := FileName;
     EF := [EventID_FileProcessed];
 
-    SC := DBContext.CreateSelect(ImageTable);
+    UC := DBContext.CreateUpdate(ImageTable);
     try
-      SC.AddParameter(TStringParameter.Create('StrTh'));
-      SC.AddParameter(TIntegerParameter.Create('Attr'));
-      SC.AddParameter(TIntegerParameter.Create('Rating'));
-      SC.AddParameter(TIntegerParameter.Create('Rotated'));
-      SC.AddParameter(TStringParameter.Create('Comment'));
-      SC.AddParameter(TStringParameter.Create('Keywords'));
-      SC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+      UC.AddWhereParameter(TIntegerParameter.Create('ID', Info.ID));
 
-      if SC.Execute > 0 then
+      if Res.IsEncrypted or (Res.Password <> '') then
       begin
-        DA := TImageTableAdapter.Create(SC.DS);
-        UC := DBContext.CreateUpdate(ImageTable);
-        try
-          UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+        MS := TMemoryStream.Create;
+        EncryptGraphicImage(Res.Jpeg, Res.Password, MS);
+        UC.AddParameter(TStreamParameter.Create('Thum', MS));
+      end else
+        UC.AddParameter(TPersistentParameter.Create('Thum', Res.Jpeg));
 
-          if Res.IsEncrypted or (Res.Password <> '') then
+      UC.AddParameter(TStringParameter.Create('FFileName', FileNameToDBPath(FileName)));
+      UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(FileName)));
+      UC.AddParameter(TStringParameter.Create('StrTh', Res.ImTh));
+      UC.AddParameter(TIntegerParameter.Create('StrThCrc', Integer(StringCRC(Res.ImTh))));
+
+      UC.AddParameter(TIntegerParameter.Create('Width', Res.ImageWidth));
+      UC.AddParameter(TIntegerParameter.Create('Height', Res.ImageHeight));
+      UC.AddParameter(TIntegerParameter.Create('FileSize', GetFileSizeByName(FileName)));
+      UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(FileName, True)));
+
+      UC.AddParameter(TStringParameter.Create('Colors', ColorsToString(Res.Colors)));
+      UC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
+      UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
+
+      HS := TMemoryStream.Create;
+      HS.WriteBuffer(Res.Histogram, SizeOf(Res.Histogram));
+      HS.Seek(0, soFromBeginning);
+      UC.AddParameter(TStreamParameter.Create('Histogram', HS));
+
+      ExifData := TExifData.Create;
+      try
+        ExifData.LoadFromGraphic(FileName);
+        if AppSettings.ReadBool('Options', 'FixDateAndTime', True) then
+        begin
+          if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
           begin
-            MS := TMemoryStream.Create;
-            EncryptGraphicImage(Res.Jpeg, Res.Password, MS);
-            UC.AddParameter(TStreamParameter.Create('Thum', MS));
-          end else
-            UC.AddParameter(TPersistentParameter.Create('Thum', Res.Jpeg));
+            EventInfo.Date := DateOf(ExifData.DateTimeOriginal);
+            EventInfo.Time := TimeOf(ExifData.DateTimeOriginal);
+            EventInfo.IsDate := True;
+            EventInfo.IsTime := True;
 
-          UC.AddParameter(TStringParameter.Create('FFileName', FileNameToDBPath(FileName)));
-          UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(FileName)));
-          UC.AddParameter(TStringParameter.Create('StrTh', Res.ImTh));
-          UC.AddParameter(TIntegerParameter.Create('StrThCrc', Integer(StringCRC(Res.ImTh))));
+            EF := EF + [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
 
-          UC.AddParameter(TIntegerParameter.Create('Width', Res.ImageWidth));
-          UC.AddParameter(TIntegerParameter.Create('Height', Res.ImageHeight));
-          UC.AddParameter(TIntegerParameter.Create('FileSize', GetFileSizeByName(FileName)));
-          UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(FileName, True)));
-
-          UC.AddParameter(TStringParameter.Create('Colors', ColorsToString(Res.Colors)));
-          UC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
-          UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
-
-          HS := TMemoryStream.Create;
-          HS.WriteBuffer(Res.Histogram, SizeOf(Res.Histogram));
-          HS.Seek(0, soFromBeginning);
-          UC.AddParameter(TStreamParameter.Create('Histogram', HS));
-
-          ExifData := TExifData.Create;
-          try
-            ExifData.LoadFromGraphic(FileName);
-            if AppSettings.ReadBool('Options', 'FixDateAndTime', True) then
-            begin
-              if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
-              begin
-                EventInfo.Date := DateOf(ExifData.DateTimeOriginal);
-                EventInfo.Time := TimeOf(ExifData.DateTimeOriginal);
-                EventInfo.IsDate := True;
-                EventInfo.IsTime := True;
-
-                EF := EF + [EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime];
-
-                UC.AddParameter(TDateTimeParameter.Create('DateToAdd', EventInfo.Date));
-                UC.AddParameter(TDateTimeParameter.Create('ATime', EventInfo.Time));
-                UC.AddParameter(TBooleanParameter.Create('IsDate', EventInfo.IsDate));
-                UC.AddParameter(TBooleanParameter.Create('IsTime', EventInfo.IsTime));
-              end;
-            end;
-            if AppSettings.Exif.ReadInfoFromExif then
-            begin
-              Info := TMediaItem.CreateFromFile(FileName);
-              try
-                UpdateImageRecordFromExif(Info);
-
-                if (Info.Rating > 0) and (DA.Rating <> Info.Rating) then
-                begin
-                  UC.AddParameter(TIntegerParameter.Create('Rating', Info.Rating));
-
-                  EF := EF + [EventID_Param_Rating];
-                  EventInfo.Rating := Info.Rating;
-                end;
-
-                if (Info.Rotation > DB_IMAGE_ROTATE_0) and (DA.Rotation <> Info.Rotation) then
-                begin
-                  UC.AddParameter(TIntegerParameter.Create('Rotated', Info.Rotation));
-
-                  EF := EF + [EventID_Param_Rotate];
-                  EventInfo.Rotation := Info.Rotation;
-                end;
-
-                if (Info.Comment <> '') and (DA.Comment <> Info.Comment) then
-                begin
-                  UC.AddParameter(TStringParameter.Create('Comment', Info.Comment));
-
-                  EF := EF + [EventID_Param_Comment];
-                  EventInfo.Comment := Info.Comment;
-                end;
-
-                if (Info.Keywords <> '') and (DA.Keywords <> Info.Keywords) then
-                begin
-                  UC.AddParameter(TStringParameter.Create('KeyWords', Info.Keywords));
-
-                  EF := EF + [EventID_Param_KeyWords];
-                  EventInfo.KeyWords := Info.KeyWords;
-                end;
-              finally
-                F(Info);
-              end;
-            end;
-          except
-            on E: Exception do
-              EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
+            UC.AddParameter(TDateTimeParameter.Create('DateToAdd', EventInfo.Date));
+            UC.AddParameter(TDateTimeParameter.Create('ATime', EventInfo.Time));
+            UC.AddParameter(TBooleanParameter.Create('IsDate', EventInfo.IsDate));
+            UC.AddParameter(TBooleanParameter.Create('IsTime', EventInfo.IsTime));
           end;
-          F(ExifData);
-
-          Attribute := Db_attr_norm;
-          if Res.Count > 1 then
-          begin
-            for I := 0 to Res.Count - 1 do
-              if (Res.IDs[I] <> ID) and (Res.Attr[I] <> Db_attr_not_exists) then
-              begin
-                Attribute := Db_attr_duplicate;
-                Break;
-              end;
-          end;
-
-          UC.AddParameter(TIntegerParameter.Create('Attr', Attribute));
-
-          EF := EF + [EventID_Param_Attr];
-          EventInfo.Attr := Attribute;
-
-          UC.Execute;
-          Result := True;
-
-          TThread.Synchronize(nil,
-            procedure
-            begin
-              if Caller = nil then
-                Caller := TDBForm(Application.MainForm);
-
-              CollectionEvents.DoIDEvent(Caller, ID, EF, EventInfo);
-            end
-          );
-
-        finally
-          F(UC);
-          F(DA);
-          F(MS);
-          F(HS);
         end;
+        if AppSettings.Exif.ReadInfoFromExif then
+        begin
+          Info := TMediaItem.CreateFromFile(FileName);
+          try
+            UpdateImageRecordFromExif(Info);
+
+            if (Info.Rating > 0) and (Info.Rating <> Info.Rating) then
+            begin
+              UC.AddParameter(TIntegerParameter.Create('Rating', Info.Rating));
+
+              EF := EF + [EventID_Param_Rating];
+              EventInfo.Rating := Info.Rating;
+            end;
+
+            if (Info.Rotation > DB_IMAGE_ROTATE_0) and (Info.Rotation <> Info.Rotation) then
+            begin
+              UC.AddParameter(TIntegerParameter.Create('Rotated', Info.Rotation));
+
+              EF := EF + [EventID_Param_Rotate];
+              EventInfo.Rotation := Info.Rotation;
+            end;
+
+            if (Info.Comment <> '') and (Info.Comment <> Info.Comment) then
+            begin
+              UC.AddParameter(TStringParameter.Create('Comment', Info.Comment));
+
+              EF := EF + [EventID_Param_Comment];
+              EventInfo.Comment := Info.Comment;
+            end;
+
+            if (Info.Keywords <> '') and (Info.Keywords <> Info.Keywords) then
+            begin
+              UC.AddParameter(TStringParameter.Create('KeyWords', Info.Keywords));
+
+              EF := EF + [EventID_Param_KeyWords];
+              EventInfo.KeyWords := Info.KeyWords;
+            end;
+          finally
+            F(Info);
+          end;
+        end;
+      except
+        on E: Exception do
+          EventLog(':UpdateImageRecordEx()/FixDateAndTime throw exception: ' + E.message);
+      end;
+      F(ExifData);
+
+      Attribute := Db_attr_norm;
+      if Res.Count > 1 then
+      begin
+        for I := 0 to Res.Count - 1 do
+          if (Res.IDs[I] <> Info.ID) and (Res.Attr[I] <> Db_attr_not_exists) then
+          begin
+            Attribute := Db_attr_duplicate;
+            Break;
+          end;
       end;
 
+      UC.AddParameter(TIntegerParameter.Create('Attr', Attribute));
+
+      EF := EF + [EventID_Param_Attr];
+      EventInfo.Attr := Attribute;
+
+      UC.Execute;
+      Result := True;
+
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          if Caller = nil then
+            Caller := TDBForm(Application.MainForm);
+
+          CollectionEvents.DoIDEvent(Caller, Info.ID, EF, EventInfo);
+        end
+      );
+
     finally
-      F(SC);
+      F(UC);
+      F(MS);
+      F(HS);
     end;
 
   finally
     Res.Jpeg.Free;
     Res.Jpeg := nil;
   end;
+end;
+
+function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
+var
+  Info: TMediaItem;
+  SC: TSelectCommand;
+begin
+  Result := False;
+
+  SC := DBContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TStringParameter.Create('StrTh'));
+    SC.AddParameter(TIntegerParameter.Create('Attr'));
+    SC.AddParameter(TIntegerParameter.Create('Rating'));
+    SC.AddParameter(TIntegerParameter.Create('Rotated'));
+    SC.AddParameter(TStringParameter.Create('Comment'));
+    SC.AddParameter(TStringParameter.Create('Keywords'));
+    SC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+
+    if SC.Execute > 0 then
+    begin
+      Info := TMediaItem.CreateFromDS(SC.DS);
+      Result := UpdateImageRecordEx(DBContext, Caller, Info, nil);
+    end;
+  finally
+    F(SC);
+  end;
+
 end;
 
 procedure GetFileListByMask(DBContext: IDBContext; BeginFile, Mask: string; Info: TMediaItemCollection; var N: Integer; ShowPrivate: Boolean);

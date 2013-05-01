@@ -686,4 +686,10 @@ object Viewer: TViewer
     Left = 48
     Top = 384
   end
+  object TmrViewCount: TTimer
+    Enabled = False
+    OnTimer = TmrViewCountTimer
+    Left = 568
+    Top = 8
+  end
 end
