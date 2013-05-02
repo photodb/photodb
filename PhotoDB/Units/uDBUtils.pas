@@ -566,12 +566,7 @@ begin
 
   SC := DBContext.CreateSelect(ImageTable);
   try
-    SC.AddParameter(TStringParameter.Create('StrTh'));
-    SC.AddParameter(TIntegerParameter.Create('Attr'));
-    SC.AddParameter(TIntegerParameter.Create('Rating'));
-    SC.AddParameter(TIntegerParameter.Create('Rotated'));
-    SC.AddParameter(TStringParameter.Create('Comment'));
-    SC.AddParameter(TStringParameter.Create('Keywords'));
+    SC.AddParameter(TAllParameter.Create());
     SC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
     if SC.Execute > 0 then

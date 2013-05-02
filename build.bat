@@ -35,6 +35,7 @@ REM JNG FILES - END
 "%BRCC32%" NoHistogram.rc
 "%BRCC32%" Import.rc
 "%BRCC32%" CollectionSync.rc
+"%BRCC32%" ExplorerItems.rc
 
 cd ..
 cd ..

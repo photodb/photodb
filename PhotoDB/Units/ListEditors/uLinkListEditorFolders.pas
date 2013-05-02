@@ -41,17 +41,17 @@ type
   private
     FOwner: TDBForm;
     FCurrentPath: string;
-    FForm: ILinkItemSelectForm;
+    FForm: IFormLinkItemEditorData;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
     constructor Create(Owner: TDBForm; CurrentPath: string);
-    procedure SetForm(Form: ILinkItemSelectForm); virtual;
+    procedure SetForm(Form: IFormLinkItemEditorData); virtual;
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
-    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
-    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
+    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
     function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
@@ -102,15 +102,16 @@ begin
   FCurrentPath := CurrentPath;
 end;
 
-procedure TLinkListEditorFolder.CreateEditorForItem(Sender: ILinkItemSelectForm;
-  Data: TDataObject; Editor: TPanel);
+procedure TLinkListEditorFolder.CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
 var
   LI: TLinkInfo;
   WlIcon: TWebLink;
   WlChangeLocation: TWebLink;
   WedCaption: TWatermarkedEdit;
   LbInfo: TLabel;
+  Editor: TPanel;
 begin
+  Editor := EditorData.EditorPanel;
   LI := TLinkInfo(Data);
 
   WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_PLACE_ICON);
@@ -275,17 +276,16 @@ begin
   end;
 end;
 
-procedure TLinkListEditorFolder.UpdateItemFromEditor(
-  Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+procedure TLinkListEditorFolder.UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
 var
   LI: TLinkInfo;
   WedCaption: TWatermarkedEdit;
 begin
   LI := TLinkInfo(Data);
 
-  WedCaption := Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_PLACE_EDIT);
+  WedCaption := EditorData.EditorPanel.FindChildByTag<TWatermarkedEdit>(CHANGE_PLACE_EDIT);
 
-  LI.Assign(Sender.EditorData);
+  LI.Assign(EditorData.EditorData);
   LI.Title := WedCaption.Text;
 end;
 
@@ -342,7 +342,7 @@ begin
   end;
 end;
 
-procedure TLinkListEditorFolder.SetForm(Form: ILinkItemSelectForm);
+procedure TLinkListEditorFolder.SetForm(Form: IFormLinkItemEditorData);
 begin
   FForm := Form;
 end;

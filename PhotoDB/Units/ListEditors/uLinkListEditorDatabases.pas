@@ -47,7 +47,7 @@ type
   private
     FOwner: TDBForm;
     FDeletedCollections: TStrings;
-    FForm: ILinkItemSelectForm;
+    FForm: IFormLinkItemEditorData;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
@@ -57,10 +57,10 @@ type
   public
     constructor Create(Owner: TDBForm);
     destructor Destroy; override;
-    procedure SetForm(Form: ILinkItemSelectForm);
+    procedure SetForm(Form: IFormLinkItemEditorData);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
-    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
-    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
+    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
     function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
@@ -111,7 +111,7 @@ begin
 end;
 
 procedure TLinkListEditorDatabases.CreateEditorForItem(
-  Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+  Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
 var
   DI: TDatabaseInfo;
   WlIcon: TWebLink;
@@ -122,7 +122,9 @@ var
   LbInfo,
   LbDescription: TLabel;
   Icon: HICON;
+  Editor: TPanel;
 begin
+  Editor := EditorData.EditorPanel;
   DI := TDatabaseInfo(Data);
 
   WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_DB_ICON);
@@ -470,6 +472,7 @@ begin
   try
     OpenDialog.Filter := FOwner.L('PhotoDB Files (*.photodb)|*.photodb');
     OpenDialog.FilterIndex := 0;
+    OpenDialog.SetFileName(DI.Path);
     if OpenDialog.Execute and TDBScheme.IsValidCollectionFile(OpenDialog.FileName) then
     begin
       LbInfo := Editor.FindChildByTag<TLabel>(CHANGE_DB_PATH);
@@ -516,24 +519,26 @@ begin
   end;
 end;
 
-procedure TLinkListEditorDatabases.SetForm(Form: ILinkItemSelectForm);
+procedure TLinkListEditorDatabases.SetForm(Form: IFormLinkItemEditorData);
 begin
   FForm := Form;
 end;
 
 procedure TLinkListEditorDatabases.UpdateItemFromEditor(
-  Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+  Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
 var
   DI: TDatabaseInfo;
   WedCaption,
   WedDesctiption: TWatermarkedEdit;
+  Editor: TPanel;
 begin
+  Editor := EditorData.EditorPanel;
   DI := TDatabaseInfo(Data);
 
   WedCaption := Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_CAPTION_EDIT);
   WedDesctiption :=  Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_DESC_EDIT);
 
-  DI.Assign(Sender.EditorData);
+  DI.Assign(EditorData.EditorData);
   DI.Title := WedCaption.Text;
   DI.Description := WedDesctiption.Text;
 end;

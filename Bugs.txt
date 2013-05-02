@@ -19,6 +19,7 @@ Features ready:
 
 Bugs:
 - start with deleted db - create new;
+- Update database info notification support;
 
 [New]
 - Portable persons;

@@ -282,14 +282,10 @@ function TInsertCommand.LastID: Integer;
 var
   SC: TSelectCommand;
 begin
-  SC := TSelectCommand.Create(FTableName, FCollectionFile, False, dbilRead);
-  try
-    SC.AddParameter(TCustomFieldParameter.Create('@@identity as LastID'));
-    SC.Execute;
-    Result := SC.DS.FieldByName('LastID').AsInteger;
-  finally
-    F(SC);
-  end;
+  SetSQL(FQuery, 'SELECT @@IDENTITY as LastID');
+  FQuery.Open;
+
+  Result := FQuery.FieldByName('LastID').AsInteger;
 end;
 
 { TSqlCommand }

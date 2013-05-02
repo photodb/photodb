@@ -36,6 +36,7 @@ type
     procedure PePathChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     FShellTreeView: TPathProvideTreeView;
@@ -118,6 +119,13 @@ end;
 procedure TFormSelectLocation.FormDestroy(Sender: TObject);
 begin
   F(FShellTreeView);
+end;
+
+procedure TFormSelectLocation.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 function TFormSelectLocation.GetFormID: string;

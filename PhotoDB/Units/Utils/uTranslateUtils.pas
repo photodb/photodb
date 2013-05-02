@@ -14,6 +14,7 @@ uses
 function SizeInText(Size: Int64): string;
 function SpeedInText(Speed: Extended): string;
 function TimeIntervalInString(Time: TTime): string;
+function NumberToShortNumber(Number: Integer): string;
 
 implementation
 
@@ -73,6 +74,17 @@ begin
 
   if Length(Result) > 0 then
     Result[1] := UpCase(Result[1]);
+end;
+
+function NumberToShortNumber(Number: Integer): string;
+begin
+  if Number > 10000000 then
+    Exit(IntToStr(Number div 1000000) + 'M+');
+
+  if Number > 10000 then
+    Exit(IntToStr(Number div 1000) + 'K+');
+
+  Result := IntToStr(Number);
 end;
 
 end.

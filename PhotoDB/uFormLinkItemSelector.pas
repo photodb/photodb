@@ -45,8 +45,7 @@ type
     Options: TAniOptions;
   end;
 
-  TFormLinkItemSelector = class(TDBForm, ILinkItemSelectForm)
-    ImPlaces: TImageList;
+  TFormLinkItemSelector = class(TDBForm, ILinkItemSelectForm, IFormLinkItemEditorData)
     AeMain: TApplicationEvents;
     TmrAnimation: TTimer;
     PnEditorPanel: TPanel;
@@ -116,6 +115,7 @@ type
     function GetDataList: TList<TDataObject>;
     function GetEditorData: TDataObject;
     function GetTopPanel: TPanel;
+    function GetEditorPanel: TPanel;
     procedure ApplyChanges;
   end;
 
@@ -224,7 +224,7 @@ var
   Elements: TListElements;
 begin
   Data := FData[FEditIndex];
-  FEditor.UpdateItemFromEditor(Self, Data, PnEditorPanel);
+  FEditor.UpdateItemFromEditor(Self, Data, Self);
   Elements := TListElements.Create;
   try
     Elements.Add(leWebLink, FLinks[FEditIndex]);
@@ -410,6 +410,11 @@ end;
 function TFormLinkItemSelector.GetEditorData: TDataObject;
 begin
   Result := FEditData;
+end;
+
+function TFormLinkItemSelector.GetEditorPanel: TPanel;
+begin
+  Result := PnEditorPanel;
 end;
 
 function TFormLinkItemSelector.GetFormHeight: Integer;
@@ -740,7 +745,7 @@ begin
   PnEditorPanel.Tag := NativeInt(FEditData);
   PnEditorPanel.HandleNeeded;
   PnEditorPanel.AutoSize := True;
-  FEditor.CreateEditorForItem(Self, FData[FEditIndex], PnEditorPanel);
+  FEditor.CreateEditorForItem(Self, FData[FEditIndex], Self);
   PnEditorPanel.Left := 8;
   PnEditorPanel.Top := PaddingTop + LinkHeight + LinksDy;
 

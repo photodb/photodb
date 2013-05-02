@@ -2328,6 +2328,7 @@ END
 /* Resources\SampleDB.res */
 /* Resources\Import.res */
 /* Resources\CollectionSync.res */
+/* Resources\ExplorerItems.res */
 /* ..\DBIcons\db_icons.res */
 /* ..\DBIcons\ZoomRc.res */
 /* ..\DBIcons\editor.res */
@@ -2418,9 +2419,9 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormShareLink.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uImportSource.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormSelectLocation.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormUpdateStatus.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormBackgroundTaskStatus.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormDBPreviewSettings.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormLinkItemEditor.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PhotoDB.tlb */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PhotoDB.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\PhotoDB.drf */

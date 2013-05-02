@@ -65,8 +65,7 @@ object ExplorerForm: TExplorerForm
     ParentColor = True
     TabOrder = 0
     OnResize = MainPanelResize
-    ExplicitTop = 48
-    ExplicitHeight = 669
+    ExplicitHeight = 679
     object PcTasks: TPageControl
       Left = 0
       Top = 0
@@ -79,11 +78,10 @@ object ExplorerForm: TExplorerForm
       ShowHint = False
       TabOrder = 0
       OnChange = PcTasksChange
-      ExplicitHeight = 640
+      ExplicitHeight = 650
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
-        ExplicitHeight = 612
         object PnResetFilter: TPanel
           Left = 0
           Top = 593
@@ -94,7 +92,6 @@ object ExplorerForm: TExplorerForm
           TabOrder = 0
           Visible = False
           OnResize = PnResetFilterResize
-          ExplicitTop = 591
           object WlResetFilter: TWebLink
             Left = 31
             Top = 4
@@ -122,7 +119,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitHeight = 612
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -132,7 +128,6 @@ object ExplorerForm: TExplorerForm
           BevelOuter = bvNone
           ParentBackground = False
           TabOrder = 0
-          ExplicitHeight = 612
           DesignSize = (
             132
             614)
@@ -347,7 +342,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
-        ExplicitHeight = 612
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -358,7 +352,6 @@ object ExplorerForm: TExplorerForm
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goDrawFocusSelected, goColSizing, goRowSelect, goThumbTracking, goFixedHotTrack]
           TabOrder = 0
           OnDrawCell = VleExifDrawCell
-          ExplicitHeight = 612
           ColWidths = (
             70
             56)
@@ -369,7 +362,7 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitHeight = 612
+        ExplicitHeight = 622
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -381,7 +374,7 @@ object ExplorerForm: TExplorerForm
           ParentBackground = False
           ParentCtl3D = False
           TabOrder = 0
-          ExplicitHeight = 612
+          ExplicitHeight = 622
           DesignSize = (
             132
             614)
@@ -863,7 +856,7 @@ object ExplorerForm: TExplorerForm
       ParentBackground = False
       TabOrder = 1
       Visible = False
-      ExplicitTop = 640
+      ExplicitTop = 650
       object WlGoToShelf: TWebLink
         Left = 5
         Top = 6
@@ -907,7 +900,6 @@ object ExplorerForm: TExplorerForm
     BevelEdges = [beBottom]
     ParentColor = True
     TabOrder = 2
-    ExplicitTop = 21
     object BvSeparatorAddress: TBevel
       Left = 825
       Top = 1
@@ -1068,8 +1060,7 @@ object ExplorerForm: TExplorerForm
     FullRepaint = False
     ParentColor = True
     TabOrder = 3
-    ExplicitTop = 48
-    ExplicitHeight = 669
+    ExplicitHeight = 679
     object SplRightPanel: TSplitter
       Left = 507
       Top = 33
@@ -1088,7 +1079,7 @@ object ExplorerForm: TExplorerForm
       Align = alBottom
       TabOrder = 0
       Visible = False
-      ExplicitTop = 636
+      ExplicitTop = 646
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1165,7 +1156,7 @@ object ExplorerForm: TExplorerForm
         Width = 21
         Height = 21
         ImageNormal.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1256,7 +1247,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00EFC6
           B500D24F1A00}
         ImageEnter.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1347,7 +1338,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF7F500E8AA
           9300CC3B0500}
         ImageClick.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1438,7 +1429,7 @@ object ExplorerForm: TExplorerForm
           FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FDF6F400ECBA
           A700CC3B0500}
         ImageDisabled.Data = {
-          07544269746D61701A0F0000424D1A0F00000000000036080000280000001500
+          07544269746D61701A0B0000424D1A0B00000000000036040000280000001500
           0000150000000100200000000000E40600000000000000000000000100000000
           000000000000000080000080000000808000800000008000800080800000C0C0
           C000C0DCC000F0CAA60033000000000033003300330033330000161616001C1C
@@ -1683,7 +1674,7 @@ object ExplorerForm: TExplorerForm
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
-      ExplicitHeight = 603
+      ExplicitHeight = 613
       DesignSize = (
         358
         605)
@@ -1732,12 +1723,12 @@ object ExplorerForm: TExplorerForm
         Align = alClient
         TabOrder = 0
         OnChange = PcRightPreviewChange
-        ExplicitHeight = 601
+        ExplicitHeight = 611
         object TsMediaPreview: TTabSheet
           Caption = 'TsMediaPreview'
           ImageIndex = 1
           OnResize = TsMediaPreviewResize
-          ExplicitHeight = 573
+          ExplicitHeight = 583
           object PnRightPreview: TPanel
             Left = 0
             Top = 0
@@ -1750,7 +1741,7 @@ object ExplorerForm: TExplorerForm
             ParentBackground = False
             ParentDoubleBuffered = False
             TabOrder = 0
-            ExplicitHeight = 573
+            ExplicitHeight = 583
             DesignSize = (
               348
               575)
@@ -1770,7 +1761,7 @@ object ExplorerForm: TExplorerForm
               TabOrder = 0
               Transparent = False
               Wrapable = False
-              ExplicitTop = 539
+              ExplicitTop = 549
               object TbPreviewPrevious: TToolButton
                 Left = 0
                 Top = 0
@@ -1867,7 +1858,7 @@ object ExplorerForm: TExplorerForm
               HightliteImage = True
               StretchImage = True
               CanClick = True
-              ExplicitTop = 544
+              ExplicitTop = 554
             end
             object WllPersonsPreview: TWebLinkList
               Left = 0
@@ -1901,13 +1892,12 @@ object ExplorerForm: TExplorerForm
               Anchors = [akLeft, akBottom]
               SignColor = clBlack
               MaxTransparencity = 255
-              ExplicitTop = 542
+              ExplicitTop = 552
             end
           end
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitHeight = 573
           object PnGeoSearch: TPanel
             Left = 0
             Top = 540
@@ -1915,7 +1905,6 @@ object ExplorerForm: TExplorerForm
             Height = 35
             Align = alBottom
             TabOrder = 0
-            ExplicitTop = 538
             DesignSize = (
               348
               35)
@@ -2019,7 +2008,7 @@ object ExplorerForm: TExplorerForm
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 3
-      ExplicitHeight = 603
+      ExplicitHeight = 613
       object StatusBarMain: TStatusBar
         Left = 0
         Top = 585
@@ -2033,7 +2022,7 @@ object ExplorerForm: TExplorerForm
             Width = 500
           end>
         Visible = False
-        ExplicitTop = 583
+        ExplicitTop = 593
       end
     end
   end
@@ -2049,7 +2038,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.925323865740000000
+      Date = 41177.972685902780000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2096,6 +2085,7 @@ object ExplorerForm: TExplorerForm
     AutoSize = True
     BevelOuter = bvNone
     TabOrder = 6
+    ExplicitTop = 725
     object ToolBarBottom: TToolBar
       Left = 0
       Top = 0
@@ -2271,8 +2261,6 @@ object ExplorerForm: TExplorerForm
       Transparent = True
       Wrapable = False
       OnMouseMove = ToolBarMainMouseMove
-      ExplicitLeft = 2
-      ExplicitWidth = 1014
       object TbBack: TToolButton
         Left = 0
         Top = 0
@@ -2715,10 +2703,6 @@ object ExplorerForm: TExplorerForm
     object MakeFolderViewer1: TMenuItem
       Caption = 'Make FolderViewer'
       OnClick = MakeFolderViewer1Click
-    end
-    object ShowUpdater1: TMenuItem
-      Caption = 'Show Updater'
-      OnClick = ShowUpdater1Click
     end
     object Refresh2: TMenuItem
       Caption = 'Refresh'
@@ -3333,13 +3317,6 @@ object ExplorerForm: TExplorerForm
     OnPopup = PmOptionsPopup
     Left = 448
     Top = 528
-    object MiUpdater: TMenuItem
-      Caption = 'MiUpdater'
-      OnClick = MiUpdaterClick
-    end
-    object MiCDActionsSeparator: TMenuItem
-      Caption = '-'
-    end
     object MiCDExport: TMenuItem
       Caption = 'MiCDExport'
       OnClick = MiCDExportClick

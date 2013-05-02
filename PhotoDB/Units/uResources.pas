@@ -31,6 +31,7 @@ function GetFilmStripImage: TPNGImage;
 function GetPathSeparatorImage: TBitmap;
 function GetNoHistogramImage: TPNGImage;
 function GetCollectionSyncImage: TPngImage;
+function GetNavigateDownImage: TPngImage;
 
 {$R MAIN.res}
 {$R Logo.res}
@@ -47,6 +48,7 @@ function GetCollectionSyncImage: TPngImage;
 {$R SampleDB.res}
 {$R Import.res}
 {$R CollectionSync.res}
+{$R ExplorerItems.res}
 
 //Icons
 {$R db_icons.res}
@@ -162,6 +164,11 @@ end;
 function GetCollectionSyncImage: TPngImage;
 begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('COLLECTION_SYNC');
+end;
+
+function GetNavigateDownImage: TPngImage;
+begin
+  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('NAVIGATEDOWN');
 end;
 
 end.

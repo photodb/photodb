@@ -40,17 +40,17 @@ type
 
   TLinkListEditorForExecutables = class(TInterfacedObject, ILinkEditor)
   private
-    FForm: ILinkItemSelectForm;
+    FForm: IFormLinkItemEditorData;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
     procedure OnPlaceIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     function L(StringToTranslate: string): string;
   public
-    procedure SetForm(Form: ILinkItemSelectForm);
+    procedure SetForm(Form: IFormLinkItemEditorData);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
-    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
-    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
+    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
     function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
@@ -102,7 +102,7 @@ end;
 { TLinkListEditorForExecutables }
 
 procedure TLinkListEditorForExecutables.CreateEditorForItem(
-  Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+  Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
 var
   EI: TExecutableInfo;
   WlIcon: TWebLink;
@@ -112,7 +112,9 @@ var
   LbInfo,
   LbParameters: TLabel;
   Icon: HICON;
+  Editor: TPanel;
 begin
+  Editor := EditorData.EditorPanel;
   EI := TExecutableInfo(Data);
 
   WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_EXEC_ICON);
@@ -335,24 +337,26 @@ begin
   end;
 end;
 
-procedure TLinkListEditorForExecutables.SetForm(Form: ILinkItemSelectForm);
+procedure TLinkListEditorForExecutables.SetForm(Form: IFormLinkItemEditorData);
 begin
   FForm := Form;
 end;
 
 procedure TLinkListEditorForExecutables.UpdateItemFromEditor(
-  Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+  Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
 var
   EI: TExecutableInfo;
   WedCaption,
   WedParameters: TWatermarkedEdit;
+  Editor: TPanel;
 begin
+  Editor := EditorData.EditorPanel;
   EI := TExecutableInfo(Data);
 
   WedCaption := Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_EXEC_CAPTION_EDIT);
   WedParameters :=  Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_PEXEC_PARAMS_EDIT);
 
-  EI.Assign(Sender.EditorData);
+  EI.Assign(EditorData.EditorData);
   EI.Title := WedCaption.Text;
   EI.Parameters := WedParameters.Text;
 end;

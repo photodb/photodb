@@ -271,7 +271,6 @@
 	<translate name="Add folder" value="Добавить каталог" />
 	<translate name="Make new" value="Создать новый" />
 	<translate name="Text file" value="Текстовый файл" />
-	<translate name="Show update window" value="Показать окно обновления" />
 	<translate name="Select all" value="Выделить всё" />
 	<translate name="Go to search window" value="Перейти в окно поиска" />
 	<translate name="Exit" value="Выйти" />
@@ -465,10 +464,8 @@
 	<translate name="Go to home page" value="Перейти на домашнюю страницу" />
 	<translate name="Email author" value="Написать автору" />
 	<translate name="Check for updates" value="Проверить обновления" />
-	<translate name="Show updater" value="Показать окно обновления" />
 	<translate name="Export images to CD" value="Экспортировать изображение на CD" />
 	<translate name="CD mapping" value="Привязка дисков" />
-	<translate name="Show update window" value="Показать окно обновления" />
 	<translate name="Change file" value="Изменить файл" />
 	<translate name="Create new" value="Создать новую" />
 	<translate name="Open existing" value="Добавить существующую" />
@@ -483,6 +480,7 @@
 	<translate name="Open image location" value="Открыть папку с файлом" />
 	<translate name="Change synchronization settings" value="Изменить настройки синхронизации" />
 	<translate name="Change preview options" value="Изменить настройки предпросмотров" />
+	<translate name="Edit collection" value="Редактировать коллекцию" />
   </scope>
   <scope name="PropertiesForm">
 	<translate name="Properties" value="Свойства" />

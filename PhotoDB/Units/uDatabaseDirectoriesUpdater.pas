@@ -980,12 +980,8 @@ begin
 
           TThread.Synchronize(nil,
             procedure
-            var
-              Form: IFormUpdateStatus;
             begin
-              Form := FormUpdateStatus;
               NotifyAboutFileProcessing(Info, Res);
-              Form.ShowForm(True);
             end
           );
 

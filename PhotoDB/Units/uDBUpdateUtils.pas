@@ -35,6 +35,7 @@ uses
   uTranslate,
   uSettings,
   uExifUtils,
+  uColorUtils,
   uDBConnection,
   uDBClasses,
   uDBContext,
@@ -203,6 +204,10 @@ begin
       IC.AddParameter(TStreamParameter.Create('Thum', M));
     end else
       IC.AddParameter(TPersistentParameter.Create('Thum', Res.Jpeg));
+
+    IC.AddParameter(TStringParameter.Create('Colors', ColorsToString(Res.Colors)));
+    IC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
+    IC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
 
     Info.ID := IC.Execute;
   finally

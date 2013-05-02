@@ -64,6 +64,7 @@ type
 
     class procedure ReadUserCollections(Collections: TList<TDatabaseInfo>);
     class procedure SaveUserCollections(Collections: TList<TDatabaseInfo>);
+    class procedure UpdateUserCollection(Collection: TDatabaseInfo; SortOrder: Integer = -1);
     class function UpdateDatabaseQuery(FileName: string): Boolean;
 
     property DBContext: IDBContext read FDBContext;
@@ -123,15 +124,53 @@ begin
   ));
 end;
 
+class procedure TDBManager.UpdateUserCollection(Collection: TDatabaseInfo; SortOrder: Integer = -1);
+var
+  Reg: TBDRegistry;
+  Settings: TSettings;
+  Context: IDBContext;
+  SettingsRepository: ISettingsRepository;
+begin
+  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
+  try
+    Reg.OpenKey(RegRoot + 'dbs\' + Collection.Title, True);
+    Reg.WriteString('FileName', Collection.Path);
+    Reg.WriteString('Icon', Collection.Icon);
+    Reg.WriteString('Description', Collection.Description);
+    if SortOrder > -1 then
+      Reg.WriteInteger('Order', SortOrder);
+
+    if TDBScheme.IsOldColectionFile(Collection.Path) then
+    begin
+      if UpdateDatabaseQuery(Collection.Path) then
+        TDBScheme.UpdateCollection(Collection.Path, 0);
+    end;
+
+    if TDBScheme.IsValidCollectionFile(Collection.Path) then
+    begin
+      Context := TDBContext.Create(Collection.Path);
+      SettingsRepository := Context.Settings;
+
+      Settings := SettingsRepository.Get;
+      try
+        Settings.Name := Collection.Title;
+        Settings.Description := Collection.Description;
+        SettingsRepository.Update(Settings);
+      finally
+        F(Settings);
+      end;
+    end;
+  finally
+    F(Reg);
+  end;
+end;
+
 class procedure TDBManager.SaveUserCollections(Collections: TList<TDatabaseInfo>);
 var
   Reg: TBDRegistry;
   List: TStrings;
   I: Integer;
   DB: TDatabaseInfo;
-  Settings: TSettings;
-  Context: IDBContext;
-  SettingsRepository: ISettingsRepository;
 begin
   List := TStringList.Create;
   try
@@ -143,35 +182,7 @@ begin
         Reg.DeleteKey(List[I]);
 
       for DB in Collections do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(RegRoot + 'dbs\' + DB.Title, True);
-        Reg.WriteString('FileName', DB.Path);
-        Reg.WriteString('Icon', DB.Icon);
-        Reg.WriteString('Description', DB.Description);
-        Reg.WriteInteger('Order', Collections.IndexOf(DB));
-
-        if TDBScheme.IsOldColectionFile(DB.Path) then
-        begin
-          if UpdateDatabaseQuery(DB.Path) then
-            TDBScheme.UpdateCollection(DB.Path, 0);
-        end;
-
-        if TDBScheme.IsValidCollectionFile(DB.Path) then
-        begin
-          Context := TDBContext.Create(DB.Path);
-          SettingsRepository := Context.Settings;
-
-          Settings := SettingsRepository.Get;
-          try
-            Settings.Name := DB.Title;
-            Settings.Description := DB.Description;
-            SettingsRepository.Update(Settings);
-          finally
-            F(Settings);
-          end;
-        end;
-      end;
+        UpdateUserCollection(DB, Collections.IndexOf(DB));
 
     finally
       F(Reg);

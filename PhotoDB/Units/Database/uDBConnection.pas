@@ -381,8 +381,8 @@ end;
 procedure RemoveADORef(ADOConnection: TADOConnectionEx);
 const
   MaxConnectionPoolRead = 5;
-  MaxConnectionPoolWrite = 1;
-  MaxConnectionPoolBackgroundWrite = 1;
+  MaxConnectionPoolWrite = 0;
+  MaxConnectionPoolBackgroundWrite = 5;
 
 var
   I: Integer;

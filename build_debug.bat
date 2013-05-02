@@ -8,13 +8,20 @@ SET DCC64=%DELPHI%\BIN\DCC64.EXE
 SET BRCC32=%DELPHI%\BIN\BRCC32.EXE
 SET DM=D:\dmitry\Dmitry
 SET NS=-NSSystem;System.Win;WinAPI;Vcl;Vcl.Imaging;Data;Xml;Data.Win;Vcl.Shell;Vcl.Samples;Soap
+SET JNG=%cd%\Tools\GraphicToJNG\GraphicToJNG.exe
 cd photodb/resources
+
+REM JNG FILES - BEGIN
+"%JNG%" logo.PNG logo.JNG
+"%JNG%" loading.PNG loading.JNG
 "%BRCC32%" logo.rc
+"%BRCC32%" Loading.rc
+REM JNG FILES - END
+
 "%BRCC32%" slideshow_load.rc
 "%BRCC32%" ExplorerBackground.rc
 "%BRCC32%" Manifest.rc
 "%BRCC32%" ImagePanelBackground.rc
-"%BRCC32%" Loading.rc
 "%BRCC32%" Install.rc
 "%BRCC32%" PhotoDBInstall.rc
 "%BRCC32%" Activation.rc
@@ -27,6 +34,8 @@ cd photodb/resources
 "%BRCC32%" SharePictures.rc
 "%BRCC32%" NoHistogram.rc
 "%BRCC32%" Import.rc
+"%BRCC32%" CollectionSync.rc
+"%BRCC32%" ExplorerItems.rc
 
 cd ..
 cd ..

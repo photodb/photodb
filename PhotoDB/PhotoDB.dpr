@@ -367,7 +367,6 @@ uses
   uSiteUtils in 'Units\Utils\uSiteUtils.pas',
   uTranslateUtils in 'Units\Utils\uTranslateUtils.pas',
   uDialogUtils in 'Units\uDialogUtils.pas',
-  uFormUpdateStatus in 'uFormUpdateStatus.pas' {FormUpdateStatus},
   uLinkListEditorUpdateDirectories in 'Units\ListEditors\uLinkListEditorUpdateDirectories.pas',
   uSessionPasswords in 'Units\uSessionPasswords.pas',
   uCollectionEvents in 'Units\uCollectionEvents.pas',
@@ -384,7 +383,8 @@ uses
   uColorUtils in 'Units\Utils\uColorUtils.pas',
   uImageViewCount in 'Units\uImageViewCount.pas',
   uFormDBPreviewSettings in 'uFormDBPreviewSettings.pas' {FormDBPreviewSize},
-  uDatabaseInfoControl in 'Units\Controls\uDatabaseInfoControl.pas';
+  uDatabaseInfoControl in 'Units\Controls\uDatabaseInfoControl.pas',
+  uFormLinkItemEditor in 'uFormLinkItemEditor.pas' {FormLinkItemEditor};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -499,6 +499,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
+  Application.CreateForm(TFormLinkItemEditor, FormLinkItemEditor);
   Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------

@@ -169,7 +169,7 @@ begin
     FShortUrlInProgress := True;
     StartProgress;
 
-    TThreadTask<string>.Create(Self, FUrl,
+    TThreadTask<string>.Create(Self, FUrl, False,
       procedure(Thread: TThreadTask<string>; Data: string)
       var
         ShortUrl: string;
@@ -272,7 +272,7 @@ begin
   Task.Info := Info;
   Task.Provider := Provider;
 
-  TThreadTaskThread.Create(Self, Task,
+  TThreadTaskThread.Create(Self, Task, False,
     procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
       Item: TMediaItem;

@@ -5,7 +5,10 @@ interface
 uses
   SysUtils,
   Classes,
+
+  uRuntime,
   uLogger,
+  uGOM,
   uThreadEx,
   uThreadForm;
 
@@ -30,6 +33,7 @@ type
   TThreadTask<T> = class(TThreadEx)
   private
     FData: T;
+    FCheckStateID: Boolean;
   protected
     procedure Execute; override;
   public
@@ -38,8 +42,9 @@ type
   private
     FProc: TTaskThreadProcedureEx;
   public
-    constructor Create(AOwnerForm: TThreadForm; Data: T; Proc: TTaskThreadProcedureEx); overload;
+    constructor Create(AOwnerForm: TThreadForm; Data: T; CheckStateID: Boolean; Proc: TTaskThreadProcedureEx); overload;
     function SynchronizeTask(Proc: TThreadProcedure): Boolean;
+    function CheckForm: Boolean; override;
   end;
 
 implementation
@@ -84,12 +89,21 @@ end;
 
 { TThreadTask<T> }
 
-constructor TThreadTask<T>.Create(AOwnerForm: TThreadForm; Data: T;
+function TThreadTask<T>.CheckForm: Boolean;
+begin
+  if FCheckStateID then
+    Result := inherited CheckForm
+  else
+    Result := GOM.IsObj(ThreadForm) and not IsTerminated {$IFNDEF EXTERNAL}and not DBTerminating{$ENDIF};
+end;
+
+constructor TThreadTask<T>.Create(AOwnerForm: TThreadForm; Data: T; CheckStateID: Boolean;
   Proc: TTaskThreadProcedureEx);
 begin
   inherited Create(AOwnerForm, AOwnerForm.StateID);
   FProc := Proc;
   FData := Data;
+  FCheckStateID := CheckStateID;
 end;
 
 procedure TThreadTask<T>.Execute;

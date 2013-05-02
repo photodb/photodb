@@ -219,7 +219,6 @@ type
     N2: TMenuItem;
     MakeNew1: TMenuItem;
     SaveWindowPos1: TSaveWindowPos;
-    ShowUpdater1: TMenuItem;
     AeMain: TApplicationEvents;
     NewWindow1: TMenuItem;
     Paste1: TMenuItem;
@@ -504,8 +503,6 @@ type
     MiAuthorEmail: TMenuItem;
     MiCheckUpdates: TMenuItem;
     PmOptions: TPopupActionBar;
-    MiUpdater: TMenuItem;
-    MiCDActionsSeparator: TMenuItem;
     MiCDExport: TMenuItem;
     MiCDMapping: TMenuItem;
     ImDBList: TImageList;
@@ -943,6 +940,7 @@ type
     FOldWidth: Integer;
     IsResizePreivew: Boolean;
     FDatabases: TList<TDatabaseInfo>;
+    FActiveDatabase: TDatabaseInfo;
     FDatabaseInfo: TDatabaseInfoControl;
 
     procedure LoadContext;
@@ -1431,6 +1429,7 @@ begin
   FExtendedSearchPersons := nil;
   FDatabases := TList<TDatabaseInfo>.Create;
   TDBManager.ReadUserCollections(FDatabases);
+  FActiveDatabase := nil;
   FPopupMenuWasActiveOnMouseDown := False;
   FGeoLocationMapReady := False;
   GetDeviceEventManager.RegisterNotification([peItemAdded, peItemRemoved, peDeviceConnected, peDeviceDisconnected], PortableEventsCallBack);
@@ -1555,8 +1554,6 @@ begin
   MiAuthorEmail.Caption := L('Email author');
   MiCheckUpdates.Caption := L('Check for updates');
 
-  MiUpdater.Caption := L('Show updater');
-
   MiCDExport.Caption := L('Export images to CD');
   MiCDMapping.Caption := L('CD mapping');
 
@@ -1568,8 +1565,6 @@ begin
   MiHomePage.ImageIndex := DB_IC_NETWORK;
   MiAuthorEmail.ImageIndex := DB_IC_E_MAIL;
   MiCheckUpdates.ImageIndex := DB_IC_UPDATING;
-
-  MiUpdater.ImageIndex := DB_IC_BOX;
 
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
@@ -2211,6 +2206,7 @@ begin
   F(FPngNoHIstogram);
   F(FExtendedSearchParams);
   FreeList(FDatabases);
+  F(FActiveDatabase);
   FreeList(FExtendedSearchPersons);
 
   GetDeviceEventManager.UnRegisterNotification(PortableEventsCallBack);
@@ -2722,81 +2718,86 @@ begin
         Persons: TList<TPerson>;
         NewPerson: Boolean;
       begin
-        Persons:= TList<TPerson>.Create;
-        FData := Data;
+        CoInitialize(nil);
         try
-          for I := 0 to FData.Count - 1 do
-          begin
-            if FData[I].Data = nil then
-              Continue;
-
-            PA := TPersonArea(FData[I].Data);
-            if PA.PersonID > 0 then
+          Persons:= TList<TPerson>.Create;
+          FData := Data;
+          try
+            for I := 0 to FData.Count - 1 do
             begin
-              NewPerson := True;
-              for J := 0 to Persons.Count - 1 do
-                if Persons[J].ID = PA.PersonID then
-                  NewPerson := False;
-
-              if not NewPerson then
+              if FData[I].Data = nil then
                 Continue;
 
-              P := FPeopleRepository.GetPerson(PA.PersonID);
-              if P <> nil then
+              PA := TPersonArea(FData[I].Data);
+              if PA.PersonID > 0 then
               begin
-                Persons.Add(P);
-                P.CreatePreview(PersonImageSize, PersonImageSize);
+                NewPerson := True;
+                for J := 0 to Persons.Count - 1 do
+                  if Persons[J].ID = PA.PersonID then
+                    NewPerson := False;
+
+                if not NewPerson then
+                  Continue;
+
+                P := FPeopleRepository.GetPerson(PA.PersonID);
+                if P <> nil then
+                begin
+                  Persons.Add(P);
+                  P.CreatePreview(PersonImageSize, PersonImageSize);
+                end;
               end;
             end;
-          end;
-          Persons.Sort(TComparer<TPerson>.Construct(
-             function (const L, R: TPerson): Integer
-             begin
-               Result := AnsiCompareStr(L.Name, R.Name);
-             end
-          ));
-          Thread.SynchronizeTask(
-            procedure
-            var
-              I: Integer;
-              Wl: TWebLink;
-              LblInfo: TStaticText;
-            begin
-              if AnsiLowerCase(FData.TagEx) <> AnsiLowerCase(FImageViewer.CurentFile) then
-                Exit;
+            Persons.Sort(TComparer<TPerson>.Construct(
+               function (const L, R: TPerson): Integer
+               begin
+                 Result := AnsiCompareStr(L.Name, R.Name);
+               end
+            ));
+            Thread.SynchronizeTask(
+              procedure
+              var
+                I: Integer;
+                Wl: TWebLink;
+                LblInfo: TStaticText;
+              begin
+                if AnsiLowerCase(FData.TagEx) <> AnsiLowerCase(FImageViewer.CurentFile) then
+                  Exit;
 
-              BeginScreenUpdate(TsMediaPreview.Handle);
-              try
-                WllPersonsPreview.Clear;
-                LblInfo := TStaticText.Create(WllGroups);
-                LblInfo.Parent := WllPersonsPreview;
-                WllPersonsPreview.AddControl(LblInfo, True);
-                LblInfo.Caption := L('Persons on photo:');
+                BeginScreenUpdate(TsMediaPreview.Handle);
+                try
+                  WllPersonsPreview.Clear;
+                  LblInfo := TStaticText.Create(WllGroups);
+                  LblInfo.Parent := WllPersonsPreview;
+                  WllPersonsPreview.AddControl(LblInfo, True);
+                  LblInfo.Caption := L('Persons on photo:');
 
-                for I := 0 to Persons.Count - 1 do
-                begin
-                  Wl := WllPersonsPreview.AddLink;
-                  Wl.Text := Persons[I].Name;
-                  Wl.Font.Style := [fsBold];
-                  Wl.IconWidth := PersonImageSize;
-                  Wl.IconHeight := PersonImageSize;
-                  Wl.LoadBitmap(Persons[I].CreatePreview(PersonImageSize, PersonImageSize));
-                  Wl.Tag := Persons[I].ID;
-                  Wl.OnMouseEnter := OnPreviewPersonMouseEnter;
-                  Wl.OnMouseLeave := OnPreviewPersonMouseLeave;
-                  Wl.OnMouseUp := OnPreviewPersonClick;
+                  for I := 0 to Persons.Count - 1 do
+                  begin
+                    Wl := WllPersonsPreview.AddLink;
+                    Wl.Text := Persons[I].Name;
+                    Wl.Font.Style := [fsBold];
+                    Wl.IconWidth := PersonImageSize;
+                    Wl.IconHeight := PersonImageSize;
+                    Wl.LoadBitmap(Persons[I].CreatePreview(PersonImageSize, PersonImageSize));
+                    Wl.Tag := Persons[I].ID;
+                    Wl.OnMouseEnter := OnPreviewPersonMouseEnter;
+                    Wl.OnMouseLeave := OnPreviewPersonMouseLeave;
+                    Wl.OnMouseUp := OnPreviewPersonClick;
+                  end;
+                  TsMediaPreviewResize(Self);
+                  WllPersonsPreview.Visible := True;
+                finally
+                  EndScreenUpdate(TsMediaPreview.Handle, False);
                 end;
-                TsMediaPreviewResize(Self);
-                WllPersonsPreview.Visible := True;
-              finally
-                EndScreenUpdate(TsMediaPreview.Handle, False);
-              end;
-            end
-          );
+              end
+            );
 
+          finally
+            F(FData);
+            FreeList(Persons);
+          end;
         finally
-          F(FData);
-          FreeList(Persons);
+          CoUninitialize;
         end;
       end
     );
@@ -3326,6 +3327,8 @@ begin
     LoadDefaultCollectionPictureSize;
     LoadSizes;
     LoadDBList;
+    if FDatabaseInfo <> nil then
+      FDatabaseInfo.LoadControl(FActiveDatabase);
   end;
 
   if (EventID_Param_Name in Params) then
@@ -5971,7 +5974,6 @@ end;
 
 procedure TExplorerForm.PmOptionsPopup(Sender: TObject);
 begin
-  MiUpdater.Visible := not FolderView;
   MiCDExport.Visible := not FolderView;
 end;
 
@@ -7197,8 +7199,9 @@ begin
   FDatabaseInfo := TDatabaseInfoControl.Create(Self);
   FDatabaseInfo.Parent := PnTopMenu;
   ToolBarMain.Align := alNone;
+  ToolBarMain.Width := ToolBarMain.Width - 1;
   FDatabaseInfo.Align := alRight;
-  FDatabaseInfo.LoadControl;
+  FDatabaseInfo.LoadControl(FActiveDatabase);
   FDatabaseInfo.OnSelectClick := TbDatabaseClick;
   PnTopMenuResize(Sender);
 end;
@@ -7466,7 +7469,6 @@ begin
     Directory2.Caption := L('Directory');
     TextFile2.Caption := L('Text file');
 
-    ShowUpdater1.Caption := L('Show update window');
     Refresh2.Caption := L('Refresh');
     SelectAll1.Caption := L('Select all');
     Exit2.Caption := L('Exit');
@@ -12895,13 +12897,10 @@ var
   MI: TMenuItem;
   DB: TDatabaseInfo;
   Ico: HIcon;
-  IconFileName: string;
-  LB: TLayeredBitmap;
 begin
   FreeList(FDatabases, False);
+  F(FActiveDatabase);
   TDBManager.ReadUserCollections(FDatabases);
-
-  IconFileName := '';
 
   ImDBList.Clear;
   PmDBList.Items.Clear;
@@ -12925,35 +12924,11 @@ begin
     if AnsiLowerCase(DB.Path) = AnsiLowerCase(FContext.CollectionFileName) then
     begin
       MI.Default := True;
-      IconFileName := DB.Icon;
+      FActiveDatabase := TDatabaseInfo(DB.Clone);
     end;
 
     PmDBList.Items.Add(MI);
   end;
-
-  if IconFileName = '' then
-    IconFileName := Application.ExeName + ',0';
-
-  {if TbDatabase.Visible then
-  begin
-    Ico := ExtractSmallIconByPath(IconFileName, not AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False));
-    try
-      LB := TLayeredBitmap.Create;
-      try
-        LB.LoadFromHIcon(Ico, ToolBarNormalImageList.Width, ToolBarNormalImageList.Height);
-
-        if ToolbarNormalImageList.Count <= TbDatabase.ImageIndex then
-          ToolbarNormalImageList.Add(LB, nil)
-        else
-          ToolbarNormalImageList.Replace(TbDatabase.ImageIndex, LB, nil);
-
-      finally
-        F(LB);
-      end;
-    finally
-      DestroyIcon(Ico);
-    end;
-  end; }
 
   MI := TMenuItem.Create(PmDBList);
   MI.Caption := '-';
@@ -13069,6 +13044,8 @@ begin
       TDBManager.SaveUserCollections(FDatabases);
 
     LoadDBList;
+    if FDatabaseInfo <> nil then
+      FDatabaseInfo.LoadControl(FActiveDatabase);
   finally
     Editor := nil;
   end;
@@ -13162,7 +13139,6 @@ begin
   Refresh2.ImageIndex := DB_IC_REFRESH_THUM;
   Exit2.ImageIndex := DB_IC_EXIT;
   TextFile1.ImageIndex := DB_IC_TEXT_FILE;
-  ShowUpdater1.ImageIndex := DB_IC_BOX;
 
   OpenInNewWindow1.ImageIndex := DB_IC_FOLDER;
   NewWindow1.ImageIndex := DB_IC_FOLDER;

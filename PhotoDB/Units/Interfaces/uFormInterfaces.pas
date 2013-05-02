@@ -199,11 +199,21 @@ type
   TProcessActionLinkProcedure = reference to procedure(Action: string; WebLink: TWebLink);
   TAddActionProcedure = reference to procedure(Actions: array of string; ProcessActionLink: TProcessActionLinkProcedure);
 
+  IFormLinkItemEditorData = interface
+    procedure ApplyChanges;
+    function GetEditorData: TDataObject;
+    function GetEditorPanel: TPanel;
+    function GetTopPanel: TPanel;
+    property EditorData: TDataObject read GetEditorData;
+    property EditorPanel: TPanel read GetEditorPanel;
+    property TopPanel: TPanel read GetTopPanel;
+  end;
+
   ILinkEditor = interface
-    procedure SetForm(Form: ILinkItemSelectForm);
+    procedure SetForm(Form: IFormLinkItemEditorData);
     procedure CreateNewItem(Sender: ILinkItemSelectForm; var Data: TDataObject; Verb: string; Elements: TListElements);
-    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
-    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel);
+    procedure CreateEditorForItem(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
+    procedure UpdateItemFromEditor(Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
     procedure FillActions(Sender: ILinkItemSelectForm; AddActionProc: TAddActionProcedure);
     function OnDelete(Sender: ILinkItemSelectForm; Data: TDataObject; Editor: TPanel): Boolean;
     function OnApply(Sender: ILinkItemSelectForm): Boolean;
@@ -213,18 +223,12 @@ type
     ['{92517237-BEFB-4033-BD56-3974E650E954}']
     function Execute(ListWidth: Integer; Title: string; Data: TList<TDataObject>; Editor: ILinkEditor): Boolean;
     function GetDataList: TList<TDataObject>;
-    function GetEditorData: TDataObject;
-    function GetTopPanel: TPanel;
-    procedure ApplyChanges;
     property DataList: TList<TDataObject> read GetDataList;
-    property EditorData: TDataObject read GetEditorData;
-    property TopPanel: TPanel read GetTopPanel;
   end;
 
-  IFormUpdateStatus = interface(IFormInterface)
-    ['{E8C7C001-0A46-4FAA-AB5B-84E74A996D3E}']
-    procedure ShowForm(Automatically: Boolean);
-    procedure HideForm;
+  IFormLinkItemEditor = interface(IFormInterface)
+    ['{EBFFA2F7-FF90-4425-B217-916E70F8399C}']
+     function Execute(Title: string; Data: TDataObject; Editor: ILinkEditor): Boolean;
   end;
 
   IFormCollectionPreviewSettings =  interface(IFormInterface)
@@ -272,9 +276,9 @@ function CDExportForm: ICDExportForm;
 function CDMapperForm: ICDMapperForm;
 function SelectLocationForm: ISelectLocationForm;
 function LinkItemSelectForm: ILinkItemSelectForm;
-function FormUpdateStatus: IFormUpdateStatus;
 function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
 function CollectionPreviewSettings: IFormCollectionPreviewSettings;
+function FormLinkItemEditor: IFormLinkItemEditor;
 
 implementation
 
@@ -404,11 +408,6 @@ begin
   Result := FormInterfaces.CreateForm<ILinkItemSelectForm>();
 end;
 
-function FormUpdateStatus: IFormUpdateStatus;
-begin
-  Result := FormInterfaces.GetSingleForm<IFormUpdateStatus>(True);
-end;
-
 function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
 begin
   Result := FormInterfaces.CreateForm<IBackgroundTaskStatusForm>();
@@ -417,6 +416,11 @@ end;
 function CollectionPreviewSettings: IFormCollectionPreviewSettings;
 begin
   Result := FormInterfaces.CreateForm<IFormCollectionPreviewSettings>();
+end;
+
+function FormLinkItemEditor: IFormLinkItemEditor;
+begin
+  Result := FormInterfaces.CreateForm<IFormLinkItemEditor>();
 end;
 
 { TFormInterfaces }
