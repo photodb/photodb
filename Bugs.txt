@@ -16,16 +16,17 @@ Features ready:
 - Person edit -> change logo links in bottom;
 - Search for image colors;
 - Update in packground if thumbnail size was changed;
+- Update database info notification support;
+- Viewcounter for images;
+- Update info in top/bottom => remove update form;
 
 Bugs:
 - start with deleted db - create new;
-- Update database info notification support;
 
 [New]
 - Portable persons;
 - Persons to EXIF (using XML string);
 - Import set password;
-- Viewcounter for images;
 
 [Images processing]
 - resize - raw use preview checkbox;
@@ -34,7 +35,6 @@ Bugs:
 [Collection]
 - Change database check update thread;
 - Encrypted images after enter password - add to database from all user directories;
-- Update info in top/bottom => remove update form;
 
 [Maybe]
 - Explorer preview zoom? (icons could be hidden)

@@ -69,6 +69,7 @@ var
   Info: TMediaItem;
   ImageInfo: ILoadImageInfo;
 begin
+  inherited;
   try
     Info := TMediaItem.CreateFromFile(FOptions.FileName);
     try

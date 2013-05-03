@@ -62,6 +62,7 @@ procedure TInternetFreeActivationThread.Execute;
 var
   QueryUrl, QueryParams: string;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     try

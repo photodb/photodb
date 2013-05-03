@@ -429,6 +429,7 @@ var
   end;
 
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitializeEx(nil, COINIT_MULTITHREADED);
   try

@@ -506,8 +506,9 @@ end;
 
 procedure TGaussBlurThread.Execute;
 var
-  b : Boolean;
+  B: Boolean;
 begin
+  inherited;
   Sleep(300);
   FreeOnTerminate := True;
   if (FAOwner as TGausBlur).FSID <> FSID then
@@ -571,6 +572,7 @@ procedure TSharpenThread.Execute;
 var
   New: TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TSharpen).FSID <> FSID then
@@ -851,6 +853,7 @@ procedure TPixelsEffectThread.Execute;
 var
   New: TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TPixelsEffect).FSID <> FSID then
@@ -1076,6 +1079,7 @@ procedure TWaveEffectThread.Execute;
 var
   New: TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TWaveEffect).FSID <> FSID then
@@ -1283,6 +1287,7 @@ procedure TDisorderEffectThread.Execute;
 var
   New: TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TDisorderEffect).FSID <> FSID then
@@ -1558,6 +1563,7 @@ procedure TReplaceColorEffectThread.Execute;
 var
   New: TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TReplaceColorEffect).FSID <> FSID then
@@ -1960,6 +1966,7 @@ var
   P1, P2: TArPRGBArray;
   I: Integer;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TCustomMatrixEffect).FSID <> FSID then

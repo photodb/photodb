@@ -36,6 +36,7 @@ var
   StyleHandle: TStyleManager.TStyleServicesHandle;
   SI: TStyleInfo;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     TW.I.Start('TLoadStyleThread - START');

@@ -130,15 +130,21 @@ var
   Settings: TSettings;
   Context: IDBContext;
   SettingsRepository: ISettingsRepository;
+  EventValue: TEventValues;
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
+    if SortOrder = -1 then
+      Reg.DeleteKey(RegRoot + 'dbs\' + Collection.OldTitle);
+
     Reg.OpenKey(RegRoot + 'dbs\' + Collection.Title, True);
     Reg.WriteString('FileName', Collection.Path);
     Reg.WriteString('Icon', Collection.Icon);
     Reg.WriteString('Description', Collection.Description);
     if SortOrder > -1 then
-      Reg.WriteInteger('Order', SortOrder);
+      Reg.WriteInteger('Order', SortOrder)
+    else
+      Reg.WriteInteger('Order', Collection.Order);
 
     if TDBScheme.IsOldColectionFile(Collection.Path) then
     begin
@@ -159,6 +165,12 @@ begin
       finally
         F(Settings);
       end;
+
+      if SortOrder = -1 then
+      begin
+        EventValue.NewName := Collection.Title;
+        CollectionEvents.DoIDEvent(nil, 0, [EventID_CollectionInfoChanged], EventValue);
+      end;
     end;
   finally
     F(Reg);
@@ -171,6 +183,7 @@ var
   List: TStrings;
   I: Integer;
   DB: TDatabaseInfo;
+  EventValue: TEventValues;
 begin
   List := TStringList.Create;
   try
@@ -184,6 +197,8 @@ begin
       for DB in Collections do
         UpdateUserCollection(DB, Collections.IndexOf(DB));
 
+      EventValue.NewName := '';
+      CollectionEvents.DoIDEvent(nil, 0, [EventID_CollectionInfoChanged], EventValue);
     finally
       F(Reg);
     end;

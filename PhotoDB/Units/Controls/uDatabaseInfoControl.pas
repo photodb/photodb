@@ -418,6 +418,7 @@ begin
   Editor := TLinkListEditorDatabases.Create(TDBForm(Self.Owner));
   try
     if FormLinkItemEditor.Execute(L('Edit collection'), FInfo, Editor) then
+      DBManager.UpdateUserCollection(FInfo, -1);
 
   finally
     Editor := nil;

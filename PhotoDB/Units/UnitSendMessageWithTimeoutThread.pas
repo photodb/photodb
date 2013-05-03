@@ -65,6 +65,7 @@ end;
 
 procedure TSendMessageWithTimeoutThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   SendMessage(FhWnd, FMsg, FwParam, FlParam);
   SendMessageResult := True;

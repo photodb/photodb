@@ -20,6 +20,7 @@ implementation
 
 procedure TLoadDBKernelIconsThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   Icons.LoadIcons;
 end;

@@ -286,6 +286,7 @@ procedure TExEffectOneParamCustomThread.Execute;
 var
   New: TBitmap;
 begin
+  inherited;
   FreeOnTerminate := True;
   Sleep(100);
   if (FAOwner as TExEffectOneParamCustom).FSID <> FSID then

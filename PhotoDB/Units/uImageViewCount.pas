@@ -112,6 +112,7 @@ var
   FMediaRepository: IMediaRepository;
 
 begin
+  inherited;
   FreeOnTerminate := True;
 
   Infos := TList<TImageViewInfo>.Create;

@@ -105,6 +105,7 @@ var
   ImageInfo: ILoadImageInfo;
   PNG: TPNGImage;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

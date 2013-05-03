@@ -62,6 +62,7 @@ var
   LevelItems: TList<TPathItem>;
   Childs: TPathItemCollection;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     CoInitializeEx(nil, COINIT_MULTITHREADED);

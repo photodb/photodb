@@ -114,6 +114,7 @@ procedure TShareImagesThread.Execute;
 var
   ErrorMessage: string;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     //for video previews

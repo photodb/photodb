@@ -65,6 +65,7 @@ var
   Context: IDBContext;
   MediaRepository: IMediaRepository;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitializeEx(nil, COM_MODE);
   try

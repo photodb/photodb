@@ -3331,6 +3331,13 @@ begin
       FDatabaseInfo.LoadControl(FActiveDatabase);
   end;
 
+  if [EventID_CollectionInfoChanged] * Params <> [] then
+  begin
+    LoadDBList;
+    if FDatabaseInfo <> nil then
+      FDatabaseInfo.LoadControl(FActiveDatabase);
+  end;
+
   if (EventID_Param_Name in Params) then
     if not(FileExistsSafe(Value.NewName) or DirectoryExists(Value.NewName)) and not
       (FileExistsSafe(Value.FileName) or DirectoryExists(Value.FileName)) then
@@ -3345,7 +3352,6 @@ begin
     ElvMain.Selection.ClearAll;
     RefreshLinkClick(Self);
   end;
-
 end;
 
 procedure TExplorerForm.FormClose(Sender: TObject;
@@ -13042,10 +13048,6 @@ begin
   try
     if LinkItemSelectForm.Execute(450, L('List of collections'), TList<TDataObject>(FDatabases), Editor) then
       TDBManager.SaveUserCollections(FDatabases);
-
-    LoadDBList;
-    if FDatabaseInfo <> nil then
-      FDatabaseInfo.LoadControl(FActiveDatabase);
   finally
     Editor := nil;
   end;

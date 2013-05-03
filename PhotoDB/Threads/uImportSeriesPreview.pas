@@ -71,6 +71,7 @@ var
   MediaItem: TMediaItem;
   ImageInfo: ILoadImageInfo;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitializeEx(nil, COINIT_MULTITHREADED);
   try

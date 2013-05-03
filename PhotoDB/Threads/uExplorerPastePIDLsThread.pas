@@ -39,6 +39,7 @@ end;
 
 procedure TExplorerPastePIDLsThread.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   CoInitialize(nil);
   try

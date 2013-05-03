@@ -247,6 +247,7 @@ type
   private
     FWindowID: string;
     FWasPaint: Boolean;
+    FDoPaintBackground: Boolean;
     FRefCount: Integer;
     FIsRestoring: Boolean;
     FIsMinimizing: Boolean;
@@ -400,6 +401,7 @@ begin
 
   FIsMinimizing := False;
   FIsRestoring := False;
+  FDoPaintBackground := False;
   {$IFDEF PHOTODB}
   FMaskPanel := nil;
   FMaskImage := nil;
@@ -850,10 +852,11 @@ begin
   //this is fix for form startup
   if ClassName <> 'TFormManager' then
   begin
-    if StyleServices.Enabled and not FWasPaint then
+    if StyleServices.Enabled and FDoPaintBackground and not FWasPaint then
     begin
       if (Message.Msg = WM_NCPAINT) and (Win32MajorVersion >= 6) then
       begin
+        FDoPaintBackground := False;
         if DwmCompositionEnabled then
         begin
           Canvas := TCanvas.Create;
@@ -880,6 +883,9 @@ begin
 
   if (Message.Msg = WM_PAINT) and StyleServices.Enabled then
     FWasPaint := True;
+
+  if (Message.Msg = WM_NCACTIVATE) and StyleServices.Enabled then
+    FDoPaintBackground := True;
 
   inherited;
 end;

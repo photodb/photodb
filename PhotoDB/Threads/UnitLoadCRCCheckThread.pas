@@ -38,6 +38,7 @@ var
   KernelHandle: THandle;
   LibName: string;
 begin
+  inherited;
   FreeOnTerminate := True;
   LibName := ProgramDir + 'Kernel.dll';
   KernelHandle := LoadLibrary(PChar(LibName));

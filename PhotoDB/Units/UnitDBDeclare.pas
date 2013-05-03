@@ -71,7 +71,8 @@ type
     EventID_FileProcessed, EventID_Repaint_ImageList, EventID_No_EXIF,
     EventID_PersonAdded, EventID_PersonChanged, EventID_PersonRemoved,
     EventID_GroupAdded, EventID_GroupChanged, EventID_GroupRemoved,
-    EventID_ShelfChanged, EventID_ShelfItemRemoved, EventID_ShelfItemAdded);
+    EventID_ShelfChanged, EventID_ShelfItemRemoved, EventID_ShelfItemAdded,
+    EventID_CollectionInfoChanged);
 
   TEventFields = set of TEventField;
 
@@ -171,8 +172,11 @@ type
   end;
 
   TDatabaseInfo = class(TDataObject)
+  private
+    FOldTitle: string;
+    FTitle: string;
+    procedure SetTitle(const Value: string);
   public
-    Title: string;
     Path: string;
     Icon: string;
     Description: string;
@@ -181,6 +185,8 @@ type
     constructor Create(Title, Path, Icon, Description: string; Order: Integer = 0); overload;
     function Clone: TDataObject; override;
     procedure Assign(Source: TDataObject); override;
+    property Title: string read FTitle write SetTitle;
+    property OldTitle: string read FOldTitle;
   end;
 
 type
@@ -314,6 +320,12 @@ begin
   Self.Icon := Icon;
   Self.Description := Description;
   Self.Order := Order;
+  FOldTitle := Title;
+end;
+
+procedure TDatabaseInfo.SetTitle(const Value: string);
+begin
+  FTitle := Value;
 end;
 
 end.

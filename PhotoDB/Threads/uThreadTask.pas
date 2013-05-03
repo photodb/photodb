@@ -70,6 +70,7 @@ end;
 
 procedure TThreadTask.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     if FDataObj <> nil then
@@ -108,6 +109,7 @@ end;
 
 procedure TThreadTask<T>.Execute;
 begin
+  inherited;
   FreeOnTerminate := True;
   try
     FProc(Self, FData);

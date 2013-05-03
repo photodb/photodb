@@ -136,6 +136,7 @@ var
   Text_error_out: string;
   Graphic: TGraphic;
 begin
+  inherited;
   FreeOnTerminate := True;
 
   Text_error_out := L('Unable to show file:');

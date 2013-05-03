@@ -68,7 +68,7 @@ var
   ImageInfo: ILoadImageInfo;
   Info: TMediaItem;
 begin
-
+  inherited;
   Info := TMediaItem.CreateFromFile(FOptions.FileName);
   try
     if LoadImageFromPath(Info, -1, '', [ilfGraphic, ilfICCProfile, ilfEXIF, ilfPassword, ilfAskUserPassword], ImageInfo,
