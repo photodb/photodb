@@ -5,6 +5,7 @@ interface
 uses
   Winapi.Windows,
   Winapi.Messages,
+  System.Types,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -35,15 +36,21 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     FLoadingState: Extended;
+    FText: string;
+    FMouseCaptured: Boolean;
+    FCapturedPosition: TPoint;
+    FFormPosition: TPoint;
     procedure DrawForm;
   protected
     function GetFormID: string; override;
     procedure InterfaceDestroyed; override;
     function DisableMasking: Boolean; override;
-    procedure HiTest(var Msg: TMessage); message WM_NCHITTEST;
   public
     { Public declarations }
     function ShowModal: Integer; override;
@@ -97,13 +104,13 @@ end;
 
 procedure TFormBackgroundTaskStatus.SetProgress(Max, Position: Int64);
 begin
-  LbMessage.Caption := IntToStr(Round(Position * 100 / Max)) + '%';
+  LbMessage.Caption := StringReplace(FText, '%', IntToStr(Round(Position * 100 / Max)) + '%', []);
   DrawForm;
 end;
 
 procedure TFormBackgroundTaskStatus.SetText(Text: string);
 begin
-
+  FText := Text;
 end;
 
 function TFormBackgroundTaskStatus.ShowModal: Integer;
@@ -121,6 +128,7 @@ end;
 procedure TFormBackgroundTaskStatus.FormCreate(Sender: TObject);
 begin
   LbMessage.Caption := L('Please wait...');
+  FMouseCaptured := False;
 end;
 
 procedure TFormBackgroundTaskStatus.FormDestroy(Sender: TObject);
@@ -131,17 +139,38 @@ end;
 procedure TFormBackgroundTaskStatus.FormMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+  if Button = mbLeft then
+  begin
+    FMouseCaptured := True;
+    FCapturedPosition := Point(X, Y);
+    FCapturedPosition := ClientToScreen(FCapturedPosition);
+    FFormPosition := Point(Left, Top);
+  end;
+end;
+
+procedure TFormBackgroundTaskStatus.FormMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+  P: TPoint;
+begin
+  if FMouseCaptured then
+  begin
+    P := Point(X, Y);
+    P := ClientToScreen(P);
+    Left := FFormPosition.X + (P.X - FCapturedPosition.X);
+    Top := FFormPosition.Y + (P.Y - FCapturedPosition.Y);
+  end;
+end;
+
+procedure TFormBackgroundTaskStatus.FormMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  FMouseCaptured := False;
 end;
 
 function TFormBackgroundTaskStatus.GetFormID: string;
 begin
   Result := 'BackgroundTaskStatus';
-end;
-
-procedure TFormBackgroundTaskStatus.HiTest(var Msg: TMessage);
-begin
-  Msg.Result := HTCAPTION;
 end;
 
 procedure TFormBackgroundTaskStatus.InterfaceDestroyed;

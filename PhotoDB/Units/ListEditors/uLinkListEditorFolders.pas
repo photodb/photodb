@@ -306,7 +306,7 @@ begin
 
   PI := nil;
   try
-    if SelectLocationForm.Execute('Select a directory', LI.Path, PI, True) then
+    if SelectLocationForm.Execute(FOwner.L('Select a directory'), LI.Path, PI, True) then
     begin
       LbInfo := Editor.FindChildByTag<TLabel>(CHANGE_PLACE_INFO);
       LbInfo.Caption := PI.Path;

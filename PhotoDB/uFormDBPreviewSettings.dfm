@@ -12,10 +12,12 @@ object FormDBPreviewSize: TFormDBPreviewSize
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   DesignSize = (
     380
     177)

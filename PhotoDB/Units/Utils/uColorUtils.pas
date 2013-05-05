@@ -47,6 +47,7 @@ procedure FindPaletteColorsOnImage(B: TBitmap; Colors: TList<TColor>; MaxColors:
 function ColorPaletteToString(Color: TColor): string;
 function ColorsToString(Colors: TArray<TColor>): string;
 procedure FillColors(var Palette: TPaletteArray; var PaletteHLS: TPaletteHLSArray);
+function ColorToGrayscale(Color: TColor): TColor;
 
 implementation
 
@@ -367,6 +368,19 @@ begin
   finally
     F(SL);
   end;
+end;
+
+function ColorToGrayscale(Color: TColor): TColor;
+var
+  R, G, B, BW: Byte;
+begin
+  R := GetRValue(Color);
+  G := GetGValue(Color);
+  B := GetBValue(Color);
+
+  BW := (R * 77 + G * 151 + B * 28) shr 8;
+
+  Result := RGB(BW, BW, BW);
 end;
 
 end.

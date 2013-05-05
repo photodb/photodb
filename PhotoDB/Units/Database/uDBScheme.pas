@@ -136,6 +136,7 @@ begin
           for I := 0 to Tasks.Count - 1 do
           begin
             Task := Tasks[I];
+            ProgressForm.SetText(Task.Text);
             CurrentVersion := Task.Execute(
               procedure(Sender: TObject; Total, Value: Int64)
               begin
@@ -590,12 +591,17 @@ begin
     SC.AddParameter(TAllParameter.Create);
     SC.AddWhereParameter(TCustomConditionParameter.Create('1 = 1'));
 
-    //low-level checking
-    if (SC.Execute > 0) and (SC.DS <> nil) then
-    begin
-      Field := SC.DS.FindField('Version');
-      if (Field <> nil) and (Field.DataType = ftInteger) then
-        Result := Field.AsInteger;
+    try
+      //low-level checking
+      if (SC.Execute > 0) and (SC.DS <> nil) then
+      begin
+        Field := SC.DS.FindField('Version');
+        if (Field <> nil) and (Field.DataType = ftInteger) then
+          Result := Field.AsInteger;
+      end;
+    except
+      on e: Exception do
+        EventLog(e);
     end;
   finally
     F(SC);
@@ -680,7 +686,7 @@ end;
 
 function TPackCollectionTask.Text: string;
 begin
-  Result := TA('Pack collection file', 'DBUpdate');
+  Result := TA('Check file, %', 'CollectionUpgrade');
 end;
 
 { TMigrateToV_003_Task }
@@ -704,7 +710,7 @@ end;
 
 function TMigrateToV_003_Task.Text: string;
 begin
-  Result := TA('Update to version 3', 'DBUpdate');
+  Result := TA('Upgdate file, %', 'CollectionUpgrade');
 end;
 
 end.

@@ -48,6 +48,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -162,6 +163,13 @@ begin
   FSettingsRepository := nil;
   FContext := nil;
   F(FSampleImage);
+end;
+
+procedure TFormDBPreviewSize.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 function TFormDBPreviewSize.Execute(CollectionFileName: string): Boolean;

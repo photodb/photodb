@@ -108,6 +108,7 @@ type
   protected
     { Protected declarations }
     function GetFormID: string; override;
+    function CanUseMaskingForModal: Boolean; override;
     procedure LoadDirectX;
     procedure NextID;
     procedure NewID;
@@ -634,6 +635,11 @@ begin
   end;
 
   Viewer.NextImage;
+end;
+
+function TDirectShowForm.CanUseMaskingForModal: Boolean;
+begin
+  Result := False;
 end;
 
 procedure TDirectShowForm.FormResize(Sender: TObject);

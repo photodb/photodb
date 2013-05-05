@@ -1337,6 +1337,7 @@ var
   Task: TDatabaseTask;
   AddTasks: TArray<TAddTask>;
   UpdateTask: TUpdateTask;
+  IdleCycle: Boolean;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -1348,10 +1349,13 @@ begin
     if DBTerminating then
       Break;
 
+    IdleCycle := True;
+
     AddTasks := UpdaterStorage.Take<TAddTask>(cAddImagesAtOneStep);
     try
       if Length(AddTasks) > 0 then
       begin
+        IdleCycle := False;
         AddTasks[0].Execute(AddTasks);
         FSpeedCounter.AddSpeedInterval(100 * Length(AddTasks));
 
@@ -1368,13 +1372,17 @@ begin
     UpdateTask := UpdaterStorage.TakeOne<TUpdateTask>();
     try
       if UpdateTask <> nil then
-      begin
+      begin     
+        IdleCycle := False;
         UpdateTask.Execute;
         FSpeedCounter.AddSpeedInterval(100 * 1);
       end;
     finally
       F(UpdateTask);
     end;
+
+    if IdleCycle then
+      Sleep(100);
   end;
 end;
 

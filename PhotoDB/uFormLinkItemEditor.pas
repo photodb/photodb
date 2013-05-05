@@ -47,9 +47,6 @@ type
     procedure ApplyChanges;
   end;
 
-var
-  FormLinkItemEditor: TFormLinkItemEditor;
-
 implementation
 
 {$R *.dfm}

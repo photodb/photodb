@@ -476,6 +476,7 @@
 	<translate name="Do you want to delete files below for deleted collections?" value="Вы хотите удалить файлы удалённых коллекций?" />
 	<translate name="Change advanced options for this collection" value="Изменить расширенные настройки" />
 	<translate name="Edit" value="Редактировать" />
+	<translate name="Select a directory" value="Выберите директорию" />
 	<translate name="Edit collections" value="Редактировать список коллекций" />
 	<translate name="Open image location" value="Открыть папку с файлом" />
 	<translate name="Change synchronization settings" value="Изменить настройки синхронизации" />
@@ -1965,5 +1966,9 @@
   	<translate name="Add directory" value="Добавить папку для синхронизации" />
   	<translate name="Choose directories to synchronize with collection. All images in these directories will be automatically included to collection." value="Выберите папки для синхронизации с коллекцией. Все изображения в выбранных папках будут автоматически добавлены в коллекцию." />
   	<translate name="Directories synchronization with collection" value="Синхронизация папок с коллекцией" />
+  </scope>
+  <scope name="CollectionUpgrade">
+  	<translate name="Check file, %" value="Проверка файла, %" />
+  	<translate name="Upgdate file, %" value="Обновление файла, %" />
   </scope>
 </language>

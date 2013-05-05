@@ -3,6 +3,7 @@ unit FormManegerUnit;
 interface
 
 uses
+  Generics.Collections,
   System.Types,
   System.SysUtils,
   System.Classes,
@@ -71,7 +72,7 @@ type
     procedure AeMainException(Sender: TObject; E: Exception);
   private
     { Private declarations }
-    FMainForms: TList;
+    FMainForms: TList<TForm>;
     FCheckCount: Integer;
     WasIde: Boolean;
     ExitAppl: Boolean;
@@ -384,14 +385,8 @@ begin
 end;
 
 procedure TFormManager.UnRegisterMainForm(Value: TForm);
-var
-  I: Integer;
 begin
   FMainForms.Remove(Value);
-
-  for I := FMainForms.Count - 1 downto 0 do
-    if not TForm(FMainForms[I]).Visible then
-      TForm(FMainForms[I]).Close;
 end;
 
 procedure TFormManager.ExitApplication;
@@ -422,8 +417,8 @@ begin
   end;
 
   for I := FMainForms.Count - 1 downto 0 do
-    if not TForm(FMainForms[I]).Visible then
-      TForm(FMainForms[I]).Close;
+    if not FMainForms[I].Visible then
+      FMainForms[I].Close;
 
   for I := 0 to MultiThreadManagers.Count - 1 do
     TThreadPoolCustom(MultiThreadManagers[I]).CloseAndWaitForAllThreads;
@@ -449,7 +444,7 @@ var
   I: Integer;
 begin
   for I := FMainForms.Count - 1 downto 0 do
-    TForm(FMainForms[I]).Close;
+    FMainForms[I].Close;
 
   ExitApplication;
 end;
@@ -628,7 +623,7 @@ var
   I: Integer;
 begin
   for I := 0 to FMainForms.Count - 1 do
-    TForm(FMainForms[I]).Close;
+    FMainForms[I].Close;
 end;
 
 procedure TFormManager.TimerCloseApplicationByDBTerminateTimer(Sender: TObject);
@@ -669,7 +664,7 @@ end;
 
 constructor TFormManager.Create(AOwner: TComponent);
 begin
-  FMainForms := TList.Create;
+  FMainForms := TList<TForm>.Create;
   WasIde := False;
   ExitAppl := False;
   inherited Create(AOwner);

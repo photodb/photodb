@@ -18,10 +18,11 @@ uses
   Dmitry.Utils.System,
 
   uWinApi,
+  uDBForm,
   uFormInterfaces;
 
 type
-  TFullScreenView = class(TForm)
+  TFullScreenView = class(TDBForm)
     MouseTimer: TTimer;
     ApplicationEvents1: TApplicationEvents;
     DestroyTimer: TTimer;
@@ -48,6 +49,7 @@ type
     FOldPoint: TPoint;
   protected
     { Protected declarations }
+    function CanUseMaskingForModal: Boolean; override;
   public
     { Public declarations }
   end;
@@ -261,6 +263,11 @@ begin
   DestroyTimer.Enabled := False;
   Release;
   FullScreenView := nil;
+end;
+
+function TFullScreenView.CanUseMaskingForModal: Boolean;
+begin
+  Result := False;
 end;
 
 initialization

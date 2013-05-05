@@ -3774,7 +3774,6 @@ begin
   if FullScreenNow then
     FullScreenView.Close;
 
-
   with EditorsManager.NewEditor do
   begin
     Show;

@@ -55,9 +55,9 @@ type
     destructor Destroy; override;
 
     class function CreateDBbyName(FileName: string): Integer;
-    procedure SetDataBase(DatabaseFileName: string);
+    function SetDataBase(DatabaseFileName: string): IDBContext;
     function LoadDefaultCollection: Boolean;
-    function CreateSampleDefaultCollection: string;
+    function CreateSampleDefaultCollection: IDBContext;
     function SelectDB(Caller: TDBForm; DB: string): Boolean;
 
     class procedure CreateExampleDB(FileName: string);
@@ -146,24 +146,27 @@ begin
     else
       Reg.WriteInteger('Order', Collection.Order);
 
-    if TDBScheme.IsOldColectionFile(Collection.Path) then
+    if FileExistsSafe(Collection.Path) then
     begin
-      if UpdateDatabaseQuery(Collection.Path) then
-        TDBScheme.UpdateCollection(Collection.Path, 0);
-    end;
+      if TDBScheme.IsOldColectionFile(Collection.Path) then
+      begin
+        if UpdateDatabaseQuery(Collection.Path) then
+          TDBScheme.UpdateCollection(Collection.Path, 0);
+      end;
 
-    if TDBScheme.IsValidCollectionFile(Collection.Path) then
-    begin
-      Context := TDBContext.Create(Collection.Path);
-      SettingsRepository := Context.Settings;
+      if TDBScheme.IsValidCollectionFile(Collection.Path) then
+      begin
+        Context := TDBContext.Create(Collection.Path);
+        SettingsRepository := Context.Settings;
 
-      Settings := SettingsRepository.Get;
-      try
-        Settings.Name := Collection.Title;
-        Settings.Description := Collection.Description;
-        SettingsRepository.Update(Settings);
-      finally
-        F(Settings);
+        Settings := SettingsRepository.Get;
+        try
+          Settings.Name := Collection.Title;
+          Settings.Description := Collection.Description;
+          SettingsRepository.Update(Settings);
+        finally
+          F(Settings);
+        end;
       end;
 
       if SortOrder = -1 then
@@ -346,7 +349,7 @@ begin
   end;
 end;
 
-procedure TDBManager.SetDataBase(DatabaseFileName: string);
+function TDBManager.SetDataBase(DatabaseFileName: string): IDBContext;
 var
   Reg: TBDRegistry;
 begin
@@ -359,6 +362,8 @@ begin
     Reg.WriteString('DBDefaultName', DatabaseFileName);
 
     FDBContext := TDBContext.Create(DatabaseFileName);
+
+    Result := FDBContext;
   finally
     F(Reg);
   end;
@@ -368,6 +373,8 @@ function TDBManager.LoadDefaultCollection: Boolean;
 var
   CollectionFileName: string;
 begin
+  FDBContext := nil;
+
   if FolderView then
   begin
     CollectionFileName := ExtractFilePath(Application.ExeName) + 'FolderDB.photodb';
@@ -379,29 +386,33 @@ begin
     CollectionFileName := AppSettings.DataBase;
 
     if not FileExistsSafe(CollectionFileName) then
-      CreateSampleDefaultCollection;
+      FDBContext := CreateSampleDefaultCollection;
   end;
 
-  FDBContext := TDBContext.Create(CollectionFileName);
+  if FDBContext = nil then
+    FDBContext := TDBContext.Create(CollectionFileName);
+
   Result := FDBContext.IsValid;
 end;
 
-function TDBManager.CreateSampleDefaultCollection: string;
+function TDBManager.CreateSampleDefaultCollection: IDBContext;
 var
   Collections: TList<TDatabaseInfo>;
+  CollectionFile: string;
 begin
   //if program was uninstalled with registered databases - restore database or create new database
-  Result := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
-  if not FileExistsSafe(Result) then
-    CreateExampleDB(Result);
+  CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+  if not FileExistsSafe(CollectionFile) then
+    CreateExampleDB(CollectionFile);
 
   Collections := TList<TDatabaseInfo>.Create;
   try
     ReadUserCollections(Collections);
-    Collections.Add(TDatabaseInfo.Create(TA('My collection'), Result, Application.ExeName + ',0', '', Collections.Count));
+    Collections.Add(TDatabaseInfo.Create(TA('My collection'), CollectionFile, Application.ExeName + ',0', '', Collections.Count));
     SaveUserCollections(Collections);
 
-    SetDataBase(Result);
+    Result := SetDataBase(CollectionFile);
+
   finally
     FreeList(Collections);
   end;

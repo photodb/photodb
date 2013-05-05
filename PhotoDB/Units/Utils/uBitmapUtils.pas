@@ -1525,7 +1525,6 @@ begin
   end;
 end;
 
-
 procedure GrayScale(Image: TBitmap);
 var
   I, J, C: Integer;

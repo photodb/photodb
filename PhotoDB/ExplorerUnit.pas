@@ -6,6 +6,7 @@ uses
   Generics.Collections,
   Generics.Defaults,
   System.Types,
+  System.UITypes,
   System.Math,
   System.SysUtils,
   System.DateUtils,
@@ -4008,6 +4009,9 @@ var
 begin
   Shape := TShape(Sender);
 
+  if not Shape.Enabled then
+    Exit;
+
   MultiSelect := [ssCtrl, ssShift] * Shift <> [];
 
   if not MultiSelect then
@@ -4043,11 +4047,17 @@ end;
 
 procedure TExplorerForm.ShpColor1MouseEnter(Sender: TObject);
 begin
+  if not TShape(Sender).Enabled then
+    Exit;
+
   TShape(Sender).Pen.Color := Theme.HighlightColor;
 end;
 
 procedure TExplorerForm.ShpColor1MouseLeave(Sender: TObject);
 begin
+  if not TShape(Sender).Enabled then
+    Exit;
+
   if TShape(Sender).Tag = 1 then
     TShape(Sender).Pen.Color := Theme.HighlightColor
   else
@@ -11719,7 +11729,6 @@ begin
       for I := 1 to 12 do
       begin
         Shape := PnESContainer.FindChildByName<TShape>('ShpColor' + IntToStr(I));
-        Shape.Brush.Color := Palette[I];
         Shape.Pen.Color :=  Theme.PanelColor;
         Shape.Hint := TA(PaletteColorNames[I], 'Colors');
         Shape.ShowHint := True;
@@ -12433,7 +12442,12 @@ end;
 
 procedure TExplorerForm.ExtendedSearchCheckEnabled;
 var
+  I: Integer;
   IsOptionsEnabled: Boolean;
+  Palette: TPaletteArray;
+  PaletteHLS: TPaletteHLSArray;
+  Shape: TShape;
+  C: TColor;
 begin
   IsOptionsEnabled := FSearchMode = EXPLORER_SEARCH_DATABASE;
 
@@ -12448,6 +12462,42 @@ begin
   WllExtendedSearchGroups.Enabled := IsOptionsEnabled;
   WlExtendedSearchSortDescending.Enabled := IsOptionsEnabled;
   WlExtendedSearchOptions.Enabled := IsOptionsEnabled;
+
+  BtnAnyColor.Enabled := IsOptionsEnabled;
+  BtnBlackWhite.Enabled := IsOptionsEnabled;
+
+  ShpColor1.Enabled := IsOptionsEnabled;
+  ShpColor2.Enabled := IsOptionsEnabled;
+  ShpColor3.Enabled := IsOptionsEnabled;
+  ShpColor4.Enabled := IsOptionsEnabled;
+  ShpColor5.Enabled := IsOptionsEnabled;
+  ShpColor6.Enabled := IsOptionsEnabled;
+  ShpColor7.Enabled := IsOptionsEnabled;
+  ShpColor8.Enabled := IsOptionsEnabled;
+  ShpColor9.Enabled := IsOptionsEnabled;
+  ShpColor10.Enabled := IsOptionsEnabled;
+  ShpColor11.Enabled := IsOptionsEnabled;
+  ShpColor12.Enabled := IsOptionsEnabled;
+
+  FillColors(Palette, PaletteHLS);
+  for I := 1 to 12 do
+  begin
+    Shape := PnESContainer.FindChildByName<TShape>('ShpColor' + IntToStr(I));
+    if Shape.Enabled then
+      Shape.Brush.Color := Palette[I]
+    else
+      Shape.Brush.Color := ColorToGrayscale(Palette[I]);
+
+    if Shape.Tag = 1 then
+      C := Theme.HighlightColor
+    else
+      C := Theme.PanelColor;
+
+    if not Shape.Enabled then
+      C := ColorToGrayscale(C);
+
+    Shape.Pen.Color := C;
+  end;
 end;
 
 procedure TExplorerForm.ExtendedSearchRealign;
