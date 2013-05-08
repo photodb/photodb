@@ -143,6 +143,7 @@ procedure ForwardOnlyQuery(DS: TDataSet);
 procedure ReadOnlyQuery(DS: TDataSet);
 procedure SetSQL(SQL: TDataSet; SQLText: string);
 procedure ExecSQL(SQL: TDataSet);
+procedure GetTableNames(DSWithConnection: TDataSet; TableNames: TStrings);
 
 procedure FreeDS(var DS: TDataSet);
 
@@ -584,6 +585,14 @@ begin
   begin
     (SQL as TADOQuery).ExecSQL;
     CloseReadOnlyConnections((SQL as TADOQuery).Connection as TADOConnectionEx);
+  end;
+end;
+
+procedure GetTableNames(DSWithConnection: TDataSet; TableNames: TStrings);
+begin
+  if (DSWithConnection is TADOQuery) then
+  begin
+    (DSWithConnection as TADOQuery).Connection.GetTableNames(TableNames, True);
   end;
 end;
 

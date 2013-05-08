@@ -58,7 +58,7 @@ type
     function SetDataBase(DatabaseFileName: string): IDBContext;
     function LoadDefaultCollection: Boolean;
     function CreateSampleDefaultCollection: IDBContext;
-    function SelectDB(Caller: TDBForm; DB: string): Boolean;
+    function SelectDB(Caller: TDBForm; CollectionFileName: string): Boolean;
 
     class procedure CreateExampleDB(FileName: string);
 
@@ -332,21 +332,28 @@ begin
   inherited;
 end;
 
-function TDBManager.SelectDB(Caller: TDBForm; DB: string): Boolean;
+function TDBManager.SelectDB(Caller: TDBForm; CollectionFileName: string): Boolean;
 var
   EventInfo: TEventValues;
 begin
   Result := False;
-  if FileExists(DB) then
+  if not FileExists(CollectionFileName) then
+    raise Exception.Create(FormatEx(TA('Can''t find collection file: {0}!', 'Errors'), [CollectionFileName]));
+
+  if not TDBScheme.IsValidCollectionFile(CollectionFileName) then
   begin
-    if TDBScheme.IsValidCollectionFile(DB) then
-    begin
-      SetDataBase(DB);
-      CollectionEvents.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
-      Result := True;
-      Exit;
-    end
+    if TDBManager.UpdateDatabaseQuery(CollectionFileName) then
+      TDBScheme.UpdateCollection(CollectionFileName, 0);
   end;
+
+  if TDBScheme.IsValidCollectionFile(CollectionFileName) then
+  begin
+    SetDataBase(CollectionFileName);
+    CollectionEvents.DoIDEvent(Caller, 0, [EventID_Param_DB_Changed], EventInfo);
+    Result := True;
+    Exit;
+  end else
+    raise Exception.Create(FormatEx(TA('Can''t select old version of collection file!', 'Errors'), [CollectionFileName]));
 end;
 
 function TDBManager.SetDataBase(DatabaseFileName: string): IDBContext;

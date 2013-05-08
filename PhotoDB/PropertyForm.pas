@@ -1875,6 +1875,11 @@ begin
         WlAddLink.Top := LinksScrollBox.Top + LinksScrollBox.Height + 3;
       end;
   end;
+
+  //TODO: Sometimes tabs doesn't redraw after change
+  //SendMessage(PcMain.Handle, WM_SETREDRAW, 1, 0);
+  //RedrawWindow(PcMain.Handle, nil, 0, RDW_ERASENOW + RDW_FRAME + RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT );
+  //InvalidateRect(PcMain.Handle, nil, True);
 end;
 
 procedure TPropertiesForm.ReadExifData;

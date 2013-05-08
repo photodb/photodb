@@ -21,7 +21,6 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
-- Properties tabs redraw issue;
 - Properties old fileds remove;
 - Sync glogal settings;
 - Sync default value issues;
@@ -29,12 +28,11 @@ Bugs:
 - Slide show interval control issue;
 - show deleted/duplicate pictures;
 - Backup original DB during update;
-- Save errors in text file near DB;
 - AV on full screen, menu multi-monitor position;
 - Info with long file name;
-- property links -> popup menu doesn't work ;
-- select invalid database file fix;
-- select directory dblclick;
+- property links -> popup menu doesn't work;
+- Use png/jpg for collection icons;
+- Properties tabs redraw issue;
 
 [New]
 - Portable persons;

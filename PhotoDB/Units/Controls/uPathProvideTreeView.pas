@@ -91,6 +91,7 @@ type
     property OnSelectPathItem: TOnSelectPathItem read FOnSelectPathItem write FOnSelectPathItem;
     property OnGetPopupMenu;
     property OnKeyAction;
+    property OnNodeDblClick;
     property PopupItem: TPathItem read FPopupItem;
     property OnlyFileSystem: Boolean read FOnlyFileSystem write FOnlyFileSystem default False;
   end;

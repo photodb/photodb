@@ -41,6 +41,7 @@ type
     { Private declarations }
     FShellTreeView: TPathProvideTreeView;
     procedure PathTreeViewChange(Sender: TCustomVirtualDrawTree; PathItem: TPathItem);
+    procedure PathTreeViewDblClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
   protected
     procedure InterfaceDestroyed; override;
     function GetFormID: string; override;
@@ -80,6 +81,7 @@ begin
   FShellTreeView.OnlyFileSystem := not AllowVirtualItems;
   FShellTreeView.LoadHomeDirectory(Self);
   FShellTreeView.OnSelectPathItem := PathTreeViewChange;
+  FShellTreeView.OnNodeDblClick := PathTreeViewDblClick;
 
   PePath.OnlyFileSystem := True;
   StartItem := PathProviderManager.CreatePathItem(StartPath);
@@ -143,6 +145,12 @@ procedure TFormSelectLocation.PathTreeViewChange(Sender: TCustomVirtualDrawTree;
   PathItem: TPathItem);
 begin
   PePath.SetPathEx(Sender, PathItem, False);
+end;
+
+procedure TFormSelectLocation.PathTreeViewDblClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
+begin
+  if (HitInfo.HitNode <> nil) and (PePath.PathEx <> nil) then
+    BtnOkClick(Sender);
 end;
 
 procedure TFormSelectLocation.PePathChange(Sender: TObject);

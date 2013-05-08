@@ -57,6 +57,8 @@
 	<translate name="Fatal error: at least one provider should be registered: {0}" value="Фатальная ошибка: как минимум один провайдер должен быть зарегистрирован: {0}" />
 	<translate name="Error loading image: {0}, {1}" value="Ошибка загрузки изображения: {0}, {1}" />
 	<translate name="Error loading image: {0}" value="Ошибка загрузки изображения: {0}" />
+	<translate name="Can't find collection file: {0}!" value="Не удаётся найти файл коллекции: {0}!" />
+	<translate name="Can't select old version of collection file!" value="Не удаётся выбрать устаревший файл коллекции: {0}!" />
   </scope>
   <scope name="InstallLanguage">
 	<translate name="Select language" value="Выбор языка" />

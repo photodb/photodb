@@ -4,9 +4,10 @@ interface
 
 uses
   Generics.Collections,
-  Winapi.Windows,
   System.Win.Registry,
   System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
   Winapi.ShlObj,
   uMemory,
   uAppUtils,
@@ -165,7 +166,7 @@ begin
   Result := '';
   for I := Low(MPC_PATHS) to High(MPC_PATHS) do
   begin
-    FileName := StringReplace(MPC_PATHS[I], '%PROGRAM%',    GetSystemPath(CSIDL_PROGRAM_FILES), []);
+    FileName := StringReplace(MPC_PATHS[I], '%PROGRAM%', GetSystemPath(CSIDL_PROGRAM_FILES), []);
     FileName := StringReplace(FileName, '%PROGRAM_86%', GetSystemPath(CSIDL_PROGRAM_FILESX86), []);
     if FileExists(FileName) then
       Result := FileName;
@@ -201,9 +202,18 @@ procedure RegisterVideoFiles;
 var
   Ext, Player: string;
   VideoFileExtensions: TArray<string>;
+  ExistedData: TStrings;
 begin
   Player := GetPlayerInternalPath;
   VideoFileExtensions := uConstants.cVideoFileExtensions.ToUpper.Split([',']);
+
+  ExistedData := AppSettings.ReadKeys(cMediaAssociationsData);
+  try
+    if ExistedData.Count > 0 then
+      Exit;
+  finally
+    F(ExistedData);
+  end;
 
   for Ext in VideoFileExtensions do
     AppSettings.WriteString(cMediaAssociationsData + '\' + Ext, '', Player);

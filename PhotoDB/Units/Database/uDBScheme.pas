@@ -56,11 +56,11 @@ type
   private
     class procedure CreateDatabaseFile(CollectionFile: string);
 
-    class function CreateSettingsTable(CollectionFile: string): Boolean;
-    class function CreateImageTable(CollectionFile: string): Boolean;
-    class function CreateGroupsTable(CollectionFile: string): Boolean;
-    class function CreateObjectMappingTable(CollectionFile: string): Boolean;
-    class function CreateObjectsTable(CollectionFile: string): Boolean;
+    class function CreateSettingsTable(CollectionFile: string): Boolean; static;
+    class function CreateImageTable(CollectionFile: string): Boolean; static;
+    class function CreateGroupsTable(CollectionFile: string): Boolean; static;
+    class function CreateObjectMappingTable(CollectionFile: string): Boolean; static;
+    class function CreateObjectsTable(CollectionFile: string): Boolean; static;
 
     class function GetCollectionVersion(CollectionFile: string): Integer;
     class procedure UpdateCollectionVersion(CollectionFile: string; Version: Integer);
@@ -355,9 +355,11 @@ end;
 
 class procedure TDBScheme.MigrateToVersion003(CollectionFile: string; Progress: TSimpleCallBackProgressRef);
 const
-  TotalActions = 42;
+  TotalActions = 45;
 var
   FQuery: TDataSet;
+  Counter: Integer;
+  Errors: TStrings;
 
   procedure Exec(SQL: string; CurrentAction: Integer);
   begin
@@ -366,8 +368,10 @@ var
       ExecSQL(FQuery);
     except
       on e: Exception do
+      begin
         EventLog(e);
-      //TODO: raise
+        Errors.Add(E.Message);
+      end;
     end;
     Progress(nil, TotalActions, CurrentAction);
   end;
@@ -392,62 +396,122 @@ var
     Exec('ALTER TABLE ImageTable ADD COLUMN ' + ColumnDefinition, CurrentAction);
   end;
 
+  function TableExists(TableName: string): Boolean;
+  var
+    List: TStrings;
+    I: Integer;
+  begin
+    Result := False;
+
+    List := TStringList.Create;
+    try
+      GetTableNames(FQuery, List);
+      for I := 0 to List.Count - 1 do
+      begin
+        if AnsiLowerCase(List[I]) = AnsiLowerCase(TableName) then
+          Exit(True);
+      end;
+    finally
+      F(List);
+    end;
+  end;
+
+type
+  TCreateTableProc = procedure(CollectionFileName: string);
+
+  procedure CreateTable(CreateTableProc: TCreateTableProc; CurrentAction: Integer);
+  begin
+    try
+      CreateTableProc(CollectionFile);
+    except
+      on e: Exception do
+      begin
+        EventLog(e);
+        Errors.Add(E.Message);
+      end;
+    end;
+    Progress(nil, TotalActions, CurrentAction);
+  end;
+
+  function NextID: Integer;
+  begin
+    Inc(Counter);
+    Result := Counter;
+  end;
+
 begin
+  Counter := 0;
+
+  Errors := TStringList.Create;
   FQuery := GetQuery(CollectionFile, True, dbilExclusive);
   try
-    CreateObjectsTable(CollectionFile);
-    CreateObjectMappingTable(CollectionFile);
+    if not TableExists('Groups') then
+      CreateTable(@CreateGroupsTable, NextID);
 
-    Exec('DROP INDEX aID ON ImageTable', 1);
-    Exec('DROP INDEX aFolderCRC ON ImageTable', 2);
-    Exec('DROP INDEX aStrThCrc ON ImageTable', 3);
+    if not TableExists('Objects') then
+    CreateTable(@CreateObjectsTable, NextID);
 
-    AlterColumn('ID Autoincrement NOT NULL', 4);
-    AlterColumn('Name TEXT(255) NOT NULL', 5);
-    AlterColumn('FFileName Memo NOT NULL', 6);
-    AlterColumn('Comment Memo NOT NULL', 7);
-    AlterColumn('IsDate Logical NOT NULL', 8);
-    AlterColumn('DateToAdd Date NOT NULL', 9);
-    AlterColumn('Rating INTEGER NOT NULL', 10);
-    AlterColumn('Thum LONGBINARY NOT NULL', 11);
-    AlterColumn('FileSize INTEGER NOT NULL', 12);
-    AlterColumn('KeyWords Memo NOT NULL', 13);
-    AlterColumn('Groups Memo NOT NULL', 14);
-    AlterColumn('StrTh Character(100) NOT NULL', 15);
+    if not TableExists('ObjectMapping') then
+      CreateTable(@CreateObjectMappingTable, NextID);
 
-    RemoveNull('StrThCrc', '0', 16);
-    AlterColumn('StrThCrc INTEGER NOT NULL', 17);
-    AlterColumn('Attr INTEGER NOT NULL', 18);
-    AlterColumn('Access INTEGER NOT NULL', 19);
-    AlterColumn('Width INTEGER NOT NULL', 20);
-    AlterColumn('Height INTEGER NOT NULL', 21);
-    AlterColumn('Include Logical NOT NULL', 22);
-    AlterColumn('Links Memo NOT NULL', 23);
-    AlterColumn('aTime TIME NOT NULL', 24);
-    AlterColumn('IsTime Logical NOT NULL', 25);
-    AlterColumn('FolderCRC INTEGER NOT NULL', 26);
-    AlterColumn('Rotated INTEGER NOT NULL', 27);
+    Exec('DROP INDEX aID ON ImageTable', NextID);
+    Exec('DROP INDEX aFolderCRC ON ImageTable', NextID);
+    Exec('DROP INDEX aStrThCrc ON ImageTable', NextID);
 
-    DropColumn('Owner', 28);
-    DropColumn('Collection', 29);
-    DropColumn('Colors', 30);
+    AlterColumn('ID Autoincrement NOT NULL', NextID);
+    AlterColumn('Name TEXT(255) NOT NULL', NextID);
+    AlterColumn('FFileName Memo NOT NULL', NextID);
+    AlterColumn('Comment Memo NOT NULL', NextID);
+    AlterColumn('IsDate Logical NOT NULL', NextID);
+    AlterColumn('DateToAdd Date NOT NULL', NextID);
+    AlterColumn('Rating INTEGER NOT NULL', NextID);
+    AlterColumn('Thum LONGBINARY NOT NULL', NextID);
+    AlterColumn('FileSize INTEGER NOT NULL', NextID);
+    AlterColumn('KeyWords Memo NOT NULL', NextID);
+    AlterColumn('Groups Memo NOT NULL', NextID);
+    AlterColumn('StrTh Character(100) NOT NULL', NextID);
 
-    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID) WITH PRIMARY DISALLOW NULL', 31);
-    Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL', 32);
-    Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL', 33);
+    RemoveNull('StrThCrc', '0', NextID);
+    AlterColumn('StrThCrc INTEGER NOT NULL', NextID);
+    AlterColumn('Attr INTEGER NOT NULL', NextID);
+    AlterColumn('Access INTEGER NOT NULL', NextID);
+    AlterColumn('Width INTEGER NOT NULL', NextID);
+    AlterColumn('Height INTEGER NOT NULL', NextID);
+    AlterColumn('Include Logical NOT NULL', NextID);
+    AlterColumn('Links Memo NOT NULL', NextID);
+    AlterColumn('aTime TIME NOT NULL', NextID);
+    AlterColumn('IsTime Logical NOT NULL', NextID);
+    AlterColumn('FolderCRC INTEGER NOT NULL', NextID);
+    AlterColumn('Rotated INTEGER NOT NULL', NextID);
 
-    AddColumn('[Colors] TEXT(50) NOT NULL', 34);
-    AddColumn('PreviewSize INTEGER NOT NULL DEFAULT 0', 35);
-    AddColumn('ViewCount INTEGER NOT NULL DEFAULT 0', 36);
-    AddColumn('Histogram LONGBINARY NULL', 37);
-    AddColumn('DateUpdated Date NOT NULL', 38);
+    DropColumn('Owner', NextID);
+    DropColumn('Collection', NextID);
+    DropColumn('Colors', NextID);
 
-    RemoveNull('Colors', '""', 39);
-    RemoveNull('PreviewSize', '0', 40);
-    RemoveNull('ViewCount', '0', 41);
-    RemoveNull('DateUpdated', '"01-01-2000"', 42);
+    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID) WITH PRIMARY DISALLOW NULL', NextID);
+    Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL', NextID);
+    Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL', NextID);
+
+    AddColumn('[Colors] TEXT(50) NOT NULL', NextID);
+    AddColumn('PreviewSize INTEGER NOT NULL DEFAULT 0', NextID);
+    AddColumn('ViewCount INTEGER NOT NULL DEFAULT 0', NextID);
+    AddColumn('Histogram LONGBINARY NULL', NextID);
+    AddColumn('DateUpdated Date NOT NULL', NextID);
+
+    RemoveNull('Colors', '""', NextID);
+    RemoveNull('PreviewSize', '0', NextID);
+    RemoveNull('ViewCount', '0', NextID);
+    RemoveNull('DateUpdated', '"01-01-2000"', NextID);
+
+    try
+      if Errors.Count > 0 then
+        Errors.SaveToFile(CollectionFile + '.errors.log');
+    except
+      //ignore exceptions
+    end;
   finally
     FreeDS(FQuery);
+    F(Errors);
   end;
 
   UpdateCollectionVersion(CollectionFile, 3);
@@ -628,6 +692,8 @@ begin
         IC.AddParameter(TIntegerParameter.Create('ThSizePanelPreview', 100));
         IC.AddParameter(TIntegerParameter.Create('ThImageSize', 200));
         IC.AddParameter(TIntegerParameter.Create('ThHintSize', 400));
+
+        IC.Execute;
       finally
         F(IC);
       end;

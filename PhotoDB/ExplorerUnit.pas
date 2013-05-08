@@ -3067,7 +3067,14 @@ begin
   DBIndex := TMenuItem(Sender).Tag;
 
   if FDatabases.Count > DBIndex then
-    DBManager.SelectDB(Self, FDatabases[DBIndex].Path);
+  begin
+    try
+      DBManager.SelectDB(Self, FDatabases[DBIndex].Path);
+    except
+      on e: Exception do
+        MessageBoxDB(Handle, e.Message, L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end;
+  end;
 end;
 
 procedure TExplorerForm.ChangedDBDataByID(Sender: TObject; ID: Integer;
@@ -3853,8 +3860,7 @@ begin
   NewFileName := AnsiLowerCase(S + FolderName);
   if not CreateDir(S + FolderName) then
   begin
-    MessageBoxDB(Handle, Format(L('Unable to create directory %s!'), [S + FolderName]), L('Error'), TD_BUTTON_OK,
-      TD_ICON_ERROR);
+    MessageBoxDB(Handle, Format(L('Unable to create directory %s!'), [S + FolderName]), L('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
     Exit;
   end;
 end;
