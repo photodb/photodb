@@ -133,7 +133,7 @@ begin
   if not WithSubflders then
     SetStrParam(Query, 1, '%' + LocationFolder + '%\%');
 
-  Query.Active := True;
+  OpenDS(Query);
 end;
 
 procedure TSaveQueryThread.SaveLocation(Src, Dest: TDataSet);
@@ -201,7 +201,7 @@ begin
 
         FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
         try
-          FTable.Active := True;
+          OpenDS(FTable);
 
           DBFolder := ExtractFilePath(FDBFileName);
 

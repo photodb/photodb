@@ -130,7 +130,7 @@ begin
 
     SetSQL(FQuery, FromDB);
     try
-      FQuery.Active := True;
+      OpenDS(FQuery);
     except
       Setlength(Result.Ids, 0);
       Setlength(Result.FileNames, 0);
@@ -206,7 +206,7 @@ begin
     SetStrParam(FQuery, I, ThImS[I - L].ImTh);
 
   try
-    FQuery.Active := True;
+    OpenDS(FQuery);
   except
     FreeDS(FQuery);
     for I := 0 to L - 1 do
@@ -380,7 +380,7 @@ begin
     OldImageThCode := CodeExtID(OldImageTh);
     SetSQL(FQuery, 'Select ID, Links from $DB$ where Links like "%' + OldImageThCode + '%"');
     try
-      FQuery.Active := True;
+      OpenDS(FQuery);
     except
       Exit;
     end;

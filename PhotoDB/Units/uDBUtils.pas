@@ -230,7 +230,7 @@ begin
       SetSQL(FQuery, 'Select ID, FFileName From $DB$ where (FFileName Like :FolderA)');
       SetStrParam(FQuery, 0, '%' + DBFolder + '%');
 
-      FQuery.Active := True;
+      OpenDS(FQuery);
       FQuery.First;
       if FQuery.RecordCount > 0 then
         if Ask or (ID_OK = MessageBoxDB(GetActiveWindow, Format(TA('This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?', 'Explorer'),
@@ -621,7 +621,7 @@ begin
 
         SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Folder, False)));
 
-        FQuery.Active := True;
+        OpenDS(FQuery);
         FQuery.First;
         for I := 1 to FQuery.RecordCount do
         begin

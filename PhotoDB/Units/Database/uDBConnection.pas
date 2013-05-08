@@ -9,6 +9,7 @@ uses
   System.Classes,
   System.SyncObjs,
   System.Win.ComObj,
+  System.Variants,
   Data.DB,
   Data.Win.ADODB,
 
@@ -58,6 +59,7 @@ type
     FIsolationLevel: TDBIsolationLevel;
     FIsBusy: Boolean;
     FADOConnection: TADOConnectionEx;
+    FRefreshDate: TDateTime;
   public
     constructor Create(FileName: string; IsolationLevel: TDBIsolationLevel);
     destructor Destroy; override;
@@ -157,7 +159,7 @@ procedure AssignParam(Query: TDataSet; Index: Integer; Value: TPersistent);
 
 procedure CreateMSAccessDatabase(FileName: string);
 procedure TryRemoveConnection(FileName: string; Delete: Boolean = False);
-procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef);
+procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef; BackupFileName: string = '');
 
 function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
 function NormalizeDBString(S: string): string;
@@ -382,7 +384,7 @@ end;
 procedure RemoveADORef(ADOConnection: TADOConnectionEx);
 const
   MaxConnectionPoolRead = 5;
-  MaxConnectionPoolWrite = 0;
+  MaxConnectionPoolWrite = 5;
   MaxConnectionPoolBackgroundWrite = 5;
 
 var
@@ -448,6 +450,26 @@ begin
   end;
 end;
 
+procedure FlushJROCache(ConnectionObject: Variant);
+var
+  fJetEngine: Variant;
+begin
+  try
+      // First time through we need to create the OLE object
+    if VarIsEmpty(fJetEngine) then
+      fJetEngine := CreateOleObject ('JRO.JetEngine') ;
+
+    if VarIsEmpty(fJetEngine) then
+      Exit;
+
+    // "Ensure that my read cache is consistent with the database on disk"
+    fJetEngine.RefreshCache(ConnectionObject);
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
+end;
+
 procedure CloseReadOnlyConnections(ADOConnection: TADOConnectionEx);
 var
   I: Integer;
@@ -481,7 +503,7 @@ begin
   begin
     Result := True;
     try
-      DS.Active := True;
+      OpenDS(DS);
     except
       on e: Exception do
       begin
@@ -505,6 +527,10 @@ end;
 function OpenDS(DS: TDataSet): Boolean;
 begin
   try
+    //refresh cache because of multi-connection work
+    //TODO: check time for this line
+    FlushJROCache(TCustomADODataSet(DS).Connection.ConnectionObject);
+
     DS.Open;
     Result := True;
   except
@@ -583,7 +609,15 @@ procedure ExecSQL(SQL: TDataSet);
 begin
   if (SQL is TADOQuery) then
   begin
-    (SQL as TADOQuery).ExecSQL;
+    TCustomADODataSet(SQL).Connection.BeginTrans;
+    try
+      (SQL as TADOQuery).ExecSQL;
+    except
+      TCustomADODataSet(SQL).Connection.RollbackTrans;
+      raise;
+    end;
+    TCustomADODataSet(SQL).Connection.CommitTrans;
+    FlushJROCache(TCustomADODataSet(SQL).Connection.ConnectionObject);
     CloseReadOnlyConnections((SQL as TADOQuery).Connection as TADOConnectionEx);
   end;
 end;
@@ -726,7 +760,7 @@ begin
     begin
       TempPath := ExtractFilePath(DatabaseName);
       if TempPath = '' then
-        TempPath:=GetCurrentDir;
+        TempPath := GetCurrentDir;
 
       Winapi.Windows.GetTempFileName(PWideChar(TempPath), 'mdb' , 0, TempName);
       Name := StrPas(TempName);
@@ -747,7 +781,7 @@ begin
       begin
         while PackInProgress do
         begin
-          Sleep(50);
+          Sleep(100);
           if Assigned(Progress) then
           begin
             CurrentSize := GetFileSizeByName(Name);
@@ -776,22 +810,33 @@ begin
       PackInProgress := False;
     end;
 
-    if DestDatabaseName='' then
+    if DestDatabaseName = '' then
     begin
       DeleteFile(DatabaseName); //то удаляем не упакованную базу
       RenameFile(Name, DatabaseName); // и переименовываем упакованную базу
     end;
   except
-   on e: Exception do
-     EventLog(':CompactDatabase_JRO() throw exception: ' + e.Message);
+    on e: Exception do
+      EventLog(':CompactDatabase_JRO() throw exception: ' + e.Message);
   end;
 end;
 
-procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef);
+procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef; BackupFileName: string = '');
+var
+  TempFileName: string;
 begin
   TryRemoveConnection(FileName, True);
 
-  CompactDatabase_JRO(FileName, '', '', Progress);
+  if BackupFileName = '' then
+    CompactDatabase_JRO(FileName, '', '', Progress)
+  else
+  begin
+    TempFileName := GetTempFileName;
+
+    CompactDatabase_JRO(FileName, TempFileName, '', Progress);
+
+    //TODO: logic for temp database
+  end;
 end;
 
 { TADOConnections }
@@ -900,6 +945,7 @@ begin
   FThreadID := GetCurrentThreadId;
   FreeOnClose := False;
   FIsBusy := True;
+  FRefreshDate := Now;
 
   FADOConnection := TADOConnectionEx.Create(nil);
   FADOConnection.FileName := FileName;

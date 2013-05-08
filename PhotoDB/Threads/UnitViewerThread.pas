@@ -491,7 +491,7 @@ begin
       SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FInfo.FileName, True))
           + ' AND FFileName LIKE :FFileName');
       SetStrParam(Query, 0, AnsiLowerCase(FInfo.FileName));
-      Query.Active := True;
+      OpenDS(Query);
       if Query.RecordCount <> 0 then
       begin      
         F(FInfo);

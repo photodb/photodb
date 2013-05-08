@@ -1639,7 +1639,7 @@ begin
           SetStrParam(Query, 0, '%' + NormalizeDBStringLike(DBFolder) + '%');
           SetStrParam(Query, 1, '%' + NormalizeDBStringLike(DBFolder) + '%\%');
 
-          Query.Active := True;
+          OpenDS(Query);
 
           for I := 1 to 4 do
             RecNos[I] := 0;
@@ -2559,7 +2559,7 @@ begin
       SetIntParam(FQuery, 0, GetPathCRC(FUpdaterInfo.FileName, True));
       SetStrParam(FQuery, 1, AnsiLowercase(ExtractFileName(FUpdaterInfo.FileName)));
       try
-        FQuery.Active := True;
+        OpenDS(FQuery);
       except
         on e: Exception do
           EventLog(e.Message);

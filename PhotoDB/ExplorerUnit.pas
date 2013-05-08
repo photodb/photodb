@@ -178,6 +178,7 @@ uses
   uEXIFDisplayControl,
   uProgramStatInfo,
   uMonthCalendar,
+  uCollectionUtils,
   uDatabaseInfoControl,
   uLinkListEditorFolders,
   uLinkListEditorDatabases;
@@ -1462,7 +1463,6 @@ begin
   MouseDowned := False;
   PopupHandled := False;
 
-  ElvMain.BackGround.Enabled := True;
   ElvMain.BackGround.Tile := False;
   ElvMain.BackGround.AlphaBlend := True;
   ElvMain.BackGround.OffsetTrack := True;
@@ -7721,6 +7721,8 @@ begin
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
   OldDir := GetCurrentPath;
   Path := WPath.Path;
+
+  ElvMain.BackGround.Enabled := IsFileInCollectionDirectories(FContext.CollectionFileName, Path);
 
   UpdateCurrentHistoryFocusedItem;
 

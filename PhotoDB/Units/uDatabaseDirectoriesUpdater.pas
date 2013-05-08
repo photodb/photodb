@@ -53,6 +53,7 @@ uses
   uLockedFileNotifications,
   uCDMappingTypes,
   uCollectionEvents,
+  uCollectionUtils,
   uSettings;
 
 type
@@ -86,20 +87,6 @@ type
     destructor Destroy; override;
     procedure Execute(Items: TArray<TAddTask>);
     property Data: TMediaItem read FData;
-  end;
-
-  TDatabaseDirectory = class(TDataObject)
-  private
-    FPath: string;
-    FName: string;
-    FSortOrder: Integer;
-  public
-    constructor Create(Path, Name: string; SortOrder: Integer);
-    function Clone: TDataObject; override;
-    procedure Assign(Source: TDataObject); override;
-    property Path: string read FPath write FPath;
-    property Name: string read FName write FName;
-    property SortOrder: Integer read FSortOrder write FSortOrder;
   end;
 
   TDatabaseDirectoriesUpdater = class(TDBThread)
@@ -201,9 +188,6 @@ type
 
 function UpdaterStorage: TUpdaterStorage;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
-procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
-procedure SaveDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
-function IsFileInCollectionDirectories(CollectionFile: string; FileName: string): Boolean;
 
 implementation
 
@@ -236,113 +220,6 @@ begin
   Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.errors.cache';
 end;
 
-procedure ReadDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
-var
-  Reg: TBDRegistry;
-  FName, FPath, FIcon: string;
-  I, SortOrder: Integer;
-  S: TStrings;
-  DD: TDatabaseDirectory;
-
-begin
-  FolderList.Clear;
-
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories', True);
-    S := TStringList.Create;
-    try
-      Reg.GetKeyNames(S);
-
-      for I := 0 to S.Count - 1 do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + S[I], True);
-
-        FName := '';
-        FPath := '';
-        FIcon := '';
-        SortOrder := 0;
-        if Reg.ValueExists('Path') then
-          FPath := Reg.ReadString('Path');
-        if Reg.ValueExists('SortOrder') then
-          SortOrder := Reg.ReadInteger('SortOrder');
-
-        if (S[I] <> '') and (FPath <> '') then
-        begin
-          DD := TDatabaseDirectory.Create(FPath, S[I], SortOrder);
-          FolderList.Add(DD);
-        end;
-      end;
-    finally
-      F(S);
-    end;
-  finally
-    F(Reg);
-  end;
-
-  if (FolderList.Count = 0) then
-  begin
-    DD := TDatabaseDirectory.Create(GetMyPicturesPath, TA('My Pictures', 'Explorer'), 0);
-    FolderList.Add(DD);
-    SaveDatabaseDirectories(FolderList, CollectionFile);
-  end;
-
-  FolderList.Sort(TComparer<TDatabaseDirectory>.Construct(
-     function (const L, R: TDatabaseDirectory): Integer
-     begin
-       Result := L.SortOrder - R.SortOrder;
-     end
-  ));
-end;
-
-procedure SaveDatabaseDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
-var
-  Folder: TDatabaseDirectory;
-  Reg: TBDRegistry;
-  S: TStrings;
-  I: Integer;
-begin
-  Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
-  try
-    Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories', True);
-    S := TStringList.Create;
-    try
-      Reg.GetKeyNames(S);
-      for I := 0 to S.Count - 1 do
-        Reg.DeleteKey(S[I]);
-
-      for Folder in FolderList do
-      begin
-        Reg.CloseKey;
-        Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + Folder.Name, True);
-
-        Reg.WriteString('Path', Folder.Path);
-        Reg.WriteInteger('SortOrder', Folder.SortOrder);
-      end;
-    finally
-      F(S);
-    end;
-  finally
-    F(Reg);
-  end;
-end;
-
-function IsFileInCollectionDirectories(CollectionFile: string; FileName: string): Boolean;
-var
-  FolderList: TList<TDatabaseDirectory>;
-  I: Integer;
-begin
-  FolderList := TList<TDatabaseDirectory>.Create;
-  try
-    ReadDatabaseDirectories(FolderList, FileName);
-
-    for I := 0 to FolderList.Count - 1 do
-
-  finally
-    F(FolderList);
-  end;
-end;
 
 procedure LoadDirectoriesState(FileName: string; DirectoryCache: TDictionary<string, Int64>);
 var
@@ -431,30 +308,6 @@ begin
   TDatabaseDirectoriesUpdater.Create(DBManager.DBContext, DirectoryPath);
 end;
 
-{ TDatabaseDirectory }
-
-procedure TDatabaseDirectory.Assign(Source: TDataObject);
-var
-  DD: TDatabaseDirectory;
-begin
-  DD := Source as TDatabaseDirectory;
-  Self.Path := DD.Path;
-  Self.Name := DD.Name;
-  Self.SortOrder := DD.SortOrder;
-end;
-
-function TDatabaseDirectory.Clone: TDataObject;
-begin
-  Result := TDatabaseDirectory.Create(Path, Name, SortOrder);
-end;
-
-constructor TDatabaseDirectory.Create(Path, Name: string; SortOrder: Integer);
-begin
-  Self.Path := Path;
-  Self.Name := Name;
-  Self.SortOrder := SortOrder;
-end;
-  
 { TDatabaseDirectoriesUpdater }
 
 function TDatabaseDirectoriesUpdater.CanAddFileAutomatically(
@@ -592,7 +445,7 @@ begin
         //list of directories to scan
         FolderList := TList<TDatabaseDirectory>.Create;
         try
-          ReadDatabaseDirectories(FolderList, FDBContext.CollectionFileName);
+          ReadDatabaseSyncDirectories(FolderList, FDBContext.CollectionFileName);
           for DD in FolderList do
             Directories.Enqueue(DD.Path);
 
@@ -789,7 +642,7 @@ begin
   //list of directories to watch
   FolderList := TList<TDatabaseDirectory>.Create;
   try
-    ReadDatabaseDirectories(FolderList, FDBContext.CollectionFileName);
+    ReadDatabaseSyncDirectories(FolderList, FDBContext.CollectionFileName);
     for DD in FolderList do
     begin
       Watch := TWachDirectoryClass.Create;

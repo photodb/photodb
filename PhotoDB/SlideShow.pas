@@ -1755,7 +1755,7 @@ begin
       SetSQL(FQuery, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
           + ' AND FFileName LIKE :FFileName');
       SetStrParam(FQuery, 0, NormalizeDBStringLike(AnsiLowerCase(FileName)));
-      FQuery.Active := True;
+      OpenDS(FQuery);
       if FQuery.RecordCount <> 0 then
       begin
         FQuery.First;
@@ -1890,7 +1890,7 @@ begin
     SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FileName, True))
         + ' AND FFileName LIKE :FFileName');
     SetStrParam(DS, 0, AnsiLowerCase(FileName));
-    DS.Active := True;
+    OpenDS(DS);
     if DS.RecordCount = 0 then
       Exit;
     CurrentInfo[FileNo] := TMediaItem.CreateFromDS(DS);

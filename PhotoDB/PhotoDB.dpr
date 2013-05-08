@@ -10,7 +10,7 @@ program PhotoDB;
 
 uses
   FastMM4 in 'External\FastMM\FastMM4.pas',
-  FastMM4Messages in 'External\FastMM\FastMM4Messages.pas',
+  FastMM4Messages in 'External\FastMM\FastMM4Messages.pas' ,
   {$IFDEF DEBUG}
   ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
   {$ENDIF}
@@ -384,7 +384,8 @@ uses
   uImageViewCount in 'Units\uImageViewCount.pas',
   uFormDBPreviewSettings in 'uFormDBPreviewSettings.pas' {FormDBPreviewSize},
   uDatabaseInfoControl in 'Units\Controls\uDatabaseInfoControl.pas',
-  uFormLinkItemEditor in 'uFormLinkItemEditor.pas' {FormLinkItemEditor};
+  uFormLinkItemEditor in 'uFormLinkItemEditor.pas' {FormLinkItemEditor},
+  uCollectionUtils in 'Units\Database\uCollectionUtils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -499,7 +500,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

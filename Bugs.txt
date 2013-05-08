@@ -21,16 +21,16 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
-- Properties old fileds remove;
+-> Backup original DB during update;
 - Sync glogal settings;
-- Sync default value issues;
+- property links -> popup menu doesn't work;
+- Properties old fileds remove;
+
 - Show background only for collection directories;
 - Slide show interval control issue;
 - show deleted/duplicate pictures;
-- Backup original DB during update;
 - AV on full screen, menu multi-monitor position;
 - Info with long file name;
-- property links -> popup menu doesn't work;
 - Use png/jpg for collection icons;
 - Properties tabs redraw issue;
 

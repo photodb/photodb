@@ -27,7 +27,7 @@ uses
   uFormInterfaces,
   uResources,
   uShellIntegration,
-  uDatabaseDirectoriesUpdater,
+  uCollectionUtils,
   uLinkListEditorFolders,
   uIconUtils;
 

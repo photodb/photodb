@@ -39,7 +39,7 @@ uses
   uTranslate,
   uShellIntegration,
   uFormInterfaces,
-  uDatabaseDirectoriesUpdater,
+  uCollectionUtils,
   uLinkListEditorUpdateDirectories;
 
 type
@@ -89,10 +89,10 @@ begin
   try
     Data := TList<TDataObject>.Create;
     try
-      ReadDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
+      ReadDatabaseSyncDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
 
       if LinkItemSelectForm.Execute(480, TA('Directories synchronization with collection', 'CollectionSettings'), Data, Editor) then
-        SaveDatabaseDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
+        SaveDatabaseSyncDirectories(TList<TDatabaseDirectory>(Data), CollectionFile);
 
     finally
       FreeList(Data);

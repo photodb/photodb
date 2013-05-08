@@ -76,7 +76,7 @@ begin
       SetSQL(DS, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FFileName, True)) + ' AND FFileName LIKE :FFileName');
       SetStrParam(DS, 0, AnsiLowerCase(FFileName));
       try
-        DS.Active := True;
+        OpenDS(DS);
       except
         SetNoInfo;
         Exit;

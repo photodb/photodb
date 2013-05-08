@@ -612,7 +612,7 @@ begin
     try
       ReadOnlyQuery(WorkQuery);
       SetSQL(WorkQuery, 'SELECT * FROM $DB$ WHERE ID=' + IntToStr(ID));
-      WorkQuery.Active := True;
+      OpenDS(WorkQuery);
       if WorkQuery.RecordCount = 0 then
         No_file := True;
       if not No_file then
@@ -1474,7 +1474,7 @@ begin
 
         SetSQL(WorkQuery, SQL);
         try
-          WorkQuery.Active := True;
+          OpenDS(WorkQuery);
         except
           on e: Exception do
           begin

@@ -2342,6 +2342,7 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\ExtDlgs.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Mustangpeak\EasyListview\Source\EasyRes.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ProgressActionUnit.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormLinkItemSelector.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\SPIN.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Controls\virtual-treeview\Source\VirtualTrees.res */
 /* D:\Dmitry\Dmitry\Ratingres.res */
@@ -2375,7 +2376,6 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormPersonSuggest.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormCreatePerson.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitGroupReplace.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormLinkItemSelector.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FormManegerUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FloatPanelFullScreen.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SlideShowFullScreen.dfm */

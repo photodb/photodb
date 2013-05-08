@@ -40,6 +40,7 @@ uses
   uRuntime,
   uStringUtils,
   uSettings,
+  uCollectionUtils,
   uProgramStatInfo,
   uVCLHelpers;
 
@@ -336,7 +337,6 @@ function TDBManager.SelectDB(Caller: TDBForm; CollectionFileName: string): Boole
 var
   EventInfo: TEventValues;
 begin
-  Result := False;
   if not FileExists(CollectionFileName) then
     raise Exception.Create(FormatEx(TA('Can''t find collection file: {0}!', 'Errors'), [CollectionFileName]));
 
@@ -406,19 +406,44 @@ function TDBManager.CreateSampleDefaultCollection: IDBContext;
 var
   Collections: TList<TDatabaseInfo>;
   CollectionFile: string;
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
 begin
   //if program was uninstalled with registered databases - restore database or create new database
-  CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection') + '.photodb';
+  CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection', 'CollectionSettings') + '.photodb';
   if not FileExistsSafe(CollectionFile) then
+  begin
+    CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('Photos - {0}', 'CollectionSettings') + '.photodb';
     CreateExampleDB(CollectionFile);
+  end;
 
   Collections := TList<TDatabaseInfo>.Create;
   try
     ReadUserCollections(Collections);
-    Collections.Add(TDatabaseInfo.Create(TA('My collection'), CollectionFile, Application.ExeName + ',0', '', Collections.Count));
+    Collections.Add(TDatabaseInfo.Create(FormatEx(TA('Photos - {0}', 'CollectionSettings'), [GetWindowsUserName]), CollectionFile, Application.ExeName + ',0', '', Collections.Count));
     SaveUserCollections(Collections);
 
     Result := SetDataBase(CollectionFile);
+
+    if Result <> nil then
+    begin
+      SettingsRepository := Result.Settings;
+
+      Settings := SettingsRepository.Get;
+      try
+        if Settings.Name = '' then
+        begin
+          Settings.Name := TA('Photos - {0}', 'CollectionSettings');
+          Settings.Description := TA('My collection', 'CollectionSettings');
+
+          SettingsRepository.Update(Settings);
+        end;
+      finally
+        F(Settings);
+      end;
+
+      CheckDefaultSyncDirectoryForCollection(CollectionFile);
+    end;
 
   finally
     FreeList(Collections);

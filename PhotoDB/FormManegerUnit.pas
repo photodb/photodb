@@ -95,6 +95,7 @@ type
     destructor Destroy; override;
     procedure Run;
     procedure RunInBackground;
+    procedure MarkApplicationAsClosed;
     procedure CloseApp(Sender: TObject);
     property Count: Integer read GetCount;
     property Forms[Index: Integer]: TForm read GetFormByIndex; default;
@@ -433,8 +434,7 @@ begin
   Application.Terminate;
   TimerTerminateAppHandle := SetTimer(0, TIMER_TERMINATE_APP, 100, @TimerProc);
 
-  if not GetParamStrDBBool('/uninstall') then
-    AppSettings.WriteProperty('Starting', 'ApplicationStarted', '0');
+  MarkApplicationAsClosed;
 
   EventLog(':TFormManager::ExitApplication()/OK...');
 end;
@@ -481,6 +481,12 @@ end;
 function TFormManager.GetFormID: string;
 begin
   Result := 'System';
+end;
+
+procedure TFormManager.MarkApplicationAsClosed;
+begin
+  if not GetParamStrDBBool('/uninstall') then
+    AppSettings.WriteProperty('Starting', 'ApplicationStarted', '0');
 end;
 
 procedure TFormManager.AeMainException(Sender: TObject; E: Exception);

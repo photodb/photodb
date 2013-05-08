@@ -1182,6 +1182,7 @@ begin
         ShellExecuteInfo.nShow := SW_SHOWNORMAL;
         if ShellExecuteEx(@ShellExecuteInfo) then
         begin
+          FormManager.MarkApplicationAsClosed;
           Close;
           FormManager.CloseApp(Self);
         end;
