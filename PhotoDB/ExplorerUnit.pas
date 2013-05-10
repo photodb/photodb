@@ -4472,7 +4472,7 @@ begin
     WllExtendedSearchGroups.PerformMouseWheel(Msg.WParam, Handled);
   end;
 
-  if TsMediaPreview.Visible and (PcRightPreview.ActivePageIndex = Integer(ertsPreview)) then
+  if PnRight.Visible and TsMediaPreview.Visible and (PcRightPreview.ActivePageIndex = Integer(ertsPreview)) then
   begin
     if (Msg.message = WM_MOUSEWHEEL) then
     begin

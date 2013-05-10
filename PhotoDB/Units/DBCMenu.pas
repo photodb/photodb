@@ -133,6 +133,8 @@ type
     function CheckDBReadOnly: Boolean;
   end;
 
+procedure WriteUserTools(Data: TList<TExecutableInfo>);
+
 implementation
 
 uses
@@ -721,7 +723,10 @@ begin
   end;
 
   if Data.Count = 0 then
+  begin
     LoadDefaultExecutableList(Data);
+    WriteUserTools(Data);
+  end;
 
   Data.Sort(TComparer<TExecutableInfo>.Construct(
      function (const L, R: TExecutableInfo): Integer

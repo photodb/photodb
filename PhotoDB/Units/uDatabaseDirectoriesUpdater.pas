@@ -1120,11 +1120,81 @@ end;
 
 function TUpdaterStorage.Take<T>(Count: Integer): TArray<T>;
 var
-  I: Integer;
+  IsLoadingList: Boolean;
+  I, Index: Integer;
   PI: PInteger;
   FItems: TList<T>;
+  FItemsNotReady: TList<T>;
+  Task: TDatabaseTask;
 begin
-  FSync.Enter;
+  FItems := TList<T>.Create;
+  FItemsNotReady := TList<T>.Create;
+  try
+    Index := 0;
+    IsLoadingList := True;
+
+    while IsLoadingList do
+    begin
+
+      FSync.Enter;
+      try
+        for I := Index to FTasks.Count - 1 do
+        begin
+          Inc(Index);
+          if (FTasks[I] is T) then
+          begin
+            FItems.Add(FTasks[I]);
+            FTasks.Delete(I);
+
+            if FItems.Count = Count then
+              Break;
+          end;
+
+          if I = FTasks.Count - 1 then
+            IsLoadingList := False;
+        end;
+
+      finally
+        FSync.Leave;
+      end;
+
+      for I := FItems.Count - 1 downto 0 do
+      begin
+        Task := FItems[I];
+        if not Task.IsPrepaired then
+        begin
+          FItemsNotReady.Add(Task);
+          FItems.Remove(Task);
+        end;
+
+        if not FileExistsSafe(Task.FileName) then
+        begin
+          Task.Free;
+          FItems.Delete(I);
+
+          Continue;
+        end;
+      end;
+
+      FSync.Enter;
+      try
+        for I := 0 to FItemsNotReady.Count - 1 do
+          FTasks.Insert(0, FItemsNotReady[I]);
+      finally
+        FSync.Leave;
+      end;
+
+      if FItems.Count = Count then
+        IsLoadingList := False;
+    end;
+
+    Result := FItems.ToArray();
+  finally
+    F(FItems);
+    F(FItemsNotReady);
+  end;
+
+  {FSync.Enter;
   try
     FItems := TList<T>.Create;
     try
@@ -1157,7 +1227,7 @@ begin
     end;
   finally
     FSync.Leave;
-  end;
+  end; }
 end;
 
 function TUpdaterStorage.TakeOne<T>: T;

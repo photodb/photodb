@@ -1704,6 +1704,7 @@ begin
   end;
 end;
 
+{$OVERFLOWCHECKS OFF}
 procedure DrawShadowToImage(Dest32, Src: TBitmap; Transparenty: Byte = 0);
 var
   I, J: Integer;
@@ -1711,7 +1712,7 @@ var
   PS32: PARGB32;
   PDA: array of PARGB32;
   SH, SW: Integer;
-  AddrLineD, DeltaD, AddrD: NativeInt;
+  AddrLineD, DeltaD, AddrD, AddrS: NativeInt;
   PD: PRGB32;
   W, W1: Byte;
 
@@ -1826,14 +1827,13 @@ begin
     begin
       PS := Src.ScanLine[I];
       AddrD := AddrLineD + 4; //from second fixel
+      AddrS := NativeInt(PS);
       for J := 0 to Src.Width - 1 do
       begin
-        PD := PRGB32(AddrD);
-        PD.R := PS[J].R;
-        PD.G := PS[J].G;
-        PD.B := PS[J].B;
-        PD.L := 255;
-        AddrD := AddrD + 4;
+        PInteger(AddrD)^ := PInteger(AddrS)^ or $FF000000;
+
+        Inc(AddrD, 4);
+        Inc(AddrS, 3);
       end;
       AddrLineD := AddrLineD + DeltaD;
     end;
@@ -1859,6 +1859,7 @@ begin
     end;
   end;
 end;
+{$OVERFLOWCHECKS ON}
 
 procedure DrawText32Bit(Bitmap32: TBitmap; Text: string; Font: TFont; ARect: TRect; DrawTextOptions: Cardinal);
 var
