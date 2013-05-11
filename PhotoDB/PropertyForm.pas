@@ -31,6 +31,7 @@ uses
   Vcl.Imaging.pngimage,
   Data.DB,
 
+  Dmitry.Utils.System,
   Dmitry.Utils.Files,
   Dmitry.Controls.Base,
   Dmitry.Controls.Rating,
@@ -70,6 +71,7 @@ uses
   uDBForm,
   uInterfaces,
   uConstants,
+  uTranslate,
   uShellIntegration,
   uGraphicUtils,
   uDBBaseTypes,
@@ -91,6 +93,7 @@ uses
   uStringUtils,
   uVCLHelpers,
   uThemesUtils,
+  uColorUtils,
   uMachMask,
   uExifInfo,
   uDBIcons,
@@ -203,10 +206,6 @@ type
     TimeLabel: TLabel;
     RatingLabel1: TLabel;
     RatingEdit: TRating;
-    CollectionMemo: TMemo;
-    CollectionLabel: TLabel;
-    OwnerLabel: TLabel;
-    OwnerMemo: TMemo;
     LabelPath: TMemo;
     Label4: TLabel;
     LabelName1: TLabel;
@@ -235,6 +234,8 @@ type
     ImSearch: TImage;
     WedGroupsFilter: TWatermarkedEdit;
     TmrFilter: TTimer;
+    LbColors: TLabel;
+    LbViewCount: TLabel;
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -346,6 +347,7 @@ type
     procedure LockImput;
     procedure UnLockImput;
     procedure LoadLanguage;
+    procedure DrawColors(Colors: string);
     function ReadCHInclude: Boolean;
     function ReadCHLinks: Boolean;
     function ReadCHDate: Boolean;
@@ -715,14 +717,14 @@ begin
       SizeLabel.Text := SizeInText(DataRecord.FileSize);
       Widthmemo.Text := IntToStr(DA.Width) + L('px.');
       Heightmemo.Text := IntToStr(DA.Height) + L('px.');
+      LbViewCount.Caption := FormatEx(L('Views: {0}'), [DA.ViewCount]);
+      DrawColors(DataRecord.Colors);
+      LbColors.Caption := L('Colors') + ':';
 
       RatingEdit.Rating := DataRecord.Rating;
       RatingEdit.Islayered := False;
       DateEdit.Enabled := True;
       TimeEdit.Enabled := True;
-
-      CollectionMemo.Text := 'TODO: DELETE';
-      OwnerMemo.Text := 'TODO: DELETE'; //TActivationManager.Instance.ActivationUserName;
 
       if YearOf(DataRecord.Date) > cMinEXIFYear then
         DateEdit.DateTime := DataRecord.Date
@@ -744,6 +746,7 @@ begin
 
       F(FNowGroups);
       FNowGroups := TGroups.CreateFromString(DataRecord.Groups);
+      F(FOldGroups);
       FOldGroups := FNowGroups.Clone;
 
       FMenuRecord := TMediaItem.CreateFromDS(WorkQuery);
@@ -1209,10 +1212,7 @@ begin
 
   RatingEdit.Rating := 0;
   ImgReloadInfo.Visible := False;
-  CollectionMemo.Text := L('Not available');
-  CollectionMemo.Readonly := True;
   IDLabel.Text := L('Not available');
-  OwnerMemo.Text := L('Not available');
 
   if (FFileDate > 0) and (YearOf(FFileDate) > cMinEXIFYear) then
   begin
@@ -1227,6 +1227,9 @@ begin
   CbInclude.Checked := True;
   DateEdit.Checked := FDateTimeInFileExists;
   TimeEdit.Checked := FDateTimeInFileExists;
+
+  LbViewCount.Caption := L('View counter unavailable');
+  LbColors.Caption := L('Colors are unavailable');
 
   Rec.Date := DateEdit.DateTime;
   Rec.Time := TimeOf(TimeEdit.Time);
@@ -1577,10 +1580,6 @@ begin
 
     Caption := L('Properties') + ' - ' + ExtractFileName(FFilesInfo[0].FileName) + L('...');
     SizeLAbel.Text := SizeInText(FFilesInfo.FilesSize);
-    CollectionMemo.Readonly := True;
-    CollectionMemo.Text := 'TODO: DELETE';
-    OwnerMemo.ReadOnly := True;
-    OwnerMemo.Text := TActivationManager.Instance.ActivationUserName;
 
     if FFilesInfo.IsVariousInclude then
       CbInclude.State := cbGrayed
@@ -1651,6 +1650,9 @@ begin
     CommentMemoChange(Self);
     BtnFind.Visible := False;
     ImageLoadingFile.Visible := False;
+
+    LbViewCount.Caption := FormatEx(L('Total views: {0}'), [FFilesInfo.TotalViews]);
+    LbColors.Caption := L('Colors are unavailable');
 
     Show;
     SID := GetGUID;
@@ -1759,8 +1761,6 @@ begin
   LabelComment.Caption := L('Comment') + ':';
   LabelName1.Caption := L('Name') + ':';
   Label4.Caption := L('Full path') + ':';
-  OwnerLabel.Caption := L('Owner') + ':';
-  CollectionLabel.Caption := L('Collection') + ':';
   RatingLabel1.Caption := L('Rating') + ':';
   DateLabel1.Caption := L('Date') + ':';
   TimeLabel.Caption := L('Time') + ':';
@@ -1916,8 +1916,6 @@ end;
 procedure TPropertiesForm.ResetBold;
 begin
   UpdateControlFont(LabelComment, False);
-  UpdateControlFont(OwnerLabel, False);
-  UpdateControlFont(CollectionLabel, False);
   UpdateControlFont(RatingLabel1, False);
   UpdateControlFont(DateLabel1, False);
   UpdateControlFont(TimeLabel, False);
@@ -2799,8 +2797,6 @@ begin
   FSaving := True;
   R(EditLinkForm);
   CommentMemo.Enabled := False;
-  OwnerMemo.Enabled := False;
-  CollectionMemo.Enabled := False;
   RatingEdit.Enabled := False;
   KeyWordsMemo.Enabled := False;
   DateEdit.Enabled := False;
@@ -2815,8 +2811,6 @@ end;
 procedure TPropertiesForm.UnLockImput;
 begin
   FSaving := False;
-  OwnerMemo.Enabled := True;
-  CollectionMemo.Enabled := True;
   RatingEdit.Enabled := True;
   KeyWordsMemo.Enabled := True;
   DateEdit.Enabled := True;
@@ -2831,6 +2825,57 @@ end;
 procedure TPropertiesForm.PmClearPopup(Sender: TObject);
 begin
   Clear1.Visible := (lstCurrentGroups.Items.Count <> 0) and not FSaving;
+end;
+
+procedure TPropertiesForm.DrawColors(Colors: string);
+var
+  I, J, Left, C: Integer;
+  S: string;
+  Items: TStrings;
+  Palette: TPaletteArray;
+  PaletteHLS: TPaletteHLSArray;
+  Shape: TShape;
+begin
+  for I := TsGeneral.ControlCount - 1 downto 0 do
+    if TsGeneral.Controls[I] is TShape then
+      TsGeneral.Controls[I].Free;
+
+  Items := TStringList.Create;
+  try
+    Items.Delimiter := '#';
+    Items.StrictDelimiter := True;
+    Items.DelimitedText := Colors;
+
+    FillColors(Palette, PaletteHLS);
+
+    Left := IDLabel.Left;
+    for I := 0 to Items.Count - 1 do
+    begin
+      C := HexToIntDef(Items[I], 0);
+      S := '#' + Items[I];
+      if S = '#BW' then
+        Continue;
+
+      for J := 0 to ColorCount - 1 do
+        if Palette[J] = C then
+          S := TA(PaletteColorNames[J], 'Colors');
+
+      Shape := TShape.Create(TsGeneral);
+      Shape.Parent := TsGeneral;
+      Shape.Top := IDLabel.Top + IDLabel.Height + 5;
+      Shape.Left := Left;
+      Shape.Width := 12;
+      Shape.Height := 12;
+      Shape.Brush.Color := C;
+      Shape.Pen.Color := C;
+      Shape.Hint := S;
+      Shape.ShowHint := True;
+
+      Inc(Left, Shape.Width + 3);
+    end;
+  finally
+    F(Items);
+  end;
 end;
 
 procedure TPropertiesForm.DropFileTarget2Drop(Sender: TObject;

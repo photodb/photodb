@@ -492,8 +492,6 @@
 	<translate name="Comment" value="Комментарий" />
 	<translate name="Name" value="Имя" />
 	<translate name="Full path" value="Полный путь" />
-	<translate name="Owner" value="Владелец" />
-	<translate name="Collection" value="Коллекция" />
 	<translate name="Rating" value="Рейтинг" />
 	<translate name="Date" value="Дата" />
 	<translate name="Time" value="Время" />
@@ -611,6 +609,10 @@
 	<translate name="Longitude" value="Долгота" />
 	<translate name="ICC profile" value="Профиль ICC" />
 	<translate name="Filter groups" value="Фильтр по группам" />
+	<translate name="View counter unavailable" value="Счётчик просмотров недоступен" />
+	<translate name="Views: {0}" value="Просмотры: {0}" />
+	<translate name="Colors" value="Цвета" />
+	<translate name="Colors are unavailable" value="Цвета недоступны" />
   </scope>
   <scope name="SelectGroup">
 	<translate name="Select group" value="Выбор группы" />
@@ -641,7 +643,6 @@
 	<translate name="Collection is read only!" value="Коллекция только для чтения!" />
 	<translate name="Find this file manually" value="Найти файл вручную" />
 	<translate name="Analyzer" value="Анализатор" />
-	<translate name="Dear {2}!{1}The degree of similarity of these 2 images is - {3}%!{1}Good luck!" value="Дорогой {2}!{1}Степень похожести этих двух картинок - {3}%!{1}Удачи!" />
 	<translate name="File" value="Файл" />
 	<translate name="Execute" value="Выполнить" />
 	<translate name="Exit" value="Выход" />
@@ -1366,6 +1367,9 @@
 	<translate name="Width" value="Ширина"/>
 	<translate name="Height" value="Высота"/>
 	<translate name="Do not add files to collection if size less than" value="Не добавлять в коллекцию файлы, размером меньше"/>
+	<translate name="Skip RAW file types" value="Пропускать файлы формата RAW"/>
+	<translate name="Synchronization settings" value="Настройки синхронизации"/>
+	<translate name="Skip the following file masks (use &quot;;&quot; as separator)" value="Пропускать следующие маски файлов (используйте &quot;;&quot; как разделитель)"/>
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
 	<translate name="Add" value="Добавить"/>
 	<translate name="Security" value="Безопасность"/>
@@ -1406,7 +1410,6 @@
 	<translate name="Associations" value="Ассоциации" />
 	<translate name="&quot;Next&quot; by click" value="&quot;Следующий&quot; при клике"/>
 	<translate name="Use the selection by hover on the list" value="Использовать выделение при наведении в списках"/>
-	<translate name="Sort groups" value="Сортировать группы"/>
 	<translate name="Show status bar" value="Показывать статус бар"/>
 	<translate name="Smooth scrolling" value="Плавная прокрутка"/>
 	<translate name="Backups" value="Резервные копии" />

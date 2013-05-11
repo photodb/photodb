@@ -7722,7 +7722,16 @@ begin
   OldDir := GetCurrentPath;
   Path := WPath.Path;
 
-  ElvMain.BackGround.Enabled := IsFileInCollectionDirectories(FContext.CollectionFileName, Path);
+  ElvMain.BackGround.Enabled := IsFileInCollectionDirectories(FContext.CollectionFileName, Path)
+    or (WPath.PType = EXPLORER_ITEM_PERSON_LIST)
+    or (WPath.PType = EXPLORER_ITEM_PERSON)
+    or (WPath.PType = EXPLORER_ITEM_GROUP_LIST)
+    or (WPath.PType = EXPLORER_ITEM_GROUP)
+    or (WPath.PType = EXPLORER_ITEM_CALENDAR)
+    or (WPath.PType = EXPLORER_ITEM_CALENDAR_YEAR)
+    or (WPath.PType = EXPLORER_ITEM_CALENDAR_MONTH)
+    or (WPath.PType = EXPLORER_ITEM_CALENDAR_DAY)
+    or (WPath.PType = EXPLORER_ITEM_SEARCH);
 
   UpdateCurrentHistoryFocusedItem;
 
@@ -11723,9 +11732,9 @@ end;
 
 procedure TExplorerForm.ExtendedSearchInit;
 var
+  I: Integer;
   Palette: TPaletteArray;
   PaletteHLS: TPaletteHLSArray;
-  I: Integer;
   Shape: TShape;
 begin
   if FExtendedSearchParams = nil then

@@ -189,7 +189,7 @@ begin
         Exit(True);
     end;
   finally
-    F(FolderList);
+    FreeList(FolderList);
   end;
 end;
 

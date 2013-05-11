@@ -408,13 +408,20 @@ var
   CollectionFile: string;
   SettingsRepository: ISettingsRepository;
   Settings: TSettings;
+
+  function IsCollectionFile(FileName: string): Boolean;
+  begin
+    Result := TDBScheme.GetCollectionVersion(FileName) > 0;
+  end;
+
 begin
   //if program was uninstalled with registered databases - restore database or create new database
   CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('My collection', 'CollectionSettings') + '.photodb';
-  if not FileExistsSafe(CollectionFile) then
+  if not (FileExistsSafe(CollectionFile) and IsCollectionFile(CollectionFile)) then
   begin
-    CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + TA('Photos - {0}', 'CollectionSettings') + '.photodb';
-    CreateExampleDB(CollectionFile);
+    CollectionFile := IncludeTrailingBackslash(GetMyDocumentsPath) + FormatEx(TA('Photos - {0}', 'CollectionSettings'), [GetWindowsUserName]) + '.photodb';
+    if not (FileExistsSafe(CollectionFile) and IsCollectionFile(CollectionFile)) then
+      CreateExampleDB(CollectionFile);
   end;
 
   Collections := TList<TDatabaseInfo>.Create;

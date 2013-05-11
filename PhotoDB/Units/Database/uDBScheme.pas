@@ -10,6 +10,7 @@ uses
   Data.DB,
 
   Dmitry.Utils.System,
+  Dmitry.Utils.Files,
 
   uConstants,
   uMemory,
@@ -33,15 +34,19 @@ type
     function Estimate: Integer; virtual;
     function Text: string; virtual;
     function Execute(Progress: TSimpleCallBackProgressRef; CurrentVersion: Integer): Integer; virtual;
-    constructor Create(FileName: string);
+    constructor Create(FileName: string); virtual;
     property FileName: string read FFileName;
   end;
 
   TPackCollectionTask = class(TCollectionUpdateTask)
+  private
+    FSaveBackup: Boolean;
   public
+    constructor Create(FileName: string); override;
     function Estimate: Integer; override;
     function Text: string; override;
     function Execute(Progress: TSimpleCallBackProgressRef; CurrentVersion: Integer): Integer; override;
+    property SaveBackup: Boolean read FSaveBackup write FSaveBackup;
   end;
 
   TMigrateToV_003_Task = class(TCollectionUpdateTask)
@@ -62,12 +67,12 @@ type
     class function CreateObjectMappingTable(CollectionFile: string): Boolean; static;
     class function CreateObjectsTable(CollectionFile: string): Boolean; static;
 
-    class function GetCollectionVersion(CollectionFile: string): Integer;
     class procedure UpdateCollectionVersion(CollectionFile: string; Version: Integer);
 
     //v2 is base version
     class procedure MigrateToVersion003(CollectionFile: string; Progress: TSimpleCallBackProgressRef);
   public
+    class function GetCollectionVersion(CollectionFile: string): Integer;
     class function CreateCollection(CollectionFile: string): Boolean;
     class function UpdateCollection(CollectionFile: string; CurrentVersion: Integer): Boolean;
     class function IsValidCollectionFile(CollectionFile: string): Boolean;
@@ -102,6 +107,7 @@ var
 
   Tasks: TList<TCollectionUpdateTask>;
   WorkThread: TThread;
+  Task: TCollectionUpdateTask;
 begin
   CloseSplashWindow;
 
@@ -112,7 +118,11 @@ begin
 
   Tasks := TUpdateTaskList.Create;
   try
-    Tasks.Add(TPackCollectionTask.Create(CollectionFile));
+
+    Task := TPackCollectionTask.Create(CollectionFile);
+    TPackCollectionTask(Task).SaveBackup := True;
+    Tasks.Add(Task);
+
     Tasks.Add(TMigrateToV_003_Task.Create(CollectionFile));
     Tasks.Add(TPackCollectionTask.Create(CollectionFile));
 
@@ -295,7 +305,7 @@ begin
     FreeDS(FQuery);
   end;
 
-  FQuery := GetQuery(CollectionFile);
+  FQuery := GetQuery(CollectionFile, True, dbilExclusive);
   try
     SQL := 'CREATE INDEX aID ON ImageTable(ID)';
     SetSQL(FQuery, SQL);
@@ -738,6 +748,12 @@ end;
 
 { TPackCollectionTask }
 
+constructor TPackCollectionTask.Create(FileName: string);
+begin
+  inherited;
+  FSaveBackup := False;
+end;
+
 function TPackCollectionTask.Estimate: Integer;
 begin
   Result := 100;
@@ -745,9 +761,16 @@ end;
 
 function TPackCollectionTask.Execute(Progress: TSimpleCallBackProgressRef;
   CurrentVersion: Integer): Integer;
+var
+  BackupFileName: string;
 begin
   Result := CurrentVersion;
-  PackTable(FileName, Progress);
+  if SaveBackup then
+  begin
+    BackupFileName := GetFileNameWithoutExt(FileName) + '_' + FormatDateTime('yyyy-mm-dd HH-MM-SS', Now) + '.photodb';
+    PackTable(FileName, Progress, BackupFileName);
+  end else
+    PackTable(FileName, Progress);
 end;
 
 function TPackCollectionTask.Text: string;

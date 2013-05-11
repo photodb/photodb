@@ -203,12 +203,10 @@ end;
 procedure TFormGroupReplace.RecreateGroupsList;
 var
   I: Integer;
-  SortGroupsByName: Boolean;
 begin
   F(RegGroups);
 
-  SortGroupsByName := AppSettings.Readbool('Options', 'SortGroupsByName', True);
-  RegGroups := FGroupsRepository.GetAll(False, SortGroupsByName);
+  RegGroups := FGroupsRepository.GetAll(False, True);
   CbExistedGroups.Clear;
   for I := 0 to RegGroups.Count - 1 do
     CbExistedGroups.Items.Add(RegGroups[I].GroupName);

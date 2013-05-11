@@ -572,7 +572,12 @@ begin
     if SC.Execute > 0 then
     begin
       Info := TMediaItem.CreateFromDS(SC.DS);
-      Result := UpdateImageRecordEx(DBContext, Caller, Info, nil);
+      try
+        F(SC);
+        Result := UpdateImageRecordEx(DBContext, Caller, Info, nil);
+      finally
+        F(Info);
+      end;
     end;
   finally
     F(SC);

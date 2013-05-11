@@ -189,10 +189,6 @@ object PropertiesForm: TPropertiesForm
     OnChange = PcMainChange
     object TsGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         290
         344)
@@ -211,7 +207,7 @@ object PropertiesForm: TPropertiesForm
       end
       object IDLabel1: TLabel
         Left = 3
-        Top = 262
+        Top = 222
         Width = 11
         Height = 13
         Caption = 'ID'
@@ -224,7 +220,7 @@ object PropertiesForm: TPropertiesForm
       end
       object WidthLabel: TLabel
         Left = 3
-        Top = 224
+        Top = 184
         Width = 28
         Height = 13
         Caption = 'Width'
@@ -237,7 +233,7 @@ object PropertiesForm: TPropertiesForm
       end
       object Heightlabel: TLabel
         Left = 3
-        Top = 243
+        Top = 203
         Width = 27
         Height = 13
         Caption = 'Heigh'
@@ -250,7 +246,7 @@ object PropertiesForm: TPropertiesForm
       end
       object SizeLabel1: TLabel
         Left = 3
-        Top = 205
+        Top = 165
         Width = 19
         Height = 13
         Caption = 'Size'
@@ -263,7 +259,7 @@ object PropertiesForm: TPropertiesForm
       end
       object DateLabel1: TLabel
         Left = 3
-        Top = 153
+        Top = 110
         Width = 23
         Height = 13
         Caption = 'Date'
@@ -276,7 +272,7 @@ object PropertiesForm: TPropertiesForm
       end
       object TimeLabel: TLabel
         Left = 3
-        Top = 180
+        Top = 137
         Width = 22
         Height = 13
         Caption = 'Time'
@@ -289,36 +285,10 @@ object PropertiesForm: TPropertiesForm
       end
       object RatingLabel1: TLabel
         Left = 3
-        Top = 130
+        Top = 87
         Width = 31
         Height = 13
         Caption = 'Rating'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object CollectionLabel: TLabel
-        Left = 3
-        Top = 108
-        Width = 46
-        Height = 13
-        Caption = 'Collection'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object OwnerLabel: TLabel
-        Left = 3
-        Top = 88
-        Width = 32
-        Height = 13
-        Caption = 'Owner'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -352,6 +322,32 @@ object PropertiesForm: TPropertiesForm
         Font.Style = []
         ParentFont = False
       end
+      object LbColors: TLabel
+        Left = 3
+        Top = 241
+        Width = 30
+        Height = 13
+        Caption = 'Colors'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+      end
+      object LbViewCount: TLabel
+        Left = 3
+        Top = 260
+        Width = 54
+        Height = 13
+        Caption = 'View Count'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+      end
       object KeyWordsMemo: TMemo
         Tag = 11
         Left = 3
@@ -362,39 +358,13 @@ object PropertiesForm: TPropertiesForm
         BevelInner = bvNone
         BorderStyle = bsNone
         ScrollBars = ssVertical
-        TabOrder = 11
+        TabOrder = 9
         OnChange = CommentMemoChange
       end
       object IDLabel: TMemo
         Tag = 11
         Left = 72
-        Top = 262
-        Width = 215
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        ReadOnly = True
-        TabOrder = 9
-      end
-      object heightmemo: TMemo
-        Tag = 11
-        Left = 72
-        Top = 243
-        Width = 215
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        ReadOnly = True
-        TabOrder = 8
-      end
-      object widthmemo: TMemo
-        Tag = 11
-        Left = 72
-        Top = 224
+        Top = 222
         Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -404,10 +374,10 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         TabOrder = 7
       end
-      object SizeLabel: TMemo
+      object heightmemo: TMemo
         Tag = 11
         Left = 72
-        Top = 205
+        Top = 203
         Width = 215
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -417,9 +387,35 @@ object PropertiesForm: TPropertiesForm
         ReadOnly = True
         TabOrder = 6
       end
+      object widthmemo: TMemo
+        Tag = 11
+        Left = 72
+        Top = 184
+        Width = 215
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        BorderStyle = bsNone
+        Lines.Strings = (
+          '<data>')
+        ReadOnly = True
+        TabOrder = 5
+      end
+      object SizeLabel: TMemo
+        Tag = 11
+        Left = 72
+        Top = 165
+        Width = 215
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        BorderStyle = bsNone
+        Lines.Strings = (
+          '<data>')
+        ReadOnly = True
+        TabOrder = 4
+      end
       object TimeEdit: TDateTimePicker
         Left = 72
-        Top = 178
+        Top = 135
         Width = 215
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -430,12 +426,12 @@ object PropertiesForm: TPropertiesForm
         Color = clBtnFace
         DateFormat = dfLong
         Kind = dtkTime
-        TabOrder = 5
+        TabOrder = 3
         OnChange = CommentMemoChange
       end
       object DateEdit: TDateTimePicker
         Left = 72
-        Top = 151
+        Top = 108
         Width = 215
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -447,12 +443,12 @@ object PropertiesForm: TPropertiesForm
         Checked = False
         Color = clBtnFace
         DateFormat = dfLong
-        TabOrder = 4
+        TabOrder = 2
         OnChange = CommentMemoChange
       end
       object RatingEdit: TRating
         Left = 72
-        Top = 130
+        Top = 87
         Width = 96
         Height = 16
         Cursor = crHandPoint
@@ -467,34 +463,6 @@ object PropertiesForm: TPropertiesForm
         OnMouseDown = RatingEditMouseDown
         ImageCanRegenerate = True
         CanSelectRange = False
-      end
-      object CollectionMemo: TMemo
-        Tag = 11
-        Left = 72
-        Top = 108
-        Width = 215
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        ReadOnly = True
-        TabOrder = 3
-        OnChange = CommentMemoChange
-      end
-      object OwnerMemo: TMemo
-        Tag = 11
-        Left = 72
-        Top = 88
-        Width = 215
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        BorderStyle = bsNone
-        Lines.Strings = (
-          '<data>')
-        ReadOnly = True
-        TabOrder = 2
-        OnChange = CommentMemoChange
       end
       object LabelPath: TMemo
         Tag = 11

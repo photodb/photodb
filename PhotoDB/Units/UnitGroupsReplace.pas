@@ -93,7 +93,6 @@ var
   Action: TGroupAction;
   GrNameIn, GrNameOut: string;
   Options: GroupReplaceOptions;
-  SortGroupsByName: Boolean;
   GroupsRepository: IGroupsRepository;
 
   function GroupExistsIn(GroupCode: string): string;
@@ -169,7 +168,6 @@ var
 
 begin
   GroupsRepository := DBContext.Groups;
-  SortGroupsByName := AppSettings.Readbool('Options', 'SortGroupsByName', True);
 
   PI := @I;
   for I := 0 to Groups.Count - 1 do
@@ -224,7 +222,7 @@ begin
           AddGroupsAction(Actions.Actions, Action);
 
           F(InRegGroups);
-          InRegGroups := GroupsRepository.GetAll(True, SortGroupsByName);
+          InRegGroups := GroupsRepository.GetAll(True, True);
         end else
         begin
           MessageBoxDB(0, Format(TA('An error occurred while adding a group', 'Groups'),

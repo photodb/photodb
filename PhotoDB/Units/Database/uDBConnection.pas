@@ -736,8 +736,8 @@ begin
   end;
 end;
 
-procedure CompactDatabase_JRO(DatabaseName:string; DestDatabaseName: string; Password: string;
-  Progress: TSimpleCallBackProgressRef);
+function CompactDatabase_JRO(DatabaseName:string; DestDatabaseName: string; Password: string;
+  Progress: TSimpleCallBackProgressRef): Boolean;
 const
    Provider = 'Provider=Microsoft.Jet.OLEDB.4.0;';
 var
@@ -750,6 +750,8 @@ var
   PackInProgress: Boolean;
   TotalSize: Int64;
 begin
+  Result := False;
+
   try
     TotalSize := GetFileSize(DatabaseName);
 
@@ -802,6 +804,7 @@ begin
       V := CreateOleObject('jro.JetEngine');
       try
         V.CompactDatabase(Src, Dest);// сжимаем
+        Result := True;
       finally
         V := 0;
       end;
@@ -833,9 +836,11 @@ begin
   begin
     TempFileName := GetTempFileName;
 
-    CompactDatabase_JRO(FileName, TempFileName, '', Progress);
-
-    //TODO: logic for temp database
+    if CompactDatabase_JRO(FileName, TempFileName, '', Progress) then
+    begin
+      RenameFile(FileName, BackupFileName);
+      RenameFile(TempFileName, FileName);
+    end;
   end;
 end;
 

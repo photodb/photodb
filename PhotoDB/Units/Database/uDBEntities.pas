@@ -79,6 +79,9 @@ type
     Tag: Integer;
     IsImageEncrypted: Boolean;
     HasExifHeader: Boolean;
+    Colors: string;
+    ViewCount: Integer;
+    UpdateDate: TDateTime;
     constructor Create;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromFile(FileName: string);
@@ -131,6 +134,7 @@ type
     function GetIsVariousLocation: Boolean;
     function GetHasNonDBInfo: Boolean;
     function GetCommonSelectedGroups: string;
+    function GetTotalViews: Integer;
   protected
     FData: TList;
   public
@@ -175,6 +179,7 @@ type
     property OnlyDBInfo: Boolean read GetOnlyDBInfo;
     property FilesSize: Int64 read GetFilesSize;
     property HasNonDBInfo: Boolean read GetHasNonDBInfo;
+    property TotalViews: Integer read GetTotalViews;
   end;
 
 const
@@ -371,7 +376,6 @@ implementation
 
 procedure TMediaItem.Assign(Item: TMediaItem; MoveImage: Boolean = False);
 begin
-//  FPath := Item.Path;
   ID := Item.ID;
   Name := Item.Name;
   FileName := Item.FileName;
@@ -397,6 +401,9 @@ begin
   Width := Item.Width;
   Height := Item.Height;
   Exists := Item.Exists;
+  Colors := Item.Colors;
+  ViewCount := Item.ViewCount;
+  UpdateDate := Item.UpdateDate;
   HasExifHeader := Item.HasExifHeader;
   if MoveImage then
   begin
@@ -448,6 +455,9 @@ begin
   Image := nil;
   FGeoLocation := nil;
   HasExifHeader := False;
+  Colors := '';
+  ViewCount := 0;
+  UpdateDate := 0;
 end;
 
 constructor TMediaItem.CreateFromDS(DS: TDataSet);
@@ -465,7 +475,6 @@ begin
   Create;
   Self.FOriginalFileName := FileName;
   Self.FileName := FileName;
-//  Self.FPath := FileName;
   Self.Name := ExtractFileName(FileName);
 end;
 
@@ -563,7 +572,9 @@ begin
     Encrypted := (ThumbField <> nil) and ValidCryptBlobStreamJPG(ThumbField);
     Include := DA.Include;
     Links := DA.Links;
-
+    Colors := DA.Colors;
+    ViewCount := DA.ViewCount;
+    UpdateDate := DA.UpdateDate;
   finally
     F(DA);
   end;
@@ -614,11 +625,13 @@ begin
     DA.Height := Height;
     DA.Include := Include;
     DA.Links := Links;
+    DA.Colors := Colors;
+    DA.ViewCount := ViewCount;
+    DA.UpdateDate := UpdateDate;
   finally
     F(DA);
   end;
 end;
-
 
 function GetCommonGroupsForStringList(GroupsList: TStringList): string;
 var
@@ -692,7 +705,7 @@ begin
   FData.Insert(Index, MenuRecord);
 end;
 
-function TMediaItemCollection.Add(FileName: string) : TMediaItem;
+function TMediaItemCollection.Add(FileName: string): TMediaItem;
 begin
   Result := TMediaItem.Create;
   Result.FileName := FileName;
@@ -1057,6 +1070,16 @@ begin
   finally
     F(List);
   end;
+end;
+
+function TMediaItemCollection.GetTotalViews: Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+
+  for I := 0 to Count - 1 do
+    Result := Result + Self[I].ViewCount;
 end;
 
 function TMediaItemCollection.GetValueByIndex(Index: Integer): TMediaItem;

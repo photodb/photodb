@@ -2312,7 +2312,7 @@ BEGIN
 	System_SysConst_SInvalidOp,	L"Invalid floating point operation"
 END
 
-/* D:\Dmitry\Delphi exe\Photo Database\branches\v4.0\PhotoDB\External\Jcl\lib\d17\win32\debug\JclUnicode.res */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\lib\d17\win32\debug\JclUnicode.res */
 /* Resources\MAIN.res */
 /* Resources\Logo.res */
 /* Directory_Large.res */
@@ -2342,7 +2342,6 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\ExtDlgs.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Mustangpeak\EasyListview\Source\EasyRes.res */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\ProgressActionUnit.dfm */
-/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormLinkItemSelector.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\10.0\lib\Win32\release\SPIN.RES */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Controls\virtual-treeview\Source\VirtualTrees.res */
 /* D:\Dmitry\Dmitry\Ratingres.res */
@@ -2376,6 +2375,7 @@ END
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormPersonSuggest.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormCreatePerson.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\UnitGroupReplace.dfm */
+/* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\uFormLinkItemSelector.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FormManegerUnit.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\FloatPanelFullScreen.dfm */
 /* D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\SlideShowFullScreen.dfm */

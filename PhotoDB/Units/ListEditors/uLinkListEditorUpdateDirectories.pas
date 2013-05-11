@@ -29,6 +29,7 @@ uses
   uShellIntegration,
   uCollectionUtils,
   uLinkListEditorFolders,
+  uDatabaseDirectoriesUpdater,
   uIconUtils;
 
 type
@@ -229,6 +230,7 @@ end;
 function TLinkListEditorUpdateDirectories.OnApply(Sender: ILinkItemSelectForm): Boolean;
 begin
   Result := True;
+  RecheckUserDirectories;
 end;
 
 procedure TLinkListEditorUpdateDirectories.OnChangePlaceClick(Sender: TObject);

@@ -115,9 +115,7 @@ type
     LbAddWidth: TLabel;
     CbDontAddSmallFiles: TCheckBox;
     CbCheckLinksOnUpdate: TCheckBox;
-    CbSmallToolBars: TCheckBox;
     CblEditorVirtuaCursor: TCheckBox;
-    CbSortGroups: TCheckBox;
     CbListViewHotSelect: TCheckBox;
     LbShellExtensions: TStaticText;
     CbExtensionList: TCheckListBox;
@@ -202,6 +200,11 @@ type
     CbExplorerSaveThumbsForFolders: TCheckBox;
     CbExplorerShowThumbsForImages: TCheckBox;
     CbExplorerShowThumbsForVideo: TCheckBox;
+    CbSmallToolBars: TCheckBox;
+    GbAutoAdding: TGroupBox;
+    CbSkipRAWImages: TCheckBox;
+    EdSkipExtensions: TWatermarkedEdit;
+    LbSkipExtensions: TLabel;
     procedure TabbedNotebook1Change(Sender: TObject; NewTab: Integer; var AllowChange: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -341,6 +344,7 @@ begin
     CbExplorerShowThumbsForImages.Checked := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForImages', True);
     CbExplorerShowThumbsForVideo.Checked := AppSettings.Readbool('Options', 'Explorer_ShowThumbnailsForVideo', True);
     CbExplorerShowEXIF.Checked := AppSettings.ReadBool('Options', 'ShowEXIFMarker', False);
+    CbSmallToolBars.Checked := AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
 
   end;
   if NewTab = 3 then
@@ -387,8 +391,6 @@ begin
   begin
 
     CbListViewShowPreview.Checked := AppSettings.Readbool('Options', 'AllowPreview', True);
-    CbSmallToolBars.Checked := AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
-    CbSortGroups.Checked := AppSettings.Readbool('Options', 'SortGroupsByName', True);
     CbListViewHotSelect.Checked := AppSettings.Readbool('Options', 'UseHotSelect', True);
     CblEditorVirtuaCursor.Checked := AppSettings.ReadBool('Editor', 'VirtualCursor', False);
     CbCheckLinksOnUpdate.Checked := AppSettings.ReadBool('Options', 'CheckUpdateLinks', False);
@@ -403,8 +405,11 @@ begin
     CbSaveInfoToExif.Checked := AppSettings.Exif.SaveInfoToExif;
     CbUpdateExifInfoInBackground.Checked := AppSettings.Exif.UpdateExifInfoInBackground;
 
-    CbShowStatusBar.Checked :=  AppSettings.ReadBool('Options', 'ShowStatusBar', False);
-    CbSmoothScrolling.Checked :=  AppSettings.ReadBool('Options', 'SmoothScrolling', True);
+    CbShowStatusBar.Checked := AppSettings.ReadBool('Options', 'ShowStatusBar', False);
+    CbSmoothScrolling.Checked := AppSettings.ReadBool('Options', 'SmoothScrolling', True);
+
+    CbSkipRAWImages.Checked := not AppSettings.ReadBool('Updater', 'AddRawFiles', False);
+    EdSkipExtensions.Text := AppSettings.ReadString('Updater', 'SkipExtensions');
   end;
 
   if NewTab = 6 then
@@ -505,13 +510,12 @@ begin
       CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_Refresh_Window], EventInfo);
 
   end;
-  // case TabbedNotebook1.PageIndex of
-  // 0:
+
   if FLoadedPages[1] then
   begin
    //nothing to save
   end;
-  // 1:
+
   if FLoadedPages[2] then
   begin
     AppSettings.WriteBool('Options', 'Explorer_ShowFolders', CbExplorerShowFolders.Checked);
@@ -525,8 +529,9 @@ begin
     AppSettings.WriteBool('Options', 'Explorer_ShowThumbnailsForVideo', CbExplorerShowThumbsForVideo.Checked);
 
     AppSettings.WriteBool('Options', 'ShowEXIFMarker', CbExplorerShowEXIF.Checked);
+    AppSettings.WriteBool('Options', 'UseSmallToolBarButtons', CbSmallToolBars.Checked);
   end;
-  // 2 :
+
   if FLoadedPages[3] then
   begin
     AppSettings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
@@ -541,7 +546,7 @@ begin
 
     AppSettings.WriteString('Options', 'DisplayICCProfileName', IIF(CbDisplayICCProfile.ItemIndex = 0, '-', CbDisplayICCProfile.Value));
   end;
-  // 3 :
+
   if FLoadedPages[4] then
   begin
     AppSettings.WriteBool('Options', 'AutoSaveSessionPasswords', CbAutoSavePasswordForSession.Checked);
@@ -552,13 +557,11 @@ begin
     AppSettings.WriteString('Options', 'ProxyPassword', WebProxyPassword.Text);
     AppSettings.WriteBool('Options', 'UseProxyServer', CbUseProxyServer.Checked);
   end;
-  // 4 :
+
   if FLoadedPages[5] then
   begin
     AppSettings.WriteBool('Options', 'AllowPreview', CbListViewShowPreview.Checked);
-    AppSettings.WriteBool('Options', 'UseSmallToolBarButtons', CbSmallToolBars.Checked);
 
-    AppSettings.WriteBool('Options', 'SortGroupsByName', CbSortGroups.Checked);
     AppSettings.WriteBool('Options', 'UseHotSelect', CbListViewHotSelect.Checked);
     AppSettings.WriteBool('Editor', 'VirtualCursor', CblEditorVirtuaCursor.Checked);
     AppSettings.WriteBool('Options', 'CheckUpdateLinks', CbCheckLinksOnUpdate.Checked);
@@ -573,6 +576,9 @@ begin
 
     AppSettings.WriteBool('Options', 'ShowStatusBar', CbShowStatusBar.Checked);
     AppSettings.WriteBool('Options', 'SmoothScrolling', CbSmoothScrolling.Checked);
+
+    AppSettings.WriteBool('Options', 'AddRawFiles', not CbSkipRAWImages.Checked);
+    AppSettings.WriteString('Updater', 'SkipExtensions', EdSkipExtensions.Text);
   end;
 
   if FLoadedPages[6] then
@@ -722,7 +728,6 @@ begin
     CbViewerNextOnClick.Caption := L('"Next" by click');
     CbListViewHotSelect.Caption := L('Use the selection by hover on the list');
     WlDefaultJPEGOptions.Text := L('Change default JPEG Options');
-    CbSortGroups.Caption := L('Sort groups');
     CbShowStatusBar.Caption := L('Show status bar');
     CbSmoothScrolling.Caption := L('Smooth scrolling');
     BlBackupInterval.Caption := L('Create backup every') + ':';
@@ -735,6 +740,11 @@ begin
     LbAddWidth.Caption := L('Width');
     LbAddHeight.Caption := L('Height');
     GbPasswords.Caption := L('Passwords');
+    GbAutoAdding.Caption := L('Synchronization settings');
+    CbSkipRAWImages.Caption := L('Skip RAW file types');
+    LbSkipExtensions.Caption := L('Skip the following file masks (use ";" as separator)') + ':';
+    EdSkipExtensions.WatermarkText := L('Skip the following file masks (use ";" as separator)');
+
     CbSmallToolBars.Caption := L('Use small icons for toolbars');
 
     LblUseExt.Caption := L('Use PhotoDB as default association', 'Setup');

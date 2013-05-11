@@ -188,6 +188,7 @@ type
 
 function UpdaterStorage: TUpdaterStorage;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
+procedure RecheckUserDirectories;
 
 implementation
 
@@ -198,6 +199,19 @@ var
   DirectoriesScanID: TGUID = '{00000000-0000-0000-0000-000000000000}';
   FUpdaterStorage: TUpdaterStorage = nil;
   FStorageLock: TCriticalSection = nil;
+
+procedure RecheckUserDirectories;
+begin
+  if UserDirectoryUpdaterCount = 0 then
+  begin
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        TDatabaseDirectoriesUpdater.Create(DBManager.DBContext);
+      end
+    );
+  end;
+end;
 
 function UpdaterStorage: TUpdaterStorage;
 begin
@@ -219,7 +233,6 @@ function DatabaseErrorsPersistaseFileName(CollectionPath: string): string;
 begin
   Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.errors.cache';
 end;
-
 
 procedure LoadDirectoriesState(FileName: string; DirectoryCache: TDictionary<string, Int64>);
 var
@@ -303,15 +316,18 @@ begin
 end;
 
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
+var
+  Context: IDBContext;
 begin
-  //TODO: check if file is inside collection
-  TDatabaseDirectoriesUpdater.Create(DBManager.DBContext, DirectoryPath);
+  Context := DBManager.DBContext;
+
+  if IsFileInCollectionDirectories(Context.CollectionFileName, DirectoryPath) then
+    TDatabaseDirectoriesUpdater.Create(DBManager.DBContext, DirectoryPath);
 end;
 
 { TDatabaseDirectoriesUpdater }
 
-function TDatabaseDirectoriesUpdater.CanAddFileAutomatically(
-  FileName: string): Boolean;
+function TDatabaseDirectoriesUpdater.CanAddFileAutomatically(FileName: string): Boolean;
 var
   Ext: string;
 begin
@@ -790,23 +806,8 @@ var
   Info: TMediaItem;
   Res: TMediaInfo;
   MediaRepository: IMediaRepository;
- { SettingsRepository: ISettingsRepository;
-  Settings: TSettings;
-
-  JpegCompressionQuality: TJPEGQualityRange;
-  ThumbnailSize: Integer;  }
 begin
   MediaRepository := FDBContext.Media;
- {
-  SettingsRepository := FDBContext.Settings;
-
-  Settings := SettingsRepository.Get;
-  try
-    JpegCompressionQuality := Settings.DBJpegCompressionQuality;
-    ThumbnailSize := Settings.ThSize;
-  finally
-    F(Settings);
-  end;     }
 
   try
     Infos := TMediaItemCollection.Create;
@@ -1135,16 +1136,21 @@ begin
 
     while IsLoadingList do
     begin
+      IsLoadingList := False;
 
       FSync.Enter;
       try
         for I := Index to FTasks.Count - 1 do
         begin
+          if I >= FTasks.Count then
+            Break;
+
           Inc(Index);
           if (FTasks[I] is T) then
           begin
             FItems.Add(FTasks[I]);
             FTasks.Delete(I);
+            IsLoadingList := True;
 
             if FItems.Count = Count then
               Break;
@@ -1183,9 +1189,6 @@ begin
       finally
         FSync.Leave;
       end;
-
-      if FItems.Count = Count then
-        IsLoadingList := False;
     end;
 
     Result := FItems.ToArray();
@@ -1193,41 +1196,6 @@ begin
     F(FItems);
     F(FItemsNotReady);
   end;
-
-  {FSync.Enter;
-  try
-    FItems := TList<T>.Create;
-    try
-      PI := @I;
-      for I := 0 to FTasks.Count - 1 do
-      begin
-        if not FileExistsSafe(FTasks[I].FileName) then
-        begin
-          FTasks[I].Free;
-          FTasks.Delete(I);
-
-          Dec(PI^);
-          Continue;
-        end;
-
-        if (FTasks[I] is T) and FTasks[I].IsPrepaired then
-        begin
-          FItems.Add(FTasks[I]);
-          if FItems.Count = Count then
-            Break;
-        end;
-      end;
-
-      for I := 0 to FItems.Count - 1 do
-        FTasks.Remove(FItems[I]);
-
-      Result := FItems.ToArray();
-    finally
-      F(FItems);
-    end;
-  finally
-    FSync.Leave;
-  end; }
 end;
 
 function TUpdaterStorage.TakeOne<T>: T;

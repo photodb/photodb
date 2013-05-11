@@ -269,7 +269,6 @@ begin
       Item.Delete(0);
     BusyMenu := CreateMenuItem('Busy...');
     BusyMenu.Enabled := False;
-    Item.Add(BusyMenu);
     Exit;
   end;
   if Info.Count = 0 then
@@ -278,7 +277,6 @@ begin
       Item.Delete(0);
     ErrorMenu := CreateMenuItem('Unable to show menu!');
     ErrorMenu.Enabled := False;
-    Item.Add(ErrorMenu);
     Exit;
   end;
 

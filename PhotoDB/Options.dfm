@@ -49,7 +49,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 574
     Height = 441
-    ActivePage = TsAssociations
+    ActivePage = TsStyle
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange
@@ -400,6 +400,15 @@ object OptionsForm: TOptionsForm
           Caption = 'Show Thumbnails For Video'
           TabOrder = 4
         end
+      end
+      object CbSmallToolBars: TCheckBox
+        Left = 17
+        Top = 316
+        Width = 548
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 'Use small icons in toolbars'
+        TabOrder = 5
       end
     end
     object TsView: TTabSheet
@@ -1057,62 +1066,44 @@ object OptionsForm: TOptionsForm
         413)
       object LbAddHeight: TLabel
         Left = 177
-        Top = 251
+        Top = 196
         Width = 31
         Height = 13
         Caption = 'Height'
       end
       object LbAddWidth: TLabel
         Left = 62
-        Top = 251
+        Top = 196
         Width = 28
         Height = 13
         Caption = 'Width'
       end
       object CbDontAddSmallFiles: TCheckBox
         Left = 11
-        Top = 216
+        Top = 170
         Width = 501
         Height = 17
         Caption = 'No add to BD files less then'
-        TabOrder = 6
+        TabOrder = 4
         OnClick = CbDontAddSmallFilesClick
       end
       object CbCheckLinksOnUpdate: TCheckBox
         Left = 11
-        Top = 172
+        Top = 126
         Width = 548
         Height = 38
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Verify links on updation images (works slowly, read help)'
-        TabOrder = 5
+        TabOrder = 3
         WordWrap = True
       end
-      object CbSmallToolBars: TCheckBox
-        Left = 11
-        Top = 103
-        Width = 548
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Use small icons in toolbars'
-        TabOrder = 4
-      end
       object CblEditorVirtuaCursor: TCheckBox
-        Left = 11
-        Top = 80
-        Width = 548
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Virtual Cursor in Editor'
-        TabOrder = 3
-      end
-      object CbSortGroups: TCheckBox
         Left = 11
         Top = 57
         Width = 548
         Height = 17
         Anchors = [akLeft, akTop, akRight]
-        Caption = 'Sort Groups by Name'
+        Caption = 'Virtual Cursor in Editor'
         TabOrder = 2
       end
       object CbListViewHotSelect: TCheckBox
@@ -1135,32 +1126,32 @@ object OptionsForm: TOptionsForm
       end
       object SedMinHeight: TSpinEdit
         Left = 130
-        Top = 248
+        Top = 193
         Width = 41
         Height = 22
         MaxValue = 10000
         MinValue = 1
-        TabOrder = 8
+        TabOrder = 6
         Value = 64
       end
       object SedMinWidth: TSpinEdit
         Left = 11
-        Top = 248
+        Top = 193
         Width = 41
         Height = 22
         MaxValue = 10000
         MinValue = 1
-        TabOrder = 7
+        TabOrder = 5
         Value = 64
       end
       object GbEXIF: TGroupBox
-        Left = 11
-        Top = 292
+        Left = 7
+        Top = 324
         Width = 548
         Height = 86
         Anchors = [akLeft, akTop, akRight]
         Caption = 'EXIF'
-        TabOrder = 9
+        TabOrder = 7
         DesignSize = (
           548
           86)
@@ -1194,21 +1185,57 @@ object OptionsForm: TOptionsForm
       end
       object CbShowStatusBar: TCheckBox
         Left = 11
-        Top = 126
+        Top = 80
         Width = 548
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'CbShowStatusBar'
-        TabOrder = 10
+        TabOrder = 8
       end
       object CbSmoothScrolling: TCheckBox
         Left = 11
-        Top = 149
+        Top = 103
         Width = 548
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'CbSmoothScrolling'
-        TabOrder = 11
+        TabOrder = 9
+      end
+      object GbAutoAdding: TGroupBox
+        Left = 7
+        Top = 232
+        Width = 548
+        Height = 86
+        Caption = 'GbAutoAdding'
+        TabOrder = 10
+        DesignSize = (
+          548
+          86)
+        object LbSkipExtensions: TLabel
+          Left = 11
+          Top = 39
+          Width = 82
+          Height = 13
+          Caption = 'LbSkipExtensions'
+        end
+        object CbSkipRAWImages: TCheckBox
+          Left = 11
+          Top = 16
+          Width = 526
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'CbSkipRAWImages'
+          TabOrder = 0
+        end
+        object EdSkipExtensions: TWatermarkedEdit
+          Left = 11
+          Top = 58
+          Width = 526
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 1
+          Text = 'EdSkipExtensions'
+        end
       end
     end
     object TsPrograms: TTabSheet

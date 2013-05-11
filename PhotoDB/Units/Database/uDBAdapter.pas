@@ -53,6 +53,12 @@ type
     procedure SetLinks(const Value: string);
     function GetAttributes: Integer;
     procedure SetAttributes(const Value: Integer);
+    function GetColors: string;
+    function GetViewCount: Integer;
+    function GetUpdateDate: TDateTime;
+    procedure SetColors(const Value: string);
+    procedure SetViewCount(const Value: Integer);
+    procedure SetUpdateDate(const Value: TDateTime);
   public
     constructor Create(DS: TDataSet);
     property ID: Integer read GetID write SetID;
@@ -76,6 +82,9 @@ type
     property LongImageID: string read GetLongImageID write SetLongImageID;
     property Links: string read GetLinks write SetLinks;
     property Attributes: Integer read GetAttributes write SetAttributes;
+    property Colors: string read GetColors write SetColors;
+    property ViewCount: Integer read GetViewCount write SetViewCount;
+    property UpdateDate: TDateTime read GetUpdateDate write SetUpdateDate;
     property DataSet: TDataSet read FDS;
   end;
 
@@ -96,6 +105,11 @@ end;
 function TImageTableAdapter.GetAttributes: Integer;
 begin
   Result := FDS.FieldByName('Attr').AsInteger;
+end;
+
+function TImageTableAdapter.GetColors: string;
+begin
+  Result := FDS.FieldByName('Colors').AsString;
 end;
 
 function TImageTableAdapter.GetComment: string;
@@ -188,6 +202,16 @@ begin
   Result := TimeOf(FDS.FieldByName('aTime').AsDateTime);
 end;
 
+function TImageTableAdapter.GetUpdateDate: TDateTime;
+begin
+  Result := FDS.FieldByName('DateUpdated').AsDateTime;
+end;
+
+function TImageTableAdapter.GetViewCount: Integer;
+begin
+  Result := FDS.FieldByName('ViewCount').AsInteger;
+end;
+
 function TImageTableAdapter.GetWidth: Integer;
 begin
   Result := FDS.FieldByName('Width').AsInteger;
@@ -201,6 +225,11 @@ end;
 procedure TImageTableAdapter.SetAttributes(const Value: Integer);
 begin
   FDS.FieldByName('Attr').AsInteger := Value;
+end;
+
+procedure TImageTableAdapter.SetColors(const Value: string);
+begin
+  FDS.FieldByName('Colors').AsString := Value;
 end;
 
 procedure TImageTableAdapter.SetComment(const Value: string);
@@ -286,6 +315,16 @@ end;
 procedure TImageTableAdapter.SetTime(const Value: TTime);
 begin
   FDS.FieldByName('aTime').AsDateTime := Value;
+end;
+
+procedure TImageTableAdapter.SetUpdateDate(const Value: TDateTime);
+begin
+  FDS.FieldByName('DateUpdated').AsDateTime := Value;
+end;
+
+procedure TImageTableAdapter.SetViewCount(const Value: Integer);
+begin
+  FDS.FieldByName('ViewCount').AsInteger := Value;
 end;
 
 procedure TImageTableAdapter.SetWidth(const Value: Integer);

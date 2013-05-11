@@ -1830,7 +1830,7 @@ begin
       AddrS := NativeInt(PS);
       for J := 0 to Src.Width - 1 do
       begin
-        PInteger(AddrD)^ := PInteger(AddrS)^ or $FF000000;
+        PCardinal(AddrD)^ := PCardinal(AddrS)^ or $FF000000;
 
         Inc(AddrD, 4);
         Inc(AddrS, 3);
@@ -1884,9 +1884,11 @@ begin
   end;
 end;
 
+{$OVERFLOWCHECKS OFF}
 procedure SmoothResize(Width, Height: integer; S, D: TBitmap; CallBack: TProgressCallBackProc = nil);
 type
   TRGBArray = array[Word] of TRGBTriple;
+  PRGBTriple = ^TRGBTriple;
   pRGBArray = ^TRGBArray;
 
 var
@@ -1895,13 +1897,16 @@ var
   Mx, My: Integer;
   SrcLine1, SrcLine2: PRGBArray;
   SrcLine132, SrcLine232: PARGB32;
+
   T3: Integer;
-  Z, Z2, Iz2: Integer;
+  Z, Z2, Iz2: Cardinal;
   DstLine: PRGBArray;
   DstLine32: PARGB32;
   DstGap: Integer;
   W1, W2, W3, W4, DW1, SW1: Integer;
   Terminating: Boolean;
+
+  DLinePixel: NativeInt;
 begin
   Terminating := false;
   if not ((S.PixelFormat = pf32Bit) and (D.PixelFormat = pf32Bit)) then
@@ -1955,10 +1960,10 @@ begin
         begin
           t3 := xP shr 16;
           z  := xP and $FFFF;
-          w2 := MulDiv(z, iz2, $10000);
-          w1 := iz2 - w2;
-          w4 := MulDiv(z, z2, $10000);
-          w3 := z2 - w4;
+          w2 := (z * iz2) div $10000; //MulDiv(z, iz2, $10000);
+          w1 := Integer(iz2) - w2;
+          w4 := (z * z2) div $10000; //MulDiv(z, z2, $10000);
+          w3 := Integer(z2) - w4;
           if (t3 >= SW1) or (x = DW1) then
            t3 := S.Width - 2;
 
@@ -1996,31 +2001,36 @@ begin
           SrcLine2 := S.ScanLine[succ(yP shr 16)]
         else
         begin
-          SrcLine1 := S.ScanLine[S.Height-2];
-          SrcLine2 := S.ScanLine[S.Height-1];
+          SrcLine1 := S.ScanLine[S.Height - 2];
+          SrcLine2 := S.ScanLine[S.Height - 1];
         end;
 
         z2  := succ(yP and $FFFF);
         iz2 := succ((not yp) and $FFFF);
+
+        DLinePixel := NativeInt(DstLine);
         for x := 0 to pred(D.Width) do
         begin
           t3 := xP shr 16;
           z  := xP and $FFFF;
-          w2 := MulDiv(z, iz2, $10000);
-          w1 := iz2 - w2;
-          w4 := MulDiv(z, z2, $10000);
-          w3 := z2 - w4;
+          w2 := (z * iz2) div $10000; //MulDiv(z, iz2, $10000);
+          w1 := Integer(iz2) - w2;
+          w4 := (z * z2) div $10000; //MulDiv(z, z2, $10000);
+          w3 := Integer(z2) - w4;
+
           if (t3 >= SW1) or (x = DW1) then
-           t3 := S.Width - 2;
+            t3 := S.Width - 2;
 
-          DstLine[x].rgbtRed := (SrcLine1[t3].rgbtRed * w1 +
-            SrcLine1[t3 + 1].rgbtRed * w2 + SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
+          PRGBTriple(DLinePixel)^.rgbtRed := (SrcLine1[t3].rgbtRed * w1 + SrcLine1[t3 + 1].rgbtRed * w2 +
+                                              SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;
 
-          DstLine[x].rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
-            SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
+          PRGBTriple(DLinePixel)^.rgbtGreen := (SrcLine1[t3].rgbtGreen * w1 + SrcLine1[t3 + 1].rgbtGreen * w2 +
+                                                SrcLine2[t3].rgbtGreen * w3 + SrcLine2[t3 + 1].rgbtGreen * w4) shr 16;
 
-          DstLine[x].rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 +
-            SrcLine1[t3 + 1].rgbtBlue * w2 +SrcLine2[t3].rgbtBlue * w3 +  SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
+          PRGBTriple(DLinePixel)^.rgbtBlue := (SrcLine1[t3].rgbtBlue * w1 + SrcLine1[t3 + 1].rgbtBlue * w2 +
+                                               SrcLine2[t3].rgbtBlue * w3 +  SrcLine2[t3 + 1].rgbtBlue * w4) shr 16;
+
+          Inc(DLinePixel, 3);
           Inc(xP, Mx);
         end; {for}
         Inc(yP, My);
@@ -2032,6 +2042,7 @@ begin
     end;
   end; {if}
 end; {SmoothResize}
+{$OVERFLOWCHECKS ON}
 
 procedure StretchCool(Width, Height: integer; S,D: TBitmap; CallBack: TProgressCallBackProc);
 var
