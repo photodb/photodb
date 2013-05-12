@@ -1830,7 +1830,10 @@ begin
       AddrS := NativeInt(PS);
       for J := 0 to Src.Width - 1 do
       begin
-        PCardinal(AddrD)^ := PCardinal(AddrS)^ or $FF000000;
+        PRGB32(AddrD).R := PRGB(AddrS).R;
+        PRGB32(AddrD).G := PRGB(AddrS).G;
+        PRGB32(AddrD).B := PRGB(AddrS).B;
+        PRGB32(AddrD).L := 255;
 
         Inc(AddrD, 4);
         Inc(AddrS, 3);

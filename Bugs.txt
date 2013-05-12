@@ -21,13 +21,12 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
-- Slide show interval control issue;
-- show deleted/duplicate pictures;
 - AV on full screen, menu multi-monitor position;
 - Info with long file name;
+- Slide show interval control issue;
+- show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
 - Tabs redraw issue???;
-- Database check records count timer review;
 
 [New]
 - Portable persons;

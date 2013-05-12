@@ -447,7 +447,7 @@ object OptionsForm: TOptionsForm
       end
       object lbDetectionSize: TLabel
         Left = 8
-        Top = 237
+        Top = 229
         Width = 71
         Height = 13
         Caption = 'Detection size:'
@@ -507,44 +507,35 @@ object OptionsForm: TOptionsForm
         Caption = 'Next on Click'
         TabOrder = 3
       end
-      object CbViewerUseCoolStretch: TCheckBox
+      object cbViewerFaceDetection: TCheckBox
         Left = 8
         Top = 191
         Width = 552
         Height = 17
         Anchors = [akLeft, akTop, akRight]
-        Caption = 'Use Cool Stretch'
-        TabOrder = 4
-      end
-      object cbViewerFaceDetection: TCheckBox
-        Left = 8
-        Top = 214
-        Width = 552
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
         Caption = 'Enable face detection'
-        TabOrder = 5
+        TabOrder = 4
       end
       object CbDetectionSize: TComboBox
         Left = 8
-        Top = 256
+        Top = 248
         Width = 237
         Height = 21
         Style = csDropDownList
-        TabOrder = 6
+        TabOrder = 5
       end
       object BtnClearFaceDetectionCache: TButton
         Left = 8
-        Top = 283
+        Top = 275
         Width = 237
         Height = 25
         Caption = 'Clear cache'
-        TabOrder = 7
+        TabOrder = 6
         OnClick = BtnClearFaceDetectionCacheClick
       end
       object LsFaceDetectionClearCache: TLoadingSign
         Left = 251
-        Top = 283
+        Top = 275
         Width = 25
         Height = 25
         Visible = False
@@ -562,7 +553,7 @@ object OptionsForm: TOptionsForm
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Red-cyan glasses for stereo images'
-        TabOrder = 9
+        TabOrder = 8
       end
       object CbDisplayICCProfile: TComboBox
         Left = 8
@@ -570,7 +561,7 @@ object OptionsForm: TOptionsForm
         Width = 237
         Height = 21
         Style = csDropDownList
-        TabOrder = 10
+        TabOrder = 9
       end
     end
     object TsSecurity: TTabSheet

@@ -51,6 +51,8 @@ uses
   uDBEntities in '..\Units\Database\uDBEntities.pas',
   uDBContext in '..\Units\Database\uDBContext.pas',
   uDBClasses in '..\Units\Database\uDBClasses.pas',
+  uDBManager in '..\Units\Database\uDBManager.pas',
+  uCollectionUtils in '..\Units\Database\uCollectionUtils.pas',
   uDBScheme in '..\Units\Database\uDBScheme.pas',
   uSettingsRepository in '..\Units\Database\uSettingsRepository.pas',
   uGroupsRepository in '..\Units\Database\uGroupsRepository.pas',
@@ -135,7 +137,9 @@ uses
   uTransparentEncryption in '..\Units\uTransparentEncryption.pas',
   uResources in '..\Units\uResources.pas',
   uColorUtils in '..\Units\Utils\uColorUtils.pas',
-  TestBitmapUtils in 'TestBitmapUtils.pas';
+  TestBitmapUtils in 'TestBitmapUtils.pas',
+  TestCreateCollection in 'TestCreateCollection.pas',
+  uFormBackgroundTaskStatus in '..\uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus};
 
 {$R *.RES}
 

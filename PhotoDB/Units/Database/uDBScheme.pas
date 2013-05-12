@@ -74,7 +74,7 @@ type
   public
     class function GetCollectionVersion(CollectionFile: string): Integer;
     class function CreateCollection(CollectionFile: string): Boolean;
-    class function UpdateCollection(CollectionFile: string; CurrentVersion: Integer): Boolean;
+    class function UpdateCollection(CollectionFile: string; CurrentVersion: Integer; CreateBackUp: Boolean): Boolean;
     class function IsValidCollectionFile(CollectionFile: string): Boolean;
     class function IsOldColectionFile(CollectionFile: string): Boolean;
   end;
@@ -92,13 +92,13 @@ begin
   CreateObjectsTable(CollectionFile);
   CreateObjectMappingTable(CollectionFile);
 
-  UpdateCollection(CollectionFile, 0);
+  UpdateCollection(CollectionFile, 0, False);
 end;
 
 type
   TUpdateTaskList = TList<TCollectionUpdateTask>;
 
-class function TDBScheme.UpdateCollection(CollectionFile: string; CurrentVersion: Integer): Boolean;
+class function TDBScheme.UpdateCollection(CollectionFile: string; CurrentVersion: Integer; CreateBackUp: Boolean): Boolean;
 var
   ProgressForm: IBackgroundTaskStatusForm;
   TotalAmount: Int64;
@@ -120,7 +120,7 @@ begin
   try
 
     Task := TPackCollectionTask.Create(CollectionFile);
-    TPackCollectionTask(Task).SaveBackup := True;
+    TPackCollectionTask(Task).SaveBackup := CreateBackUp;
     Tasks.Add(Task);
 
     Tasks.Add(TMigrateToV_003_Task.Create(CollectionFile));
@@ -339,7 +339,7 @@ begin
       'GroupName Memo , ' +
       'GroupComment Memo , ' +
       'GroupDate Date , ' +
-      'Groupfaces Memo , ' +
+      'GroupFaces Memo , ' +
       'GroupAccess INTEGER , ' +
       'GroupImage LONGBINARY, ' +
       'GroupKW Memo , ' +
@@ -365,7 +365,7 @@ end;
 
 class procedure TDBScheme.MigrateToVersion003(CollectionFile: string; Progress: TSimpleCallBackProgressRef);
 const
-  TotalActions = 45;
+  TotalActions = 44;
 var
   FQuery: TDataSet;
   Counter: Integer;
@@ -459,7 +459,7 @@ begin
       CreateTable(@CreateGroupsTable, NextID);
 
     if not TableExists('Objects') then
-    CreateTable(@CreateObjectsTable, NextID);
+      CreateTable(@CreateObjectsTable, NextID);
 
     if not TableExists('ObjectMapping') then
       CreateTable(@CreateObjectMappingTable, NextID);
@@ -468,7 +468,6 @@ begin
     Exec('DROP INDEX aFolderCRC ON ImageTable', NextID);
     Exec('DROP INDEX aStrThCrc ON ImageTable', NextID);
 
-    AlterColumn('ID Autoincrement NOT NULL', NextID);
     AlterColumn('Name TEXT(255) NOT NULL', NextID);
     AlterColumn('FFileName Memo NOT NULL', NextID);
     AlterColumn('Comment Memo NOT NULL', NextID);
@@ -498,7 +497,7 @@ begin
     DropColumn('Collection', NextID);
     DropColumn('Colors', NextID);
 
-    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID) WITH PRIMARY DISALLOW NULL', NextID);
+    Exec('CREATE UNIQUE INDEX I_ID ON ImageTable(ID)', NextID);
     Exec('CREATE INDEX I_FolderCRC ON ImageTable(FolderCRC) WITH DISALLOW NULL', NextID);
     Exec('CREATE INDEX I_StrThCrc ON ImageTable(StrThCrc) WITH DISALLOW NULL', NextID);
 
@@ -767,7 +766,7 @@ begin
   Result := CurrentVersion;
   if SaveBackup then
   begin
-    BackupFileName := GetFileNameWithoutExt(FileName) + '_' + FormatDateTime('yyyy-mm-dd HH-MM-SS', Now) + '.photodb';
+    BackupFileName := ExtractFilePath(FileName) + GetFileNameWithoutExt(FileName) + '_' + FormatDateTime('yyyy-mm-dd HH-MM-SS', Now) + '.photodb';
     PackTable(FileName, Progress, BackupFileName);
   end else
     PackTable(FileName, Progress);

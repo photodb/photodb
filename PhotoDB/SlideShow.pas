@@ -771,42 +771,35 @@ begin
     FW := FFullImage.Width;
     FH := FFullImage.Height;
     ProportionalSize(Monitor.Width, Monitor.Height, FW, FH);
+
     if ImageExists then
     begin
-      if AppSettings.ReadboolW('Options','SlideShow_UseCoolStretch', True) then
+      if ZoomerOn then
+        Z := RealZoomInc * Zoom
+      else
       begin
-        if ZoomerOn then
-          Z := RealZoomInc * Zoom
-        else
+        if RealImageWidth * RealImageHeight <> 0 then
         begin
-          if RealImageWidth * RealImageHeight <> 0 then
-          begin
-            if IsRotatedImageProportions(Item.Rotation) then
-              Z := Min(FW / RealImageHeight, FH / RealImageWidth)
-            else
-              Z := Min(FW / RealImageWidth, FH / RealImageHeight);
-          end else
-            Z := 1;
-        end;
-        if (Z < ZoomSmoothMin) then
-          StretchCool(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, FW, FH, FFullImage, DrawImage)
-        else
-        begin
-          TempImage := TBitmap.Create;
-          try
-            TempImage.PixelFormat := pf24bit;
-            TempImage.SetSize(FW, FH);
-            SmoothResize(Fw, Fh, FFullImage, TempImage);
-            DrawImage.Canvas.Draw(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, TempImage);
-          finally
-            F(TempImage);
-          end;
-        end;
-      end else
+          if IsRotatedImageProportions(Item.Rotation) then
+            Z := Min(FW / RealImageHeight, FH / RealImageWidth)
+          else
+            Z := Min(FW / RealImageWidth, FH / RealImageHeight);
+        end else
+          Z := 1;
+      end;
+      if (Z < ZoomSmoothMin) then
+        StretchCool(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, FW, FH, FFullImage, DrawImage)
+      else
       begin
-        SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-        DrawImage.Canvas.StretchDraw(Rect(Monitor.Width div 2 - Fw div 2, Monitor.Height div 2 - Fh div 2,
-            Monitor.Width div 2 - Fw div 2 + Fw, Monitor.Height div 2 - Fh div 2 + Fh), FFullImage);
+        TempImage := TBitmap.Create;
+        try
+          TempImage.PixelFormat := pf24bit;
+          TempImage.SetSize(FW, FH);
+          SmoothResize(Fw, Fh, FFullImage, TempImage);
+          DrawImage.Canvas.Draw(Monitor.Width div 2 - FW div 2, Monitor.Height div 2 - FH div 2, TempImage);
+        finally
+          F(TempImage);
+        end;
       end;
     end else
       ShowErrorText(FileName);
@@ -874,85 +867,69 @@ begin
 
   if ImageExists or Loading then
   begin
-    if AppSettings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True) then
+
+    if ZoomerOn and not FIsWaiting then
     begin
-      if ZoomerOn and not FIsWaiting then
+      DrawRect(ImRect.Left, ImRect.Top, ImRect.Right, ImRect.Bottom);
+      if AZoom <= 1 then
       begin
-        DrawRect(ImRect.Left, ImRect.Top, ImRect.Right, ImRect.Bottom);
-        if AZoom <= 1 then
-        begin
-          if (AZoom < ZoomSmoothMin) then
-            StretchCoolW(ZX, ZY, ZW, ZH, ImageRect, FFullImage, DrawImage)
-          else
-          begin
-            TempImage := TBitmap.Create;
-            try
-              TempImage.PixelFormat := Pf24bit;
-              TempImage.SetSize(ZW, ZH);
-              B := TBitmap.Create;
-              try
-                B.PixelFormat := Pf24bit;
-                B.Width := (ImageRect.Right - ImageRect.Left);
-                B.Height := (ImageRect.Bottom - ImageRect.Top);
-                B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FFullImage.Canvas, ImageRect);
-                SmoothResize(ZW, ZH, B, TempImage);
-              finally
-                F(B);
-              end;
-              DrawImage.Canvas.Draw(ZX, ZY, TempImage);
-            finally
-              F(TempImage);
-            end;
-          end;
-        end else
-          Interpolate(ZX, ZY, ZW, ZH, ImageRect, FFullImage, DrawImage);
-      end else
-      begin
-        DrawRect(X1, Y1, X2, Y2);
-        if ZoomerOn then
-          Z := RealZoomInc * AZoom
-        else
-        begin
-          if RealImageWidth * RealImageHeight <> 0 then
-          begin
-            if IsRotatedImageProportions(Item.Rotation) then
-              Z := AZoom * Min(FW / RealImageHeight, FH / RealImageWidth)
-            else
-              Z := AZoom * Min(FW / RealImageWidth, FH / RealImageHeight);
-          end else
-            Z := AZoom;
-        end;
-        if (Z < ZoomSmoothMin) then
-          StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FFullImage, DrawImage)
+        if (AZoom < ZoomSmoothMin) then
+          StretchCoolW(ZX, ZY, ZW, ZH, ImageRect, FFullImage, DrawImage)
         else
         begin
           TempImage := TBitmap.Create;
           try
-            TempImage.PixelFormat := pf24bit;
-            TempImage.SetSize(X2 - X1, Y2 - Y1);
-            SmoothResize(X2 - X1, Y2 - Y1, FFullImage, TempImage);
-            DrawImage.Canvas.Draw(X1, Y1, TempImage);
+            TempImage.PixelFormat := Pf24bit;
+            TempImage.SetSize(ZW, ZH);
+            B := TBitmap.Create;
+            try
+              B.PixelFormat := Pf24bit;
+              B.Width := (ImageRect.Right - ImageRect.Left);
+              B.Height := (ImageRect.Bottom - ImageRect.Top);
+              B.Canvas.CopyRect(Rect(0, 0, B.Width, B.Height), FFullImage.Canvas, ImageRect);
+              SmoothResize(ZW, ZH, B, TempImage);
+            finally
+              F(B);
+            end;
+            DrawImage.Canvas.Draw(ZX, ZY, TempImage);
           finally
             F(TempImage);
           end;
         end;
-      end;
+      end else
+        Interpolate(ZX, ZY, ZW, ZH, ImageRect, FFullImage, DrawImage);
     end else
     begin
-      if ZoomerOn and not FIsWaiting then
+      DrawRect(X1, Y1, X2, Y2);
+      if ZoomerOn then
+        Z := RealZoomInc * AZoom
+      else
       begin
-        BeginRect := GetImageRectA;
-        DrawRect(BeginRect.Left, BeginRect.Top, BeginRect.Right, BeginRect.Bottom);
-        SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-        DrawImage.Canvas.CopyMode := SRCCOPY;
-        DrawImage.Canvas.CopyRect(BeginRect, FFullImage.Canvas, ImageRect);
-      end else
+        if RealImageWidth * RealImageHeight <> 0 then
+        begin
+          if IsRotatedImageProportions(Item.Rotation) then
+            Z := AZoom * Min(FW / RealImageHeight, FH / RealImageWidth)
+          else
+            Z := AZoom * Min(FW / RealImageWidth, FH / RealImageHeight);
+        end else
+          Z := AZoom;
+      end;
+      if (Z < ZoomSmoothMin) then
+        StretchCool(X1, Y1, X2 - X1, Y2 - Y1, FFullImage, DrawImage)
+      else
       begin
-        DrawRect(X1, Y1, X2, Y2);
-        SetStretchBltMode(DrawImage.Canvas.Handle, STRETCH_HALFTONE);
-        DrawImage.Canvas.StretchDraw(Rect(X1, Y1, X2, Y2), FFullImage);
+        TempImage := TBitmap.Create;
+        try
+          TempImage.PixelFormat := pf24bit;
+          TempImage.SetSize(X2 - X1, Y2 - Y1);
+          SmoothResize(X2 - X1, Y2 - Y1, FFullImage, TempImage);
+          DrawImage.Canvas.Draw(X1, Y1, TempImage);
+        finally
+          F(TempImage);
+        end;
       end;
     end;
+
   end else
     ShowErrorText(FileName);
 

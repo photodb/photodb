@@ -98,7 +98,6 @@ type
     TrackBar4: TTrackBar;
     Label26: TLabel;
     CbViewerNextOnClick: TCheckBox;
-    CbViewerUseCoolStretch: TCheckBox;
     TsSecurity: TTabSheet;
     GbBackup: TGroupBox;
     Label30: TLabel;
@@ -353,7 +352,6 @@ begin
     TrackBar1.Position := Min(Max(AppSettings.ReadInteger('Options', 'SlideShow_SlideSteps', 25), 1), 100);
     TrackBar2.Position := Min(Max(AppSettings.ReadInteger('Options', 'SlideShow_SlideDelay', 40), 1), 100);
     TrackBar4.Position := Min(Max(AppSettings.ReadInteger('Options', 'FullScreen_SlideDelay', 40), 1), 100);
-    CbViewerUseCoolStretch.Checked := AppSettings.ReadboolW('Options', 'SlideShow_UseCoolStretch', True);
     TrackBar1Change(Sender);
     TrackBar2Change(Sender);
     TrackBar4Change(Sender);
@@ -535,7 +533,6 @@ begin
   if FLoadedPages[3] then
   begin
     AppSettings.WriteBool('Options', 'NextOnClick', CbViewerNextOnClick.Checked);
-    AppSettings.WriteBoolW('Options', 'SlideShow_UseCoolStretch', CbViewerUseCoolStretch.Checked);
     AppSettings.WriteInteger('Options', 'SlideShow_SlideSteps', TrackBar1.Position);
     AppSettings.WriteInteger('Options', 'SlideShow_SlideDelay', TrackBar2.Position);
     AppSettings.WriteInteger('Options', 'FullScreen_SlideDelay', TrackBar4.Position);
@@ -710,7 +707,6 @@ begin
     BtnInstallExtensions.Caption := L('Set');
     OkButton.Caption := L('Ok');
     CancelButton.Caption := L('Cancel');
-    CbViewerUseCoolStretch.Caption := L('Use high-quality rendering');
     LbShellExtensions.Caption := L('Extensions') + ':';
     TrackBar4Change(Self);
     TrackBar2Change(Self);

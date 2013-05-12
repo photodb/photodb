@@ -945,6 +945,8 @@ type
     FActiveDatabase: TDatabaseInfo;
     FDatabaseInfo: TDatabaseInfoControl;
 
+    FIsPastingFromClipboard: Boolean;
+
     procedure LoadContext;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
     procedure SetNewPath(Path: string; Explorer: Boolean);
@@ -4398,7 +4400,15 @@ begin
         Result.Edit;
         NewFileNameGUID := GetGUID;
       end else
+      begin
+        if FIsPastingFromClipboard then
+        begin
+          FIsPastingFromClipboard := False;
+          Result.Focused := True;
+          Result.MakeVisible(emvBottom);
+        end;
         MakeItemVisibleByFilter(Result, '');
+      end;
 
       LockDrawIcon := False;
       if not UpdatingList and ElvMain.Groups[0].Visible then
@@ -7301,6 +7311,7 @@ var
   Path: string;
 begin
   Path := GetCurrentPath;
+  FIsPastingFromClipboard := True;
 
   Files := TStringList.Create;
   try
@@ -7717,6 +7728,7 @@ begin
 
   FDBCanDragW := False;
   FDBCanDrag := False;
+  FIsPastingFromClipboard := False;
 
   TbUp.Enabled := (WPath.PType <> EXPLORER_ITEM_MYCOMPUTER);
   OldDir := GetCurrentPath;
@@ -12953,6 +12965,7 @@ begin
   FGoToLastSavedPath := GoToLastSavedPath;
   FSelectedItem := nil;
   FIsPanaramio := False;
+  FIsPastingFromClipboard := False;
   inherited Create(AOwner);
 end;
 

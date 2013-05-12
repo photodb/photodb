@@ -2,6 +2,8 @@ unit uDBManager;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Generics.Defaults,
   Generics.Collections,
@@ -152,7 +154,7 @@ begin
       if TDBScheme.IsOldColectionFile(Collection.Path) then
       begin
         if UpdateDatabaseQuery(Collection.Path) then
-          TDBScheme.UpdateCollection(Collection.Path, 0);
+          TDBScheme.UpdateCollection(Collection.Path, 0, True);
       end;
 
       if TDBScheme.IsValidCollectionFile(Collection.Path) then
@@ -343,7 +345,7 @@ begin
   if not TDBScheme.IsValidCollectionFile(CollectionFileName) then
   begin
     if TDBManager.UpdateDatabaseQuery(CollectionFileName) then
-      TDBScheme.UpdateCollection(CollectionFileName, 0);
+      TDBScheme.UpdateCollection(CollectionFileName, 0, True);
   end;
 
   if TDBScheme.IsValidCollectionFile(CollectionFileName) then

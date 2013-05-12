@@ -172,7 +172,7 @@ begin
   if Version < CURRENT_DB_SCHEME_VERSION then
   begin
     if TDBScheme.IsOldColectionFile(FCollectionFile) then
-      TDBScheme.UpdateCollection(FCollectionFile, Version);
+      TDBScheme.UpdateCollection(FCollectionFile, Version, True);
 
     if TDBScheme.IsValidCollectionFile(FCollectionFile) then
       Result := True;

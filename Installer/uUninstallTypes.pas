@@ -68,6 +68,13 @@ const
   ProductVersion_3_1 = '3.1';
   ProgramShortCutFile_3_1 = ProductName_3_1 + '.lnk';
   HelpShortCutFile_3_1 = '*|LNK|';
+
+  // 4.0
+  ProductName_4_0 = 'Photo DataBase 4.0';
+  StartMenuProgramsPath_4_0 = 'Photo DB v4.0';
+  ProductVersion_4_0 = '3.1';
+  ProgramShortCutFile_4_0 = ProductName_4_0 + '.lnk';
+  HelpShortCutFile_4_0 = '*|LNK|';
   // [END]
 
 implementation

@@ -73,7 +73,8 @@ type
   private
     { Private declarations }
     FMainForms: TList<TForm>;
-    FCheckCount: Integer;
+    FGlobalCheckCount: Integer;
+    FCollectionCheckCount: Integer;
     WasIde: Boolean;
     ExitAppl: Boolean;
     FDirectoryWatcher: IDirectoryWatcher;
@@ -366,7 +367,8 @@ begin
 
     ProcessCommandLine(GetCommandLine);
 
-    FCheckCount := 0;
+    FGlobalCheckCount := 0;
+    FCollectionCheckCount := 0;
     TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
   finally
     ShowWindow(Application.MainForm.Handle, SW_HIDE);
@@ -376,7 +378,8 @@ end;
 
 procedure TFormManager.RunInBackground;
 begin
-  FCheckCount := 0;
+  FGlobalCheckCount := 0;
+  FCollectionCheckCount := 0;
   TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
 end;
 
@@ -552,20 +555,21 @@ begin
       Exit;
     end;
 
-    Inc(FCheckCount);
+    Inc(FGlobalCheckCount);
+    Inc(FCollectionCheckCount);
 
-    if (FCheckCount = 5) and not FolderView then
+    if (FCollectionCheckCount = 5) and not FolderView then
     begin
       FDirectoryWatcher := TUserDirectoriesWatcher.Create;
       (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBManager.DBContext);
     end;
 
-    if (FCheckCount = 10) then // after 1sec. set normal priority
+    if (FGlobalCheckCount = 10) then // after 1sec. set normal priority
     begin
       SetThreadPriority(MainThreadID, THREAD_PRIORITY_NORMAL);
       SetPriorityClass(GetCurrentProcess, NORMAL_PRIORITY_CLASS);
     end;
-    if (FCheckCount = 20) and not FolderView then // after 2 sec.
+    if (FGlobalCheckCount = 20) and not FolderView then // after 2 sec.
     begin
       EventLog('Loading Kernel.dll');
       TW.I.Start('StartCRCCheckThread');
@@ -591,7 +595,7 @@ begin
     end;
     {$ENDIF}
 
-    if (FCheckCount = 50) and not FolderView then // after 4 sec.
+    if (FCollectionCheckCount = 50) and not FolderView then // after 5 sec.
     begin
       //todo: restart it when db has changed
       Context := DBManager.DBContext;
@@ -605,15 +609,15 @@ begin
       end;
     end;
 
-    if (FCheckCount = 100) and not FolderView then // after 10 sec. check for updates
+    if (FGlobalCheckCount = 100) and not FolderView then // after 10 sec. check for updates
     begin
       TW.I.Start('TInternetUpdate - Create');
       TInternetUpdate.Create(nil, True, nil);
     end;
-    if (FCheckCount = 600) and not FolderView then // after 1.min. backup database
+    if (FCollectionCheckCount = 600) and not FolderView then // after 1.min. backup database
       CreateBackUpForCollection;
 
-    if (FCheckCount mod 100 = 0) then
+    if (FGlobalCheckCount mod 100 = 0) then
     begin
       //each 10 seconts save uptime
       AddUptimeSecs(10);

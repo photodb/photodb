@@ -2,6 +2,8 @@ unit uDBConnection;
 
 interface
 
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Winapi.Windows,
   Winapi.ShellApi,
@@ -376,7 +378,6 @@ begin
       begin
         ADOConnections[I].Free;
         ADOConnections.RemoveAt(I);
-        Exit;
       end;
   end;
 end;
@@ -442,7 +443,8 @@ begin
   for I := ADOConnections.Count - 1 downto 0 do
   begin
     Connection := ADOConnections[I];
-    if (Connection.FileName = FileName) and not Connection.IsBusy and (GetConnectionsCount(Connection.IsolationLevel) > MaxConnectionPoolByLevel) then
+    if (Connection.FileName = FileName) and not Connection.IsBusy
+      and ((GetConnectionsCount(Connection.IsolationLevel) > MaxConnectionPoolByLevel) or (Connection.IsolationLevel = dbilExclusive)) then
     begin
       Connection.Free;
       ADOConnections.RemoveAt(I);
@@ -793,10 +795,11 @@ begin
             Progress(nil, TotalSize, CurrentSize);
           end;
         end;
+        ExitCode := 0;
       end
     );
+    WatchThread.FreeOnTerminate := False;
     WatchThread.Start;
-    WatchThread.FreeOnTerminate := True;
 
     PackInProgress := True;
     try
@@ -811,6 +814,8 @@ begin
 
     finally
       PackInProgress := False;
+      WatchThread.WaitFor;
+      F(WatchThread);
     end;
 
     if DestDatabaseName = '' then

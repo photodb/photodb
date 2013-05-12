@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{18ECE466-2195-4258-A27E-F707648F0E30}</ProjectGuid>
         <ProjectVersion>14.4</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -141,6 +141,8 @@
         <DCCReference Include="..\Units\Database\uDBEntities.pas"/>
         <DCCReference Include="..\Units\Database\uDBContext.pas"/>
         <DCCReference Include="..\Units\Database\uDBClasses.pas"/>
+        <DCCReference Include="..\Units\Database\uDBManager.pas"/>
+        <DCCReference Include="..\Units\Database\uCollectionUtils.pas"/>
         <DCCReference Include="..\Units\Database\uDBScheme.pas"/>
         <DCCReference Include="..\Units\Database\uSettingsRepository.pas"/>
         <DCCReference Include="..\Units\Database\uGroupsRepository.pas"/>
@@ -226,6 +228,10 @@
         <DCCReference Include="..\Units\uResources.pas"/>
         <DCCReference Include="..\Units\Utils\uColorUtils.pas"/>
         <DCCReference Include="TestBitmapUtils.pas"/>
+        <DCCReference Include="TestCreateCollection.pas"/>
+        <DCCReference Include="..\uFormBackgroundTaskStatus.pas">
+            <Form>FormBackgroundTaskStatus</Form>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

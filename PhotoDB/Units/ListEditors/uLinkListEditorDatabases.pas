@@ -312,7 +312,7 @@ var
         if TDBScheme.IsOldColectionFile(FileName) then
         begin
           if TDBManager.UpdateDatabaseQuery(FileName) then
-            TDBScheme.UpdateCollection(FileName, 0);
+            TDBScheme.UpdateCollection(FileName, 0, True);
         end;
 
         if TDBScheme.IsValidCollectionFile(FileName) then
