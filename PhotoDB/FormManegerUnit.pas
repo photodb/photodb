@@ -576,7 +576,7 @@ begin
       TLoad.Instance.StartCRCCheckThread;
     end;
     {$IFDEF LICENCE}
-    if (FCheckCount = 30) and not FolderView then // after 4 sec.
+    if (FGlobalCheckCount = 30) and not FolderView then // after 4 sec.
     begin
       if TActivationManager.Instance.IsDemoMode then
       begin

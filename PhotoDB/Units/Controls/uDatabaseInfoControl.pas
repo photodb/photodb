@@ -187,7 +187,11 @@ begin
   DisableAlign;
   try
 
-    FDatabaseName.Text := FInfo.Title;
+    if FInfo <> nil then
+      FDatabaseName.Text := FInfo.Title
+    else     
+      FDatabaseName.Text := '';
+      
     FDatabaseName.RefreshBuffer(True);
     FInfoLabel.Caption := '';
 
@@ -274,7 +278,9 @@ var
   PNG: TPngImage;
 begin
   F(FInfo);
-  FInfo := TDatabaseInfo(Info.Clone);
+  if Info <> nil then
+    FInfo := TDatabaseInfo(Info.Clone);
+
   FMediaCountReady := False;
   FIsUpdatingCollection := True;
 
@@ -351,7 +357,8 @@ var
   IconSize: Integer;
   BigToolBar: Boolean;
 begin
-  IconFileName := FInfo.Icon;
+  if FInfo <> nil then   
+    IconFileName := FInfo.Icon;
   if IconFileName = '' then
     IconFileName := Application.ExeName + ',0';
 
@@ -415,6 +422,9 @@ procedure TDatabaseInfoControl.ShowDatabaseProperties;
 var
   Editor: ILinkEditor;
 begin
+  if FInfo = nil then
+    Exit;
+
   Editor := TLinkListEditorDatabases.Create(TDBForm(Self.Owner));
   try
     if FormLinkItemEditor.Execute(L('Edit collection'), FInfo, Editor) then

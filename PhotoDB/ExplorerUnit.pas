@@ -2774,19 +2774,27 @@ begin
                   WllPersonsPreview.AddControl(LblInfo, True);
                   LblInfo.Caption := L('Persons on photo:');
 
-                  for I := 0 to Persons.Count - 1 do
-                  begin
-                    Wl := WllPersonsPreview.AddLink;
-                    Wl.Text := Persons[I].Name;
-                    Wl.Font.Style := [fsBold];
-                    Wl.IconWidth := PersonImageSize;
-                    Wl.IconHeight := PersonImageSize;
-                    Wl.LoadBitmap(Persons[I].CreatePreview(PersonImageSize, PersonImageSize));
-                    Wl.Tag := Persons[I].ID;
-                    Wl.OnMouseEnter := OnPreviewPersonMouseEnter;
-                    Wl.OnMouseLeave := OnPreviewPersonMouseLeave;
-                    Wl.OnMouseUp := OnPreviewPersonClick;
+                  WllPersonsPreview.DisableAlign;
+                  try
+
+                    for I := 0 to Persons.Count - 1 do
+                    begin
+                      Wl := WllPersonsPreview.AddLink;
+                      Wl.Text := Persons[I].Name;
+                      Wl.Font.Style := [fsBold];
+                      Wl.IconWidth := PersonImageSize;
+                      Wl.IconHeight := PersonImageSize;
+                      Wl.LoadBitmap(Persons[I].CreatePreview(PersonImageSize, PersonImageSize));
+                      Wl.Tag := Persons[I].ID;
+                      Wl.OnMouseEnter := OnPreviewPersonMouseEnter;
+                      Wl.OnMouseLeave := OnPreviewPersonMouseLeave;
+                      Wl.OnMouseUp := OnPreviewPersonClick;
+                    end;
+
+                  finally
+                    WllPersonsPreview.EnableAlign;
                   end;
+
                   TsMediaPreviewResize(Self);
                   WllPersonsPreview.Visible := True;
                 finally
@@ -6261,7 +6269,7 @@ begin
 
   VerifyPaste(Self);
 
-  BeginScreenUpdate(Handle);
+  BeginScreenUpdate(TsInfo.Handle);
   try
     S := ExtractFileName(FSelectedInfo.FileName) + ' ';
     for I := Length(S) downto 1 do
@@ -6468,7 +6476,7 @@ begin
 
     CoolBarBottomResize(Self);
   finally
-    EndScreenUpdate(Handle, False);
+    EndScreenUpdate(TsInfo.Handle, False);
   end;
   EventLog('ReallignInfo OK');
 end;
@@ -11609,35 +11617,43 @@ begin
 
   FCurrentGroups := TGroups.CreateFromString(FSelectedInfo.Groups);
   try
-    if FCurrentGroups.Count = 0 then
-    begin
-      LblInfo := TStaticText.Create(WllGroups);
-      LblInfo.Parent := WllGroups;
-      WllGroups.AddControl(LblInfo, True);
-      LblInfo.Caption := L('There are no groups');
+
+    WllGroups.DisableAlign;
+    try
+
+      if FCurrentGroups.Count = 0 then
+      begin
+        LblInfo := TStaticText.Create(WllGroups);
+        LblInfo.Parent := WllGroups;
+        WllGroups.AddControl(LblInfo, True);
+        LblInfo.Caption := L('There are no groups');
+      end;
+
+      if not DBReadOnly then
+      begin
+        WL := WllGroups.AddLink(True);
+        WL.Text := L('Edit groups');
+        WL.ImageList := ImGroups;
+        WL.ImageIndex := 0;
+        WL.Tag := -1;
+        WL.OnClick := GroupClick;
+      end;
+
+      for I := 0 to FCurrentGroups.Count - 1 do
+      begin
+        WL := WllGroups.AddLink;
+        WL.Text := FCurrentGroups[I].GroupName;
+        WL.ImageList := ImGroups;
+        WL.ImageIndex := 0;
+        WL.Tag := I;
+        WL.OnClick := GroupClick;
+      end;
+    finally
+      F(FCurrentGroups);
     end;
 
-    if not DBReadOnly then
-    begin
-      WL := WllGroups.AddLink(True);
-      WL.Text := L('Edit groups');
-      WL.ImageList := ImGroups;
-      WL.ImageIndex := 0;
-      WL.Tag := -1;
-      WL.OnClick := GroupClick;
-    end;
-
-    for I := 0 to FCurrentGroups.Count - 1 do
-    begin
-      WL := WllGroups.AddLink;
-      WL.Text := FCurrentGroups[I].GroupName;
-      WL.ImageList := ImGroups;
-      WL.ImageIndex := 0;
-      WL.Tag := I;
-      WL.OnClick := GroupClick;
-    end;
   finally
-    F(FCurrentGroups);
+    WllGroups.EnableAlign;
   end;
 
   LoadGroupInfo := TGroupLoadInfo.Create;

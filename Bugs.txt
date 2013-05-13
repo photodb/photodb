@@ -21,6 +21,7 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
+- No collections review;
 - AV on full screen, menu multi-monitor position;
 - Info with long file name;
 - Slide show interval control issue;

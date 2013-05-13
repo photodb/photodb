@@ -12,6 +12,10 @@ uses
   Vcl.Forms,
   Vcl.Graphics,
   Vcl.Imaging.Jpeg,
+
+  Dmitry.Controls.WebLink,
+  Dmitry.Controls.WebLinkList,
+
   uBitmapUtils,
   uMediaInfo;
 
@@ -23,6 +27,7 @@ type
     procedure TearDown; override;
   published
     procedure TestImageScale;
+    procedure TestWebLinkCreate;
   end;
 
 implementation
@@ -53,12 +58,32 @@ begin
 
   D := TBitmap.Create;
 
-  for I := 0 to 100 do
+  for I := 0 to 1000 do
     SmoothResize(500, 500, S, D);
 
   D.Free;
   S.Free;
   J.Free;
+end;
+
+procedure TTestBitmapUtils.TestWebLinkCreate;
+var
+  I: Integer;
+  WLL: TWebLinkList;
+  WL: TWebLink;
+  F: TForm;
+begin
+  F := TForm.Create(nil);
+  WLL := TWebLinkList.Create(F);
+  WLL.Parent := F;
+
+  F.Show;
+  for I := 0 to 100 do
+    WLL.AddLink(True).Text := IntToStr(I);
+
+  WLL.AutoHeight(100);
+
+  F.Free;
 end;
 
 initialization

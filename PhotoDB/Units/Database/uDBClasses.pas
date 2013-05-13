@@ -279,8 +279,6 @@ begin
 end;
 
 function TInsertCommand.LastID: Integer;
-var
-  SC: TSelectCommand;
 begin
   SetSQL(FQuery, 'SELECT @@IDENTITY as LastID');
   FQuery.Open;
@@ -354,7 +352,6 @@ var
         ADOParameter.Value := TBooleanParameter(Parameter).Value
       else if Parameter is TJpegParameter then
       begin
-        TJpegParameter(Parameter).Image.Compress;
         ADOParameter.Assign(TJpegParameter(Parameter).Image);
       end else if Parameter is TStreamParameter then
         ADOParameter.LoadFromStream(TStreamParameter(Parameter).Stream, ftBlob)

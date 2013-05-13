@@ -1964,11 +1964,10 @@ begin
           t3 := xP shr 16;
           z  := xP and $FFFF;
           w2 := (z * iz2) div $10000; //MulDiv(z, iz2, $10000);
-          w1 := Integer(iz2) - w2;
           w4 := (z * z2) div $10000; //MulDiv(z, z2, $10000);
-          w3 := Integer(z2) - w4;
+          w1 := Integer(iz2) - w2;
           if (t3 >= SW1) or (x = DW1) then
-           t3 := S.Width - 2;
+           t3 := SW1 - 1;
 
           DstLine32[x].R := (SrcLine132[t3].R * w1 +
             SrcLine132[t3 + 1].R * w2 + SrcLine232[t3].R * w3 + SrcLine232[t3 + 1].R * w4) shr 16;
@@ -2012,17 +2011,17 @@ begin
         iz2 := succ((not yp) and $FFFF);
 
         DLinePixel := NativeInt(DstLine);
-        for x := 0 to pred(D.Width) do
+        for x := 0 to DW1 do
         begin
           t3 := xP shr 16;
           z  := xP and $FFFF;
           w2 := (z * iz2) div $10000; //MulDiv(z, iz2, $10000);
-          w1 := Integer(iz2) - w2;
           w4 := (z * z2) div $10000; //MulDiv(z, z2, $10000);
+          w1 := Integer(iz2) - w2;
           w3 := Integer(z2) - w4;
 
           if (t3 >= SW1) or (x = DW1) then
-            t3 := S.Width - 2;
+            t3 := SW1 - 1;
 
           PRGBTriple(DLinePixel)^.rgbtRed := (SrcLine1[t3].rgbtRed * w1 + SrcLine1[t3 + 1].rgbtRed * w2 +
                                               SrcLine2[t3].rgbtRed * w3 + SrcLine2[t3 + 1].rgbtRed * w4) shr 16;

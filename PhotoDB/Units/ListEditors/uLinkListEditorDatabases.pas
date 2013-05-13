@@ -294,7 +294,8 @@ var
   procedure OpenDB;
   var
     OpenDialog: DBOpenDialog;
-    FileName: string;
+    FileName, Title, Description: string;
+    NewCollectionContext: IDBContext;
     Settings: TSettings;
     SettingsRepository: ISettingsRepository;
   begin
@@ -319,10 +320,19 @@ var
         begin
           FDeletedCollections.Remove(FileName, False);
 
-          SettingsRepository := Context.Settings;
+          NewCollectionContext := TDBContext.Create(FileName);
+          SettingsRepository := NewCollectionContext.Settings;
           Settings := SettingsRepository.Get;
           try
-            Data := TDatabaseInfo.Create(IIF(Length(Trim(Settings.Name)) > 0, Trim(Settings.Name), GetFileNameWithoutExt(OpenDialog.FileName)), OpenDialog.FileName, Application.ExeName + ',0', Trim(Settings.Description));
+            Title := GetFileNameWithoutExt(OpenDialog.FileName);
+            Description := '';
+            if Length(Settings.Name) > 0 then
+            begin
+              Title := Settings.Name;
+              Description := Settings.Description;
+            end;
+
+            Data := TDatabaseInfo.Create(Title, OpenDialog.FileName, Application.ExeName + ',0', Description);
           finally
             F(Settings);
           end;
