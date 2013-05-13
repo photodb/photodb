@@ -466,7 +466,9 @@ begin
   if IsWindowsVista then
   begin
     Updating;
+    DisableAlign;
     SetVistaFonts(Self);
+    EnableAlign;
     Updated;
   end;
 

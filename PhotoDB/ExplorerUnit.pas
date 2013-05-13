@@ -6172,9 +6172,9 @@ begin
         EndScreenUpdate(TsInfo.Handle, False);
     end;
 
-    ReallignInfo;
+    {ReallignInfo;
 
-    ApplyLeftTabs;
+    ApplyLeftTabs;  }
   end;
 end;
 
@@ -6210,17 +6210,15 @@ end;
 
 procedure TExplorerForm.ReallignToolInfo;
 begin
-  TbDelete.Enabled := False;
-  TbCopy.Enabled := False;
-  TbCut.Enabled := False;
-
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE) or (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) then
-    TbCopy.Enabled := SelCount > 0;
+    TbCopy.Enabled := SelCount > 0
+  else
+    TbCopy.Enabled := False;
 
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
@@ -6228,14 +6226,18 @@ begin
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_SEARCH) then
-    TbCut.Enabled := SelCount > 0;
+    TbCut.Enabled := SelCount > 0
+  else
+    TbCut.Enabled := False;
 
   if (FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
      (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) then
-    TbDelete.Enabled := SelCount > 0;
+    TbDelete.Enabled := SelCount > 0
+  else
+    TbDelete.Enabled := False;
 end;
 
 procedure TExplorerForm.ReallignInfo;
@@ -6269,6 +6271,7 @@ begin
 
   VerifyPaste(Self);
 
+  TsInfo.DisableAlign;
   BeginScreenUpdate(TsInfo.Handle);
   try
     S := ExtractFileName(FSelectedInfo.FileName) + ' ';
@@ -6476,6 +6479,7 @@ begin
 
     CoolBarBottomResize(Self);
   finally
+    TsInfo.EnableAlign;
     EndScreenUpdate(TsInfo.Handle, False);
   end;
   EventLog('ReallignInfo OK');
@@ -11604,23 +11608,24 @@ var
   B: TBitmap;
 begin
 
-  ImGroups.Clear;
-  B := TBitmap.Create;
-  try
-    CreteDefaultGroupImage(B);
-    ImGroups.Add(B, nil);
-  finally
-    F(B);
+  if ImGroups.Count > 1 then
+  begin
+    ImGroups.Clear;
+    B := TBitmap.Create;
+    try
+      CreteDefaultGroupImage(B);
+      ImGroups.Add(B, nil);
+    finally
+      F(B);
+    end;
   end;
-
-  WllGroups.Clear;
 
   FCurrentGroups := TGroups.CreateFromString(FSelectedInfo.Groups);
   try
 
     WllGroups.DisableAlign;
     try
-
+      WllGroups.Clear;
       if FCurrentGroups.Count = 0 then
       begin
         LblInfo := TStaticText.Create(WllGroups);
@@ -11723,10 +11728,15 @@ begin
     end
   );
 
-  WllGroups.ReallignList;
-  WllGroups.AutoHeight(200);
+  TsInfo.DisableAlign;
+  try
+    WllGroups.ReallignList;
+    WllGroups.AutoHeight(200);
 
-  ReallignEditBoxes;
+    ReallignEditBoxes;
+  finally
+    TsInfo.EnableAlign;
+  end;
 end;
 
 procedure TExplorerForm.ExtendedSearchGroupClick(Sender: TObject);

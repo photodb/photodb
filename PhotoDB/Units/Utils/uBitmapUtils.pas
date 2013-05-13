@@ -3,6 +3,7 @@ unit uBitmapUtils;
 interface
 
 uses
+  System.Types,
   System.Math,
   System.Classes,
   Winapi.Windows,
@@ -1465,26 +1466,23 @@ end;
 
 procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
 var
-  I, J : Integer;
-  p : PARGB;
-  R, G, B : Byte;
+  I, J: Integer;
+  p: PARGB;
+  RGB: TRGB;
 begin
   Bitmap.PixelFormat := pf24Bit;
   Color := ColorToRGB(Color);
-  R := GetRValue(Color);
-  G := GetGValue(Color);
-  B := GetBValue(Color);
+  RGB.R := GetRValue(Color);
+  RGB.G := GetGValue(Color);
+  RGB.B := GetBValue(Color);
+
   if Bitmap.PixelFormat = pf24bit then
   begin
     for I := 0 to Bitmap.Height - 1 do
     begin
       P := Bitmap.ScanLine[I];
       for J := 0 to Bitmap.Width - 1 do
-      begin
-        P[J].R := R;
-        P[J].G := G;
-        P[J].B := B;
-      end;
+        P[J] := RGB;
     end;
   end;
 end;
@@ -1966,11 +1964,12 @@ begin
           w2 := (z * iz2) div $10000; //MulDiv(z, iz2, $10000);
           w4 := (z * z2) div $10000; //MulDiv(z, z2, $10000);
           w1 := Integer(iz2) - w2;
+          w3 := Integer(z2) - w4;
           if (t3 >= SW1) or (x = DW1) then
            t3 := SW1 - 1;
 
-          DstLine32[x].R := (SrcLine132[t3].R * w1 +
-            SrcLine132[t3 + 1].R * w2 + SrcLine232[t3].R * w3 + SrcLine232[t3 + 1].R * w4) shr 16;
+          DstLine32[x].R := (SrcLine132[t3].R * w1 + SrcLine132[t3 + 1].R * w2 +
+            SrcLine232[t3].R * w3 + SrcLine232[t3 + 1].R * w4) shr 16;
 
           DstLine32[x].G := (SrcLine132[t3].G * w1 + SrcLine132[t3 + 1].G * w2 +
             SrcLine232[t3].G * w3 + SrcLine232[t3 + 1].G * w4) shr 16;
