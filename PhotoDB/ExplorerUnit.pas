@@ -2662,6 +2662,7 @@ begin
       for I := 0 to WllPersonsPreview.ControlCount - 1 do
         if WllPersonsPreview.Controls[I] is TWebLink then
         begin
+          TWebLink(WllPersonsPreview.Controls[I]).StartChanges;
           TWebLink(WllPersonsPreview.Controls[I]).Enabled := False;
           TWebLink(WllPersonsPreview.Controls[I]).DisableStyles := True;
           TWebLink(WllPersonsPreview.Controls[I]).Font.Color := ColorDiv2(Theme.PanelColor, Theme.PanelFontColor);
@@ -11608,7 +11609,7 @@ var
   B: TBitmap;
 begin
 
-  if ImGroups.Count > 1 then
+  if ImGroups.Count <> 1 then
   begin
     ImGroups.Clear;
     B := TBitmap.Create;

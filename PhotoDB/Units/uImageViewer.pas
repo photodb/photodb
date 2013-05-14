@@ -18,6 +18,7 @@ uses
 
   uMemory,
   uGOM,
+  uTime,
   uIImageViewer,
   uImageViewerControl,
   uFaceDetection,
@@ -299,8 +300,10 @@ begin
     Height := 0;
     Bitmap := TBitmap.Create;
     try
+ TW.I.Start('LoadFile - GetImage');
       if FImageSource.GetImage(FileInfo.FileName, Bitmap, Width, Height) then
       begin
+ TW.I.Start('LoadFile - LoadStaticImage');
         FImageControl.LoadStaticImage(FileInfo, Bitmap, Width, Height, FileInfo.Rotation, 1, nil);
         Bitmap := nil;
       end;
@@ -315,6 +318,7 @@ begin
   if Assigned(FOnBeginLoadingImage) then
     FOnBeginLoadingImage(Self, NewImage);
 
+ TW.I.Start('LoadFile - StartLoadingImage');
   FImageControl.StartLoadingImage;
   LoadImage(Self, FileInfo, FWidth, FHeight);
 end;

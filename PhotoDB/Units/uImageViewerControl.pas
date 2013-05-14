@@ -2435,7 +2435,7 @@ begin
 
   IsDevice := IsDevicePath(Item.FileName);
   FWlFaceCount.Visible := (FWlFaceCount.Left + FWlFaceCount.Width + 3 < FTbrActions.Left) and FIsStaticImage and FaceDetectionManager.IsActive and not IsDevice and (FText = '');
-  FLsDetectingFaces.Visible := ((FLsDetectingFaces.Left + FLsDetectingFaces.Width + 3 < FTbrActions.Left) and not FFaceDetectionComplete) and FIsStaticImage and AppSettings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive and not IsDevice and (FText = '');
+  FLsDetectingFaces.Visible := ((FLsDetectingFaces.Left + FLsDetectingFaces.Width + 3 < FTbrActions.Left) and not FFaceDetectionComplete) and FIsStaticImage and AppSettings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and not IsDevice and (FText = '');
 end;
 
 procedure TImageViewerControl.UpdateFaceDetectionState;
@@ -2452,6 +2452,7 @@ begin
     IsDetectionActive := AppSettings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive;
     if not FFaceDetectionComplete and IsDetectionActive then
     begin
+      FWlFaceCount.StartChanges;
       FWlFaceCount.Text := L('Detecting faces') + '...';
       FLsDetectingFaces.Show;
       FWlFaceCount.ImageIndex := -1;
@@ -2460,6 +2461,7 @@ begin
       FWlFaceCount.Left := FLsDetectingFaces.Left + FLsDetectingFaces.Width + 2;
     end else
     begin
+      FWlFaceCount.StartChanges;
       FLsDetectingFaces.Hide;
       FWlFaceCount.Left := 6;
       FWlFaceCount.IconWidth := 16;

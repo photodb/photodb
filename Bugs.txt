@@ -22,11 +22,15 @@ Features ready:
 
 Bugs:
 - No collections review;
+- GetImageIDEx with many duplicates query;
 - AV on full screen, menu multi-monitor position;
 - Info with long file name;
 - Slide show interval control issue;
+- Histogram lines;
+
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
+
 - Tabs redraw issue???;
 
 [New]
