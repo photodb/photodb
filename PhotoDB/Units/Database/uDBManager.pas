@@ -57,13 +57,13 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    class function CreateDBbyName(FileName: string): Integer;
+    class function CreateDBbyName(FileName: string): Boolean;
     function SetDataBase(DatabaseFileName: string): IDBContext;
     function LoadDefaultCollection: Boolean;
     function CreateSampleDefaultCollection: IDBContext;
     function SelectDB(Caller: TDBForm; CollectionFileName: string): Boolean;
 
-    class procedure CreateExampleDB(FileName: string);
+    class function CreateExampleDB(FileName: string): Boolean;
 
     class procedure ReadUserCollections(Collections: TList<TDatabaseInfo>);
     class procedure SaveUserCollections(Collections: TList<TDatabaseInfo>);
@@ -221,22 +221,23 @@ begin
   FDBContext := nil;
 end;
 
-class function TDBManager.CreateDBbyName(FileName: string): Integer;
+class function TDBManager.CreateDBbyName(FileName: string): Boolean;
 begin
-  Result := 0;
+  Result := False;
   CreateDirA(ExtractFileDir(FileName));
   try
     if FileExistsSafe(FileName) then
+    begin
+      if ID_YES <> MessageBoxDB(Screen.ActiveFormHandle, FormatEx(TA('Collection "{0}" already exists! Delete this collection file?', 'Explorer'), [FileName]), TA('Warning'), '', TD_BUTTON_YESNO, TD_ICON_WARNING) then
+        Exit;
       DeleteFile(FileName);
+    end;
 
     if FileExistsSafe(FileName) then
-    begin
-      Result := 1;
       Exit;
-    end;
-    Result := 1;
 
     TDBScheme.CreateCollection(FileName);
+    Result := True;
   except
     on E: Exception do
     begin
@@ -249,14 +250,16 @@ begin
   ProgramStatistics.DBUsed;
 end;
 
-class procedure TDBManager.CreateExampleDB(FileName: string);
+class function TDBManager.CreateExampleDB(FileName: string): Boolean;
 var
   NewGroup: TGroup;
   ImagesDir: string;
   DBContext: IDBContext;
   GroupsRepository: IGroupsRepository;
 begin
-  CreateDBbyName(FileName);
+  Result := False;
+  if not CreateDBbyName(FileName) then
+    Exit;
 
   DBContext := TDBContext.Create(FileName);
   GroupsRepository := DBContext.Groups;
@@ -327,6 +330,8 @@ begin
       F(NewGroup);
     end;
   end;
+
+  Result := True;
 end;
 
 destructor TDBManager.Destroy;

@@ -317,6 +317,9 @@ begin
     if SC.Execute > 0 then
     begin
       Media.ReadFromDS(SC.DS);
+      if LoadThumbnail then
+        Media.LoadImageFromDS(SC.DS);
+
       Media.Tag := EXPLORER_ITEM_IMAGE;
     end;
   finally

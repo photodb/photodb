@@ -364,7 +364,7 @@ type
     { Public declarations }
     SID: TGUID;
     FCurrentPass: string;
-    GistogrammData: TGistogrammData;
+    GistogrammData: THistogrammData;
 
     //Begin: ICurrentImageSource
     function GetCurrentImageFileName: string;

@@ -282,9 +282,8 @@ var
         if GetExt(FileName) <> 'PHOTODB' then
           FileName := FileName + '.photodb';
 
-        TDBManager.CreateExampleDB(FileName);
-
-        Data := TDatabaseInfo.Create(GetFileNameWithoutExt(FileName), FileName, Application.ExeName + ',0', '');
+        if TDBManager.CreateExampleDB(FileName) then
+          Data := TDatabaseInfo.Create(GetFileNameWithoutExt(FileName), FileName, Application.ExeName + ',0', '');
       end;
     finally
       F(SaveDialog);
@@ -499,8 +498,17 @@ function TLinkListEditorDatabases.OnDelete(Sender: ILinkItemSelectForm;
   Data: TDataObject; Editor: TPanel): Boolean;
 var
   DI: TDatabaseInfo;
+  Context: IDBContext;
 begin
   DI := TDatabaseInfo(Editor.Tag);
+
+  Context := DBManager.DBContext;
+  if AnsiLowerCase(Context.CollectionFileName) = AnsiLowerCase(DI.Path) then
+  begin
+    MessageBoxDB(FOwner.Handle, FOwner.L('Active collection can''t be deleted! Please change active collection and try again.'), FOwner.L('Warning'), '', TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit(False);
+  end;
+
   if FileExistsSafe(DI.Path) then
   begin
     TryRemoveConnection(DI.Path, True);

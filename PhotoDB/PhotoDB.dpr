@@ -8,9 +8,25 @@ program PhotoDB;
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
+{$DEFINE SCALE_MM}
+{$DEFINE _FAST_MM}
+
 uses
+  {$IFDEF SCALE_MM}
+  ScaleMM2 in 'External\scalemm\ScaleMM2.pas',
+  smmFunctions in 'External\scalemm\smmFunctions.pas',
+  smmGlobal in 'External\scalemm\smmGlobal.pas',
+  smmLargeMemory in 'External\scalemm\smmLargeMemory.pas',
+  smmLogging in 'External\scalemm\smmLogging.pas',
+  smmMediumMemory in 'External\scalemm\smmMediumMemory.pas',
+  smmSmallMemory in 'External\scalemm\smmSmallMemory.pas',
+  smmStatistics in 'External\scalemm\smmStatistics.pas',
+  smmTypes in 'External\scalemm\smmTypes.pas',
+  {$ENDIF}
+  {$IFDEF FAST_MM}
   FastMM4 in 'External\FastMM\FastMM4.pas',
-  FastMM4Messages in 'External\FastMM\FastMM4Messages.pas' ,
+  FastMM4Messages in 'External\FastMM\FastMM4Messages.pas',
+  {$ENDIF}
   {$IFDEF DEBUG}
   ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
   {$ENDIF}

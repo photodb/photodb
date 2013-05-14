@@ -3674,14 +3674,14 @@ end;
 
 procedure TExplorerForm.TsInfoResize(Sender: TObject);
 begin
-  BeginScreenUpdate(TsInfo.Handle);
+  BeginScreenUpdate(PnInfoContainer.Handle);
   try
     ReRating.Left := TsInfo.Width div 2 - ReRating.Width div 2;
     WllGroups.ReallignList;
     WllGroups.AutoHeight(200);
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, False);
+    EndScreenUpdate(PnInfoContainer.Handle, False);
   end;
 end;
 
@@ -6165,12 +6165,12 @@ begin
 
     IsVisible := PcTasks.ActivePageIndex = Integer(eltsInfo);
     if IsVisible then
-      BeginScreenUpdate(TsInfo.Handle);
+      BeginScreenUpdate(PnInfoContainer.Handle);
     try
       ImHistogramm.Picture.Graphic := Histogramm;
     finally
       if IsVisible then
-        EndScreenUpdate(TsInfo.Handle, False);
+        EndScreenUpdate(PnInfoContainer.Handle, False);
     end;
 
     {ReallignInfo;
@@ -6272,8 +6272,8 @@ begin
 
   VerifyPaste(Self);
 
-  TsInfo.DisableAlign;
-  BeginScreenUpdate(TsInfo.Handle);
+  PnInfoContainer.DisableAlign;
+  BeginScreenUpdate(PnInfoContainer.Handle);
   try
     S := ExtractFileName(FSelectedInfo.FileName) + ' ';
     for I := Length(S) downto 1 do
@@ -6480,8 +6480,8 @@ begin
 
     CoolBarBottomResize(Self);
   finally
-    TsInfo.EnableAlign;
-    EndScreenUpdate(TsInfo.Handle, False);
+    PnInfoContainer.EnableAlign;
+    EndScreenUpdate(PnInfoContainer.Handle, False);
   end;
   EventLog('ReallignInfo OK');
 end;
@@ -9210,6 +9210,9 @@ begin
         FSelectedInfo.Encrypted := Info.Encrypted;
         FSelectedInfo.Date := Info.Date;
         FSelectedInfo.Time := Info.Time;
+        FSelectedInfo.Width := Info.Width;
+        FSelectedInfo.Height := Info.Height;
+
         FileSID := Info.SID;
         if Info.GeoLocation <> nil then
         begin
@@ -11503,8 +11506,9 @@ end;
 //InitTab: update edit info
 procedure TExplorerForm.InitInfoEditor(InitTab: Boolean);
 begin
+  PnInfoContainer.DisableAlign;
   if TsInfo.Visible then
-    BeginScreenUpdate(TsInfo.Handle);
+    BeginScreenUpdate(PnInfoContainer.Handle);
   try
     if InitTab then
     begin
@@ -11558,8 +11562,9 @@ begin
       TsInfo.Tag := 1;
     
   finally
+    PnInfoContainer.EnableAlign;
     if TsInfo.Visible then
-      EndScreenUpdate(TsInfo.Handle, False);
+      EndScreenUpdate(PnInfoContainer.Handle, False);
   end;
 end;
 
@@ -12752,6 +12757,12 @@ end;
 
 procedure TExplorerForm.ReallignEditBoxes;
 begin
+  LbHistogramImage.Top := SizeLabel.BoundsRect.Bottom + 5;
+  ImHistogramm.Top := LbHistogramImage.BoundsRect.Bottom + 5;
+  ReRating.Top := ImHistogramm.BoundsRect.Bottom + 5;
+  DteDate.Top := ReRating.BoundsRect.Bottom + 5;
+  DteTime.Top := DteDate.BoundsRect.Bottom + 5;
+  WllGroups.Top := DteTime.BoundsRect.Bottom + 5;
   LbEditKeywords.Top := WllGroups.BoundsRect.Bottom + 5;
   MemKeyWords.Top := LbEditKeywords.BoundsRect.Bottom + 3;
   LbEditComments.Top := MemKeyWords.BoundsRect.Bottom + 3;
@@ -12766,13 +12777,13 @@ end;
 
 procedure TExplorerForm.MemCommentsEnter(Sender: TObject);
 begin
-  BeginScreenUpdate(TsInfo.Handle);
+  BeginScreenUpdate(PnInfoContainer.Handle);
   try
     MemComments.Height := 100;
     MemKeyWords.Height := 50;
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, False);
+    EndScreenUpdate(PnInfoContainer.Handle, False);
   end;
 end;
 
@@ -12783,14 +12794,14 @@ end;
 
 procedure TExplorerForm.MemKeyWordsEnter(Sender: TObject);
 begin
-  BeginScreenUpdate(TsInfo.Handle);
+  BeginScreenUpdate(PnInfoContainer.Handle);
   try
     MemComments.Height := 50;
     MemKeyWords.Height := 100;
 
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, False);
+    EndScreenUpdate(PnInfoContainer.Handle, False);
   end;
 end;
 
@@ -12806,14 +12817,14 @@ end;
 
 procedure TExplorerForm.DteTimeEnter(Sender: TObject);
 begin
-  BeginScreenUpdate(TsInfo.Handle);
+  BeginScreenUpdate(PnInfoContainer.Handle);
   try
     MemComments.Height := 50;
     MemKeyWords.Height := 50;
 
     ReallignEditBoxes;
   finally
-    EndScreenUpdate(TsInfo.Handle, False);
+    EndScreenUpdate(PnInfoContainer.Handle, False);
   end;
 end;
 
@@ -13010,6 +13021,9 @@ var
   MI: TMenuItem;
   DB: TDatabaseInfo;
   Ico: HIcon;
+  SettingsRepository: ISettingsRepository;
+  Settings: TSettings;
+  S: string;
 begin
   FreeList(FDatabases, False);
   F(FActiveDatabase);
@@ -13041,6 +13055,23 @@ begin
     end;
 
     PmDBList.Items.Add(MI);
+  end;
+
+  if FActiveDatabase = nil then
+  begin
+    SettingsRepository := FContext.Settings;
+    Settings := SettingsRepository.Get;
+    try
+      S := Settings.Name;
+      if S = '' then
+        S := GetFileNameWithoutExt(FContext.CollectionFileName);
+
+      FDatabases.Add(TDatabaseInfo.Create(S, FContext.CollectionFileName, Application.ExeName + ',0', Settings.Description));
+      TDBManager.SaveUserCollections(FDatabases);
+      Exit;
+    finally
+      F(Settings);
+    end;
   end;
 
   MI := TMenuItem.Create(PmDBList);

@@ -1153,7 +1153,10 @@ begin
             IsLoadingList := True;
 
             if FItems.Count = Count then
+            begin
+              IsLoadingList := False;
               Break;
+            end;
           end;
 
           if I = FTasks.Count - 1 then

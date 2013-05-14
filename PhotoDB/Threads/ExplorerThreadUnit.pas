@@ -1448,9 +1448,7 @@ end;
 
 procedure TExplorerThread.ReplaceImageItemImage(FileName: string; FileSize: Int64; FileID: TGUID);
 var
-  FBS: TStream;
   CryptedFile: Boolean;
-  JPEG: TJpegImage;
   MediaRepository: IMediaRepository;
 begin
   TempBitmap := nil;
@@ -1470,24 +1468,8 @@ begin
       FInfo.ReadFromDS(FQuery);
       FInfo.FileName := FileName;
       if ExplorerInfo.View = LV_THUMBS then
-      begin
-        if FInfo.Encrypted then
-        begin
-          JPEG := TJpegImage.Create;
-          DeCryptBlobStreamJPG(fQuery.FieldByName('thum'), SessionPasswords.FindForBlobStream(fQuery.FieldByName('thum')), JPEG);
-          FInfo.Image := JPEG;
-          FInfo.IsImageEncrypted := not FInfo.Image.Empty;
-        end else
-        begin
-          FInfo.Image := TJpegImage.Create;
-          FBS := GetBlobStream(fQuery.FieldByName('thum'), bmRead);
-          try
-            FInfo.Image.LoadFromStream(FBS);
-          finally
-            F(FBS);
-          end;
-        end;
-      end;
+        FInfo.LoadImageFromDS(FQuery);
+
     end;
   end else
   begin

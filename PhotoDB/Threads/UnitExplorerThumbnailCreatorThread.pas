@@ -100,7 +100,7 @@ var
   ShadowImage: TBitmap;
   Data: TObject;
   MinC, MaxC: Integer;
-  FHistogramm: TGistogrammData;
+  FHistogramm: THistogrammData;
   PI: TPathItem;
   MediaRepository: IMediaRepository;
 begin
@@ -218,7 +218,10 @@ begin
                       if ImageInfo <> nil then
                         ImageInfo.AppllyICCProfile(Fbit);
 
-                      FHistogramm := FillHistogramma(Fbit);
+                      if FInfo.Histogram.Loaded then
+                        FHistogramm := FInfo.Histogram
+                      else
+                        FHistogramm := FillHistogramma(Fbit);
 
                       ShadowImage := TBitmap.Create;
                       try
@@ -244,7 +247,10 @@ begin
                     if ImageInfo <> nil then
                       ImageInfo.AppllyICCProfile(TempBit);
 
-                    FHistogramm := FillHistogramma(TempBit);
+                    if FInfo.Histogram.Loaded then
+                      FHistogramm := FInfo.Histogram
+                    else
+                      FHistogramm := FillHistogramma(TempBit);
 
                     ShadowImage := TBitmap.Create;
                     try
@@ -299,7 +305,10 @@ begin
                       if not (TempBit.PixelFormat in [pf24Bit, pf32Bit]) then
                         TempBit.PixelFormat := pf24Bit;
 
-                      FHistogramm := FillHistogramma(TempBit);
+                      if FInfo.Histogram.Loaded then
+                        FHistogramm := FInfo.Histogram
+                      else
+                        FHistogramm := FillHistogramma(TempBit);
 
                       W := TempBit.Width;
                       H := TempBit.Height;

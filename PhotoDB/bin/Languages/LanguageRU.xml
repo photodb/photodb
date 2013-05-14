@@ -365,9 +365,9 @@
 	<translate name="Loading &quot;My computer&quot; directory" value="Загрузка папки &quot;Мой компьютер&quot;" />
 	<translate name="New directory" value="Новая директория" />
 	<translate name="Unable to create directory %s!" value="Невозможно создать директорию %s!" />
-	<translate name="Directory &quot;%s&quot; not found!" value="Директория &quot;%s&quot; не найдена!" />	
+	<translate name="Directory &quot;%s&quot; not found!" value="Директория &quot;%s&quot; не найдена!" />
 	<translate name="Text document" value="Текстовый документ" />
-	<translate name="Unable to create file &quot;%s&quot;!" value="Невозможно создать файл &quot;%s&quot;!" />	
+	<translate name="Unable to create file &quot;%s&quot;!" value="Невозможно создать файл &quot;%s&quot;!" />
 	<translate name="Free space" value="Свободно" />
 	<translate name="%s from %s" value="%s из %s" />
 	<translate name="Size = %s" value="Размер = %s" />
@@ -384,7 +384,7 @@
 	<translate name="Select place to copy file &quot;%s&quot;" value="Выберите место для копирования файла &quot;%s&quot;" />
 	<translate name="Select place to copy %d files" value="Выберите место для копирования %d файлов" />
 	<translate name="Select place to move file &quot;%s&quot;" value="Выберите место для перемещения файла &quot;%s&quot;" />
-	<translate name="Select place to move %d files" value="Выберите место для перемещения %d файлов" />	
+	<translate name="Select place to move %d files" value="Выберите место для перемещения %d файлов" />
 	<translate name="My computer" value="Мой компьютер" />
 	<translate name="Network" value="Сеть" />
 	<translate name="Workgroup" value="Рабочая группа" />
@@ -484,6 +484,8 @@
 	<translate name="Change synchronization settings" value="Изменить настройки синхронизации" />
 	<translate name="Change preview options" value="Изменить настройки предпросмотров" />
 	<translate name="Edit collection" value="Редактировать коллекцию" />
+	<translate name="Active collection can't be deleted! Please change active collection and try again." value="Текущая коллекция не может быть удалена! Пожалуйста, измените активную коллекцию и попробуйте снова." />
+	<translate name="Collection &quot;{0}&quot; already exists! Delete this collection file?" value="Коллекция &quot;{0}&quot; уже существует! Удалить этот файл с коллекцией?" />
   </scope>
   <scope name="PropertiesForm">
 	<translate name="Properties" value="Свойства" />
@@ -1313,8 +1315,8 @@
 	<translate name="Information will be stored in raster graphics, image will be modified!" value="Информация будет храниться в растре изображения, изображение будет модифицировано!"/>
 	<translate name="Information will be stored in file after JPEG image information" value="Информация будет храниться в файле после информации о JPEG изображении"/>
 	<translate name="Result file size: %s" value="Размер результирующего файла: %s"/>
-	<translate name="All files (*.*)|*.*" value="Все файлы (*.*)|*.*"/>	
-	<translate name="All files (Size &lt; %s)|*?*" value="Все файлы (Размер &lt; %s)|*?*"/>	
+	<translate name="All files (*.*)|*.*" value="Все файлы (*.*)|*.*"/>
+	<translate name="All files (Size &lt; %s)|*?*" value="Все файлы (Размер &lt; %s)|*?*"/>
 	<translate name="File name = &quot;%s&quot;" value="Имя файла = &quot;%s&quot;"/>
 	<translate name="File is too large!" value="Файл слишком большой!"/>
 	<translate name="Max size (worse quality, big noise)" value="Максимальный размер (заметное ухудшение качества)"/>

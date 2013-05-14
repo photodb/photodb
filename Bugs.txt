@@ -21,12 +21,10 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
-- No collections review;
-- GetImageIDEx with many duplicates query;
+- Add directory ligic?
 - AV on full screen, menu multi-monitor position;
-- Info with long file name;
 - Slide show interval control issue;
-- Histogram lines;
+- Add face to non-db image check;
 
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;

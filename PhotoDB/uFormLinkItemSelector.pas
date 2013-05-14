@@ -677,7 +677,8 @@ begin
     end;
   finally
     EnableAlign;
-    EndScreenUpdate(Handle, True);
+    SendMessage(Handle, WM_SETREDRAW, 1, 0);
+    RedrawWindow(Handle, nil, 0, RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT);
   end;
   if FAnimations.Count = 0 then
     Exit;
@@ -847,33 +848,36 @@ var
   Data: TDataObject;
   WL: TWebLink;
 begin
-  LinkToDelete := FLinks[FEditIndex];
-  LinkToDelete.BringToFront;
-  MoveControlTo(LinkToDelete, FormHeight, adVert, [aoRemove]);
-  FLinks.Remove(LinkToDelete);
-
-  LabelToDelete := FLabels[FEditIndex];
-  LabelToDelete.BringToFront;
-  MoveControlTo(LabelToDelete, FormHeight, adVert, [aoRemove]);
-  FLabels.Remove(LabelToDelete);
-
   Data := FData[FEditIndex];
 
-  FEditor.OnDelete(Self, Data, PnEditorPanel);
+  if FEditor.OnDelete(Self, Data, PnEditorPanel) then
+  begin
 
-  Data.Free;
-  FData.Delete(FEditIndex);
+    LinkToDelete := FLinks[FEditIndex];
+    LinkToDelete.BringToFront;
+    MoveControlTo(LinkToDelete, FormHeight, adVert, [aoRemove]);
+    FLinks.Remove(LinkToDelete);
 
-  for I := 0 to FLinks.Count - 1 do
-    FLinks[I].Tag := I;
-  for I := 0 to FLabels.Count - 1 do
-    FLabels[I].Tag := I;
+    LabelToDelete := FLabels[FEditIndex];
+    LabelToDelete.BringToFront;
+    MoveControlTo(LabelToDelete, FormHeight, adVert, [aoRemove]);
+    FLabels.Remove(LabelToDelete);
 
-  for WL in FActionLinks do
-    WL.Enabled := True;
 
-  FEditIndex := -1;
-  SwitchToListMode;
+    Data.Free;
+    FData.Delete(FEditIndex);
+
+    for I := 0 to FLinks.Count - 1 do
+      FLinks[I].Tag := I;
+    for I := 0 to FLabels.Count - 1 do
+      FLabels[I].Tag := I;
+
+    for WL in FActionLinks do
+      WL.Enabled := True;
+
+    FEditIndex := -1;
+    SwitchToListMode;
+  end;
 end;
 
 procedure TFormLinkItemSelector.WebLinkMouseDown(Sender: TObject; Button: TMouseButton;

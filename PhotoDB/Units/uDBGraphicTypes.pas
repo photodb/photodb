@@ -17,7 +17,7 @@ type
     Blue: T255IntArray;
   end;
 
-  TGistogrammData = record
+  THistogrammData = record
     Gray: T255IntArray;
     Red: T255IntArray;
     Green: T255IntArray;

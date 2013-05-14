@@ -76,13 +76,13 @@ procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightT
 procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
 procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 
-function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
-function Gistogramma32(W, H: Integer; S: PARGB32Array): TGistogrammData;
-function FillHistogramma(Bitmap: TBitmap): TGistogrammData;
+function Gistogramma(W, H: Integer; S: PARGBArray): THistogrammData;
+function Gistogramma32(W, H: Integer; S: PARGB32Array): THistogrammData;
+function FillHistogramma(Bitmap: TBitmap): THistogrammData;
 
 implementation
 
-function FillHistogramma(Bitmap: TBitmap): TGistogrammData;
+function FillHistogramma(Bitmap: TBitmap): THistogrammData;
 var
   PRGBArr: PARGBArray;  
   PRGB32Arr: PARGB32Array;
@@ -103,7 +103,7 @@ begin
   end;
 end;
 
-function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+function Gistogramma(W, H: Integer; S: PARGBArray): THistogrammData;
 var
   I, J: Integer;
   P: PARGB;
@@ -135,7 +135,7 @@ begin
   Result.Loaded := True;
 end;
 
-function Gistogramma32(W, H: Integer; S: PARGB32Array): TGistogrammData;
+function Gistogramma32(W, H: Integer; S: PARGB32Array): THistogrammData;
 var
   I, J: Integer;
   P: PARGB32;

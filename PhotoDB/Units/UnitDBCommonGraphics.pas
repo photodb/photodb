@@ -378,7 +378,7 @@ begin
   end;
 end;
 
-function Gistogramma(W, H: Integer; S: PARGBArray): TGistogrammData;
+function Gistogramma(W, H: Integer; S: PARGBArray): THistogrammData;
 var
   I, J, Max: Integer;
   Ps: PARGB;
@@ -497,7 +497,7 @@ var
   PRGBArr: PARGBArray;
   I: Integer;
   Diff: Byte;
-  Data1, Data2, Data: TGistogrammData;
+  Data1, Data2, Data: THistogrammData;
   Mx_r, Mx_b, Mx_g: Integer;
   ResultExt: Extended;
 

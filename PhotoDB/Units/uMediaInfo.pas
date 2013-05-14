@@ -54,7 +54,7 @@ type
     Attr: array of Integer;
 
     Colors: TArray<TColor>;
-    Histogram: TGistogrammData;
+    Histogram: THistogrammData;
   end;
 
   TMediaInfoArray = array of TMediaInfo;

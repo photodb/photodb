@@ -6,7 +6,12 @@ uses
   System.SysUtils,
   System.DateUtils,
   System.StrUtils,
-  Data.DB;
+  System.Classes,
+  Data.DB,
+
+  uMemory,
+  uDBConnection,
+  uDBGraphicTypes;
 
 type
   TImageTableAdapter = class(TObject)
@@ -61,6 +66,7 @@ type
     procedure SetUpdateDate(const Value: TDateTime);
   public
     constructor Create(DS: TDataSet);
+    procedure ReadHistogram(var Histogram: THistogrammData);
     property ID: Integer read GetID write SetID;
     property Name: string read GetName write SetName;
     property FileName: string read GetFileName write SetFileName;
@@ -215,6 +221,22 @@ end;
 function TImageTableAdapter.GetWidth: Integer;
 begin
   Result := FDS.FieldByName('Width').AsInteger;
+end;
+
+procedure TImageTableAdapter.ReadHistogram(var Histogram: THistogrammData);
+var
+  FBS: TStream;
+  DF: TField;
+begin
+  DF := FDS.FieldByName('Histogram');
+
+  FBS := GetBlobStream(DF, bmRead);
+  try
+    FBS.Seek(0, soFromBeginning);
+    FBS.Read(Histogram, SizeOf(Histogram));
+  finally
+    F(FBS);
+  end;
 end;
 
 procedure TImageTableAdapter.SetAccess(const Value: Integer);

@@ -137,13 +137,17 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="External\scalemm\ScaleMM2.pas"/>
+        <DCCReference Include="External\scalemm\smmFunctions.pas"/>
+        <DCCReference Include="External\scalemm\smmGlobal.pas"/>
+        <DCCReference Include="External\scalemm\smmLargeMemory.pas"/>
+        <DCCReference Include="External\scalemm\smmLogging.pas"/>
+        <DCCReference Include="External\scalemm\smmMediumMemory.pas"/>
+        <DCCReference Include="External\scalemm\smmSmallMemory.pas"/>
+        <DCCReference Include="External\scalemm\smmStatistics.pas"/>
+        <DCCReference Include="External\scalemm\smmTypes.pas"/>
         <DCCReference Include="External\FastMM\FastMM4.pas"/>
-        <DCCReference Include="External\FastMM\FastMM4Messages.pas">
-            <Form>$IFDEF DEBUG</Form>
-        </DCCReference>
-        <DCCReference Include="Units\ExceptionJCLSupport.pas">
-            <Form>$</Form>
-        </DCCReference>
+        <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
         <DCCReference Include="Units\System\uTime.pas"/>
         <DCCReference Include="Threads\uSplashThread.pas"/>

@@ -32,7 +32,7 @@ type
     { Private declarations }
     FOptions: TPropertyLoadGistogrammThreadOptions;
     StrParam: string;
-    Data: TGistogrammData;
+    Data: THistogrammData;
   protected
     procedure Execute; override;
   public

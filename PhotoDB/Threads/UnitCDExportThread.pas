@@ -243,7 +243,7 @@ begin
           StrParam := Directory;
           Synchronize(CreatePortableDB);
           DestinationCollectionPath := Directory + Mapping.CDLabel + '.photodb';
-          if TDBManager.CreateDBbyName(DestinationCollectionPath) = 0 then
+          if TDBManager.CreateDBbyName(DestinationCollectionPath) then
           begin
             FDestination := TDBContext.Create(DestinationCollectionPath);
 

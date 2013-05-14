@@ -11,6 +11,7 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
 
+  Dmitry.Utils.System,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WebLink,
 
@@ -213,6 +214,7 @@ var
   Info: TLabel;
   EI: TExecutableInfo;
   OpenDialog: DBOpenDialog;
+  ExeInfo: TEXEVersionData;
 begin
   if Data = nil then
   begin
@@ -222,7 +224,12 @@ begin
       OpenDialog.Filter := L('Applications (*.exe)|*.exe|All Files (*.*)|*.*');
       OpenDialog.FilterIndex := 1;
       if OpenDialog.Execute then
-        Data := TExecutableInfo.Create(ExtractFileName(OpenDialog.FileName), OpenDialog.FileName, OpenDialog.FileName + ',0', '%1', True, Sender.DataList.Count);
+      begin
+        ExeInfo := GetEXEVersionData(OpenDialog.FileName);
+        if ExeInfo.ProductName = '' then
+          ExeInfo.ProductName := ExtractFileName(OpenDialog.FileName);
+        Data := TExecutableInfo.Create(ExeInfo.ProductName, OpenDialog.FileName, OpenDialog.FileName + ',0', '%1', True, Sender.DataList.Count);
+      end;
 
     finally
       F(OpenDialog);

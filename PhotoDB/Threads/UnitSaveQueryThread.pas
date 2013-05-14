@@ -182,7 +182,7 @@ begin
         FDestinationPath := IncludeTrailingBackslash(FDestinationPath);
 
         FDBFileName := FDestinationPath + SaveToDBName + '.photodb';
-        if TDBManager.CreateDBbyName(FDBFileName) <> 0 then
+        if not TDBManager.CreateDBbyName(FDBFileName) then
           Exit;
 
         Destination := TDBContext.Create(FDBFileName);

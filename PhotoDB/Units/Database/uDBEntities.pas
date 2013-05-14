@@ -29,6 +29,7 @@ uses
   uDBAdapter,
   uBitmapUtils,
   uCDMappingTypes,
+  uDBGraphicTypes,
   uFaceDetection;
 
 type
@@ -82,6 +83,7 @@ type
     Colors: string;
     ViewCount: Integer;
     UpdateDate: TDateTime;
+    Histogram: THistogrammData;
     constructor Create;
     constructor CreateFromDS(DS: TDataSet);
     constructor CreateFromFile(FileName: string);
@@ -89,6 +91,7 @@ type
     destructor Destroy; override;
     procedure ReadFromDS(DS: TDataSet); override;
     procedure WriteToDS(DS: TDataSet);
+    procedure LoadImageFromDS(DS: TDataSet);
     function Copy: TMediaItem; virtual;
     function FileExists: Boolean;
     procedure SaveToEvent(var EventValues: TEventValues);
@@ -370,6 +373,9 @@ type
 
 implementation
 
+uses
+  uSessionPasswords;
+
 {$REGION 'Media'}
 
 { TMediaItem }
@@ -429,7 +435,7 @@ end;
 constructor TMediaItem.Create;
 begin
   inherited;
-  FFileNameCRC32 := 0;
+{  FFileNameCRC32 := 0;
   IsImageEncrypted := False;
   Tag := 0;
   ID := 0;
@@ -457,7 +463,7 @@ begin
   HasExifHeader := False;
   Colors := '';
   ViewCount := 0;
-  UpdateDate := 0;
+  UpdateDate := 0;}
 end;
 
 constructor TMediaItem.CreateFromDS(DS: TDataSet);
@@ -529,6 +535,27 @@ begin
   FGeoLocation.Longitude := Longitude;
 end;
 
+procedure TMediaItem.LoadImageFromDS(DS: TDataSet);
+var
+  FBS: TStream;
+begin
+  if Encrypted then
+  begin
+    Image := TJpegImage.Create;
+    DeCryptBlobStreamJPG(DS.FieldByName('thum'), SessionPasswords.FindForBlobStream(DS.FieldByName('thum')), Image);
+    IsImageEncrypted := not Image.Empty;
+  end else
+  begin
+    Image := TJpegImage.Create;
+    FBS := GetBlobStream(DS.FieldByName('thum'), bmRead);
+    try
+      Image.LoadFromStream(FBS);
+    finally
+      F(FBS);
+    end;
+  end;
+end;
+
 procedure TMediaItem.ReadExists;
 begin
   if FileExistsSafe(FileName) then
@@ -575,6 +602,8 @@ begin
     Colors := DA.Colors;
     ViewCount := DA.ViewCount;
     UpdateDate := DA.UpdateDate;
+
+    DA.ReadHistogram(Histogram);
   finally
     F(DA);
   end;
