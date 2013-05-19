@@ -557,6 +557,8 @@ type
     BvColors: TBevel;
     PnTopMenu: TPanel;
     TmrStartDatabases: TTimer;
+    N11: TMenuItem;
+    N14: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -1776,7 +1778,7 @@ begin
   if Info.FileType = EXPLORER_ITEM_DRIVE then
   begin
     NewWindow1.Visible := True;
-    AddFile1.Caption := L('Add disk');
+    AddFile1.Caption := L('Add to collection');
     AddFile1.Visible := not FolderView;
     Properties1.Visible := True;
     Open1.Visible := True;
@@ -1791,7 +1793,7 @@ begin
     MakeFolderViewer2.Visible := not FolderView;
     Refresh1.Visible := True;
     NewWindow1.Visible := True;
-    AddFile1.Caption := L('Add directory');
+    AddFile1.Caption := L('Add to collection');
     AddFile1.Visible := not FolderView;
     Properties1.Visible := True;
     Open1.Visible := True;
@@ -2173,7 +2175,7 @@ begin
       if ElvMain.Items[I].Selected then
       begin
         Index := ItemIndexToMenuIndex(I);
-        if FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER then
+        if FFilesInfo[Index].FileType in [EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE] then
         begin
           UpdaterStorage.AddDirectory(FFilesInfo[Index].FileName);
           Continue;
@@ -2183,21 +2185,9 @@ begin
           UpdaterStorage.AddFile(FFilesInfo[Index].FileName);
           Continue;
         end;
-        if FFilesInfo[Index].FileType = EXPLORER_ITEM_DRIVE then
-          if ID_OK = MessageBoxDB(Handle, L('Do you really want to add full drive with subfolders?'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
-          begin
-            UpdaterStorage.AddDirectory(FFilesInfo[Index].FileName);
-            Continue;
-          end;
       end;
     end;
   end;
-  if (FSelectedInfo.FileType = EXPLORER_ITEM_FILE)
-    or (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER)
-    or (FSelectedInfo.FileType = EXPLORER_ITEM_SHARE)
-    or (FSelectedInfo.FileType = EXPLORER_ITEM_DRIVE) then
-    if SelCount = 0 then
-      UpdaterStorage.AddDirectory(GetCurrentPath);
 end;
 
 procedure TExplorerForm.FormDestroy(Sender: TObject);
@@ -3096,50 +3086,57 @@ var
   Bit: TBitmap;
   GI: TGroupItem;
   S: string;
+  Info: TExplorerFileInfo;
 
-  procedure UpdateNewInfo(Info: TExplorerFileInfos; UpdateImage: Boolean);
+  procedure UpdateListImage(Info: TExplorerFileInfo; ForceUpdate: Boolean);
+  begin
+    if (FBitmapImageList[Info.ImageIndex].Bitmap = nil) or ForceUpdate then
+    begin
+      Bit := TBitmap.Create;
+      Bit.PixelFormat := pf24bit;
+      Bit.Assign(Value.JPEGImage);
+      ApplyRotate(Bit, Value.Rotation);
+      FBitmapImageList[Info.ImageIndex].Graphic := Bit;
+    end else
+      ApplyRotate(FBitmapImageList[Info.ImageIndex].Bitmap, ReRotation);
+    ElvMain.Refresh;
+    if Info.FileName = FSelectedInfo.FileName then
+      if SelCount = 1 then
+        ListView1SelectItem(nil, ListView1Selected, True);
+  end;
+
+  procedure UpdateNewInfo(Infos: TExplorerFileInfos; UpdateImage: Boolean);
   var
     I: Integer;
   begin
-    for I := 0 to Info.Count - 1 do
-      if AnsiLowerCase(Info[I].FileName) = Value.FileName then
+    for I := 0 to Infos.Count - 1 do
+    begin
+      Info := Infos[I];
+      if AnsiLowerCase(Info.FileName) = Value.FileName then
       begin
-        Info[I].SID := GetGUID;
+        Info.SID := GetGUID;
 
-        ReRotation := GetNeededRotation(Info[I].Rotation, Value.Rotation);
-        Info[I].ID := ID;
-        Info[I].Rating := Value.Rating;
-        Info[I].Rotation := Value.Rotation;
-        Info[I].Comment := Value.Comment;
-        Info[I].KeyWords := Value.KeyWords;
-        Info[I].Links := Value.Links;
-        Info[I].Groups := Value.Groups;
-        Info[I].IsDate := True;
-        Info[I].IsTime := Value.IsTime;
-        Info[I].Loaded := True;
-        Info[I].Links := '';
-        Info[I].Include := Value.Include;
-        Info[I].Encrypted := Value.IsEncrypted;
+        ReRotation := GetNeededRotation(Info.Rotation, Value.Rotation);
+        Info.ID := ID;
+        Info.Rating := Value.Rating;
+        Info.Rotation := Value.Rotation;
+        Info.Comment := Value.Comment;
+        Info.KeyWords := Value.KeyWords;
+        Info.Links := Value.Links;
+        Info.Groups := Value.Groups;
+        Info.IsDate := True;
+        Info.IsTime := Value.IsTime;
+        Info.Loaded := True;
+        Info.Links := '';
+        Info.Include := Value.Include;
+        Info.Encrypted := Value.IsEncrypted;
 
         if UpdateImage then
-        begin
-          if (FBitmapImageList[Info[I].ImageIndex].Bitmap = nil) then
-          begin
-            Bit := TBitmap.Create;
-            Bit.PixelFormat := pf24bit;
-            Bit.Assign(Value.JPEGImage);
-            ApplyRotate(Bit, Value.Rotation);
-            FBitmapImageList[Info[I].ImageIndex].Graphic := Bit;
-          end else
-            ApplyRotate(FBitmapImageList[Info[I].ImageIndex].Bitmap, ReRotation);
-          ElvMain.Refresh;
-          if Info[I].FileName = FSelectedInfo.FileName then
-            if SelCount = 1 then
-              ListView1SelectItem(nil, ListView1Selected, True);
-        end;
+          UpdateListImage(Info, False);
 
         Break;
       end;
+    end;
   end;
 
 begin
@@ -3268,38 +3265,43 @@ begin
     begin
       for I := 0 to FFilesInfo.Count - 1 do
       begin
-        if FFilesInfo[I].ID = ID then
+        Info := FFilesInfo[I];
+
+        if Info.ID = ID then
         begin
           if EventID_Param_Rotate in Params then
           begin
-            ReRotation := GetNeededRotation(FFilesInfo[I].Rotation, Value.Rotation);
-            FFilesInfo[I].Rotation := Value.Rotation;
+            ReRotation := GetNeededRotation(Info.Rotation, Value.Rotation);
+            Info.Rotation := Value.Rotation;
           end;
 
+          if EventID_FileProcessed in Params then
+            UpdateListImage(Info, True);
+
           if EventID_Param_Private in Params then
-            FFilesInfo[I].Access := Value.Access;
+            Info.Access := Value.Access;
           if EventID_Param_Crypt in Params then
-            FFilesInfo[I].Encrypted := Value.IsEncrypted;
+            Info.Encrypted := Value.IsEncrypted;
           if EventID_Param_Rating in Params then
-            FFilesInfo[I].Rating := Value.Rating;
+            Info.Rating := Value.Rating;
           if EventID_Param_Date in Params then
-            FFilesInfo[I].Date := Value.Date;
+            Info.Date := Value.Date;
           if EventID_Param_Time in Params then
-            FFilesInfo[I].Time := Value.Time;
+            Info.Time := Value.Time;
           if EventID_Param_Time in Params then
-            FFilesInfo[I].Time := Value.Time;
+            Info.Time := Value.Time;
           if EventID_Param_IsDate in Params then
-            FFilesInfo[I].IsDate := Value.IsDate;
+            Info.IsDate := Value.IsDate;
           if EventID_Param_IsTime in Params then
-            FFilesInfo[I].IsTime := Value.IsTime;
+            Info.IsTime := Value.IsTime;
           if EventID_Param_Groups in Params then
-            FFilesInfo[I].Groups := Value.Groups;
+            Info.Groups := Value.Groups;
           if EventID_Param_Comment in Params then
-            FFilesInfo[I].Comment := Value.Comment;
+            Info.Comment := Value.Comment;
           if EventID_Param_KeyWords in Params then
-            FFilesInfo[I].KeyWords := Value.KeyWords;
+            Info.KeyWords := Value.KeyWords;
           if EventID_Param_Links in Params then
-            FFilesInfo[I].Links := Value.Links;
+            Info.Links := Value.Links;
           if EventID_Param_Include in Params then
           begin
             index := MenuIndexToItemIndex(I);
@@ -5920,24 +5922,20 @@ end;
 
 procedure TExplorerForm.PmListPopupPopup(Sender: TObject);
 begin
-  Addfolder1.Visible := not FolderView;
   MakeFolderViewer1.Visible := ((GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE)) and not FolderView;
 
   Paste1.Visible := False;
-  Addfolder1.Visible := False;
   MakeNew1.Visible := False;
 
   if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
   begin
     Paste1.Visible := True;
-    Addfolder1.Visible := True;
+    Addfolder1.Visible := not FolderView and not IsFileInCollectionDirectories(FContext.CollectionFileName, FCurrentPath);
     MakeNew1.Visible := True;
   end;
 
   if (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_STORAGE) or (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
-  begin
     Paste1.Visible := False;
-  end;
 
   Paste1.Visible := CanCopyFromClipboard;
 end;
@@ -7491,6 +7489,7 @@ begin
   BeginTranslate;
   try
     TbImport.Hint := L('Import pictures');
+    MiImportImages.Caption := L('Import pictures');
 
     Open1.Caption := L('Open');
     SlideShow1.Caption := L('Show');
@@ -7509,7 +7508,7 @@ begin
     OpenInNewWindow1.Caption := L('Open in new window');
 
     Paste1.Caption := L('Paste');
-    Addfolder1.Caption := L('Add folder');
+    Addfolder1.Caption := L('Add to collection');
     MakeNew1.Caption := L('Make new');
 
     Directory2.Caption := L('Directory');
@@ -13274,7 +13273,7 @@ begin
   Directory1.ImageIndex := DB_IC_NEW_DIRECTORY;
   Refresh1.ImageIndex := DB_IC_REFRESH_THUM;
 
-  Addfolder1.ImageIndex := DB_IC_ADD_FOLDER;
+  Addfolder1.ImageIndex := DB_IC_NEW;
   MakeNew1.ImageIndex := DB_IC_NEW_SHELL;
   Refresh2.ImageIndex := DB_IC_REFRESH_THUM;
   Exit2.ImageIndex := DB_IC_EXIT;

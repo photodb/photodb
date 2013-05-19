@@ -80,6 +80,10 @@ object ExplorerForm: TExplorerForm
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnResetFilter: TPanel
           Left = 0
           Top = 593
@@ -340,6 +344,10 @@ object ExplorerForm: TExplorerForm
         Caption = 'EXIF'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object VleExif: TValueListEditor
           Left = 0
           Top = 0
@@ -2036,7 +2044,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.561277094910000000
+      Date = 41177.957551643520000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2473,7 +2481,8 @@ object ExplorerForm: TExplorerForm
     object DBitem1: TMenuItem
       Caption = 'DBitem'
       OnClick = DBitem1Click
-      object TMenuItem
+      object N14: TMenuItem
+        Caption = '-'
       end
     end
     object N8: TMenuItem
@@ -2686,6 +2695,13 @@ object ExplorerForm: TExplorerForm
       Caption = 'Add Folder'
       OnClick = Addfolder1Click
     end
+    object MakeFolderViewer1: TMenuItem
+      Caption = 'Make FolderViewer'
+      OnClick = MakeFolderViewer1Click
+    end
+    object N11: TMenuItem
+      Caption = '-'
+    end
     object MakeNew1: TMenuItem
       Caption = 'Make New'
       object Directory2: TMenuItem
@@ -2696,10 +2712,6 @@ object ExplorerForm: TExplorerForm
         Caption = 'Text File'
         OnClick = TextFile2Click
       end
-    end
-    object MakeFolderViewer1: TMenuItem
-      Caption = 'Make FolderViewer'
-      OnClick = MakeFolderViewer1Click
     end
     object Refresh2: TMenuItem
       Caption = 'Refresh'

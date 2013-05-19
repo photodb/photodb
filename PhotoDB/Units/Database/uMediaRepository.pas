@@ -35,6 +35,7 @@ type
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
     procedure IncMediaCounter(ID: Integer);
+    procedure RefreshImagesCache;
   end;
 
 implementation
@@ -220,6 +221,20 @@ begin
   try
     UC.AddParameter(TCustomFieldParameter.Create('[ViewCount] = [ViewCount] + 1'));
     UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+    UC.Execute;
+  finally
+    F(UC);
+  end;
+end;
+
+procedure TMediaRepository.RefreshImagesCache;
+var
+  UC: TUpdateCommand;
+begin
+  UC := FContext.CreateUpdate(ImageTable, True);
+  try
+    UC.AddParameter(TDateTimeParameter.Create('DateUpdated', EncodeDate(1900, 1, 1)));
+    UC.AddWhereParameter(TCustomConditionParameter.Create('1=1'));
     UC.Execute;
   finally
     F(UC);

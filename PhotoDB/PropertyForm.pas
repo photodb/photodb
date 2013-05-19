@@ -347,7 +347,7 @@ type
     procedure LockImput;
     procedure UnLockImput;
     procedure LoadLanguage;
-    procedure DrawColors(Colors: string);
+    function DrawColors(Colors: string): Boolean;
     function ReadCHInclude: Boolean;
     function ReadCHLinks: Boolean;
     function ReadCHDate: Boolean;
@@ -359,7 +359,7 @@ type
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     SID: TGUID;
@@ -718,8 +718,10 @@ begin
       Widthmemo.Text := IntToStr(DA.Width) + L('px.');
       Heightmemo.Text := IntToStr(DA.Height) + L('px.');
       LbViewCount.Caption := FormatEx(L('Views: {0}'), [DA.ViewCount]);
-      DrawColors(DataRecord.Colors);
-      LbColors.Caption := L('Colors') + ':';
+      if DrawColors(DataRecord.Colors) then
+        LbColors.Caption := L('Colors') + ':'
+      else
+        LbColors.Caption := L('Colors were not found on image');
 
       RatingEdit.Rating := DataRecord.Rating;
       RatingEdit.Islayered := False;
@@ -2827,7 +2829,7 @@ begin
   Clear1.Visible := (lstCurrentGroups.Items.Count <> 0) and not FSaving;
 end;
 
-procedure TPropertiesForm.DrawColors(Colors: string);
+function TPropertiesForm.DrawColors(Colors: string): Boolean;
 var
   I, J, Left, C: Integer;
   S: string;
@@ -2836,6 +2838,8 @@ var
   PaletteHLS: TPaletteHLSArray;
   Shape: TShape;
 begin
+  Result := False;
+
   for I := TsGeneral.ControlCount - 1 downto 0 do
     if TsGeneral.Controls[I] is TShape then
       TsGeneral.Controls[I].Free;
@@ -2855,6 +2859,8 @@ begin
       S := '#' + Items[I];
       if S = '#BW' then
         Continue;
+
+      Result := True;
 
       for J := 0 to ColorCount - 1 do
         if Palette[J] = C then

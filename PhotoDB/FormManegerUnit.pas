@@ -519,6 +519,7 @@ begin
     UpdaterStorage.RestoreStorage(DBManager.DBContext);
     if FDirectoryWatcher <> nil then
       (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBManager.DBContext);
+    FCollectionCheckCOunt := 0;
   end;
 
   if ID <= 0 then

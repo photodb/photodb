@@ -7,7 +7,9 @@ uses
   System.SysUtils,
   System.Classes,
   Data.DB,
+
   Dmitry.CRC32,
+  Dmitry.Utils.System,
 
   UnitINI,
 
@@ -35,6 +37,7 @@ type
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
     procedure IncMediaCounter(ID: Integer);
+    procedure RefreshImagesCache;
   end;
 
   IGroupsRepository = interface
@@ -166,7 +169,7 @@ var
   Version: Integer;
 begin
   Result := False;
-  Section := uSettings.AppSettings.GetSection(RegRoot + 'CollectionSettings\' + IntToHex(Integer(StringCRC(FCollectionFile)), 8), False);
+  Section := uSettings.AppSettings.GetSection(RegRoot + 'CollectionSettings\' + IntToHex(Integer(StringCRC(FCollectionFile)), 8) + '_' + ProductVersion, False);
 
   Version := Section.ReadInteger('Version');
   if Version < CURRENT_DB_SCHEME_VERSION then
@@ -215,7 +218,7 @@ end;
 
 function TDBContext.CreateQuery(IsolationLevel: TDBIsolationLevel): TDataSet;
 begin
-  Result := GetQuery(FCollectionFile, GetCurrentThreadId <> MainThreadID, IsolationLevel);
+  Result := GetQuery(FCollectionFile, False, IsolationLevel);
 end;
 
 function TDBContext.CreateInsert(TableName: string): TInsertCommand;

@@ -17,6 +17,8 @@ uses
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
 
+  UnitDBDeclare,
+
   uMemory,
   uDBForm,
   uDBManager,
@@ -27,6 +29,7 @@ uses
   uResources,
   uInterfaces,
   uFormInterfaces,
+  uCollectionEvents,
   uTranslateUtils;
 
 type
@@ -52,6 +55,7 @@ type
   private
     { Private declarations }
     FContext: IDBContext;
+    FMediaRepository: IMediaRepository;
     FSettingsRepository: ISettingsRepository;
     FSampleImage: TJpegImage;
     FMediaCount: Integer;
@@ -83,8 +87,21 @@ begin
 end;
 
 procedure TFormDBPreviewSize.BtnOkClick(Sender: TObject);
+var
+  Settings: TSettings;
+  Info: TEventValues;
 begin
-  FSettingsRepository.Update(FCollectionSettings);
+  Settings := FSettingsRepository.Get;
+  try
+    if Settings.ThSize <> FCollectionSettings.ThSize then
+      FMediaRepository.RefreshImagesCache;
+
+    FSettingsRepository.Update(FCollectionSettings);
+
+    CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_DB_Changed], Info);
+  finally
+    F(Settings);
+  end;
   Close;
 end;
 
@@ -161,8 +178,10 @@ end;
 procedure TFormDBPreviewSize.FormDestroy(Sender: TObject);
 begin
   FSettingsRepository := nil;
+  FMediaRepository := nil;
   FContext := nil;
   F(FSampleImage);
+  F(FCollectionSettings);
 end;
 
 procedure TFormDBPreviewSize.FormKeyDown(Sender: TObject; var Key: Word;
@@ -173,8 +192,6 @@ begin
 end;
 
 function TFormDBPreviewSize.Execute(CollectionFileName: string): Boolean;
-var
-  MediaRepository: IMediaRepository;
 begin
   Result := False;
 
@@ -182,13 +199,13 @@ begin
   if FContext = nil then
     Exit;
 
-  MediaRepository := FContext.Media;
+  FMediaRepository := FContext.Media;
   FSettingsRepository := FContext.Settings;
   FCollectionSettings := FSettingsRepository.Get;
 
   Result := True;
 
-  FMediaCount := MediaRepository.GetCount;
+  FMediaCount := FMediaRepository.GetCount;
 
   CbDBImageSize.Text := IntToStr(FCollectionSettings.ThSize);
   CbDBJpegquality.Text := IntToStr(FCollectionSettings.DBJpegCompressionQuality);

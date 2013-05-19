@@ -89,11 +89,13 @@ cd ..
 cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
-"%BRCC32%" SETUP_ZIP.rc
+rem use VS resource compiler because borland's fails on big files
+RC SETUP_ZIP.rc
 "%DCC32%" %NS% Install -D"INSTALL;%PLAYER%" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 InstallMaker /setup Install.exe
-"%BRCC32%" Install_Package.rc
+rem use VS resource compiler because borland's fails on big files
+RC Install_Package.rc
 "%DCC32%" %NS% PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 cd ..

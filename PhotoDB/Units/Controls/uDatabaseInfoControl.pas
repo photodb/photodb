@@ -90,6 +90,14 @@ procedure TDatabaseInfoControl.ChangedDBDataByID(Sender: TObject; ID: Integer;
   Params: TEventFields; Value: TEventValues);
 var
   Bit, Bitmap: TBitmap;
+
+  procedure LoadCounter;
+  begin
+    FInfoLabel.Caption := NumberToShortNumber(FMediaCount);
+    if (FMediaCount > 2) and (Trunc(Log10(FMediaCount)) <> Trunc(Log10(FMediaCount - 1))) then
+      DoAlignInfo;
+  end;
+
 begin
   if (SetNewIDFileData in Params) or (EventID_FileProcessed in Params) then
   begin
@@ -125,13 +133,13 @@ begin
     if [SetNewIDFileData] * Params <> [] then
     begin
       Inc(FMediaCount);
-      FInfoLabel.Caption := NumberToShortNumber(FMediaCount);
+      LoadCounter;
     end;
 
     if [EventID_Param_Delete] * Params <> [] then
     begin
       Dec(FMediaCount);
-      FInfoLabel.Caption := NumberToShortNumber(FMediaCount);
+      LoadCounter;
     end;
   end;
 end;
@@ -238,6 +246,11 @@ begin
       FDatabaseName.Top := Height div 2 - FDatabaseName.Height div 2;
     end;
 
+    if not FMediaCountReady then
+      LoadImagesCount
+    else
+      FInfoLabel.Caption := NumberToShortNumber(FMediaCount);
+
     L := Max(FDatabaseName.Left + FDatabaseName.Width, FInfoLabel.Left + FInfoLabel.Width);
     FSeparator.Left := L + 3;
     FSeparator.Height := Height;
@@ -246,11 +259,6 @@ begin
     FSelectImage.Height := Height;
 
     Width := FSelectImage.Width + FSelectImage.Left + 2;
-
-    if not FMediaCountReady then
-      LoadImagesCount
-    else
-      FInfoLabel.Caption := NumberToShortNumber(FMediaCount);
 
   finally
     EnableAlign;

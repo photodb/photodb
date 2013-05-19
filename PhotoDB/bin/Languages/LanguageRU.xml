@@ -251,7 +251,6 @@
 	<translate name="List of directories" value="Список директорий" />
 	<translate name="Change location" value="Изменить папку" />
 	<translate name="Select a directory" value="Выбрать директорию" />
-	<translate name="Add directory" value="Добавить" />
 	<translate name="Edit list" value="Редактировать" />
 	<translate name="New group" value="Создать группу" />
 	<translate name="Preview" value="Предпросмотр" />
@@ -270,7 +269,7 @@
 	<translate name="Directory" value="Каталог" />
 	<translate name="Share" value="Поделиться" />
 	<translate name="Open in new window" value="Открыть в новом окне" />
-	<translate name="Add folder" value="Добавить каталог" />
+	<translate name="Add to collection" value="Добавить в коллекцию" />
 	<translate name="Make new" value="Создать новый" />
 	<translate name="Text file" value="Текстовый файл" />
 	<translate name="Select all" value="Выделить всё" />
@@ -392,15 +391,10 @@
 	<translate name="Computer" value="Компьютер" />
 	<translate name="%s drive" value="Диск %s" />
 	<translate name="Unknown file type" value="Неизвестный тип" />
-	<translate name="Add object" value="Добавить объект" />
-	<translate name="Add objects" value="Добавить объекты" />
-	<translate name="Add disk" value="Добавить диск" />
-	<translate name="Add directory" value="Добавить папку" />
 	<translate name="Current directory" value="Текущая папка" />
 	<translate name="Next..." value="Далее..." />
 	<translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
 	<translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
-	<translate name="Add file" value="Добавить файл" />
 	<translate name="This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?" value="В данной папке (%s) содержится %d фотографий из коллекции! Скорректировать информацию в коллекции?" />
 	<translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />
 	<translate name="There are no images to display!" value="Нет файлов для отображения!" />
@@ -486,6 +480,7 @@
 	<translate name="Edit collection" value="Редактировать коллекцию" />
 	<translate name="Active collection can't be deleted! Please change active collection and try again." value="Текущая коллекция не может быть удалена! Пожалуйста, измените активную коллекцию и попробуйте снова." />
 	<translate name="Collection &quot;{0}&quot; already exists! Delete this collection file?" value="Коллекция &quot;{0}&quot; уже существует! Удалить этот файл с коллекцией?" />
+	<translate name="Location {0} is already in collection!" value="Путь {0} уже находится в коллекции!" />
   </scope>
   <scope name="PropertiesForm">
 	<translate name="Properties" value="Свойства" />
@@ -615,6 +610,7 @@
 	<translate name="Views: {0}" value="Просмотры: {0}" />
 	<translate name="Colors" value="Цвета" />
 	<translate name="Colors are unavailable" value="Цвета недоступны" />
+	<translate name="Colors were not found on image" value="Цвета не найдены на изображении" />
   </scope>
   <scope name="SelectGroup">
 	<translate name="Select group" value="Выбор группы" />

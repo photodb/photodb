@@ -348,7 +348,7 @@ begin
       TThread.Synchronize(nil,
         procedure
         begin
-          MessageBoxDB(0, TA('Please, activate the program to encrypt files larger than 1Gb!', 'System'), TA('Warning'),  TD_BUTTON_OK, TD_ICON_WARNING);
+          MessageBoxDB(0, TA('Please, activate the program to encrypt files larger than 1Gb!', 'System'), TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
         end
       );
       Sleep(500);

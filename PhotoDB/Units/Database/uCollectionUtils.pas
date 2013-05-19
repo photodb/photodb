@@ -84,18 +84,20 @@ begin
         Reg.CloseKey;
         Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + S[I], True);
 
-        FName := '';
+        FName := S[I];
         FPath := '';
         FIcon := '';
         SortOrder := 0;
+        if Reg.ValueExists('Name') then
+          FName := Reg.ReadString('Name');
         if Reg.ValueExists('Path') then
           FPath := Reg.ReadString('Path');
         if Reg.ValueExists('SortOrder') then
           SortOrder := Reg.ReadInteger('SortOrder');
 
-        if (S[I] <> '') and (FPath <> '') then
+        if (FName <> '') and (FPath <> '') then
         begin
-          DD := TDatabaseDirectory.Create(FPath, S[I], SortOrder);
+          DD := TDatabaseDirectory.Create(FPath, FName, SortOrder);
           FolderList.Add(DD);
         end;
       end;
@@ -150,10 +152,12 @@ begin
       for I := 0 to S.Count - 1 do
         Reg.DeleteKey(S[I]);
 
-      for Folder in FolderList do
+      for I := 0 to FolderList.Count - 1 do
       begin
+        Folder := FolderList[I];
+
         Reg.CloseKey;
-        Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + Folder.Name, True);
+        Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + IntToStr(I), True);
 
         Reg.WriteString('Path', Folder.Path);
         Reg.WriteInteger('SortOrder', Folder.SortOrder);
@@ -185,7 +189,7 @@ begin
     for I := 0 to FolderList.Count - 1 do
     begin
       S := ExcludeTrailingPathDelimiter(AnsiLowerCase(FolderList[I].Path));
-      if S.StartsWith(FileDirectory) then
+      if FileDirectory.StartsWith(S) then
         Exit(True);
     end;
   finally

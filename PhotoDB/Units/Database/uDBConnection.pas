@@ -350,7 +350,7 @@ var
 begin
   FileName := AnsiLowerCase(FileName);
 
-  if not ForseNewConnection then
+  if not ForseNewConnection and (ADOConnections <> nil) then
     for I := 0 to ADOConnections.Count - 1 do
     begin
       DBConnection := ADOConnections[I];
@@ -370,6 +370,9 @@ procedure TryRemoveConnection(FileName: string; Delete: Boolean = false);
 var
   I: Integer;
 begin
+  if ADOConnections = nil then
+    Exit;
+
   FileName := AnsiLowerCase(FileName);
   for I := ADOConnections.Count - 1 downto 0 do
   begin
@@ -477,6 +480,9 @@ var
   I: Integer;
   Connection: TDBConnection;
 begin
+  if ADOConnections = nil then
+    Exit;
+
   for I := ADOConnections.Count - 1 downto 0 do
   begin
     Connection := ADOConnections[I];

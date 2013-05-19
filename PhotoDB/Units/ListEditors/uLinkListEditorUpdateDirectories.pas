@@ -7,12 +7,15 @@ uses
   Winapi.Windows,
   System.SysUtils,
   System.Classes,
+  System.StrUtils,
   Vcl.Controls,
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
+  Vcl.Forms,
   Vcl.Graphics,
   Vcl.Imaging.PngImage,
 
+  Dmitry.Utils.System,
   Dmitry.Imaging.JngImage,
   Dmitry.Controls.WatermarkedEdit,
   Dmitry.Controls.WebLink,
@@ -21,8 +24,8 @@ uses
   UnitDBDeclare,
 
   uMemory,
+  uConstants,
   uDBForm,
-  uVCLHelpers,
   uTranslate,
   uFormInterfaces,
   uResources,
@@ -30,6 +33,7 @@ uses
   uCollectionUtils,
   uLinkListEditorFolders,
   uDatabaseDirectoriesUpdater,
+  uVCLHelpers,
   uIconUtils;
 
 type
@@ -146,6 +150,7 @@ var
   PI: TPathItem;
   Link: TWebLink;
   Info: TLabel;
+  I: Integer;
 begin
   if Data = nil then
   begin
@@ -153,7 +158,20 @@ begin
     PI := nil;
     try
       if SelectLocationForm.Execute(L('Select a directory'), '', PI, False) then
+      begin
+
+        for I := 0 to Sender.DataList.Count - 1 do
+        begin
+          DD := TDatabaseDirectory(Sender.DataList[I]);
+          if StartsStr(AnsiLowerCase(DD.Path), AnsiLowerCase(PI.Path)) then
+          begin
+            MessageBoxDB(Screen.ActiveFormHandle, FormatEx(L('Location {0} is already in collection!'), [PI.Path]), L('Info'),  TD_BUTTON_OK, TD_ICON_WARNING);
+            Exit;
+          end;
+        end;
+
         Data := TDatabaseDirectory.Create(PI.Path, PI.DisplayName, 0);
+      end;
     finally
       F(PI);
     end;

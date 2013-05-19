@@ -918,8 +918,25 @@ begin
 end;
 
 procedure TUpdaterStorage.AddDirectory(DirectoryPath: string);
+var
+  FolderList: TList<TDatabaseDirectory>;
+  DD: TDatabaseDirectory;
 begin
-  //TODO:
+  if IsFileInCollectionDirectories(FContext.CollectionFileName, DirectoryPath) then
+    Exit;
+
+  FolderList := TList<TDatabaseDirectory>.Create;
+  try
+    ReadDatabaseSyncDirectories(FolderList, FContext.CollectionFileName);
+
+    DD := TDatabaseDirectory.Create(GetMyPicturesPath, ExtractFileName(DirectoryPath), 0);
+    FolderList.Add(DD);
+    SaveDatabaseSyncDirectories(FolderList, FContext.CollectionFileName);
+  finally
+    FreeList(FolderList);
+  end;
+
+  RecheckUserDirectories;
 end;
 
 procedure TUpdaterStorage.AddFile(Info: TMediaItem; Priority: TDatabaseTaskPriority);

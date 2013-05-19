@@ -8,8 +8,13 @@ program PhotoDB;
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
-{$DEFINE SCALE_MM}
-{$DEFINE _FAST_MM}
+{$IFDEF DEBUG}
+  //fast at multithreading
+  {$DEFINE FAST_MM}
+{$ELSE}
+  //cool in debug mode
+  {$DEFINE SCALE_MM}
+{$ENDIF}
 
 uses
   {$IFDEF SCALE_MM}

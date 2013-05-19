@@ -21,11 +21,8 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
-- Add directory ligic?
 - AV on full screen, menu multi-monitor position;
-- Slide show interval control issue;
-- Add face to non-db image check;
-
+F:\12.06.02 = суббота, 2 июня, 2012г. (Проектный центр на пикнике)\ time for pictures in properties (explorer mode)
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
 
@@ -35,23 +32,26 @@ Bugs:
 - Portable persons;
 - Persons to EXIF (using XML string);
 - Import set password;
-
-[Images processing]
 - resize - raw use preview checkbox;
 - png watermarks;
 
-[Collection]
-- Change database check update thread;
-- Encrypted images after enter password - add to database from all user directories;
-
 [Maybe]
+- Не понял как добавлять папки в исключения, как быстро удалить ненужную папку из базы данных, 
+некоторые файлы после удаления из одной базы данны не добавляются в другую, неудобно, 
+что внутри категорий все папки отображаются кучей. 
+Было бы удобно дополнительное разделение по папкам, как они лежат на жестком диске  
+- Groups -> Categories
+- Groups for persons
+- Categories could have sub-categories
 - Explorer preview zoom? (icons could be hidden)
+- Slide show interval control issue;
+- Encrypted images after enter password - add to database from all user directories;
 
 [Site]
  Free activation form on the site
 
 Possible CRs:
-- Prevew pane for Video, non-image files;
+- Preview pane for Video, non-image files;
 
 [F] Add new styles;
 [F] Player russian (in registry);

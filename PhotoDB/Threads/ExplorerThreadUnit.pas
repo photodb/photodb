@@ -1325,11 +1325,11 @@ begin
 
       if Icon <> nil then
         if not FSender.AddIcon(Icon, True, Info.SID) then
-          FPacketImages[I].Graphic := nil;
+          F(Icon);
 
       if Bitmap <> nil then
         if not FSender.AddBitmap(Bitmap, Info.SID) then
-          FPacketImages[I].Graphic := nil;
+          F(Bitmap);
 
       TW.I.Start('AddItem');
       if FThreadType = THREAD_TYPE_SEARCH_FOLDER then
