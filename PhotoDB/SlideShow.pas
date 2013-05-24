@@ -23,6 +23,7 @@ uses
   Vcl.StdCtrls,
   Vcl.ComCtrls,
   Vcl.Themes,
+  Vcl.ToolWin,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
   Vcl.Imaging.jpeg,
@@ -44,7 +45,6 @@ uses
   DragDropFile,
   DragDrop,
 
-  ToolWin,
   GraphicCrypt,
   FormManegerUnit,
   DBCMenu,
@@ -54,6 +54,8 @@ uses
   UnitDBDeclare,
   ExplorerTypes,
 
+  uRuntime,
+  uMemory,
   uMemoryEx,
   uBitmapUtils,
   uGUIDUtils,
@@ -65,13 +67,11 @@ uses
   uTime,
   uFastLoad,
   uW7TaskBar,
-  uMemory,
   uFaceDetection,
   uListViewUtils,
   uGraphicUtils,
   uShellIntegration,
   uDBUtils,
-  uRuntime,
   uViewerTypes,
   uDatabaseDirectoriesUpdater,
   uSettings,
@@ -348,6 +348,9 @@ type
     FIsSelectingFace: Boolean;
     FIsClosing: Boolean;
     FIsImageLoading: Boolean;
+
+    FFullScreenView: IFullScreenImageForm;
+    FDirectShowForm: ISlideShowForm;
     procedure SetImageExists(const Value: Boolean);
     procedure SetPropStaticImage(const Value: Boolean);
     procedure SetLoading(const Value: Boolean);
@@ -364,6 +367,9 @@ type
     procedure UpdateCrypted;
     procedure SelectPerson(P: TPerson);
     procedure LoadContext;
+
+    procedure DisableFullScreenControl;
+    procedure EnableFullScreenControl;
   protected
     { Protected declarations }
     procedure CreateParams(var Params: TCreateParams); override;
@@ -469,21 +475,14 @@ type
     property Item: TMediaItem read GetItem;
   end;
 
-const
-  CursorZoomInNo = 130;
-  CursorZoomOutNo = 131;
-
 function ViewerForm: TViewer;
 
 implementation
 
 uses
   PropertyForm,
-  SlideShowFullScreen,
   uFormSelectPerson,
   uManagerExplorer,
-  FloatPanelFullScreen,
-  DX_Alpha,
   UnitViewerThread,
   ImEditor,
   PrintMainForm,
@@ -492,6 +491,10 @@ uses
   uFormCreatePerson,
   uFaceDetectionThread,
   uFormEditObject;
+
+const
+  CursorZoomInNo = 130;
+  CursorZoomOutNo = 131;
 
 function ViewerForm: TViewer;
 begin
@@ -804,8 +807,8 @@ begin
     end else
       ShowErrorText(FileName);
 
-    if FullScreenView <> nil then
-      FullScreenView.Canvas.Draw(0, 0, DrawImage);
+    if FFullScreenView <> nil then
+      FFullScreenView.DrawImage(DrawImage);
     Exit;
   end;
 
@@ -1031,8 +1034,8 @@ begin
     Next_(Sender);
   end else
   begin
-    if DirectShowForm <> nil then
-      DirectShowForm.Next;
+    if FDirectShowForm <> nil then
+      FDirectShowForm.Next;
   end;
 end;
 
@@ -1047,8 +1050,8 @@ begin
     Previous_(Sender);
   end else
   begin
-    if DirectShowForm <> nil then
-      DirectShowForm.Previous;
+    if FDirectShowForm <> nil then
+      FDirectShowForm.Previous;
   end;
 end;
 
@@ -1097,11 +1100,13 @@ begin
   Play := True;
   LsLoading.Hide;
   RecreateDrawImage(Sender);
-  if FullScreenView = nil then
-    Application.CreateForm(TFullScreenView, FullScreenView);
+
+  FFullScreenView := FullScreenImageForm;
+
   MTimer1.ImageIndex := DB_IC_PAUSE;
   MTimer1Click(Sender);
-  FullScreenView.Show;
+
+  FFullScreenView.Show;
   Hide;
 end;
 
@@ -1112,24 +1117,27 @@ begin
 
   if FullScreenNow then
   begin
-    R(FloatPanel);
     FullScreenNow := False;
     RecreateDrawImage(Sender);
     SlideTimer.Enabled := False;
     Play := False;
-    if FullScreenView <> nil then
-      FullScreenView.Close;
+
+    if FFullScreenView <> nil then
+      FFullScreenView.Close;
+    FFullScreenView := nil;
+
     Show;
   end;
   if SlideShowNow then
   begin
-    R(FloatPanel);
     SlideShowNow := False;
     Loading := True;
     ImageExists := False;
     LoadImage_(Sender, False, Zoom, False);
-    if DirectShowForm <> nil then
-      DirectShowForm.Close;
+
+    if FDirectShowForm <> nil then
+      FDirectShowForm.Close;
+    FDirectShowForm := nil;
     Show;
   end;
 end;
@@ -1416,22 +1424,20 @@ begin
     begin
       MTimer1.Caption := L('Start timer');
       MTimer1.ImageIndex := DB_IC_PLAY;
-      if FloatPanel <> nil then
-      begin
-        FloatPanel.TbPlay.Down := False;
-        FloatPanel.TbPause.Down := True;
-      end;
+
+      if FFullScreenView <> nil then
+        FFullScreenView.Pause;
+
       SlideTimer.Enabled := False;
       Play := False;
     end else
     begin
       MTimer1.Caption := L('Stop timer');
       MTimer1.ImageIndex := DB_IC_PAUSE;
-      if FloatPanel <> nil then
-      begin
-        FloatPanel.TbPlay.Down := True;
-        FloatPanel.TbPause.Down := False;
-      end;
+
+      if FFullScreenView <> nil then
+        FFullScreenView.Play;
+
       SlideTimer.Enabled := True;
       Play := True;
     end;
@@ -1439,20 +1445,16 @@ begin
   begin
     if MTimer1.ImageIndex = DB_IC_PAUSE then
     begin
-      if DirectShowForm <> nil then
-        DirectShowForm.Pause;
+      if FDirectShowForm <> nil then
+        FDirectShowForm.Pause;
       MTimer1.Caption := L('Start timer');
       MTimer1.ImageIndex := DB_IC_PLAY;
-      FloatPanel.TbPlay.Down := False;
-      FloatPanel.TbPause.Down := True;
     end else
     begin
-      if DirectShowForm <> nil then
-        DirectShowForm.Play;
+      if FDirectShowForm <> nil then
+        FDirectShowForm.Play;
       MTimer1.Caption := L('Stop timer');
       MTimer1.ImageIndex := DB_IC_PAUSE;
-      FloatPanel.TbPlay.Down := True;
-      FloatPanel.TbPause.Down := False;
     end;
   end;
 end;
@@ -1759,15 +1761,13 @@ begin
     TbBack.Enabled := False;
     TbForward.Enabled := False;
     SetProgressPosition(0, 0);
-    if FloatPanel <> nil then
-      FloatPanel.SetButtonsEnabled(False);
+    DisableFullScreenControl;
   end else
   begin
     SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
     TbBack.Enabled := True;
     TbForward.Enabled := True;
-    if FloatPanel <> nil then
-      FloatPanel.SetButtonsEnabled(True);
+    EnableFullScreenControl;
   end;
 end;
 
@@ -2210,11 +2210,11 @@ begin
     if CurrentInfo.Count = 0 then
       Exit;
     if not FullScreenNow then
-      if FullScreenView <> nil then
-        FullScreenView.Close;
+      if FFullScreenView <> nil then
+        FFullScreenView.Close;
     if not SlideShowNow then
-      if DirectShowForm <> nil then
-        DirectShowForm.Close;
+      if FDirectShowForm <> nil then
+        FDirectShowForm.Close;
 
     CurrentFileNumber := CurrentInfo.Position;
     if not ((LoadBaseFile <> '') and (AnsiLowerCase(Item.FileName) = AnsiLowerCase(LoadBaseFile))) then
@@ -2239,16 +2239,14 @@ begin
     TbBack.Enabled := False;
     TbForward.Enabled := False;
     SetProgressPosition(0, 0);
-    if FloatPanel <> nil then
-      FloatPanel.SetButtonsEnabled(False);
+    DisableFullScreenControl;
 
   end else
   begin
     TbBack.Enabled := True;
     TbForward.Enabled := True;
     SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
-    if FloatPanel <> nil then
-      FloatPanel.SetButtonsEnabled(True);
+    EnableFullScreenControl;
   end;
   TW.I.Start('ExecuteW - end');
 end;
@@ -2579,10 +2577,9 @@ end;
 
 procedure TViewer.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  if FullScreenView <> nil then
+  if (FFullScreenView <> nil) or (FDirectShowForm <> nil) then
     Exit1Click(nil);
-  if DirectShowForm <> nil then
-    DirectShowForm.Close;
+
   FIsClosing := True;
   Action := caFree;
 end;
@@ -3349,12 +3346,10 @@ end;
 
 function TViewer.Pause: Boolean;
 begin
-  if DirectShowForm <> nil then
-    DirectShowForm.Pause;
+  if FDirectShowForm <> nil then
+    FDirectShowForm.Pause;
   MTimer1.Caption := L('Start timer');
   MTimer1.ImageIndex := DB_IC_PLAY;
-  FloatPanel.TbPlay.Down := False;
-  FloatPanel.TbPause.Down := True;
 
   Result := True;
 end;
@@ -3729,10 +3724,12 @@ begin
   SlideTimer.Enabled := False;
   Play := False;
   LsLoading.Hide;
-  Application.CreateForm(TDirectShowForm, DirectShowForm);
+
+  FDirectShowForm := SlideShowForm;
+  FDirectShowForm.Execute;
+
   MTimer1.ImageIndex := DB_IC_PLAY;
   MTimer1Click(Sender);
-  DirectShowForm.Execute(Sender);
   Hide;
 end;
 
@@ -3749,7 +3746,7 @@ end;
 procedure TViewer.ImageEditor1Click(Sender: TObject);
 begin
   if FullScreenNow then
-    FullScreenView.Close;
+    FFullScreenView := nil;
 
   with EditorsManager.NewEditor do
   begin
@@ -3841,15 +3838,13 @@ begin
       TbBack.Enabled := False;
       TbForward.Enabled := False;
       SetProgressPosition(0, 0);
-      if FloatPanel <> nil then
-        FloatPanel.SetButtonsEnabled(False);
+      DisableFullScreenControl;
     end else
     begin
       TbBack.Enabled := True;
       TbForward.Enabled := True;
       SetProgressPosition(CurrentFileNumber + 1, CurrentInfo.Count);
-      if FloatPanel <> nil then
-        FloatPanel.SetButtonsEnabled(True);
+      EnableFullScreenControl;
     end;
     TbFitToWindow.Enabled := False;
     TbRealSize.Enabled := False;
@@ -4024,6 +4019,24 @@ begin
   TbRotateCCW.Enabled := not IsDevicePath(FileName);
   TbRotateCW.Enabled := not IsDevicePath(FileName);
   UpdateCrypted;
+end;
+
+procedure TViewer.DisableFullScreenControl;
+begin
+  if FFullScreenView <> nil then
+    FFullScreenView.DisableControl;
+
+  if FDirectShowForm <> nil then
+    FDirectShowForm.DisableControl;
+end;
+
+procedure TViewer.EnableFullScreenControl;
+begin
+  if FFullScreenView <> nil then
+    FFullScreenView.EnableControl;
+
+  if FDirectShowForm <> nil then
+    FDirectShowForm.EnableControl;
 end;
 
 procedure TViewer.DoSetNoDBRecord(Info: TMediaItem);

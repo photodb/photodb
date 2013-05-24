@@ -3,30 +3,30 @@ unit FloatPanelFullScreen;
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  ComCtrls,
-  ToolWin,
-  ImgList,
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.ComCtrls,
+  Vcl.ToolWin,
+  Vcl.ImgList,
+  Vcl.ExtCtrls,
 
   Dmitry.Graphics.LayeredBitmap,
 
-  ExtCtrls,
   uThemesUtils,
   uMemory,
+  uDBForm,
   uFormInterfaces;
 
 type
-  TFloatPanel = class(TForm)
+  TFloatPanel = class(TDBForm, IFullScreenControl)
     NormalImageList: TImageList;
     HotImageList: TImageList;
-    ToolBar1: TToolBar;
+    TbButtons: TToolBar;
     TbPlay: TToolButton;
     TbPause: TToolButton;
     ToolButton3: TToolButton;
@@ -41,15 +41,20 @@ type
     procedure TbCloseClick(Sender: TObject);
     procedure RecreateImLists;
     procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+  protected
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
     procedure SetButtonsEnabled(Enabled: Boolean);
+    function HasMouse: Boolean;
+    procedure MoveToForm(Form: TDBForm);
+    procedure SetPlayEnabled(Value: Boolean);
+    procedure Pause;
+    procedure Play;
   end;
-
-var
-  FloatPanel: TFloatPanel = nil;
 
 implementation
 
@@ -75,6 +80,39 @@ end;
 procedure TFloatPanel.TbCloseClick(Sender: TObject);
 begin
   Viewer.CloseActiveView;
+end;
+
+function TFloatPanel.HasMouse: Boolean;
+var
+  P: TPoint;
+begin
+  GetCursorPos(P);
+  P := ScreenToClient(P);
+  Result := PtInRect(ClientRect, P);
+end;
+
+procedure TFloatPanel.InterfaceDestroyed;
+begin
+  inherited;
+  Release;
+end;
+
+procedure TFloatPanel.MoveToForm(Form: TDBForm);
+begin
+  Top := 0;
+  Left := Form.Left + Form.ClientWidth - Width;
+end;
+
+procedure TFloatPanel.Pause;
+begin
+  TbPlay.Down := False;
+  TbPause.Down := True;
+end;
+
+procedure TFloatPanel.Play;
+begin
+  TbPlay.Down := True;
+  TbPause.Down := False;
 end;
 
 procedure TFloatPanel.RecreateImLists;
@@ -113,8 +151,7 @@ begin
           Lb.GrayScale;
           B := TBitmap.Create;
           try
-            B.Width := 16;
-            B.Height := 16;
+            B.SetSize(16, 16);
             B.Canvas.Brush.Color := Theme.PanelColor;
             B.Canvas.Pen.Color := Theme.PanelColor;
             B.Canvas.Rectangle(0, 0, 16, 16);
@@ -141,10 +178,24 @@ begin
   TbPause.Enabled := Enabled;
 end;
 
+procedure TFloatPanel.SetPlayEnabled(Value: Boolean);
+begin
+  TbPlay.Down := Value;
+  TbPause.Down := not Value;
+end;
+
+procedure TFloatPanel.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caHide;
+end;
+
 procedure TFloatPanel.FormCreate(Sender: TObject);
 begin
   RecreateImLists;
   SetButtonsEnabled(Viewer.ImagesCount > 1);
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(IFullScreenControl, TFloatPanel);
 
 end.

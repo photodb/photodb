@@ -3250,6 +3250,24 @@ begin
   ImParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
   if ImParams * params<> [] then
   begin
+    if EventID_Param_Delete in ImParams then
+    begin
+      for I := 0 to FFilesInfo.Count - 1 do
+      begin
+        Info := FFilesInfo[I];
+        if Info.ID = ID then
+        begin
+          if not Info.FileExists then
+          begin
+            Index := ItemIndexToMenuIndex(I);
+            DeleteItemWithIndex(Index);
+            Exit;
+          end;
+          Break;
+        end;
+      end;
+    end;
+
     if ID > 0 then
       RefreshItemByID(ID)
     else

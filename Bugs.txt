@@ -21,10 +21,13 @@ Features ready:
 - Update info in top/bottom => remove update form;
 
 Bugs:
-- AV on full screen, menu multi-monitor position;
 F:\12.06.02 = суббота, 2 июня, 2012г. (Проектный центр на пикнике)\ time for pictures in properties (explorer mode)
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
+check collection move
+collection pack
+copy to with device images doesn't work
+- fast start of 2 copies -> Index out of range;
 
 - Tabs redraw issue???;
 

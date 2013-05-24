@@ -14,16 +14,16 @@ object FloatPanel: TFloatPanel
   OldCreateOrder = False
   Position = poDefault
   Visible = True
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object ToolBar1: TToolBar
+  object TbButtons: TToolBar
     Left = 0
     Top = 0
     Width = 153
     Height = 25
     ButtonWidth = 27
-    Caption = 'ToolBar1'
     DisabledImages = DisabledImageList
     HotImages = HotImageList
     Images = NormalImageList

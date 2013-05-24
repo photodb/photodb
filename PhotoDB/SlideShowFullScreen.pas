@@ -19,13 +19,13 @@ uses
 
   uWinApi,
   uDBForm,
-  uFormInterfaces;
+  uFormInterfaces,
+  uVCLHelpers;
 
 type
-  TFullScreenView = class(TDBForm)
+  TFullScreenView = class(TDBForm, IFullScreenImageForm)
     MouseTimer: TTimer;
     ApplicationEvents1: TApplicationEvents;
-    DestroyTimer: TTimer;
     procedure FormPaint(Sender: TObject);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure Execute(Sender: TObject);
@@ -42,25 +42,25 @@ type
     procedure ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure DestroyTimerTimer(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FOldPoint: TPoint;
+    FFloatPanel: IFullScreenControl;
   protected
     { Protected declarations }
     function CanUseMaskingForModal: Boolean; override;
+    procedure InterfaceDestroyed; override;
   public
     { Public declarations }
+    procedure DrawImage(Image: TBitmap);
+    procedure Pause;
+    procedure Play;
+    procedure DisableControl;
+    procedure EnableControl;
   end;
 
-var
-  FullScreenView: TFullScreenView;
-
 implementation
-
-uses
-  FloatPanelFullScreen;
 
 {$R *.dfm}
 
@@ -75,21 +75,30 @@ begin
     Viewer.CloseActiveView;
 end;
 
+procedure TFullScreenView.EnableControl;
+begin
+  if FFloatPanel <> nil then
+    FFloatPanel.SetButtonsEnabled(True);
+end;
+
+procedure TFullScreenView.DisableControl;
+begin
+  if FFloatPanel <> nil then
+    FFloatPanel.SetButtonsEnabled(False);
+end;
+
 procedure TFullScreenView.Execute(Sender: TObject);
 begin
   Show;
-  FloatPanel.Show;
-  MouseTimer.Enabled := False;
-  MouseTimer.Enabled := True;
+  FFloatPanel.Show;
+  MouseTimer.Restart;
   SystemParametersInfo(SPI_SCREENSAVERRUNNING, 1, nil, 0);
 end;
 
 procedure TFullScreenView.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  ShowMouse;
-  SystemParametersInfo(SPI_SCREENSAVERRUNNING, 0, nil, 0);
-  DestroyTimer.Enabled := True;
+  Action := caHide;
 end;
 
 procedure TFullScreenView.FormDeactivate(Sender: TObject);
@@ -102,24 +111,33 @@ procedure TFullScreenView.FormMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   ShowMouse;
-  MouseTimer.Enabled := False;
-  MouseTimer.Enabled := True;
+  MouseTimer.Restart;
 end;
 
 procedure TFullScreenView.MouseTimerTimer(Sender: TObject);
-var
-  P: TPoint;
 begin
   if Visible then
   begin
-    GetCursorPos(P);
-    if FloatPanel = nil then
+    if FFloatPanel = nil then
       Exit;
-    P := FloatPanel.ScreenToClient(P);
-    if PtInRect(FloatPanel.ClientRect, P) then
+
+    if FFloatPanel.HasMouse then
       Exit;
+
     HideMouse;
   end;
+end;
+
+procedure TFullScreenView.Pause;
+begin
+  if FFloatPanel <> nil then
+    FFloatPanel.Pause;
+end;
+
+procedure TFullScreenView.Play;
+begin
+  if FFloatPanel <> nil then
+    FFloatPanel.Play;
 end;
 
 procedure TFullScreenView.FormMouseMove(Sender: TObject; Shift: TShiftState;
@@ -130,8 +148,7 @@ begin
   begin
     ShowMouse;
     FOldPoint := Point(X, Y);
-    MouseTimer.Enabled := False;
-    MouseTimer.Enabled := True;
+    MouseTimer.Restart;
   end;
 end;
 
@@ -152,8 +169,7 @@ procedure TFullScreenView.FormMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   ShowMouse;
-  MouseTimer.Enabled := False;
-  MouseTimer.Enabled := True;
+  MouseTimer.Restart;
 end;
 
 procedure TFullScreenView.HideMouse;
@@ -163,8 +179,14 @@ begin
   CState := ShowCursor(True);
   while Cstate >= 0 do
     Cstate := ShowCursor(False);
-  if FloatPanel <> nil then
-    FloatPanel.Hide;
+  if FFloatPanel <> nil then
+    FFloatPanel.Hide;
+end;
+
+procedure TFullScreenView.InterfaceDestroyed;
+begin
+  inherited;
+  Release;
 end;
 
 procedure TFullScreenView.ShowMouse;
@@ -175,8 +197,8 @@ begin
   while CState < 0 do
     CState := ShowCursor(True);
   if Viewer.IsFullScreenNow then
-    if FloatPanel <> nil then
-      FloatPanel.Show;
+    if FFloatPanel <> nil then
+      FFloatPanel.Show;
 end;
 
 procedure TFullScreenView.ApplicationEvents1Message(var Msg: tagMSG;
@@ -237,32 +259,24 @@ end;
 
 procedure TFullScreenView.FormResize(Sender: TObject);
 begin
-  if FloatPanel <> nil then
-  begin
-    FloatPanel.Top := 0;
-    FloatPanel.Left := Left + ClientWidth - FloatPanel.Width;
-  end;
+  if FFloatPanel <> nil then
+    FFloatPanel.MoveToForm(Self);
 end;
 
 procedure TFullScreenView.FormCreate(Sender: TObject);
 begin
-  if FloatPanel = nil then
-    Application.CreateForm(TFloatPanel, FloatPanel);
-  FloatPanel.Show;
+  FFloatPanel := FullScreenControl;
+  FFloatPanel.Show;
 
   DisableSleep;
 end;
 
 procedure TFullScreenView.FormDestroy(Sender: TObject);
 begin
+  FFloatPanel := nil;
+  ShowMouse;
+  SystemParametersInfo(SPI_SCREENSAVERRUNNING, 0, nil, 0);
   EnableSleep;
-end;
-
-procedure TFullScreenView.DestroyTimerTimer(Sender: TObject);
-begin
-  DestroyTimer.Enabled := False;
-  Release;
-  FullScreenView := nil;
 end;
 
 function TFullScreenView.CanUseMaskingForModal: Boolean;
@@ -270,9 +284,12 @@ begin
   Result := False;
 end;
 
-initialization
+procedure TFullScreenView.DrawImage(Image: TBitmap);
+begin
+  Canvas.Draw(0, 0, Image);
+end;
 
-  FullScreenView := nil;
-  FloatPanel := nil;
+initialization
+  FormInterfaces.RegisterFormInterface(IFullScreenImageForm, TFullScreenView);
 
 end.

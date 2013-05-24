@@ -39,11 +39,4 @@ object FullScreenView: TFullScreenView
     Left = 40
     Top = 8
   end
-  object DestroyTimer: TTimer
-    Enabled = False
-    Interval = 1
-    OnTimer = DestroyTimerTimer
-    Left = 72
-    Top = 8
-  end
 end

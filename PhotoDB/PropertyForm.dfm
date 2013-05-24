@@ -187,6 +187,7 @@ object PropertiesForm: TPropertiesForm
     ParentDoubleBuffered = False
     TabOrder = 5
     OnChange = PcMainChange
+    OnChanging = PcMainChanging
     object TsGeneral: TTabSheet
       Caption = 'General'
       DesignSize = (

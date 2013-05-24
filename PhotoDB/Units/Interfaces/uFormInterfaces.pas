@@ -236,6 +236,40 @@ type
     function Execute(CollectionFileName: string): Boolean;
   end;
 
+  IFullScreenControl = interface(IFormInterface)
+    ['{09079B22-272B-4474-B5F1-8E6CACAD7AD8}']
+    procedure Hide;
+    procedure Close;
+    procedure Pause;
+    procedure Play;
+    function HasMouse: Boolean;
+    procedure MoveToForm(Form: TDBForm);
+    procedure SetButtonsEnabled(Value: Boolean);
+    procedure SetPlayEnabled(Value: Boolean);
+  end;
+
+  ISlideShowForm = interface(IFormInterface)
+    ['{CFB4A1D1-08D4-4F16-9ACB-05BD2EBC0B29}']
+    procedure Next;
+    procedure Previous;
+    procedure Pause;
+    procedure Play;
+    procedure Execute;
+    procedure Close;
+    procedure DisableControl;
+    procedure EnableControl;
+  end;
+
+  IFullScreenImageForm = interface(IFormInterface)
+    ['{531EDB91-3324-4982-86CC-F15840D3E3EE}']
+    procedure DrawImage(Image: TBitmap);
+    procedure Pause;
+    procedure Play;
+    procedure Close;
+    procedure DisableControl;
+    procedure EnableControl;
+  end;
+
 type
   TFormInterfaces = class(TObject)
   private
@@ -279,6 +313,10 @@ function LinkItemSelectForm: ILinkItemSelectForm;
 function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
 function CollectionPreviewSettings: IFormCollectionPreviewSettings;
 function FormLinkItemEditor: IFormLinkItemEditor;
+
+function FullScreenControl: IFullScreenControl;
+function FullScreenImageForm: IFullScreenImageForm;
+function SlideShowForm: ISlideShowForm;
 
 implementation
 
@@ -421,6 +459,21 @@ end;
 function FormLinkItemEditor: IFormLinkItemEditor;
 begin
   Result := FormInterfaces.CreateForm<IFormLinkItemEditor>();
+end;
+
+function FullScreenControl: IFullScreenControl;
+begin
+  Result := FormInterfaces.CreateForm<IFullScreenControl>();
+end;
+
+function FullScreenImageForm: IFullScreenImageForm;
+begin
+  Result := FormInterfaces.CreateForm<IFullScreenImageForm>();
+end;
+
+function SlideShowForm: ISlideShowForm;
+begin
+  Result := FormInterfaces.CreateForm<ISlideShowForm>();
 end;
 
 { TFormInterfaces }

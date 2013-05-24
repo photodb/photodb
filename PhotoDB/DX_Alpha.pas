@@ -36,7 +36,7 @@ uses
 type
   TForwardDirection = (fdNext, fdPrevious, fdCurrent);
 
-  TDirectShowForm = class(TDBForm)
+  TDirectShowForm = class(TDBForm, ISlideShowForm)
     MouseTimer: TTimer;
     ApplicationEvents1: TApplicationEvents;
     DelayTimer: TTimer;
@@ -44,7 +44,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormPaint(Sender: TObject);
-    procedure Execute(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure MouseTimerTimer(Sender: TObject);
@@ -71,6 +70,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    FFloatPanel: IFullScreenControl;
     FManager: TDirectXSlideShowCreatorManager;
 
     AlphaCount: Byte;
@@ -109,27 +109,26 @@ type
     { Protected declarations }
     function GetFormID: string; override;
     function CanUseMaskingForModal: Boolean; override;
+    procedure InterfaceDestroyed; override;
     procedure LoadDirectX;
     procedure NextID;
     procedure NewID;
     property AlphaSteps: Integer read GetAlphaSteps;
   public
     { Public declarations }
+    procedure Execute;
+    procedure DisableControl;
+    procedure EnableControl;
     function IsValidThread(ID: TGUID): Boolean;
     function IsActualThread(ID: TGUID): Boolean;
     property IsPaused: Boolean read FIsPaused write FIsPaused;
   end;
-
-var
-  DirectShowForm: TDirectShowForm;
 
 implementation
 
 {$R *.DFM}
 
 uses
-  FloatPanelFullScreen,
-  SlideShow,
   UnitDirectXSlideShowCreator;
 
 // Copy Offscreen on screen (WM_PAINT, for example)
@@ -310,8 +309,7 @@ begin
   Show;
   LoadDirectX;
 
-  if FloatPanel = nil then
-    Application.CreateForm(TFloatPanel, FloatPanel);
+  FFloatPanel := FullScreenControl;
   FormResize(Sender);
 
   DisableSleep;
@@ -410,6 +408,7 @@ end;
 
 procedure TDirectShowForm.FormDestroy(Sender: TObject);
 begin
+  FFloatPanel := nil;
   ShowMouse;
   DelayTimer.Enabled := False;
   FadeTimer.Enabled:= False;
@@ -428,7 +427,7 @@ begin
 end;
 
 //По изменению слайдера выполняем преобразование и обновляем экран.
-procedure TDirectShowForm.Execute(Sender: TObject);
+procedure TDirectShowForm.Execute;
 var
   TempImage, FirstImage: TBitmap;
   FH, FW: Integer;
@@ -436,8 +435,8 @@ var
 begin
   FbImage := Viewer.CurrentFullImage;
 
-  if FloatPanel <> nil then
-    FloatPanel.Show;
+  if FFloatPanel <> nil then
+    FFloatPanel.Show;
 
   MouseTimer.Restart;
   SystemParametersInfo(SPI_SCREENSAVERRUNNING, 1, nil, 0);
@@ -500,11 +499,10 @@ begin
   if Visible then
   begin
     GetCursorPos(p);
-    if FloatPanel = nil then
+    if FFloatPanel = nil then
       Exit;
 
-    P := FloatPanel.ScreenToClient(P);
-    if PtInRect(FloatPanel.ClientRect, P) then
+    if FFloatPanel.HasMouse then
       Exit;
 
     HideMouse;
@@ -554,8 +552,8 @@ begin
   CState := ShowCursor(True);
   while Cstate >= 0 do
     Cstate := ShowCursor(False);
-  if FloatPanel <> nil then
-    FloatPanel.Hide;
+  if FFloatPanel <> nil then
+    FFloatPanel.Hide;
   SetFocus;
 end;
 
@@ -567,8 +565,8 @@ begin
   while CState < 0 do
     CState := ShowCursor(True);
   if Viewer.IsSlideShowNow then
-    if FloatPanel <> nil then
-      FloatPanel.Show;
+    if FFloatPanel <> nil then
+      FFloatPanel.Show;
 end;
 
 procedure TDirectShowForm.ApplicationEvents1Message(var Msg: tagMSG; var Handled: Boolean);
@@ -637,6 +635,18 @@ begin
   Viewer.NextImage;
 end;
 
+procedure TDirectShowForm.DisableControl;
+begin
+  if FFloatPanel <> nil then
+    FFloatPanel.SetButtonsEnabled(False);
+end;
+
+procedure TDirectShowForm.EnableControl;
+begin
+  if FFloatPanel <> nil then
+    FFloatPanel.SetButtonsEnabled(True);
+end;
+
 function TDirectShowForm.CanUseMaskingForModal: Boolean;
 begin
   Result := False;
@@ -644,10 +654,10 @@ end;
 
 procedure TDirectShowForm.FormResize(Sender: TObject);
 begin
-  if FloatPanel = nil then
+  if FFloatPanel = nil then
     Exit;
-  FloatPanel.Top := 0;
-  FloatPanel.Left := Left + ClientWidth - FloatPanel.Width;
+
+  FFloatPanel.MoveToForm(Self);
 end;
 
 function TDirectShowForm.GetAlphaSteps: Integer;
@@ -750,12 +760,18 @@ procedure TDirectShowForm.Pause;
 begin
   DelayTimer.Enabled := False;
   FIsPaused := True;
+
+  if FFloatPanel <> nil then
+    FFloatPanel.Pause;
 end;
 
 procedure TDirectShowForm.Play;
 begin
   Next;
   FIsPaused := False;
+
+  if FFloatPanel <> nil then
+    FFloatPanel.Play;
 end;
 
 procedure TDirectShowForm.Next;
@@ -838,7 +854,12 @@ end;
 procedure TDirectShowForm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  DirectShowForm := nil;
+  Action := caHide;
+end;
+
+procedure TDirectShowForm.InterfaceDestroyed;
+begin
+  inherited;
   Release;
 end;
 
@@ -851,6 +872,9 @@ function TDirectShowForm.IsValidThread(ID: TGUID): Boolean;
 begin
   Result := IsActualThread(ID) or IsEqualGUID(FNextID, ID);
 end;
+
+initialization
+  FormInterfaces.RegisterFormInterface(ISlideShowForm, TDirectShowForm);
 
 end.
 

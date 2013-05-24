@@ -311,6 +311,7 @@ type
     procedure TsGroupsResize(Sender: TObject);
     procedure WedGroupsFilterChange(Sender: TObject);
     procedure TmrFilterTimer(Sender: TObject);
+    procedure PcMainChanging(Sender: TObject; var AllowChange: Boolean);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -621,7 +622,14 @@ begin
         BtSave.Enabled := False;
 
       WorkQuery.First;
-      DataRecord := TMediaItem.CreateFromDS(WorkQuery);
+      if No_file then
+      begin
+        DataRecord := TMediaItem.Create;
+        DataRecord.ID := ID;
+      end
+      else
+        DataRecord := TMediaItem.CreateFromDS(WorkQuery);
+
       FFilesInfo.Clear;
       FFilesInfo.Add(DataRecord);
 
@@ -709,7 +717,7 @@ begin
 
       PcMain.Pages[2].TabVisible := FileExistsSafe(DataRecord.FileName);
       PcMain.Pages[3].TabVisible := PcMain.Pages[2].TabVisible;
-      Idlabel.Text := Inttostr(Id);
+      Idlabel.Text := IntToStr(Id);
       Caption := L('Properties') + ' - ' + DA.Name;
       KeyWordsMemo.Text := DataRecord.KeyWords;
       LabelName.Text := ExtractFileName(DataRecord.FileName);
@@ -1091,7 +1099,7 @@ end;
 
 procedure TPropertiesForm.TmrFilterTimer(Sender: TObject);
 begin
-  TmrFilter.Enabled := False;
+  //TmrFilter.Enabled := False;
   FillGroupList;
 end;
 
@@ -1844,7 +1852,11 @@ procedure TPropertiesForm.PcMainChange(Sender: TObject);
 var
   Options: TPropertyLoadGistogrammThreadOptions;
   NewTab: Integer;
+  I: Integer;
 begin
+  for I := 0 to PcMain.ActivePage.ControlCount - 1 do
+    PcMain.ActivePage.Controls[I].Show;
+
   NewTab := PcMain.ActivePageIndex;
   case NewTab of
     1:
@@ -1878,10 +1890,21 @@ begin
       end;
   end;
 
+
+  InvalidateRect(Handle, nil, TRUE);
   //TODO: Sometimes tabs doesn't redraw after change
   //SendMessage(PcMain.Handle, WM_SETREDRAW, 1, 0);
   //RedrawWindow(PcMain.Handle, nil, 0, RDW_ERASENOW + RDW_FRAME + RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT );
   //InvalidateRect(PcMain.Handle, nil, True);
+end;
+
+procedure TPropertiesForm.PcMainChanging(Sender: TObject;
+  var AllowChange: Boolean);
+var
+  I: Integer;
+begin
+  for I := 0 to PcMain.ActivePage.ControlCount - 1 do
+    PcMain.ActivePage.Controls[I].Hide;
 end;
 
 procedure TPropertiesForm.ReadExifData;

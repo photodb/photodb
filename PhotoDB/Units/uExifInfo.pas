@@ -13,6 +13,8 @@ uses
   CCR.Exif.BaseUtils,
   CCR.Exif.XMPUtils,
 
+  Dmitry.Utils.System,
+
   UnitDBDeclare,
   UnitLinksSupport,
 
@@ -174,6 +176,14 @@ const
       Result := Fraction.AsString;
   end;
 
+  function FormatBiasFraction(Fraction: TExifSignedFraction): string;
+  begin
+    if Fraction.Denominator <> 0 then
+      Result := FractionToUnicodeString(Fraction.Numerator, Fraction.Denominator)
+    else
+      Result := Fraction.AsString;
+  end;
+
 begin
   Result := ExifData <> nil;
   if not Result then
@@ -209,7 +219,7 @@ begin
 
         XInsert('ExposureTime', L('Exposure'), ExposureFractionToString(ExifData.ExposureTime), False, L('s'));
         if not ExifData.ExposureBiasValue.MissingOrInvalid and (ExifData.ExposureBiasValue.Numerator <> 0) then
-          XInsert('ExposureBiasValue', L('Exposure bias'), ExifData.ExposureBiasValue.AsString);
+          XInsert('ExposureBiasValue', L('Exposure bias'), FormatBiasFraction(ExifData.ExposureBiasValue));
 
         XInsert('ISOSpeedRatings', L('ISO'), ExifData.ISOSpeedRatings.AsString);
         XInsert('FocalLength', L('Focal length'), FractionToString(ExifData.FocalLength), False, L('mm'));
