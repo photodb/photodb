@@ -159,6 +159,7 @@ begin
         Reg.CloseKey;
         Reg.OpenKey(GetCollectionRootKey(CollectionFile) + '\Directories\' + IntToStr(I), True);
 
+        Reg.WriteString('Name', Folder.Name);
         Reg.WriteString('Path', Folder.Path);
         Reg.WriteInteger('SortOrder', Folder.SortOrder);
       end;

@@ -760,6 +760,9 @@
 	<translate name="Viewer" value="Просмотр фотографий" />
 	<translate name="File %s not found!" value="Файл не найден!" />
 	<translate name="Can't display file" value="Невозможно отобразить файл" />
+	<translate name="Can't display file ({0})" value="Невозможно отобразить файл ({0})" />
+	<translate name="Loading image..." value="Загрузка изображения..." />
+	<translate name="Image is empty" value="Изображение пустое" />
 	<translate name="Error displaying image!" value="Ошибка отображения изображения!" />
 	<translate name="Loading list of images" value="загрузка списка изображений" />
 	<translate name="Collection Item [%d]" value="Информация в коллекции [%d]" />
@@ -1554,6 +1557,11 @@
 	<translate name="Text color" value="Цвет текста"/>
 	<translate name="Transparency" value="Прозрачность"/>
 	<translate name="Font Name" value="Имя шрифта"/>
+	<translate name="Text" value="Текст"/>
+	<translate name="Image" value="Изображение"/>
+	<translate name="Keep proportions" value="Сохранять пропорции"/>
+	<translate name="Use mouse to select area with watermark image" value="Используйте мышку для выделения области с изображением для водяного знака"/>
+	<translate name="Click to select watermark image" value="Нажмите для выбора изображения"/>
   </scope>
   <scope name="EditPerson">
 	<translate name="Name" value="Имя"/>

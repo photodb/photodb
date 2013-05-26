@@ -336,6 +336,19 @@ begin
     FProcessingParams.WatermarkOptions.BlockCountX := AppSettings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
     FProcessingParams.WatermarkOptions.BlockCountY := AppSettings.ReadInteger(Settings_Watermark, 'BlocksY', 3);
     FProcessingParams.WatermarkOptions.FontName := AppSettings.ReadString(Settings_Watermark, 'Font', 'Arial');
+
+    if AppSettings.ReadInteger(Settings_Watermark, 'Mode', 0) = 0 then
+      FProcessingParams.WatermarkOptions.DrawMode := WModeImage
+    else
+      FProcessingParams.WatermarkOptions.DrawMode := WModeText;
+
+    FProcessingParams.WatermarkOptions.KeepProportions := AppSettings.ReadBool(Settings_Watermark, 'KeepProportions', True);
+    FProcessingParams.WatermarkOptions.StartPoint.X := AppSettings.ReadInteger(Settings_Watermark, 'ImageStartX', 25);
+    FProcessingParams.WatermarkOptions.StartPoint.Y := AppSettings.ReadInteger(Settings_Watermark, 'ImageStartY', 25);
+    FProcessingParams.WatermarkOptions.EndPoint.X := AppSettings.ReadInteger(Settings_Watermark, 'ImageEndX', 75);
+    FProcessingParams.WatermarkOptions.EndPoint.Y := AppSettings.ReadInteger(Settings_Watermark, 'ImageEndY', 75);
+    FProcessingParams.WatermarkOptions.ImageFile := AppSettings.ReadString(Settings_Watermark, 'WatermarkImage');
+    FProcessingParams.WatermarkOptions.ImageTransparency := Round(AppSettings.ReadInteger(Settings_Watermark, 'ImageTransparency', 50) * 255 / 100);
   end;
 
   FProcessingParams.SaveAspectRation := CbAspectRatio.Checked;

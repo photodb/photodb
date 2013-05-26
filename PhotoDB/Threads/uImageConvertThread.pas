@@ -81,7 +81,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TMediaItem; AProcessingParams : TProcessingParams);
+    constructor Create(AOwnerForm: TThreadForm; AState: TGUID; Context: IDBContext; AData: TMediaItem; AProcessingParams: TProcessingParams);
     procedure AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect; Text: string);
     procedure SyncDrawCallBack;
     function AsyncPrepareBitmapCallBack(Bitmap: TBitmap; Font: HFont; Text: string): Integer;
@@ -144,7 +144,7 @@ var
   Password, Ext: string;
   FileName: string;
   Original,
-  TmpBitmap: TBitmap;
+  TmpBitmap, WatermarkedImage: TBitmap;
   ExifData: TExifData;
   W, H, Width, Height, Rotation: Integer;
   Encrypted: Boolean;
@@ -155,6 +155,8 @@ var
   FOriginalOrientation: Integer;
   ImageInfo: ILoadImageInfo;
   Flags: TImageLoadFlags;
+  WIInfo: TMediaItem;
+  WIImageInfo: ILoadImageInfo;
 
   procedure Exchange(var A, B: TBitmap);
   var
@@ -627,13 +629,40 @@ begin
 
           //add watermark
           if FProcessingParams.AddWatermark then
-            DrawWatermark(Original, FProcessingParams.WatermarkOptions.BlockCountX,
-              FProcessingParams.WatermarkOptions.BlockCountY,
-              FProcessingParams.WatermarkOptions.Text, -1,
-              FProcessingParams.WatermarkOptions.Color,
-              FProcessingParams.WatermarkOptions.Transparenty,
-              FProcessingParams.WatermarkOptions.FontName,
-              AsyncDrawCallBack, AsyncPrepareBitmapCallBack, AsyncGetFontCallBack);
+          begin
+            if FProcessingParams.WatermarkOptions.DrawMode = WModeText then
+            begin
+              DrawWatermarkText(Original, FProcessingParams.WatermarkOptions.BlockCountX,
+                FProcessingParams.WatermarkOptions.BlockCountY,
+                FProcessingParams.WatermarkOptions.Text, -1,
+                FProcessingParams.WatermarkOptions.Color,
+                FProcessingParams.WatermarkOptions.Transparenty,
+                FProcessingParams.WatermarkOptions.FontName,
+                AsyncDrawCallBack, AsyncPrepareBitmapCallBack, AsyncGetFontCallBack);
+            end;
+
+            if FProcessingParams.WatermarkOptions.DrawMode = WModeImage then
+            begin
+              WIInfo := TMediaItem.CreateFromFile(FProcessingParams.WatermarkOptions.ImageFile);
+              try
+                if LoadImageFromPath(WIInfo, -1, '', [ilfGraphic, ilfICCProfile, ilfPassword, ilfAskUserPassword, ilfUseCache], WIImageInfo) then
+                begin
+                  WatermarkedImage := WIImageInfo.GenerateBitmap(WIInfo, WIImageInfo.GraphicWidth, WIImageInfo.GraphicHeight, pf32Bit, clNone, [ilboFreeGraphic, ilboFullBitmap, ilboRotate, ilboApplyICCProfile]);
+                  try
+                    DrawWatermarkedImage(Original, WatermarkedImage,
+                      FProcessingParams.WatermarkOptions.StartPoint,
+                      FProcessingParams.WatermarkOptions.EndPoint,
+                      FProcessingParams.WatermarkOptions.KeepProportions,
+                      FProcessingParams.WatermarkOptions.ImageTransparency);
+                  finally
+                    F(WatermarkedImage);
+                  end;
+                end;
+              finally
+                F(WIInfo);
+              end;
+            end;
+          end;
 
           if not CheckThread then
             Exit;

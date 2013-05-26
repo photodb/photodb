@@ -46,9 +46,11 @@ procedure SelectedColor(Image: TBitmap; Color: TColor);
 procedure FillColorEx(Bitmap: TBitmap; Color: TColor);
 procedure MixWithColor(Bitmap: TBitmap; MixTransparencity: Byte; Color: TColor; ExceptRect: TRect);
 procedure DrawImageEx(Dest, Src: TBitmap; X, Y: Integer);
+procedure DrawImageExTransparency(Dest, Src: TBitmap; X, Y: Integer; Transparency: Byte);
 procedure DrawImageExRect(Dest, Src: TBitmap; SX, SY, SW, SH: Integer; DX, DY: Integer);
 procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 procedure DrawImageEx32To24(Dest24, Src32: TBitmap; X, Y: Integer);
+procedure DrawImageEx32To24Transparency(Dest24, Src32: TBitmap; X, Y: Integer; Transparency: Byte);
 procedure DrawImageEx24To32(Dest32, Src24: TBitmap; X, Y: Integer; NewTransparent: Byte = 0);
 procedure FillTransparentChannel(Bitmap: TBitmap; TransparentValue: Byte);
 procedure FillTransparentColor(Bitmap: TBitmap; Color: TColor; X, Y, Width, Height: Integer; TransparentValue: Byte = 0); overload;
@@ -1225,6 +1227,42 @@ begin
   end;
 end;
 
+procedure DrawImageEx32To24Transparency(Dest24, Src32: TBitmap; X, Y: Integer; Transparency: Byte);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW: Integer;
+  W1, W: Byte;
+  pD: PARGB;
+  pS: PARGB32;
+begin
+  DH := Dest24.Height;
+  DW := Dest24.Width;
+  SH := Src32.Height;
+  SW := Src32.Width;
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Src32.ScanLine[I];
+    pD := Dest24.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+
+      W := pS[J].L * Transparency div $FF;
+      W1 := 255 - W;
+      pD[XD].R := (pD[XD].R * W1 + pS[J].R * W + $7F) div $FF;
+      pD[XD].G := (pD[XD].G * W1 + pS[J].G * W + $7F) div $FF;
+      pD[XD].B := (pD[XD].B * W1 + pS[J].B * W + $7F) div $FF;
+    end;
+  end;
+end;
+
 procedure DrawImageEx32(Dest32, Src32: TBitmap; X, Y: Integer);
 var
   I, J,
@@ -1275,6 +1313,7 @@ begin
   DW := Dest.Width;
   SH := Src.Height;
   SW := Src.Width;
+
   for I := 0 to SH - 1 do
   begin
     YD := I + Y;
@@ -1288,6 +1327,43 @@ begin
       if (XD >= DW) then
         Break;
       pD[XD] := pS[J];
+    end;
+  end;
+end;
+
+procedure DrawImageExTransparency(Dest, Src: TBitmap; X, Y: Integer; Transparency: Byte);
+var
+  I, J,
+  XD, YD,
+  DH, DW,
+  SH, SW: Integer;
+  W, W1: Byte;
+  pS: PARGB;
+  pD: PARGB;
+begin
+  DH := Dest.Height;
+  DW := Dest.Width;
+  SH := Src.Height;
+  SW := Src.Width;
+  W := Transparency;
+  W1 := 255 - W;
+
+  for I := 0 to SH - 1 do
+  begin
+    YD := I + Y;
+    if (YD >= DH) then
+      Break;
+    pS := Src.ScanLine[I];
+    pD := Dest.ScanLine[YD];
+    for J := 0 to SW - 1 do
+    begin
+      XD := J + X;
+      if (XD >= DW) then
+        Break;
+
+      pD[XD].R := (pD[XD].R * W1 + pS[J].R * W) div $FF;
+      pD[XD].G := (pD[XD].G * W1 + pS[J].G * W) div $FF;
+      pD[XD].B := (pD[XD].B * W1 + pS[J].B * W) div $FF;
     end;
   end;
 end;

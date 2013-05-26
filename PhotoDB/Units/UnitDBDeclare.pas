@@ -196,7 +196,14 @@ type
 type
   TCallBackBigSizeProc = procedure(Sender: TObject; SizeX, SizeY: Integer) of object;
 
+  TWatermarkMode = (WModeImage, WModeText);
+
   TWatermarkOptions = record
+    DrawMode: TWatermarkMode;
+    ImageFile: string;
+    KeepProportions: Boolean;
+    ImageTransparency: Byte;
+    StartPoint, EndPoint: TPoint;
     Text: string;
     BlockCountX: Integer;
     BlockCountY: Integer;

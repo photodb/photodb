@@ -3,7 +3,12 @@ unit UnitSendMessageWithTimeoutThread;
 interface
 
 uses
-  Windows, Classes, Forms, uLogger, uDBThread;
+  Winapi.Windows,
+  System.Classes,
+  Vcl.Forms,
+
+  uLogger,
+  uDBThread;
 
 type
   TSendMessageWithTimeoutThread = class(TDBThread)
@@ -20,30 +25,30 @@ type
     destructor Destroy; override;
   end;
 
-  var
-    SendMessageMessageWork : boolean = false;
-    SendMessageResult : boolean = false;
-
-  function SendMessageEx(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM) : boolean;
+function SendMessageEx(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM) : boolean;
 
 implementation
 
-  function SendMessageEx(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM) : boolean;
-  var
-    SendMessageThread : TThread;
-  begin
+var
+  SendMessageMessageWork: Boolean = false;
+  SendMessageResult: Boolean = false;
 
-   EventLog(':SendMessageEx()...');
-   while SendMessageMessageWork do
+function SendMessageEx(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM) : boolean;
+var
+  SendMessageThread: TThread;
+begin
+
+  EventLog(':SendMessageEx()...');
+  while SendMessageMessageWork do
     Application.ProcessMessages;
 
-   SendMessageMessageWork := True;
-   SendMessageResult:=false;
-   SendMessageThread := TSendMessageWithTimeoutThread.Create(hWnd, Msg, wParam, lParam);
-   WaitForSingleObject(SendMessageThread.Handle, 5000);
+  SendMessageMessageWork := True;
+  SendMessageResult:= False;
+  SendMessageThread := TSendMessageWithTimeoutThread.Create(hWnd, Msg, wParam, lParam);
+  WaitForSingleObject(SendMessageThread.Handle, 5000);
 
-   Result := SendMessageResult;
-  end;
+  Result := SendMessageResult;
+end;
 
 { TSendMessageWithTimeoutThread }
 

@@ -716,7 +716,7 @@ procedure TViewer.RecreateDrawImage(Sender: TObject);
 var
   Fh, Fw: Integer;
   Zx, Zy, Zw, Zh, X1, X2, Y1, Y2: Integer;
-  ImRect, BeginRect, ImageRect: TRect;
+  ImRect, ImageRect: TRect;
   Z, AZoom: Real;
   FileName: string;
   TempImage, B: TBitmap;
@@ -732,14 +732,18 @@ var
     end;
   end;
 
-  procedure ShowErrorText(FileName: string);
+  procedure ShowErrorText(FileName, CustomError: string);
   var
     MessageText: string;
     TextRect, R: TRect;
   begin
     if FileName <> '' then
     begin
-      MessageText := L('Can''t display file') + ':';
+      if CustomError = '' then
+        MessageText := L('Can''t display file') + ':'
+      else
+        MessageText := FormatEx(L('Can''t display file ({0})') + ':', [CustomError]);
+
       if not FullScreenNow then
         DrawImage.Canvas.Font.Color := Theme.WindowTextColor
       else
@@ -805,7 +809,7 @@ begin
         end;
       end;
     end else
-      ShowErrorText(FileName);
+      ShowErrorText(FileName, '');
 
     if FFullScreenView <> nil then
       FFullScreenView.DrawImage(DrawImage);
@@ -819,7 +823,7 @@ begin
 
   if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
   begin
-    ShowErrorText(FileName);
+    ShowErrorText(FileName, L('Image is empty'));
     Refresh;
     Exit;
   end;
@@ -934,7 +938,7 @@ begin
     end;
 
   end else
-    ShowErrorText(FileName);
+    ShowErrorText(FileName, L('Loading image...'));
 
   if (not FIsWaiting) and (RealImageHeight * RealImageWidth <> 0) then
   begin
@@ -1062,8 +1066,8 @@ end;
 
 procedure TViewer.FormDestroy(Sender: TObject);
 begin
-  UnRegisterMainForm(Self);
   CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
+  UnRegisterMainForm(Self);
 
   FSID := GetGUID;
   FForwardThreadSID := GetGUID;
@@ -1564,9 +1568,6 @@ procedure TViewer.ChangedDBDataByID(Sender: TObject; ID: Integer; params: TEvent
 var
   I: Integer;
 begin
-  if Viewer = nil then
-    Exit;
-
   if Params * [EventID_Param_DB_Changed] <> [] then
      LoadContext;
 
@@ -3506,7 +3507,7 @@ end;
 function TViewer.GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
 begin
   Result := False;
-  if FIsImageLoading then
+  if FIsImageLoading or (CurrentInfo.Count = 0) then
     Exit;
 
   if AnsiLowerCase(FileName) = AnsiLowerCase(Item.FileName) then
@@ -3649,7 +3650,10 @@ procedure TViewer.CheckFaceIndicatorVisibility;
 var
   IsDevice: Boolean;
 begin
-  IsDevice := IsDevicePath(Item.FileName);
+  IsDevice := False;
+  if CurrentInfo.Count > 0 then
+    IsDevice := IsDevicePath(Item.FileName);
+
   WlFaceCount.Visible := (WlFaceCount.Left + WlFaceCount.Width + 3 < TbrActions.Left) and StaticImage and FaceDetectionManager.IsActive and not IsDevice;
   LsDetectingFaces.Visible := ((LsDetectingFaces.Left + LsDetectingFaces.Width + 3 < TbrActions.Left) and not FFaceDetectionComplete) and StaticImage and AppSettings.ReadBool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive and FaceDetectionManager.IsActive and not IsDevice;
 end;

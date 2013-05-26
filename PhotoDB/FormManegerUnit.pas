@@ -10,6 +10,7 @@ uses
   System.StrUtils,
   Winapi.Windows,
   Winapi.Messages,
+  Vcl.Controls,
   Vcl.Forms,
   Vcl.Themes,
   Vcl.ComCtrls,
@@ -49,6 +50,7 @@ uses
   uPortableClasses,
   uPeopleRepository,
   uTranslate,
+  uSecondCopy,
   {$IFDEF LICENCE}
   UnitINI,
   uActivationUtils,
@@ -213,16 +215,20 @@ begin
     if IsFile(ParamStr1) and IsGraphicFile(ParamStr1) then
     begin
       TW.I.Start('RUN TViewer');
-      TW.I.Start('ExecuteDirectoryWithFileOnThread');
-      Viewer.ShowImageInDirectoryEx(ParamStr1);
-      TW.I.Start('ActivateApplication');
-      CloseSplashWindow;
+      //viwer can ait for style and be still invisible and inaccesseble
+      if (Viewer <> nil) then
+      begin
+        TW.I.Start('ExecuteDirectoryWithFileOnThread');
+        Viewer.ShowImageInDirectoryEx(ParamStr1);
+        TW.I.Start('ActivateApplication');
+        CloseSplashWindow;
 
-      Viewer.Show;
-      Viewer.Restore;
+        Viewer.Show;
+        Viewer.Restore;
 
-      //statictics
-      ProgramStatistics.ProgramStartedViewer;
+        //statictics
+        ProgramStatistics.ProgramStartedViewer;
+      end;
     end else
     begin
 
@@ -378,6 +384,7 @@ end;
 
 procedure TFormManager.RunInBackground;
 begin
+  Caption := DB_ID_CLOSING;
   FGlobalCheckCount := 0;
   FCollectionCheckCount := 0;
   TimerCheckMainFormsHandle := SetTimer(0, TIMER_CHECK_MAIN_FORMS, 55, @TimerProc);
@@ -400,6 +407,7 @@ begin
   if ExitAppl then
     Exit;
 
+  AllowRunSecondCopy;
   DBTerminating := True;
   ExitAppl := True;
 

@@ -44,10 +44,11 @@ type
 procedure DoInfoListBoxDrawItem(ListBox: TListBox; index: Integer; ARect: TRect; State: TOwnerDrawState;
   ItemsData: TList; Icons: array of TIcon; FProgressEnabled: Boolean; TempProgress: TDmProgress; Infos: TStrings);
 procedure AddIconToListFromPath(ImageList: TImageList; IconPath: string);
-procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
+procedure DrawWatermarkText(Bitmap: TBitmap; XBlocks, YBlocks: Integer; Text: string; AAngle: Integer; Color: TColor;
   Transparent: Byte; FontName: string; SyncCallBack: TDrawTextAsyncProcedure;
   SyncTextPrepare: TTextPrepareAsyncProcedure;
   GetFontHandle: TGetAsyncCanvasFontProcedure);
+procedure DrawWatermarkedImage(Image, WatermarkedImage: TBitmap; StartPoint, EndPoint: TPoint; KeepProportions: Boolean; Transparency: Byte);
 function CompareImages(Image1, Image2: TGraphic; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
   Quick: Boolean = False; Raz: Integer = 60): TImageCompareResult;
 function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Rotate: Integer; FSpsearch_ScanFileRotate: Boolean = True;
@@ -55,7 +56,71 @@ function CompareImagesEx(Image1: TGraphic; Image2Info: TCompareImageInfo; var Ro
 
 implementation
 
-procedure DrawWatermark(Bitmap: TBitmap; XBlocks, YBlocks: Integer;
+procedure DrawWatermarkedImage(Image, WatermarkedImage: TBitmap; StartPoint, EndPoint: TPoint; KeepProportions: Boolean; Transparency: Byte);
+var
+  P1, P2: TPoint;
+  WI: TBitmap;
+  W, H: Integer;
+  DeltaX, DeltaY, StartX, StartY: Integer;
+  RightWidth, BottomHeight: Integer;
+begin
+  P1 := Point(Min(StartPoint.X, EndPoint.X), Min(StartPoint.Y, EndPoint.Y));
+  P2 := Point(Max(StartPoint.X, EndPoint.X), Max(StartPoint.Y, EndPoint.Y));
+  if not KeepProportions then
+  begin
+    P1.X := Round(Image.Width * P1.X / 100);
+    P1.Y := Round(Image.Height * P1.Y / 100);
+
+    P2.X := Round(Image.Width * P2.X / 100);
+    P2.Y := Round(Image.Height * P2.Y / 100);
+  end else
+  begin
+
+    RightWidth := 100 - P2.X;
+    BottomHeight := 100 - P2.Y;
+
+    StartX := Round(100 * P1.X / (RightWidth + P1.X));
+    StartY := Round(100 * P1.Y / (BottomHeight + P1.Y));
+
+    P1.X := Round(Image.Width * P1.X / 100);
+    P1.Y := Round(Image.Height * P1.Y / 100);
+
+    P2.X := Round(Image.Width * P2.X / 100);
+    P2.Y := Round(Image.Height * P2.Y / 100);
+
+    W := WatermarkedImage.Width;
+    H := WatermarkedImage.Height;
+    ProportionalSizeA(P2.X - P1.X, P2.Y - P1.Y, W, H);
+
+    DeltaX := (P2.X - P1.X) - W;
+    DeltaY := (P2.Y - P1.Y) - H;
+
+    StartX := Round(StartX * DeltaX / 100);
+    StartY := Round(StartY * DeltaY / 100);
+
+    P1.X := P1.X + StartX;
+    P1.Y := P1.Y + StartY;
+
+    P2.X := P1.X + W;
+    P2.Y := P1.Y + H;
+  end;
+
+  WI := TBitmap.Create;
+  try
+    WI.PixelFormat := WatermarkedImage.PixelFormat;
+    DoResize(P2.X - P1.X, P2.Y - P1.Y, WatermarkedImage, WI);
+
+    if WI.PixelFormat = pf32bit then
+      DrawImageEx32To24Transparency(Image, WI, P1.X, P1.Y, Transparency);
+
+    if WI.PixelFormat = pf24bit then
+      DrawImageExTransparency(Image, WI, P1.X, P1.Y, Transparency);
+  finally
+    F(WI);
+  end;
+end;
+
+procedure DrawWatermarkText(Bitmap: TBitmap; XBlocks, YBlocks: Integer;
   Text: string; AAngle : Integer; Color: TColor; Transparent : Byte; FontName: string;
   SyncCallBack: TDrawTextAsyncProcedure;
   SyncTextPrepare: TTextPrepareAsyncProcedure;

@@ -69,6 +69,7 @@ procedure TSlideShowUpdateInfoThread.Execute;
 begin
   inherited;
   FreeOnTerminate := True;
+
   CoInitializeEx(nil, COM_MODE);
   try
     DS := FContext.CreateQuery(dbilRead);

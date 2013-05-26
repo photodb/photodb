@@ -275,6 +275,7 @@ type
   private
     FFormInterfaces: TDictionary<TGUID, TComponentClass>;
     FFormInstances: TDictionary<TGUID, TForm>;
+    FCreationList: TList<TGUID>;
   public
     constructor Create;
     destructor Destroy; override;
@@ -482,12 +483,14 @@ constructor TFormInterfaces.Create;
 begin
   FFormInterfaces := TDictionary<TGUID, TComponentClass>.Create;
   FFormInstances := TDictionary<TGUID, TForm>.Create;
+  FCreationList := TList<TGUID>.Create;
 end;
 
 destructor TFormInterfaces.Destroy;
 begin
   F(FFormInterfaces);
   F(FFormInstances);
+  F(FCreationList);
   inherited;
 end;
 
@@ -524,6 +527,9 @@ var
 begin
   G := GetTypeData(TypeInfo(T))^.Guid;
 
+  if FCreationList.Contains(G) then
+    Exit(T(nil));
+
   if not FFormInstances.ContainsKey(G) then
   begin
     if not CreateNew then
@@ -532,8 +538,13 @@ begin
     if GetCurrentThreadId <> MainThreadID then
       raise Exception.Create('Can''t create form using child thread!');
 
-    Application.CreateForm(FFormInterfaces[G], Form);
-    FFormInstances.Add(G, Form);
+    FCreationList.Add(G);
+    try
+      Application.CreateForm(FFormInterfaces[G], Form);
+      FFormInstances.Add(G, Form);
+    finally
+      FCreationList.Remove(G);
+    end;
   end;
 
   FFormInstances[G].GetInterface(G, Result);

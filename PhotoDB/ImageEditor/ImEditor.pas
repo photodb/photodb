@@ -309,14 +309,6 @@ type
 var
   EditorsManager: TManagerEditors;
 
-const
-  CUR_UPDOWN = 140;
-  CUR_LEFTRIGHT = 141;
-  CUR_TOPRIGHT = 142;
-  CUR_RIGHTBOTTOM = 143;
-  CUR_HAND = 144;
-  CUR_CROP = 145;
-
 implementation
 
 uses

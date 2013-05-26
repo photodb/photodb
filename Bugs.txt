@@ -15,10 +15,11 @@ Features ready:
 - InternetUpdate window position of cursor, size;
 - Person edit -> change logo links in bottom;
 - Search for image colors;
-- Update in packground if thumbnail size was changed;
+- Update in background if thumbnail size was changed;
 - Update database info notification support;
 - Viewcounter for images;
 - Update info in top/bottom => remove update form;
+- png watermarks;
 
 Bugs:
 F:\12.06.02 = суббота, 2 июня, 2012г. (Проектный центр на пикнике)\ time for pictures in properties (explorer mode)
@@ -26,17 +27,18 @@ F:\12.06.02 = суббота, 2 июня, 2012г. (Проектный центр на пикнике)\ time for pic
 - Use png/jpg for collection icons;
 check collection move
 collection pack
-copy to with device images doesn't work
-- fast start of 2 copies -> Index out of range;
+Fast Share with link
+Import remember skips;
 
+copy to with device images doesn't work
 - Tabs redraw issue???;
+Unable to display file on viewer;
 
 [New]
 - Portable persons;
 - Persons to EXIF (using XML string);
 - Import set password;
 - resize - raw use preview checkbox;
-- png watermarks;
 
 [Maybe]
 - Не понял как добавлять папки в исключения, как быстро удалить ненужную папку из базы данных, 
