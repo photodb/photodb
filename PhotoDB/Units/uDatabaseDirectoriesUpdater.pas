@@ -929,7 +929,9 @@ begin
   try
     ReadDatabaseSyncDirectories(FolderList, FContext.CollectionFileName);
 
-    DD := TDatabaseDirectory.Create(GetMyPicturesPath, ExtractFileName(DirectoryPath), 0);
+    DirectoryPath := ExcludeTrailingPathDelimiter(DirectoryPath);
+
+    DD := TDatabaseDirectory.Create(DirectoryPath, ExtractFileName(DirectoryPath), 0);
     FolderList.Add(DD);
     SaveDatabaseSyncDirectories(FolderList, FContext.CollectionFileName);
   finally
@@ -948,8 +950,9 @@ procedure TUpdaterStorage.AddFile(FileName: string; Priority: TDatabaseTaskPrior
 var
   Info: TMediaItem;
 begin
-  Info := TMediaItem.Create;
+  Info := TMediaItem.CreateFromFile(FileName);
   try
+    Info.Include := True;
     AddFile(Info, Priority);
   finally
     F(Info);
@@ -1191,6 +1194,8 @@ begin
         begin
           FItemsNotReady.Add(Task);
           FItems.Remove(Task);
+
+          Continue;
         end;
 
         if not FileExistsSafe(Task.FileName) then

@@ -77,6 +77,7 @@ type
     class function UpdateCollection(CollectionFile: string; CurrentVersion: Integer; CreateBackUp: Boolean): Boolean;
     class function IsValidCollectionFile(CollectionFile: string): Boolean;
     class function IsOldColectionFile(CollectionFile: string): Boolean;
+    class function IsNewColectionFile(CollectionFile: string): Boolean;
   end;
 
 implementation
@@ -192,6 +193,11 @@ begin
   end;
 
   Result := True;
+end;
+
+class function TDBScheme.IsNewColectionFile(CollectionFile: string): Boolean;
+begin
+  Result := GetCollectionVersion(CollectionFile) > CURRENT_DB_SCHEME_VERSION;
 end;
 
 class function TDBScheme.IsOldColectionFile(CollectionFile: string): Boolean;

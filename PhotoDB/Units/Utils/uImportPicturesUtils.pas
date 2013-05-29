@@ -18,7 +18,8 @@ uses
   uRawExif,
   uAssociations,
   uDateUtils,
-  uStringUtils;
+  uStringUtils,
+  uExifUtils;
 
 function FormatPath(Patern: string; Date: TDate; ItemsLabel: string): string;
 function GetImageDate(PI: TPathItem): TDateTime;
@@ -84,8 +85,8 @@ begin
         ExifData := TExifData.Create;
         try
           ExifData.LoadFromGraphic(PI.Path);
-          if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
-            Result := DateOf(ExifData.DateTimeOriginal);
+          if not ExifData.Empty and (ExifData.ImageDateTime > 0) and (YearOf(ExifData.ImageDateTime) > cMinEXIFYear) then
+            Result := DateOf(ExifData.ImageDateTime);
         finally
           F(ExifData);
         end;

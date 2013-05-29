@@ -221,6 +221,7 @@ type
   public
     function LoadFromFileEx(FileName: string; ThrowOnError: Boolean = True): Boolean;
     procedure SaveToFileEx(FileName: string);
+    function ImageDateTime: TDateTime;
   end;
 
   TExifDataEx = class(TExifData);
@@ -1046,6 +1047,14 @@ begin
 end;
 
 { TExifDataHelper }
+
+function TExifDataHelper.ImageDateTime: TDateTime;
+begin
+  if (DateTimeOriginal.Value > 0) and (YearOf(DateTimeOriginal.Value) > cMinEXIFYear) then
+    Result := DateTimeOriginal
+  else
+    Result := DateTime;
+end;
 
 function TExifDataHelper.LoadFromFileEx(FileName: string; ThrowOnError: Boolean = True): Boolean;
 var

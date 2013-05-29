@@ -678,7 +678,7 @@ begin
   finally
     EnableAlign;
     SendMessage(Handle, WM_SETREDRAW, 1, 0);
-    RedrawWindow(Handle, nil, 0, RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT);
+    RedrawWindow(Handle, nil, 0, RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT + RDW_FRAME);
   end;
   if FAnimations.Count = 0 then
     Exit;

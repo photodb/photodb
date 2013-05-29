@@ -23,10 +23,8 @@ Features ready:
 - Fast Share with link;
 
 Bugs:
-Forward capatibility;
-Add RAW file 2 times
+Forward capatibility (recheck);
 
-d:\dmitry\my pictures\photoes\12.06.02 = суббота, 2 июня, 2012г. (проектный центр на пикнике) time for pictures in properties (explorer mode)
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
 check collection move

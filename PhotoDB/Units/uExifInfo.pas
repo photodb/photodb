@@ -201,8 +201,8 @@ begin
         XInsert('CameraMake', L('Make'), ExifData.CameraMake);
         XInsert('CameraModel', L('Model'), ExifData.CameraModel);
         XInsert('Copyright', L('Copyright'), ExifData.Copyright);
-        if ExifData.DateTimeOriginal > 0 then
-          XInsert('DateTimeOriginal', L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.DateTimeOriginal));
+        if ExifData.ImageDateTime > 0 then
+          XInsert('DateTimeOriginal', L('Date and time'), FormatDateTime('yyyy/mm/dd HH:MM:SS', ExifData.ImageDateTime));
         XInsert('ImageDescription', L('Description'), ExifData.ImageDescription);
         XInsert('Software', L('Software'), ExifData.Software);
         Orientation := ExifOrientationToRatation(Ord(ExifData.Orientation));

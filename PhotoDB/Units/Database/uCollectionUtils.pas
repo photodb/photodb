@@ -178,8 +178,11 @@ var
   S, FileDirectory: string;
 begin
   Result := False;
+  FileName := ExcludeTrailingPathDelimiter(FileName);
+
   if FileName = '' then
     Exit;
+
 
   FileDirectory := AnsiLowerCase(ExtractFileDir(FileName));
 

@@ -467,6 +467,7 @@
 	<translate name="Open existing" value="Добавить существующую" />
 	<translate name="Description" value="Описание" />
 	<translate name="List of collections" value="Список коллекций" />
+	<translate name="This collection should be opened in newer program version. Try to download the laters program version from official site." value="Эта коллекция должна быть открыта в новой версии программы. Попробуйте загрузить последнюю версию программы с официального сайта." />
 	<translate name="PhotoDB files (*.photodb)|*.photodb" value="PhotoDB файлы (*.photodb)|*.photodb"/>
 	<translate name="Collection &quot;{0}&quot; should be updated to work with this program version. After updating this collection may not work with previous program versions. Update now?" value="Коллекция &quot;{0}&quot; должна быть обновлена для работы с этой версией программы. После обновления эта коллекция может не работать с предыдущими версиями программы. Обновить коллекцию?" />
 	<translate name="Do you want to delete files below for deleted collections?" value="Вы хотите удалить файлы удалённых коллекций?" />
@@ -474,6 +475,7 @@
 	<translate name="Edit" value="Редактировать" />
 	<translate name="Select a directory" value="Выберите директорию" />
 	<translate name="Edit collections" value="Редактировать список коллекций" />
+  	<translate name="Add directory" value="Добавить папку" />
 	<translate name="Open image location" value="Открыть папку с файлом" />
 	<translate name="Change synchronization settings" value="Изменить настройки синхронизации" />
 	<translate name="Change preview options" value="Изменить настройки предпросмотров" />

@@ -1161,10 +1161,10 @@ begin
     FFileDate := 0;
     try
       ExifData.LoadFromFileEx(FileName, False);
-      if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) then
+      if not ExifData.Empty and (ExifData.ImageDateTime > 0) then
       begin
-        FFileDate := DateOf(ExifData.DateTimeOriginal);
-        FFileTime := TimeOf(ExifData.DateTimeOriginal);
+        FFileDate := DateOf(ExifData.ImageDateTime);
+        FFileTime := TimeOf(ExifData.ImageDateTime);
       end;
     except
       EventLog('Error reading EXIF in file "' + FileName + '"');

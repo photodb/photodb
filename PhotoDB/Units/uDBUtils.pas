@@ -454,10 +454,10 @@ begin
         ExifData.LoadFromGraphic(FileName);
         if AppSettings.ReadBool('Options', 'FixDateAndTime', True) then
         begin
-          if (ExifData.DateTimeOriginal > 0) and (YearOf(ExifData.DateTimeOriginal) > cMinEXIFYear) then
+          if (ExifData.ImageDateTime > 0) and (YearOf(ExifData.ImageDateTime) > cMinEXIFYear) then
           begin
-            EventInfo.Date := DateOf(ExifData.DateTimeOriginal);
-            EventInfo.Time := TimeOf(ExifData.DateTimeOriginal);
+            EventInfo.Date := DateOf(ExifData.ImageDateTime);
+            EventInfo.Time := TimeOf(ExifData.ImageDateTime);
             EventInfo.IsDate := True;
             EventInfo.IsTime := True;
 

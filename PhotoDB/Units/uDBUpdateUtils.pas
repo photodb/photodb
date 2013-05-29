@@ -128,10 +128,10 @@ begin
       Info.IsTime := False;
       try
         ExifData.LoadFromGraphic(Info.FileName);
-        if not ExifData.Empty and (ExifData.DateTimeOriginal > 0) then
+        if not ExifData.Empty and (ExifData.ImageDateTime > 0) then
         begin;
-          Info.Date := DateOf(ExifData.DateTimeOriginal);
-          Info.Time := TimeOf(ExifData.DateTimeOriginal);
+          Info.Date := DateOf(ExifData.ImageDateTime);
+          Info.Time := TimeOf(ExifData.ImageDateTime);
           Info.IsDate := True;
           Info.IsTime := True;
 

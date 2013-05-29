@@ -335,6 +335,11 @@ var
           finally
             F(Settings);
           end;
+        end else if TDBScheme.IsNewColectionFile(FileName) then
+        begin
+          MessageBoxDB(FOwner.Handle,
+            FOwner.L('This collection should be opened in newer program version. Try to download the laters program version from official site.'),
+            FOwner.L('Warning'), '', TD_BUTTON_YESNOCANCEL, TD_ICON_WARNING);
         end;
       end;
     finally

@@ -1845,7 +1845,7 @@ begin
     Properties1.Visible := True;
     SlideShow1.Visible := True;
     Delete1.Visible := True;
-    AddFile1.Caption := L('Add file');
+    AddFile1.Caption := L('Add to collection');
     if FFilesInfo[PmItemPopup.Tag].ID = 0 then
       AddFile1.Visible := not FolderView
     else
@@ -7525,7 +7525,7 @@ begin
     Directory1.Caption := L('Directory');
     Refresh1.Caption := L('Refresh');
     Properties1.Caption := L('Properties');
-    AddFile1.Caption := L('Add file');
+    AddFile1.Caption := L('Add to collection');
     OpenInNewWindow1.Caption := L('Open in new window');
 
     Paste1.Caption := L('Paste');
@@ -12656,7 +12656,7 @@ begin
   WlExtendedSearchSortBy.Top := WlExtendedSearchDateTo.AfterTop(7);
 
   BtnSearch.Top := WlExtendedSearchSortBy.AfterTop(7);
-  WlExtendedSearchOptions.Top := BtnSearch.BoundsRect.Bottom - WlExtendedSearchOptions.Height;
+  WlExtendedSearchOptions.Top := BtnSearch.BoundsRect.Bottom - WlExtendedSearchOptions.Height - 3;
 end;
 
 procedure TExplorerForm.PmCopyPopup(Sender: TObject);
