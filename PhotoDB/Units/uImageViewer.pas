@@ -33,6 +33,10 @@ uses
   uSessionPasswords;
 
 type
+  TImageViewerOption = (ivoInfo, ivoFaces);
+  TImageViewerOptions = set of TImageViewerOption;
+
+type
   TImageViewer = class(TInterfacedObject, IImageViewer, IFaceResultForm)
   private
     FOwnerForm: TThreadForm;
@@ -51,10 +55,12 @@ type
     FOnBeginLoadingImage: TBeginLoadingImageEvent;
     FOnPersonsFoundOnImage: TPersonsFoundOnImageEvent;
     FOnUpdateButtonsState: TUpdateButtonsStateEvent;
+    FImageViewerOptions: TImageViewerOptions;
     procedure Resize;
     procedure LoadFile(FileInfo: TMediaItem; NewImage: Boolean);
     procedure LoadImage(Sender: TObject; Item: TMediaItem; Width, Height: Integer);
     procedure NotifyButtonsUpdate;
+    function IsDetectFacesEnabled: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -80,6 +86,7 @@ type
     procedure LoadPreviousFile;
     procedure LoadNextFile;
     procedure ResizeTo(Width, Height: Integer);
+    procedure SetOptions(Options: TImageViewerOptions);
     procedure SetStaticImage(Image: TBitmap; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
     procedure SetAnimatedImage(Image: TGraphic; RealWidth, RealHeight: Integer; Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
     procedure FailedToLoadImage(ErrorMessage: string);
@@ -165,6 +172,8 @@ begin
 
   FOnBeginLoadingImage := nil;
   FOnPersonsFoundOnImage := nil;
+
+  FImageViewerOptions := [ivoInfo, ivoFaces];
 end;
 
 destructor TImageViewer.Destroy;
@@ -278,6 +287,11 @@ begin
   Result := FWidth;
 end;
 
+function TImageViewer.IsDetectFacesEnabled: Boolean;
+begin
+  Result := ivoFaces in FImageViewerOptions;
+end;
+
 procedure TImageViewer.LoadFile(FileInfo: TMediaItem; NewImage: Boolean);
 var
   Width, Height: Integer;
@@ -367,7 +381,7 @@ var
 begin
   DisplaySize.cx := Width;
   DisplaySize.cy := Height;
-  TImageViewerThread.Create(FOwnerForm, Self, FActiveThreadId, Item, DisplaySize, True, -1);
+  TImageViewerThread.Create(FOwnerForm, Self, FActiveThreadId, Item, DisplaySize, True, -1, IsDetectFacesEnabled);
 end;
 
 procedure TImageViewer.LoadNextFile;
@@ -498,6 +512,14 @@ end;
 procedure TImageViewer.SetOnUpdateButtonsState(Event: TUpdateButtonsStateEvent);
 begin
   FOnUpdateButtonsState := Event;
+end;
+
+procedure TImageViewer.SetOptions(Options: TImageViewerOptions);
+begin
+  FImageViewerOptions := Options;
+
+  FImageControl.ShowInfo := ivoInfo in Options;
+  FImageControl.DetectFaces := ivoFaces in Options;
 end;
 
 procedure TImageViewer.SetShowInfo(Value: Boolean);

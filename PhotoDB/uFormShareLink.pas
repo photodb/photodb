@@ -7,6 +7,7 @@ uses
   Winapi.Windows,
   Winapi.ShellApi,
   System.SysUtils,
+  System.StrUtils,
   System.Classes,
   Vcl.Graphics,
   Vcl.Controls,
@@ -28,11 +29,15 @@ uses
   Dmitry.Controls.WebLink,
   Dmitry.Controls.LoadingSign,
 
+  UnitDBDeclare,
+  UnitLinksSupport,
+
   uConstants,
   uMemory,
   uDBForm,
   uThreadForm,
   uFormInterfaces,
+  uCollectionEvents,
   uThreadTask,
   uImageViewer,
   uBitmapUtils,
@@ -41,6 +46,8 @@ uses
   uPhotoShareInterfaces,
   uShareUtils,
   uDBEntities,
+  uDBManager,
+  uDBContext,
   uSettings;
 
 type
@@ -52,6 +59,7 @@ type
     LnkPublicLink: TWebLink;
     SbCopyToClipboard: TSpeedButton;
     WlSettings: TWebLink;
+    BtnUploadAgain: TButton;
     procedure FormDestroy(Sender: TObject);
     procedure BtnCloseClick(Sender: TObject);
     procedure CbShortUrlClick(Sender: TObject);
@@ -60,6 +68,8 @@ type
     procedure LnkPublicLinkClick(Sender: TObject);
     procedure SbCopyToClipboardClick(Sender: TObject);
     procedure WlSettingsClick(Sender: TObject);
+    procedure BtnUploadAgainClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
     FProvider: IPhotoShareProvider;
@@ -68,15 +78,18 @@ type
     FShortUrlInProgress: Boolean;
     FUrl: string;
     FProgressCount: Integer;
+    FInfos: TMediaItemCollection;
     procedure GetImageLink(Info: TMediaItemCollection; Provider: IPhotoShareProvider);
     procedure CheckShortLink;
     procedure LoadLanguage;
     procedure StartProgress;
     procedure EndProgress;
+    procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
   protected
     function GetFormID: string; override;
     procedure InterfaceDestroyed; override;
     procedure UploadCompleted(Link: string);
+    procedure UploadCanceled;
     procedure UpdateShortUrl(ShortLink: string);
   public
     { Public declarations }
@@ -89,7 +102,15 @@ type
   TShareThreadTask = class
   public
     Info: TMediaItemCollection;
-    Provider: IPhotoShareProvider
+    Provider: IPhotoShareProvider;
+    MediaRepository: IMediaRepository;
+  end;
+
+  TShareShortUrlTask = class
+  public
+    Info: TMediaItem;
+    Url: string;
+    MediaRepository: IMediaRepository;
   end;
 
   TThreadTaskThread = TThreadTask<TShareThreadTask>;
@@ -100,13 +121,47 @@ type
     FItem: TMediaItem;
   public
     constructor Create(Thread: TThreadTaskThread; Item: TMediaItem);
-    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
+    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64; var Cancel: Boolean);
   end;
 
 implementation
 
 uses
   uShareSettings;
+
+const
+  cFastShareProvider = 'Picasa';
+
+function UpdateFastLinkInLinks(SLinks: string; Url: string): string;
+var
+  Links: TLinksInfo;
+  Link: TLinkInfo;
+  I: Integer;
+  IsLinkUpdated: Boolean;
+begin
+  Links := ParseLinksInfo(SLinks);
+
+  IsLinkUpdated := False;
+  for I := 0 to Length(Links) - 1 do
+  begin
+    if (Links[I].LinkType = LINK_TYPE_HREF) and (Links[I].LinkName = cFastShareProvider) then
+    begin
+      Link.LinkValue := Url;
+      IsLinkUpdated := True;
+    end;
+  end;
+
+  if not IsLinkUpdated then
+  begin
+    Link.LinkType := LINK_TYPE_HREF;
+    Link.LinkName := cFastShareProvider;
+    Link.LinkValue := Url;
+    SetLength(Links, Length(Links) + 1);
+    Links[Length(Links) - 1] := Link;
+  end;
+
+  Result := CodeLinksInfo(Links);
+end;
 
 {$R *.dfm}
 
@@ -162,26 +217,51 @@ begin
   end;
 end;
 
+procedure TFormShareLink.ChangedDBDataByID(Sender: TObject; ID: Integer;
+  Params: TEventFields; Value: TEventValues);
+begin
+end;
+
 procedure TFormShareLink.CheckShortLink;
+var
+  Task: TShareShortUrlTask;
 begin
   if (FUrl <> '') and (FShortUrl = '') and not FShortUrlInProgress and CbShortUrl.Checked then
   begin
     FShortUrlInProgress := True;
     StartProgress;
 
-    TThreadTask<string>.Create(Self, FUrl, False,
-      procedure(Thread: TThreadTask<string>; Data: string)
+    Task := TShareShortUrlTask.Create;
+    Task.Info := FInfos[0].Copy;
+    Task.Url := FUrl;
+    Task.MediaRepository := DBManager.DBContext.Media;
+
+    TThreadTask<TShareShortUrlTask>.Create(Self, Task, False,
+      procedure(Thread: TThreadTask<TShareShortUrlTask>; Data: TShareShortUrlTask)
       var
         ShortUrl: string;
+        Info: TMediaItem;
       begin
-        ShortUrl := GenerateShortenUrl(Data);
+        try
+          ShortUrl := GenerateShortenUrl(Data.Url);
+          Info := Data.Info;
 
-        Thread.SynchronizeTask(
-          procedure
+          Thread.SynchronizeTask(
+            procedure
+            begin
+              TFormShareLink(Thread.ThreadForm).UpdateShortUrl(ShortUrl);
+            end
+          );
+
+          if (Data.Info.ID > 0) then
           begin
-            TFormShareLink(Thread.ThreadForm).UpdateShortUrl(ShortUrl);
-          end
-        );
+            Info.Links := UpdateFastLinkInLinks(Info.Links, ShortUrl);
+            Data.MediaRepository.UpdateLinks(Info.ID, Info.Links);
+          end;
+        finally
+          Data.Info.Free;
+          F(Data);
+        end;
       end
     );
   end;
@@ -189,12 +269,21 @@ end;
 
 destructor TFormShareLink.Destroy;
 begin
+  F(FInfos);
   inherited;
 end;
 
 procedure TFormShareLink.FormDestroy(Sender: TObject);
 begin
   NewFormState;
+  CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataByID);
+end;
+
+procedure TFormShareLink.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 procedure TFormShareLink.EndProgress;
@@ -210,18 +299,43 @@ end;
 procedure TFormShareLink.Execute(Owner: TDBForm; Info: TMediaItemCollection);
 var
   Photos: TMediaItemCollection;
+  Links: TLinksInfo;
+  I: Integer;
+  IsLinkSaved: Boolean;
+  Url: string;
 begin
   if Info.Count = 0 then
     Exit;
 
+  FInfos.Assign(Info);
+
   FViewer := TImageViewer.Create;
   FViewer.AttachTo(Self, PnPreview, 0, 0);
   FViewer.ResizeTo(PnPreview.Width, PnPreview.Height);
+  FViewer.SetOptions([]);
   Photos := TMediaItemCollection.Create;
   Photos.Assign(Info);
   FViewer.LoadFiles(Photos);
 
-  GetImageLink(Info, FProvider);
+  IsLinkSaved := False;
+  Links := ParseLinksInfo(Info[0].Links);
+  for I := 0 to Length(Links) - 1 do
+  begin
+    if (Links[I].LinkType = LINK_TYPE_HREF) and (Links[I].LinkName = cFastShareProvider) then
+    begin
+      IsLinkSaved := True;
+      Url := Links[I].LinkValue;
+      CbShortUrl.Checked := Pos('goo.gl', Url) > 0;
+      FShortUrlInProgress := False;
+      if CbShortUrl.Checked then
+        FShortUrl := Url;
+
+      UploadCompleted(Links[I].LinkValue);
+    end;
+  end;
+
+  if not IsLinkSaved then
+    GetImageLink(Info, FProvider);
 
   ShowModal;
 end;
@@ -236,9 +350,14 @@ begin
   Close;
 end;
 
+procedure TFormShareLink.BtnUploadAgainClick(Sender: TObject);
+begin
+  GetImageLink(FInfos, FProvider);
+end;
+
 procedure TFormShareLink.CbShortUrlClick(Sender: TObject);
 begin
-  AppSettings.WriteBool('Share', 'ShowrtLink', CbShortUrl.Checked);
+  AppSettings.WriteBool('Share', 'ShortLink', CbShortUrl.Checked);
 
   if CbShortUrl.Checked then
   begin
@@ -269,16 +388,21 @@ begin
   StartProgress;
 
   Task := TShareThreadTask.Create;
-  Task.Info := Info;
+  Task.Info := TMediaItemCollection.Create;
+  Task.Info.Assign(Info);
   Task.Provider := Provider;
+  Task.MediaRepository := DBManager.DBContext.Media;
 
   TThreadTaskThread.Create(Self, Task, False,
     procedure(Thread: TThreadTaskThread; Data: TShareThreadTask)
     var
       Item: TMediaItem;
+      Media: IMediaRepository;
+      SaveUrl: Boolean;
     begin
       try
         Item := Data.Info[0];
+        Media := Data.MediaRepository;
 
         ProcessImageForSharing(Item, False,
           procedure(Data: TMediaItem; Preview: TGraphic)
@@ -299,9 +423,25 @@ begin
                   procedure
                   begin
                     TFormShareLink(Thread.ThreadForm).UploadCompleted(Photo.Url);
+                    SaveUrl := not TFormShareLink(Thread.ThreadForm).CbShortUrl.Checked;
+                    if SaveUrl then
+                      TFormShareLink(Thread.ThreadForm).BtnUploadAgain.Show;
                   end
                 );
-              end;
+
+                if SaveUrl and (Data.ID > 0) then
+                begin
+                  Data.Links := UpdateFastLinkInLinks(Data.Links, Photo.Url);
+                  Media.UpdateLinks(Data.ID, Data.Links);
+                end;
+
+              end else
+                Thread.SynchronizeTask(
+                  procedure
+                  begin
+                    TFormShareLink(Thread.ThreadForm).UploadCanceled();
+                  end
+                );
 
             finally
               Progress := nil;
@@ -310,6 +450,7 @@ begin
         );
 
       finally
+        Data.Info.Free;
         F(Data);
       end;
     end
@@ -322,10 +463,13 @@ var
   LB: TLayeredBitmap;
   Icon: HIcon;
 begin
+  CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
+
+  FInfos := TMediaItemCollection.Create;
   FShortUrl := '';
   FShortUrlInProgress := False;
   FProgressCount := 0;
-  CbShortUrl.Checked := AppSettings.ReadBool('Share', 'ShowrtLink', True);
+  CbShortUrl.Checked := AppSettings.ReadBool('Share', 'ShortLink', True);
 
   Providers := TList<IPhotoShareProvider>.Create;
   try
@@ -352,7 +496,6 @@ begin
 
   WlSettings.LoadFromResource('SERIES_SETTINGS');
   WlSettings.RefreshBuffer(True);
-  WlSettings.Left := ClientWidth - WlSettings.Width;
 end;
 
 procedure TFormShareLink.InterfaceDestroyed;
@@ -375,6 +518,7 @@ begin
     CbShortUrl.Caption := L('Make short url');
     LnkPublicLink.Text := FormatEx(L('Authorizing: {0}'), [FProvider.GetProviderName]);
     WlSettings.Text := L('Settings');
+    BtnUploadAgain.Caption := L('Upload again');
   finally
     EndTranslate;
   end;
@@ -393,8 +537,7 @@ begin
   SbCopyToClipboard.Visible := False;
 end;
 
-procedure TFormShareLink.UpdateProgress(Item: TMediaItem; Max,
-  Position: Int64);
+procedure TFormShareLink.UpdateProgress(Item: TMediaItem; Max, Position: Int64);
 begin
   LnkPublicLink.Text := FormatEx(L('Uploading: {0:0.#}%'), [100.0 * Position / Max]);
 end;
@@ -406,6 +549,14 @@ begin
   FShortUrlInProgress := False;
   if CbShortUrl.Checked then
     LnkPublicLink.Text := ShortLink;
+
+  BtnUploadAgain.Visible := True;
+end;
+
+procedure TFormShareLink.UploadCanceled;
+begin
+  EndProgress;
+  Close;
 end;
 
 procedure TFormShareLink.UploadCompleted(Link: string);
@@ -432,10 +583,9 @@ begin
   FItem := Item;
 end;
 
-procedure TItemUploadProgress.OnProgress(Sender: IPhotoShareProvider; Max,
-  Position: Int64);
+procedure TItemUploadProgress.OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64; var Cancel: Boolean);
 begin
-  FThread.SynchronizeTask(
+  Cancel := not FThread.SynchronizeTask(
     procedure
     begin
       TFormShareLink(FThread.ThreadForm).UpdateProgress(FItem, Max, Position);

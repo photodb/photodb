@@ -2023,7 +2023,7 @@ begin
           Icon.Handle := CopyIcon(Icons[DB_IC_DIRECTORY]);
         LINK_TYPE_TXT:
           Icon.Handle := CopyIcon(Icons[DB_IC_TEXT_FILE]);
-        LINK_TYPE_HTML:
+        LINK_TYPE_HREF:
           Icon.Handle := CopyIcon(Icons[DB_IC_SLIDE_SHOW]);
       end;
       Links[I].Icon := Icon;
@@ -2089,7 +2089,7 @@ begin
       end;
     LINK_TYPE_IMAGE:
       ViewFile(LI[N].LinkValue);
-    LINK_TYPE_FILE:
+    LINK_TYPE_FILE, LINK_TYPE_HREF:
       begin
         S := ExcludeTrailingBackslash(LI[N].LinkValue);
         ShellExecute(Handle, 'open', PWideChar(LI[N].LinkValue), nil, PWideChar(S), SW_NORMAL);
@@ -2112,8 +2112,6 @@ begin
       end;
     LINK_TYPE_TXT:
       DoHelpHint(LI[N].LinkName, LI[N].LinkValue, P, Links[N]);
-    LINK_TYPE_HTML:
-      ;
   end;
 end;
 
@@ -2180,7 +2178,7 @@ begin
         Open1.Visible := True;
         OpenFolder1.Visible := False;
       end;
-    LINK_TYPE_HTML:
+    LINK_TYPE_HREF:
       begin
         Open1.Visible := False;
         OpenFolder1.Visible := False;
@@ -2305,7 +2303,7 @@ begin
       DN := FPropertyLinks[N].LinkValue;
     LINK_TYPE_TXT:
       Exit;
-    LINK_TYPE_HTML:
+    LINK_TYPE_HREF:
       Exit;
   else
     Exit;

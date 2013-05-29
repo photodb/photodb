@@ -167,6 +167,7 @@ type
     FOnRequestPreviousImage: TNotifyEvent;
     FOnDblClick: TNotifyEvent;
     FOnStopPersonSelection: TNotifyEvent;
+    FDetectFaces: Boolean;
 
     procedure ChangeContext;
     function Buffer: TBitmap;
@@ -290,6 +291,7 @@ type
     property Text: string read FText write SetText;
     property Explorer: TCustomExplorerForm read GetExplorer write SetExplorer;
     property ShowInfo: Boolean read FShowInfo write SetShowInfo;
+    property DetectFaces: Boolean read FDetectFaces write FDetectFaces;
   end;
 
 implementation
@@ -425,6 +427,7 @@ begin
   FShowInfo := AppSettings.ReadBool('Viewer', 'DisplayInfo', False);
   FLastInfoHeight := 0;
 
+  FDetectFaces := True;
   FIsWaiting := False;
   FZoomerOn := False;
   FZoom := 1;
@@ -1078,7 +1081,7 @@ begin
     StopPersonSelection;
   end;
 
-  if FIsStaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not FDBCanDrag then
+  if FDetectFaces and FIsStaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not FDBCanDrag then
   begin
     FIsSelectingFace := False;
     FDrawingFace := True;
@@ -1216,7 +1219,6 @@ begin
   F(FDrawFace);
   FDBCanDrag := False;
 end;
-
 
 procedure TImageViewerControl.NextFrame;
 begin

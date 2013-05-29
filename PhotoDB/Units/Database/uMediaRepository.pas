@@ -7,12 +7,15 @@ uses
 
   Dmitry.CRC32,
 
+  UnitDBDeclare,
+
   uConstants,
   uMemory,
   uDBClasses,
   uDBConnection,
   uDBContext,
-  uDBEntities;
+  uDBEntities,
+  uCollectionEvents;
 
 type
   TMediaRepository = class(TInterfacedObject, IMediaRepository)
@@ -35,6 +38,7 @@ type
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
     procedure IncMediaCounter(ID: Integer);
+    procedure UpdateLinks(ID: Integer; NewLinks: string);
     procedure RefreshImagesCache;
   end;
 
@@ -111,6 +115,7 @@ end;
 procedure TMediaRepository.SetAccess(ID, Access: Integer);
 var
   UC: TUpdateCommand;
+  EventInfo: TEventValues;
 begin
   UC := FContext.CreateUpdate(ImageTable);
   try
@@ -118,6 +123,10 @@ begin
 
     UC.AddParameter(TIntegerParameter.Create('Access', Access));
     UC.Execute;
+
+    EventInfo.ID := ID;
+    EventInfo.Access := Access;
+    CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Access], EventInfo);
   finally
     F(UC);
   end;
@@ -126,6 +135,7 @@ end;
 procedure TMediaRepository.SetAttribute(ID, Attribute: Integer);
 var
   UC: TUpdateCommand;
+  EventInfo: TEventValues;
 begin
   UC := FContext.CreateUpdate(ImageTable);
   try
@@ -133,6 +143,10 @@ begin
 
     UC.AddParameter(TIntegerParameter.Create('Attr', Attribute));
     UC.Execute;
+
+    EventInfo.ID := ID;
+    EventInfo.Attr := Attribute;
+    CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Attr], EventInfo);
   finally
     F(UC);
   end;
@@ -159,6 +173,7 @@ end;
 procedure TMediaRepository.SetRating(ID, Rating: Integer);
 var
   UC: TUpdateCommand;
+  EventInfo: TEventValues;
 begin
   UC := FContext.CreateUpdate(ImageTable);
   try
@@ -166,6 +181,10 @@ begin
 
     UC.AddParameter(TIntegerParameter.Create('Rating', Rating));
     UC.Execute;
+
+    EventInfo.ID := ID;
+    EventInfo.Rating := Rating;
+    CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Rating], EventInfo);
   finally
     F(UC);
   end;
@@ -174,6 +193,7 @@ end;
 procedure TMediaRepository.SetRotate(ID, Rotate: Integer);
 var
   UC: TUpdateCommand;
+  EventInfo: TEventValues;
 begin
   UC := FContext.CreateUpdate(ImageTable);
   try
@@ -181,6 +201,10 @@ begin
 
     UC.AddParameter(TIntegerParameter.Create('Rotated', Rotate));
     UC.Execute;
+
+    EventInfo.ID := ID;
+    EventInfo.Rotation := Rotate;
+    CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Rotate], EventInfo);
   finally
     F(UC);
   end;
@@ -236,6 +260,25 @@ begin
     UC.AddParameter(TDateTimeParameter.Create('DateUpdated', EncodeDate(1900, 1, 1)));
     UC.AddWhereParameter(TCustomConditionParameter.Create('1=1'));
     UC.Execute;
+  finally
+    F(UC);
+  end;
+end;
+
+procedure TMediaRepository.UpdateLinks(ID: Integer; NewLinks: string);
+var
+  UC: TUpdateCommand;
+  EventInfo: TEventValues;
+begin
+  UC := FContext.CreateUpdate(ImageTable, True);
+  try
+    UC.AddParameter(TStringParameter.Create('Links', NewLinks));
+    UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+    UC.Execute;
+
+    EventInfo.ID := ID;
+    EventInfo.Links := NewLinks;
+    CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Links], EventInfo);
   finally
     F(UC);
   end;

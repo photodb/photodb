@@ -67,6 +67,7 @@ uses
   uJpegUtils,
   uShellThumbnails,
   uMachMask,
+  uDBIcons,
   uDatabaseSearch,
   uTransparentEncryption,
   uExplorerSearchProviders,
@@ -2238,7 +2239,11 @@ begin
           end else
             raise Exception.Create('Image is empty!');
         end else
-          raise Exception.Create('Image is null!');
+        begin
+          Icon := TIcon.Create;
+          Icon.Handle := CopyIcon(Icons[DB_IC_SIMPLEFILE]);
+          FPacketImages.AddIcon(Icon, True);
+        end;
       end;
       TW.I.Start('Packet - send');
       ABreak := not SynchronizeEx(SendPacketToExplorer);

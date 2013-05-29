@@ -40,7 +40,7 @@ type
     FItem: TMediaItem;
   public
     constructor Create(Thread: TShareImagesThread; Item: TMediaItem);
-    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
+    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64; var Cancel: Boolean);
   end;
 
   TShareImagesThread = class(TThreadEx)
@@ -55,7 +55,7 @@ type
     procedure ProcessItem(Data: TMediaItem);
     procedure ProcessImage(Data: TMediaItem);
     procedure ProcessVideo(Data: TMediaItem);
-    procedure NotifyProgress(Data: TMediaItem; Max, Position: Int64);
+    procedure NotifyProgress(Data: TMediaItem; Max, Position: Int64; var Cancel: Boolean);
   protected
     procedure Execute; override;
     function GetThreadID: string; override;
@@ -230,9 +230,9 @@ begin
   Result := 'PhotoShare';
 end;
 
-procedure TShareImagesThread.NotifyProgress(Data: TMediaItem; Max, Position: Int64);
+procedure TShareImagesThread.NotifyProgress(Data: TMediaItem; Max, Position: Int64; var Cancel: Boolean);
 begin
-  SynchronizeEx(
+  Cancel := not SynchronizeEx(
     procedure
     begin
       TFormSharePhotos(OwnerForm).NotifyItemProgress(Data, Max, Position);
@@ -368,9 +368,9 @@ begin
 end;
 
 procedure TItemUploadProgress.OnProgress(Sender: IPhotoShareProvider; Max,
-  Position: Int64);
+  Position: Int64; var Cancel: Boolean);
 begin
-  FThread.NotifyProgress(FItem, Max, Position);
+  FThread.NotifyProgress(FItem, Max, Position, Cancel);
 end;
 
 end.

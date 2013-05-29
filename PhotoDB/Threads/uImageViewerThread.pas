@@ -44,6 +44,7 @@ type
     FDisplaySize: TSize;
     FIsPreview: Boolean;
     FPageNumber: Integer;
+    FDetectFaces: Boolean;
     FTotalPages: Integer;
     FRealWidth: Integer;
     FRealHeight: Integer;
@@ -64,7 +65,7 @@ type
     procedure Execute; override;
   public
     constructor Create(OwnerForm: TThreadForm; OwnerControl: IImageViewer; ThreadId: TGUID;
-     Info: TMediaItem; DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer);
+      Info: TMediaItem; DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer; DetectFaces: Boolean);
     destructor Destroy; override;
   end;
 
@@ -74,7 +75,7 @@ implementation
 
 constructor TImageViewerThread.Create(OwnerForm: TThreadForm;
   OwnerControl: IImageViewer; ThreadId: TGUID; Info: TMediaItem;
-  DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer);
+  DisplaySize: TSize; IsPreview: Boolean; PageNumber: Integer; DetectFaces: Boolean);
 begin
   if Info = nil then
     raise EArgumentNilException.Create('Info is nil!');
@@ -87,6 +88,7 @@ begin
   FDisplaySize := DisplaySize;
   FIsPreview := IsPreview;
   FPageNumber := PageNumber;
+  FDetectFaces := DetectFaces;
 
   //TODO: remove
   FTransparentColor := Theme.PanelColor;
@@ -225,7 +227,7 @@ begin
           end;
         end;
       finally
-        if AppSettings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
+        if FDetectFaces and AppSettings.Readbool('FaceDetection', 'Enabled', True) and FaceDetectionManager.IsActive then
         begin
           if CanDetectFacesOnImage(FInfo.FileName, FGraphic) then
             FaceDetectionDataManager.RequestFaceDetection(FOwnerControl.GetObject, DBManager.DBContext, FGraphic, FInfo)

@@ -16,9 +16,9 @@ uses
   uImageListUtils;
 
 const
-  IconsCount = 130;
+  IconsCount = 131;
 const
-  IconsVersion = '1_2';
+  IconsVersion = '1_3';
 
 type
   TDbKernelArrayIcons = array [1 .. IconsCount] of THandle;
@@ -317,6 +317,7 @@ begin
     Icons[128] := LoadIcon(HInstance,'PHOTO_SHARE');
     Icons[129] := LoadIcon(HInstance,'EDIT_PROFILE');
     Icons[130] := LoadIcon(HInstance,'AAA');
+    Icons[131] := LoadIcon(HInstance,'LINK');
 
     //disabled items are bad
     for I := 1 to IconsCount do
@@ -328,7 +329,8 @@ begin
       try
         LB.LoadFromHIcon(Icons[I]);
         LB.GrayScale;
-        FDisabledImageList.Add(LB, nil);
+
+        ImageList_Add(FDisabledImageList.Handle, LB.Handle, 0);
       finally
         F(LB);
       end;

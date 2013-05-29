@@ -53,7 +53,7 @@ type
   IPhotoShareProvider = interface;
 
   IUploadProgress = interface
-    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64);
+    procedure OnProgress(Sender: IPhotoShareProvider; Max, Position: Int64; var Cancel: Boolean);
   end;
 
   IPhotoServiceAlbum = interface

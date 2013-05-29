@@ -823,7 +823,10 @@ begin
 
   if (FFullImage.Height = 0) or (FFullImage.Width = 0) then
   begin
-    ShowErrorText(FileName, L('Image is empty'));
+    if Item.Encrypted then
+      ShowErrorText(FileName, L('Image is encrypted'))
+    else
+      ShowErrorText(FileName, L('Image is empty'));
     Refresh;
     Exit;
   end;
@@ -1550,7 +1553,11 @@ begin
           end;
 
           DropFileSource1.ImageIndex := 0;
-          DropFileSource1.Execute;
+          try
+            DropFileSource1.Execute;
+          except
+            //ignore possible errors
+          end;
           Invalidate;
         end;
         DBCanDrag := False;
@@ -1606,7 +1613,7 @@ begin
     for I := 0 to CurrentInfo.Count - 1 do
       if CurrentInfo[I].ID = ID then
       begin
-        if EventID_Param_Private in Params then
+        if EventID_Param_Access in Params then
           CurrentInfo[I].Access := Value.Access;
         if EventID_Param_IsDate in Params then
           CurrentInfo[I].IsDate := Value.IsDate;
@@ -3945,7 +3952,6 @@ procedure TViewer.N51Click(Sender: TObject);
 var
   Str: string;
   NewRating: Integer;
-  EventInfo: TEventValues;
   FileInfo: TMediaItem;
 begin
   Str := StringReplace(TMenuItem(Sender).Caption, '&', '', [RfReplaceAll]);
@@ -3954,8 +3960,6 @@ begin
   if Item.ID > 0 then
   begin
     FMediaRepository.SetRating(Item.ID, NewRating);
-    EventInfo.Rating := NewRating;
-    CollectionEvents.DoIDEvent(Self, Item.ID, [EventID_Param_Rating], EventInfo);
   end else
   begin
     FileInfo := TMediaItem.Create;

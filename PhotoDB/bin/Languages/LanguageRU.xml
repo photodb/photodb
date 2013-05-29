@@ -763,6 +763,7 @@
 	<translate name="Can't display file ({0})" value="Невозможно отобразить файл ({0})" />
 	<translate name="Loading image..." value="Загрузка изображения..." />
 	<translate name="Image is empty" value="Изображение пустое" />
+	<translate name="Image is encrypted" value="Изображение зашифровано" />
 	<translate name="Error displaying image!" value="Ошибка отображения изображения!" />
 	<translate name="Loading list of images" value="загрузка списка изображений" />
 	<translate name="Collection Item [%d]" value="Информация в коллекции [%d]" />
@@ -873,6 +874,7 @@
 	<translate name="File" value="Файл" />
 	<translate name="Folder" value="Директория" />
 	<translate name="Text" value="Текст" />
+	<translate name="Web link" value="Веб ссылка" />
 	<translate name="Create or edit link" value="Добавить или редактировать ссылку" />
 	<translate name="Link type" value="Тип ссылки" />
 	<translate name="Link name" value="Имя ссылки" />
@@ -1958,6 +1960,7 @@
   	<translate name="Authorizing: {0}" value="Авторизация: {0}" />
   	<translate name="Link: &quot;{0}&quot; was copied to clipboard!" value="Ссылка: &quot;{0}&quot; скопирована в буфер обмена!" />
   	<translate name="Settings" value="Настройки" />
+	<translate name="Upload again" value="Загрузить снова" />
   </scope>
   <scope name="ImportSource">
 	<translate name="Import photos and video" value="Импорт фото и видео" />

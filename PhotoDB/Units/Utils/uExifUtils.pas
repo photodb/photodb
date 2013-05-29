@@ -665,7 +665,7 @@ begin
           end;
         end;
 
-        if [EventID_Param_Private, SetNewIDFileData] * Info.Params <> [] then
+        if [EventID_Param_Access, SetNewIDFileData] * Info.Params <> [] then
         begin
           if ExifData.XMPPacket.Access <> Info.Value.Access then
           begin

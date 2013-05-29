@@ -59,7 +59,7 @@ type
 
 type
   TEventField = (EventID_Param_Name, EventID_Param_ID, EventID_Param_Rotate,
-    EventID_Param_Rating, EventID_Param_Private, EventID_Param_Comment,
+    EventID_Param_Rating, EventID_Param_Access, EventID_Param_Comment,
     EventID_Param_KeyWords, EventID_Param_Attr,
     EventID_Param_Image, EventID_Param_Refresh, EventID_Param_Critical,
     EventID_Param_Delete, EventID_Param_Date,

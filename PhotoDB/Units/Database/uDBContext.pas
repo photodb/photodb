@@ -37,6 +37,7 @@ type
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
     procedure IncMediaCounter(ID: Integer);
+    procedure UpdateLinks(ID: Integer; NewLinks: string);
     procedure RefreshImagesCache;
   end;
 

@@ -4,27 +4,29 @@ object FormShareLink: TFormShareLink
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'FormShareLink'
-  ClientHeight = 141
-  ClientWidth = 393
+  ClientHeight = 457
+  ClientWidth = 391
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   DesignSize = (
-    393
-    141)
+    391
+    457)
   PixelsPerInch = 96
   TextHeight = 13
   object SbCopyToClipboard: TSpeedButton
     Left = 8
-    Top = 83
+    Top = 374
     Width = 23
     Height = 23
     Flat = True
@@ -32,9 +34,10 @@ object FormShareLink: TFormShareLink
   end
   object CbShortUrl: TCheckBox
     Left = 8
-    Top = 116
-    Width = 249
+    Top = 403
+    Width = 375
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Make short url'
     Checked = True
     State = cbChecked
@@ -42,8 +45,8 @@ object FormShareLink: TFormShareLink
     OnClick = CbShortUrlClick
   end
   object BtnClose: TButton
-    Left = 310
-    Top = 108
+    Left = 308
+    Top = 424
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -53,7 +56,7 @@ object FormShareLink: TFormShareLink
   end
   object LsMain: TLoadingSign
     Left = 8
-    Top = 83
+    Top = 374
     Width = 23
     Height = 23
     Active = True
@@ -64,14 +67,14 @@ object FormShareLink: TFormShareLink
   object PnPreview: TPanel
     Left = 8
     Top = 8
-    Width = 97
-    Height = 69
+    Width = 377
+    Height = 360
     BevelOuter = bvNone
     TabOrder = 3
   end
   object LnkPublicLink: TWebLink
     Left = 37
-    Top = 83
+    Top = 374
     Width = 348
     Height = 23
     Cursor = crHandPoint
@@ -97,12 +100,11 @@ object FormShareLink: TFormShareLink
     UseEndEllipsis = True
   end
   object WlSettings: TWebLink
-    Left = 327
-    Top = 8
+    Left = 8
+    Top = 433
     Width = 58
     Height = 16
     Cursor = crHandPoint
-    Anchors = [akTop, akRight]
     Text = 'Settngs'
     OnClick = WlSettingsClick
     ImageIndex = 0
@@ -114,5 +116,16 @@ object FormShareLink: TFormShareLink
     HightliteImage = False
     StretchImage = True
     CanClick = True
+  end
+  object BtnUploadAgain: TButton
+    Left = 200
+    Top = 424
+    Width = 102
+    Height = 25
+    Anchors = [akRight, akBottom]
+    Caption = 'BtnUploadAgain'
+    TabOrder = 6
+    Visible = False
+    OnClick = BtnUploadAgainClick
   end
 end

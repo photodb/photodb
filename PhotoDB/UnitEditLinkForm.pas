@@ -141,7 +141,7 @@ begin
   LoadLanguage;
   DropFileTarget1.Register(Self);
   LinkImageList.Clear;
-  for I := LINK_TYPE_ID to LINK_TYPE_TXT do
+  for I := LINK_TYPE_ID to LINK_TYPE_HREF do
   begin
     case I of
       LINK_TYPE_ID:
@@ -156,6 +156,8 @@ begin
         Icon := Icons[DB_IC_DIRECTORY];
       LINK_TYPE_TXT:
         Icon := Icons[DB_IC_TEXT_FILE];
+      LINK_TYPE_HREF:
+        Icon := Icons[DB_IC_LINK];
     else
       Icon := 0;
     end;
@@ -168,6 +170,7 @@ begin
   CbLinkType.Items.Add(L(LINK_TEXT_TYPE_FILE));
   CbLinkType.Items.Add(L(LINK_TEXT_TYPE_FOLDER));
   CbLinkType.Items.Add(L(LINK_TEXT_TYPE_TXT));
+  CbLinkType.Items.Add(L(LINK_TEXT_TYPE_HTML));
 
   for I := LINK_TYPE_ID to LINK_TYPE_TXT do
     CbLinkType.ItemsEx[I].ImageIndex := I;

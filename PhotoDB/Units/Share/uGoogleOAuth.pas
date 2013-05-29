@@ -26,13 +26,13 @@ const
   DefaultMime = 'application/json; charset=UTF-8';
 
 type
-  TOnInternetProgress = procedure(Sender: TObject; Max, Position: Int64) of object;
+  TOnInternetProgress = procedure(Sender: TObject; Max, Position: Int64; var Cancel: Boolean) of object;
 
   /// <summary>
   /// Компонент для авторизации в сервисах Google по протоколу OAuth и
   /// выполнения основных HTTP-запросов: GET, POST, PUT и DELETE к ресурсам API
   /// </summary>
-  TOAuth = class(TObject)
+  TOAuth2 = class(TObject)
   private type
     TMethodType = (tmGET, tmPOST, tmPUT, tmDELETE);
   private
@@ -204,29 +204,29 @@ const
 
   { TOAuth }
 
-function TOAuth.AccessURL: string;
+function TOAuth2.AccessURL: string;
 begin
   Result := Format(oauth_url, [ClientID, redirect_uri, Scope]) + '&hl=' + TTranslateManager.Instance.Language;;
 end;
 
-constructor TOAuth.Create;
+constructor TOAuth2.Create;
 begin
   inherited;
   FOnProgress := nil;
   FSlug := '';
 end;
 
-procedure TOAuth.DELETECommand(URL: string);
+procedure TOAuth2.DELETECommand(URL: string);
 begin
   HTTPMethod(URL, tmDELETE, nil, nil);
 end;
 
-destructor TOAuth.Destroy;
+destructor TOAuth2.Destroy;
 begin
   inherited;
 end;
 
-function TOAuth.GetAccessToken: string;
+function TOAuth2.GetAccessToken: string;
 var
   Params: TStringStream;
   Response: string;
@@ -244,12 +244,12 @@ begin
   end;
 end;
 
-function TOAuth.GETCommand(URL: string; Params: TStrings): string;
+function TOAuth2.GETCommand(URL: string; Params: TStrings): string;
 begin
   Result := HTTPMethod(URL, tmGET, Params, nil);
 end;
 
-function TOAuth.HTTPMethod(AURL: string; AMethod: TMethodType;
+function TOAuth2.HTTPMethod(AURL: string; AMethod: TMethodType;
   AParams: TStrings; ABody: TStream; AMime: string): string;
 var
   Response: TStringStream;
@@ -315,7 +315,7 @@ begin
   end;
 end;
 
-function TOAuth.ParamValue(ParamName, JSONString: string): string;
+function TOAuth2.ParamValue(ParamName, JSONString: string): string;
 var
   I, J: Integer;
 begin
@@ -332,13 +332,13 @@ begin
     Result := '';
 end;
 
-function TOAuth.POSTCommand(URL: string; Params: TStrings; Body: TStream;
+function TOAuth2.POSTCommand(URL: string; Params: TStrings; Body: TStream;
   Mime: string): string;
 begin
   Result := HTTPMethod(URL, tmPOST, Params, Body, Mime);
 end;
 
-function TOAuth.PrepareParams(Params: TStrings): string;
+function TOAuth2.PrepareParams(Params: TStrings): string;
 var
   S: string;
 begin
@@ -354,12 +354,12 @@ begin
   Result := '';
 end;
 
-function TOAuth.PUTCommand(URL: string; Body: TStream; Mime: string): string;
+function TOAuth2.PUTCommand(URL: string; Body: TStream; Mime: string): string;
 begin
   Result := HTTPMethod(URL, tmPUT, nil, Body, Mime)
 end;
 
-function TOAuth.RefreshToken: string;
+function TOAuth2.RefreshToken: string;
 var
   Params: TStringStream;
   Response: string;
@@ -375,44 +375,50 @@ begin
   end;
 end;
 
-procedure TOAuth.SetClientID(const Value: string);
+procedure TOAuth2.SetClientID(const Value: string);
 begin
   FClientID := Value;
 end;
 
-procedure TOAuth.SetClientSecret(Value: string);
+procedure TOAuth2.SetClientSecret(Value: string);
 begin
   FClientSecret := TIdURI.PathEncode(Value)
 end;
 
-procedure TOAuth.SetResponseCode(const Value: string);
+procedure TOAuth2.SetResponseCode(const Value: string);
 begin
   FResponseCode := Value;
 end;
 
-procedure TOAuth.SetScope(const Value: string);
+procedure TOAuth2.SetScope(const Value: string);
 begin
   FScope := Value;
 end;
 
-procedure TOAuth.WorkBeginEvent(ASender: TObject; AWorkMode: TWorkMode;
+procedure TOAuth2.WorkBeginEvent(ASender: TObject; AWorkMode: TWorkMode;
   AWorkCountMax: Int64);
 begin
   FWorkMax := AWorkCountMax;
   FWorkPosition := 0;
 end;
 
-procedure TOAuth.WorkEndEvent(ASender: TObject; AWorkMode: TWorkMode);
+procedure TOAuth2.WorkEndEvent(ASender: TObject; AWorkMode: TWorkMode);
 begin
   FWorkPosition := FWorkMax;
 end;
 
-procedure TOAuth.WorkEvent(ASender: TObject; AWorkMode: TWorkMode;
+procedure TOAuth2.WorkEvent(ASender: TObject; AWorkMode: TWorkMode;
   AWorkCount: Int64);
+var
+  Cancel: Boolean;
 begin
   FWorkPosition := AWorkCount;
+  Cancel := False;
   if Assigned(FOnProgress) then
-    FOnProgress(Self, FWorkMax, FWorkPosition);
+    FOnProgress(Self, FWorkMax, FWorkPosition, Cancel);
+
+  if Cancel then
+    TIdHTTP(ASender).Disconnect;
 end;
 
 end.

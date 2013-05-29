@@ -18,7 +18,7 @@ const
   LINK_TYPE_FILE     = 3;
   LINK_TYPE_FOLDER   = 4;
   LINK_TYPE_TXT      = 5;
-  LINK_TYPE_HTML     = 6;
+  LINK_TYPE_HREF     = 6;
 
   LINK_TEXT_TYPE_ID       = 'ID';
   LINK_TEXT_TYPE_ID_EXT   = 'IDExt';
@@ -26,14 +26,14 @@ const
   LINK_TEXT_TYPE_FILE     = 'File';
   LINK_TEXT_TYPE_FOLDER   = 'Folder';
   LINK_TEXT_TYPE_TXT      = 'Text';
-  LINK_TEXT_TYPE_HTML     = 'HTML';
+  LINK_TEXT_TYPE_HTML     = 'Web link';
 type
 
    TLinkInfo = record
-    LinkType : byte;
-    LinkName : String;
-    LinkValue : String;
-    Tag : byte; //unused by default
+    LinkType: Byte;
+    LinkName: string;
+    LinkValue: string;
+    Tag: Byte; //unused by default
    end;
 
 const
@@ -45,7 +45,7 @@ const
 type
   TLinksInfo = array of TLinkInfo;
   TArLinksInfo = array of TLinksInfo;
-  TSetLinkProcedure = procedure(Sender : TObject; ID : String; Info : TLinkInfo; N : integer; Action : Integer) of object;
+  TSetLinkProcedure = procedure(Sender: TObject; ID: string; Info: TLinkInfo; N: Integer; Action: Integer) of object;
 
 const
    LINK_PROC_ACTION_ADD    = 0;
@@ -112,7 +112,7 @@ begin
     Result := Result + '[' + IntToStr(Info[I].LinkType) + ']{' + Info[I].LinkName + '}' + Info[I].LinkValue + ';';
 end;
 
-function ParseLinksInfo(Info : String) : TLinksInfo;
+function ParseLinksInfo(Info: string): TLinksInfo;
 var
   I, C, L: Integer;
   S: string;
@@ -439,7 +439,7 @@ begin
     Result := LINK_TEXT_TYPE_FOLDER;
   if LinkTypeN = LINK_TYPE_TXT then
     Result := LINK_TEXT_TYPE_TXT;
-  if LinkTypeN = LINK_TYPE_HTML then
+  if LinkTypeN = LINK_TYPE_HREF then
     Result := LINK_TEXT_TYPE_HTML;
 end;
 

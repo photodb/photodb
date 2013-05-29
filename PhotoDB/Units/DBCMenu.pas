@@ -1598,7 +1598,7 @@ begin
         begin
           MediaRepository.SetAccess(FInfo[I].ID, Db_access_private);
           EventInfo.Access := Db_access_private;
-          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
+          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Access], EventInfo);
         end;
       end else
       begin
@@ -1606,7 +1606,7 @@ begin
         begin
           MediaRepository.SetAccess(FInfo[I].ID, Db_access_none);
           EventInfo.Access := Db_access_none;
-          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Private], EventInfo);
+          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Access], EventInfo);
         end;
       end;
     end;
@@ -1838,7 +1838,6 @@ end;
 procedure TDBPopupMenu.SetRotateItemPopUpMenu(Sender: TObject);
 var
   I: Integer;
-  EventInfo: TEventValues;
   NewRotate: Integer;
   Context: IDBContext;
   MediaRepository: IMediaRepository;
@@ -1852,11 +1851,7 @@ begin
   NewRotate := (Sender as Tmenuitem).Tag;
   for I := 0 to FInfo.Count - 1 do
     if FInfo[I].Selected then
-    begin
       MediaRepository.SetRotate(Finfo[I].ID, NewRotate);
-      EventInfo.Rotation := NewRotate;
-      CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Rotate], EventInfo);
-    end;
 end;
 
 procedure TDBPopupMenu.ShellExecutePopUpMenu(Sender: TObject);

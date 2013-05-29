@@ -137,12 +137,12 @@ type
 
   TPicasaProvider = class(TInterfacedObject, IPhotoShareProvider)
   private
-    FOAuth: TOAuth;
+    FOAuth: TOAuth2;
     FSync: TCriticalSection;
     FTmpProgress: IUploadProgress;
     function GetAccessUrl: string;
     function CheckToken(Force: Boolean): Boolean;
-    procedure DoOperationProgress(Sender: TObject; Max, Position: Int64);
+    procedure DoOperationProgress(Sender: TObject; Max, Position: Int64; var Cancel: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
@@ -449,10 +449,10 @@ begin
 end;
 
 procedure TPicasaProvider.DoOperationProgress(Sender: TObject; Max,
-  Position: Int64);
+  Position: Int64; var Cancel: Boolean);
 begin
   if (FTmpProgress <> nil) and (Max <> 0) then
-    FTmpProgress.OnProgress(Self, Max, Position);
+    FTmpProgress.OnProgress(Self, Max, Position, Cancel);
 end;
 
 function TPicasaProvider.GetAccessUrl: string;
@@ -553,7 +553,7 @@ begin
   try
     if FOAuth = nil then
     begin
-      FOAuth := TOAuth.Create;
+      FOAuth := TOAuth2.Create;
       FOAuth.OnProgress := DoOperationProgress;
       FOAuth.ClientID := GOOGLE_APP_CLIENT_ID;
       FOAuth.ClientSecret := GOOGLE_APP_CLIENT_SECRET;

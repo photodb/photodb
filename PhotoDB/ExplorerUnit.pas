@@ -1574,6 +1574,9 @@ begin
   MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
   MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
 
+  PmShareAdditionalTasks.Images := Icons.ImageList;
+  MiShareImageAndGetUrl.ImageIndex := DB_IC_LINK;
+
   LoadDBList;
 
   TW.I.Start('LoadLanguage');
@@ -3275,7 +3278,7 @@ begin
   end;
 
   ReRotation := 0;
-  UpdateInfoParams := [EventID_Param_Crypt, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private,
+  UpdateInfoParams := [EventID_Param_Crypt, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Access,
     EventID_Param_Date, EventID_Param_Time, EventID_Param_IsDate, EventID_Param_IsTime, EventID_Param_Groups,
     EventID_Param_Comment, EventID_Param_KeyWords, EventID_Param_Include];
   if UpdateInfoParams * Params <> [] then
@@ -3296,7 +3299,7 @@ begin
           if EventID_FileProcessed in Params then
             UpdateListImage(Info, True);
 
-          if EventID_Param_Private in Params then
+          if EventID_Param_Access in Params then
             Info.Access := Value.Access;
           if EventID_Param_Crypt in Params then
             Info.Encrypted := Value.IsEncrypted;
@@ -3333,7 +3336,7 @@ begin
           end;
           if [EventID_Param_Include,
               EventID_Param_Rotate,
-              EventID_Param_Private,
+              EventID_Param_Access,
               EventID_Param_Crypt,
               EventID_Param_Rating ] * Params <> [] then
             ElvMain.Refresh;
@@ -3356,7 +3359,7 @@ begin
     end;
   end;
 
-  ImParams := [EventID_Param_Refresh, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Private];
+  ImParams := [EventID_Param_Refresh, EventID_Param_Rotate, EventID_Param_Rating, EventID_Param_Access];
   if ImParams * Params <> [] then
     ElvMain.Refresh;
 
@@ -10602,14 +10605,11 @@ end;
 
 procedure TExplorerForm.N05Click(Sender: TObject);
 var
-  EventInfo: TEventValues;
   FileInfo: TMediaItem;
 begin
   if RatingPopupMenu.Tag > 0 then
   begin
     FMediaRepository.SetRating(RatingPopupMenu.Tag, (Sender as TMenuItem).Tag);
-    EventInfo.Rating := (Sender as TMenuItem).Tag;
-    CollectionEvents.DoIDEvent(Self, RatingPopupMenu.Tag, [EventID_Param_Rating], EventInfo);
   end else
   begin
     FileInfo := TMediaItem.Create;

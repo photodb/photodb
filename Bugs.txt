@@ -20,14 +20,17 @@ Features ready:
 - Viewcounter for images;
 - Update info in top/bottom => remove update form;
 - png watermarks;
+- Fast Share with link;
 
 Bugs:
-F:\12.06.02 = суббота, 2 июня, 2012г. (Проектный центр на пикнике)\ time for pictures in properties (explorer mode)
+Forward capatibility;
+Add RAW file 2 times
+
+d:\dmitry\my pictures\photoes\12.06.02 = суббота, 2 июня, 2012г. (проектный центр на пикнике) time for pictures in properties (explorer mode)
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
 check collection move
 collection pack
-Fast Share with link
 Import remember skips;
 
 copy to with device images doesn't work
