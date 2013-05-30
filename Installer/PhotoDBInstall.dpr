@@ -17,7 +17,9 @@ uses
   uUserUtils in 'uUserUtils.pas',
   uAppUtils in '..\PhotoDB\Units\Utils\uAppUtils.pas',
   uMemory in '..\PhotoDB\Units\System\uMemory.pas',
-  uIsAdmin in 'uIsAdmin.pas';
+  uIsAdmin in 'uIsAdmin.pas',
+  uDecompressionProgressWindow in 'uDecompressionProgressWindow.pas',
+  uConstants in '..\PhotoDB\Units\uConstants.pas';
 
 {$R PhotoDBInstall.res}
 {$R Install_Package.RES}
@@ -28,8 +30,48 @@ var
   DS: TDecompressionStream;
   FS: TFileStream;
   ExeFileName: string;
-  Size: Int64;
+  OriginalSize, FileSize: Int64;
   Mutex: Integer;
+
+type
+  TStreamHelper = class helper for TStream
+  public
+    function CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer; Progress: TProgressProc): Int64;
+  end;
+
+function TStreamHelper.CopyFromEx(Source: TStream; Count: Int64; MaxBufSize: Integer; Progress: TProgressProc): Int64;
+var
+  BufSize, N: Integer;
+  Buffer: PByte;
+  IsBreak: Boolean;
+begin
+  if Count = 0 then
+  begin
+    Source.Position := 0;
+    Count := Source.Size;
+  end;
+  IsBreak := False;
+  Result := Count;
+  if Count > MaxBufSize then BufSize := MaxBufSize else BufSize := Count;
+  GetMem(Buffer, BufSize);
+  try
+    while Count <> 0 do
+    begin
+      if Count > BufSize then N := BufSize else N := Count;
+      Source.ReadBuffer(Buffer^, N);
+      WriteBuffer(Buffer^, N);
+      Dec(Count, N);
+
+      if Assigned(Progress) then
+        Progress(Result, Size, IsBreak);
+
+      if IsBreak then
+        Break;
+    end;
+  finally
+    FreeMem(Buffer, BufSize);
+  end;
+end;
 
 function InitMutex(mid: string): Boolean;
 begin
@@ -42,11 +84,19 @@ begin
   if not InitMutex('{E8A4BE80-FF59-4742-AFA0-F6CC300F53A8}') then
     Exit;
 
+  CreateProgressWindow;
   try
     MS := TMemoryStream.Create;
     try
-      GetRCDATAResourceStream('SETUP_DATA', MS);
-      MS.Read(Size, SizeOf(Size));
+
+      GetRCDATAResourceStream('SETUP_DATA', MS,
+        procedure(BytesTotal, BytesComplete: Int64; var Break: Boolean)
+        begin
+          Break := not SetProgressPos(50 * BytesComplete div BytesTotal);
+        end
+      );
+
+      MS.Read(OriginalSize, SizeOf(OriginalSize));
       DS := TDecompressionStream.Create(MS);
       try
         ExeFileName := IncludeTrailingBackslash(GetTempDirectory) + ExtractFileName(ParamStr(0));
@@ -60,11 +110,23 @@ begin
 
         FS := TFileStream.Create(ExeFileName, fmCreate);
         try
-          FS.CopyFrom(DS, Size);
+          FS.CopyFromEx(DS, OriginalSize, 100 * 1024,
+            procedure(BytesTotal, BytesComplete: Int64; var Break: Boolean)
+            begin
+              Break := not SetProgressPos(50 + 50 * FS.Size div OriginalSize);
+            end
+          );
+          FileSize := FS.Size;
         finally
           F(FS);
         end;
-        UserAccountService(ExeFileName, IsUserAnAdmin or IsWindowsAdmin);
+
+        CloseProgress;
+        if FileSize = OriginalSize then
+          UserAccountService(ExeFileName, IsUserAnAdmin or IsWindowsAdmin)
+        else
+          DeleteFile(ExeFileName);
+
       finally
         F(DS);
       end;
@@ -75,6 +137,7 @@ begin
     on e: Exception do
       MessageBox(0, PChar(e.Message), 'Error', MB_OK or MB_ICONERROR);
   end;
+  CloseProgress;
   if Mutex <> 0 then
     CloseHandle(Mutex);
 end.

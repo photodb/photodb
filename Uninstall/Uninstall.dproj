@@ -84,6 +84,7 @@
         <DCCReference Include="..\Installer\uFrmProgress.pas">
             <Form>FrmProgress</Form>
         </DCCReference>
+        <DCCReference Include="..\PhotoDB\Units\Interfaces\uIDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uLogger.pas"/>

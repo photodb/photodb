@@ -18,6 +18,7 @@ uses
   uInstallTypes in 'uInstallTypes.pas',
   uMemory in '..\PhotoDB\Units\System\uMemory.pas',
   uMemoryEx in '..\PhotoDB\Units\System\uMemoryEx.pas',
+  uIDBForm in '..\PhotoDB\Units\Interfaces\uIDBForm.pas',
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
   uConstants in '..\PhotoDB\Units\uConstants.pas',

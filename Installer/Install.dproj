@@ -94,6 +94,7 @@
         <DCCReference Include="uInstallTypes.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemory.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemoryEx.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\Interfaces\uIDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>

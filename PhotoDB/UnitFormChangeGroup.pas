@@ -44,6 +44,7 @@ uses
   uShellIntegration,
   uCollectionEvents,
   uDialogUtils,
+  uVCLHelpers,
   uDBIcons,
   uDBContext,
   uDBEntities,
@@ -316,29 +317,13 @@ end;
 
 procedure TFormChangeGroup.MiUseCurrentImageClick(Sender: TObject);
 var
-  I: Integer;
-  Form: TDBForm;
-  Source: ICurrentImageSource;
   FileName: string;
   Editor: TImageEditorForm;
   Bitmap: TBitmap;
   FJPG: TJpegImage;
   Settings: TSettings;
 begin
-  FileName := '';
-  for I := 0 to Screen.FormCount - 1 do
-  begin
-    if not (Screen.Forms[I] is TDBForm) then
-      Continue;
-
-    Form := Screen.Forms[I] as TDBForm;
-    if Form.QueryInterfaceEx(ICurrentImageSource, Source) = S_OK then
-    begin
-      FileName := Source.GetCurrentImageFileName;
-      if FileName <> '' then
-        Break;
-     end;
-  end;
+  FileName := Screen.CurrentImageFileName;
 
   if FileName <> '' then
   begin

@@ -23,6 +23,7 @@ uses
   Dmitry.Controls.WatermarkedEdit,
 
   UnitDBFileDialogs,
+  UnitDBDeclare,
 
   uDBGraphicTypes,
   uConstants,
@@ -170,9 +171,9 @@ end;
 
 procedure TFrmWatermarkOptions.CheckSaveEnabled;
 begin
-  if PcWatermarkType.ActivePageIndex = 0 then
+  if PcWatermarkType.ActivePageIndex = Integer(WModeImage) then
     BtnOk.Enabled := FWatermarkedFile <> '';
-  if PcWatermarkType.ActivePageIndex = 1 then
+  if PcWatermarkType.ActivePageIndex = Integer(WModeText) then
     BtnOk.Enabled := True;
 end;
 
@@ -253,7 +254,7 @@ var
   I: Integer;
   FontName: string;
 begin
-  PcWatermarkType.ActivePageIndex := AppSettings.ReadInteger(Settings_Watermark, 'Mode', 0);
+  PcWatermarkType.ActivePageIndex := AppSettings.ReadInteger(Settings_Watermark, 'Mode', Integer(WModeText));
 
   EdWatermarkText.Text := AppSettings.ReadString(Settings_Watermark, 'Text', L('Sample text'));
   SeBlocksX.Value := AppSettings.ReadInteger(Settings_Watermark, 'BlocksX', 3);
@@ -707,10 +708,7 @@ end;
 procedure TFrmWatermarkOptions.PbImagePaint(Sender: TObject);
 var
   B, WI: TBitmap;
-  I, J, W, H,
-  RightWidth, BottomHeight,
-  StartX, StartY,
-  DeltaX, DeltaY: Integer;
+  I, J: Integer;
   P: PARGB;
   P1, P2: TPoint;
   Transparency: Byte;

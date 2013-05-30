@@ -3,30 +3,56 @@ unit uUnpackUtils;
 interface
 
 uses
-  Windows, SysUtils, Classes, uUserUtils;
+  Windows,
+  SysUtils,
+  Classes,
+  Math,
+  uUserUtils;
+
+type
+  TProgressProc = reference to procedure(BytesTotal, BytesComplete: Int64; var Break: Boolean);
 
 function GetTempDirectory: string;
 function GetTempFileName: TFileName;
-function GetRCDATAResourceStream(ResName : string; MS: TMemoryStream) : Boolean;
+function GetRCDATAResourceStream(ResName: string; MS: TMemoryStream; Progress: TProgressProc): Boolean;
 
 implementation
 
-function GetRCDATAResourceStream(ResName : string; MS : TMemoryStream) : Boolean;
+function GetRCDATAResourceStream(ResName: string; MS: TMemoryStream; Progress: TProgressProc): Boolean;
+const
+  BufferSize = 340 * 1024; //340k
 var
   MyRes  : Integer;
   MyResP : Pointer;
-  MyResS : Integer;
+  MyResS, ResourceSize, ReadSize : Integer;
+  Cancel: Boolean;
 begin
   Result := False;
   MyRes := FindResource(HInstance, PWideChar(ResName), RT_RCDATA);
-  if MyRes <> 0 then begin
-    MyResS := SizeOfResource(HInstance,MyRes);
-    MyRes := LoadResource(HInstance,MyRes);
-    if MyRes <> 0 then begin
+  if MyRes <> 0 then
+  begin
+    ResourceSize := SizeOfResource(HInstance, MyRes);
+    MyRes := LoadResource(HInstance, MyRes);
+    if MyRes <> 0 then
+    begin
       MyResP := LockResource(MyRes);
-      if MyResP <> nil then begin
-        with MS do begin
-          Write(MyResP^, MyResS);
+      if MyResP <> nil then
+      begin
+        with MS do
+        begin
+          MyResS := ResourceSize;
+          while MyResS > 0 do
+          begin
+            ReadSize := Min(BufferSize, MyResS);
+            Write(MyResP^, ReadSize);
+            Inc(NativeInt(MyResP), ReadSize);
+            Dec(MyResS, BufferSize);
+
+            Progress(ResourceSize, MS.Size, Cancel);
+            if Cancel then
+              Break;
+          end;
+
           Seek(0, soFromBeginning);
         end;
         Result := True;

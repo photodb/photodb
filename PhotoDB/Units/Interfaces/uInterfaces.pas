@@ -28,11 +28,6 @@ type
     procedure HandleEncryptionError(FileName: string; ErrorMessage: string);
   end;
 
-  ICurrentImageSource = interface(IInterface)
-  ['{1BFE6E8F-2411-4250-BF57-75BCEF69F091}']
-    function GetCurrentImageFileName: string;
-  end;
-
   IDirectoryWatcher = interface(IInterface)
     ['{887A08D0-3D36-4744-9241-9454BAAA9D53}']
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray);

@@ -98,8 +98,6 @@ var
   X, Y, W, H, S: Integer;
 
   procedure RectangleEx(X1, Y1, X2, Y2: Integer);
-  var
-    Rect: TRect;
   begin
     Canvas.Brush.Style := bsClear;
     Canvas.Pen.Color := Pen.Color;

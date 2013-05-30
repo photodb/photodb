@@ -407,7 +407,8 @@ uses
   uDatabaseInfoControl in 'Units\Controls\uDatabaseInfoControl.pas',
   uFormLinkItemEditor in 'uFormLinkItemEditor.pas' {FormLinkItemEditor},
   uCollectionUtils in 'Units\Database\uCollectionUtils.pas',
-  uSecondCopy in 'Units\uSecondCopy.pas';
+  uSecondCopy in 'Units\uSecondCopy.pas',
+  uIDBForm in 'Units\Interfaces\uIDBForm.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

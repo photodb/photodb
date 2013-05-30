@@ -40,10 +40,12 @@ uses
   uBitmapUtils,
   uDBIcons,
   uExplorerGroupsProvider,
+  uIDBForm,
   uDBForm,
   uDBContext,
   uDBEntities,
   uDBManager,
+  uVCLHelpers,
   uShellIntegration,
   uDialogUtils,
   uThemesUtils,
@@ -300,28 +302,13 @@ end;
 
 procedure TNewGroupForm.MiUseCurrentImageClick(Sender: TObject);
 var
-  I: Integer;
-  Form: TDBForm;
-  Source: ICurrentImageSource;
   FileName: string;
   Editor: TImageEditorForm;
   Bitmap: TBitmap;
   FJPG: TJpegImage;
 begin
-  FileName := '';
-  for I := 0 to Screen.FormCount - 1 do
-  begin
-    if not (Screen.Forms[I] is TDBForm) then
-      Continue;
+  FileName := Screen.CurrentImageFileName;
 
-    Form := Screen.Forms[I] as TDBForm;
-    if Form.QueryInterfaceEx(ICurrentImageSource, Source) = S_OK then
-    begin
-      FileName := Source.GetCurrentImageFileName;
-      if FileName <> '' then
-        Break;
-     end;
-  end;
   if FileName <> '' then
   begin
     Editor := TImageEditor.Create(nil);

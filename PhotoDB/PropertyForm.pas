@@ -68,6 +68,7 @@ uses
   uDBDrawing,
   uMemory,
   uListViewUtils,
+  uIDBForm,
   uDBForm,
   uInterfaces,
   uConstants,

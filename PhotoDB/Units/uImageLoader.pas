@@ -656,7 +656,7 @@ begin
       Dec(Count, N);
 
       if Assigned(Progress) then
-        Progress(lipsReading, Count, Size, IsBreak);
+        Progress(lipsReading, Result, Size, IsBreak);
 
       if IsBreak then
         Break;

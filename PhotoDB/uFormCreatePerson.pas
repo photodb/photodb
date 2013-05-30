@@ -90,6 +90,8 @@ type
     ImInvalid: TImage;
     ImWarning: TImage;
     WlEditImage: TWebLink;
+    N1: TMenuItem;
+    MiUseCurrentImage: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PbPhotoPaint(Sender: TObject);
@@ -107,6 +109,7 @@ type
     procedure WedNameExit(Sender: TObject);
     procedure WlPersonNameStatusClick(Sender: TObject);
     procedure WlEditImageClick(Sender: TObject);
+    procedure MiUseCurrentImageClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -501,6 +504,7 @@ begin
   PmImageOptions.Images := Icons.ImageList;
   MiLoadotherimage.ImageIndex := DB_IC_LOADFROMFILE;
   MiEditImage.ImageIndex := DB_IC_IMEDITOR;
+  MiUseCurrentImage.ImageIndex := DB_IC_SLIDE_SHOW;
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
   FReloadGroupsMessage := RegisterWindowMessage('CREATE_PERSON_RELOAD_GROUPS');
   FixFormPosition;
@@ -553,6 +557,7 @@ begin
     MiLoadOtherImage.Caption := L('Load other image');
     MiEditImage.Caption := L('Edit image');
     WlEditImage.Text := L('Change picture');
+    MiUseCurrentImage.Caption := L('Use current image');
   finally
     EndTranslate;
   end;
@@ -719,6 +724,38 @@ begin
   BtnOk.Enabled := (PersonList.Count = 0) or ((PersonList.Count > 0) and (TPersonItem(PersonList[0]).PersonName <> WedName.Text));
 
   RealignControls;
+end;
+
+procedure TFormCreatePerson.MiUseCurrentImageClick(Sender: TObject);
+var
+  FileName: string;
+  Editor: TImageEditor;
+  Bitmap: TBitmap;
+begin
+  FileName := Screen.CurrentImageFileName;
+
+  if FileName <> '' then
+  begin
+    Editor := TImageEditor.Create(nil);
+    try
+      Bitmap := TBitmap.Create;
+      try
+        if Editor.EditFile(FileName, Bitmap) then
+        begin
+          KeepProportions(Bitmap, 250, 300);
+
+          FPicture.Assign(Bitmap);
+          RecreateImage;
+          Invalidate;
+          FIsImageChanged := True;
+        end;
+      finally
+        F(Bitmap);
+      end;
+    finally
+      R(Editor);
+    end;
+  end;
 end;
 
 procedure TFormCreatePerson.WedNameChange(Sender: TObject);

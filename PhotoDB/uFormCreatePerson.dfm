@@ -362,6 +362,13 @@ object FormCreatePerson: TFormCreatePerson
       Caption = 'Load other image'
       OnClick = MiLoadOtherImageClick
     end
+    object MiUseCurrentImage: TMenuItem
+      Caption = 'Use current image'
+      OnClick = MiUseCurrentImageClick
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
     object MiEditImage: TMenuItem
       Caption = 'Edit image'
       OnClick = MiEditImageClick

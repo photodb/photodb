@@ -26,6 +26,7 @@ uses
   uMemory,
   uConstants,
   uLogger,
+  uIDBForm,
   uSettings,
   uConfiguration;
 
@@ -130,6 +131,7 @@ type
 
   TScreenHelper = class helper for TScreen
     function ActiveFormHandle: THandle;
+    function CurrentImageFileName: string;
   end;
 
 type
@@ -611,6 +613,27 @@ begin
     Result := Self.ActiveForm.Handle
   else
     Result := 0;
+end;
+
+function TScreenHelper.CurrentImageFileName: string;
+var
+  I: Integer;
+  Form: IDBForm;
+  Source: ICurrentImageSource;
+begin
+  Result := '';
+  for I := 0 to FormCount - 1 do
+  begin
+    if not Supports(Forms[I], IDBForm, Form) then
+      Continue;
+
+    if Form.QueryInterfaceEx(ICurrentImageSource, Source) = S_OK then
+    begin
+      Result := Source.GetCurrentImageFileName;
+      if Result <> '' then
+        Break;
+     end;
+  end;
 end;
 
 end.

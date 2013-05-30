@@ -18,7 +18,6 @@ REM JNG FILES - BEGIN
 "%BRCC32%" Loading.rc
 REM JNG FILES - END
 
-"%BRCC32%" slideshow_load.rc
 "%BRCC32%" ExplorerBackground.rc
 "%BRCC32%" Manifest.rc
 "%BRCC32%" ImagePanelBackground.rc

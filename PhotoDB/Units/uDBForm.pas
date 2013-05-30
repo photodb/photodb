@@ -36,6 +36,7 @@ uses
   uFastLoad,
   uGraphicUtils,
   {$ENDIF}
+  uIDBForm,
   uThemesUtils;
 
 {$R-}
@@ -243,7 +244,7 @@ type
     property Handle;
   end;
 
-  TDBForm = class(TForm, IInterface)
+  TDBForm = class(TForm, IInterface, IDBForm)
   private
     FWindowID: string;
     FWasPaint: Boolean;

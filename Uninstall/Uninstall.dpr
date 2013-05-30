@@ -13,6 +13,7 @@ uses
   Windows,
   uFrmMain in '..\Installer\uFrmMain.pas' {FrmMain},
   uFrmProgress in '..\Installer\uFrmProgress.pas' {FrmProgress},
+  uIDBForm in '..\PhotoDB\Units\Interfaces\uIDBForm.pas',
   uDBForm in '..\PhotoDB\Units\uDBForm.pas',
   uTranslate in '..\PhotoDB\Units\uTranslate.pas',
   uLogger in '..\PhotoDB\Units\System\uLogger.pas',

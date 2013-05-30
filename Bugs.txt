@@ -21,10 +21,15 @@ Features ready:
 - Update info in top/bottom => remove update form;
 - png watermarks;
 - Fast Share with link;
+- Person image - use current image option;
 
 Bugs:
-Forward capatibility (recheck);
+- Portable persons;
+- Persons to EXIF (using XML string);
 
+Minor:
+Forward capatibility (recheck);
+- small icons in tool bar on runtime;
 - show deleted/duplicate pictures;
 - Use png/jpg for collection icons;
 check collection move
@@ -36,8 +41,6 @@ copy to with device images doesn't work
 Unable to display file on viewer;
 
 [New]
-- Portable persons;
-- Persons to EXIF (using XML string);
 - Import set password;
 - resize - raw use preview checkbox;
 

@@ -93,6 +93,7 @@ uses
   uShellIntegration,
   uDBCustomThread,
   uShellUtils,
+  uIDBForm,
   uSiteUtils,
   uGUIDUtils,
   uPrivateHelper,

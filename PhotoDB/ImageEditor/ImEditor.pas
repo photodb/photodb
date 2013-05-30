@@ -61,6 +61,7 @@ uses
   UnitDBFileDialogs,
 
   uInterfaces,
+  uIDBForm,
   uBitmapUtils,
   uTiffImage,
   uJpegUtils,
@@ -729,8 +730,8 @@ procedure TImageEditor.FormResize(Sender: TObject);
 var
   I: Integer;
 begin
-  Buffer.Width := Max(1, GetVisibleImageWidth);
-  Buffer.Height := Max(1, GetVisibleImageHeight);
+  Buffer.SetSize(Max(1, GetVisibleImageWidth), Max(1, GetVisibleImageHeight));
+
   SetLength(PBuffer, Buffer.Height);
   for I := 0 to Buffer.Height - 1 do
     PBuffer[I] := Buffer.ScanLine[I];
@@ -2008,6 +2009,7 @@ end;
 
 function TImageEditor.EditFile(Image: string; BitmapOut: TBitmap): Boolean;
 begin
+  FormResize(Self);
   FIsEditImageDone := False;
   FIsEditImage := True;
   FEditImage := BitmapOut;

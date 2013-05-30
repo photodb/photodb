@@ -98,6 +98,7 @@ var
   M: TMemoryStream;
   ExifData: TExifData;
   FileDate: TDateTime;
+  HS: TMemoryStream;
 
   procedure HandleError(Error: string);
   begin
@@ -209,7 +210,16 @@ begin
     IC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
     IC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
 
-    Info.ID := IC.Execute;
+    HS := TMemoryStream.Create;
+    try
+      HS.WriteBuffer(Res.Histogram, SizeOf(Res.Histogram));
+      HS.Seek(0, soFromBeginning);
+      IC.AddParameter(TStreamParameter.Create('Histogram', HS));
+
+      Info.ID := IC.Execute;
+    finally
+      F(HS);
+    end;
   finally
     F(IC);
     F(M);

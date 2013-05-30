@@ -1584,7 +1584,8 @@
 	<translate name="Person name is unique!" value="Имя персоны - уникальное!"/>
 	<translate name="Person name already in use!" value="Данное имя уже используется!"/>
 	<translate name="Person name is required!" value="Имя персоны - обязательное поле!"/>
-	<translate name="Change picture" value="Сменить изображение"/>	
+	<translate name="Change picture" value="Сменить изображение"/>
+	<translate name="Use current image" value="Использовать текущее изображение"/>
   </scope>
   <scope name="SelectPerson">
 	<translate name="Select person" value="Выбор персоны"/>

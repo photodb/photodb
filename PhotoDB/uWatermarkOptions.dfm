@@ -57,6 +57,10 @@ object FrmWatermarkOptions: TFrmWatermarkOptions
     object TsImage: TTabSheet
       Caption = 'TsImage'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object PnImageSettings: TPanel
         Left = 0
         Top = 0

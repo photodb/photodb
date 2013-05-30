@@ -60,6 +60,7 @@ uses
   uBitmapUtils,
   uGUIDUtils,
   uCDMappingTypes,
+  uIDBForm,
   uDBForm,
   uThreadForm,
   uLogger,
@@ -1201,10 +1202,10 @@ begin
   PA := TPersonArea(RI.Data);
 
   ImFacePopup.Clear;
-  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_DELETE_INFO + 1]);
-  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_PEOPLE + 1]);
-  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_SEARCH + 1]);
-  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_EDIT_PROFILE + 1]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_DELETE_INFO]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_PEOPLE]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_SEARCH]);
+  ImageList_AddIcon(ImFacePopup.Handle, Icons[DB_IC_EDIT_PROFILE]);
 
   MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
   MiCurrentPersonAvatar.Visible := MiCurrentPerson.Visible;
