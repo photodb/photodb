@@ -93,7 +93,12 @@ begin
   CreateObjectsTable(CollectionFile);
   CreateObjectMappingTable(CollectionFile);
 
-  UpdateCollection(CollectionFile, 0, False);
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      UpdateCollection(CollectionFile, 0, False);
+    end
+  );
 end;
 
 type

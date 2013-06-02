@@ -457,7 +457,6 @@ begin
   begin
     PcMain.Pages[0].TabVisible := False;
     PcMain.Pages[1].TabVisible := False;
-    PcMain.Pages[7].TabVisible := False;
     PcMain.ActivePageIndex := 2;
   end;
 

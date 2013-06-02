@@ -335,7 +335,7 @@ type
     property Height: Integer read FHeight;
     property FullWidth: Integer read FFullWidth;
     property FullHeight: Integer read FFullHeight;
-    property ImageID: Integer read FImageID;
+    property ImageID: Integer read FImageID write FImageID;
     property PersonID: Integer read FPersonID write FPersonID;
     property Page: Integer read FPage;
   end;

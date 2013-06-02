@@ -17,7 +17,6 @@ uses
   VirtualTrees,
   Vcl.Themes,
   Vcl.ImgList,
-  uMemory,
 
   Dmitry.Graphics.Types,
   Dmitry.PathProviders,
@@ -26,11 +25,13 @@ uses
 
   UnitBitmapImageList,
 
+  uMemory,
   uThreadForm,
   uGOM,
   uThreadTask,
   uMachMask,
   uConstants,
+  uGUIDUtils,
   {$IFDEF PHOTODB}
   uThemesUtils,
   uExplorerDateStackProviders,
@@ -62,6 +63,7 @@ type
     FBlockMouseMove: Boolean;
     FPopupItem: TPathItem;
     FOnlyFileSystem: Boolean;
+    FState: TGUID;
     procedure LoadBitmaps;
     procedure StartControl;
     procedure InternalSelectNode(Node: PVirtualNode);
@@ -303,6 +305,7 @@ constructor TPathProvideTreeView.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+  FState := GetGUID;
   FOnlyFileSystem := False;
   FPopupItem := nil;
   FOnSelectPathItem := nil;
@@ -387,6 +390,7 @@ type
   TLoadChildsInfo = class
     Node: PVirtualNode;
     Data: PData;
+    State: TGUID;
   end;
 
 procedure TPathProvideTreeView.DoFreeNode(Node: PVirtualNode);
@@ -710,8 +714,8 @@ begin
     Exit;
 
   FForm := Form;
-  TThreadTask.Create(FForm, Pointer(nil),
-    procedure(Thread: TThreadTask; Data: Pointer)
+  TThreadTask<TGUID>.Create(FForm, FState, False,
+    procedure(Thread: TThreadTask<TGUID>; Data: TGUID)
     var
       Home: THomeItem;
       Roots: TPathItemCollection;
@@ -735,7 +739,7 @@ begin
                   var
                     I: Integer;
                   begin
-                    if GOM.IsObj(Thread.ThreadForm) then
+                    if GOM.IsObj(Thread.ThreadForm) and (Data = FState) then
                     begin
                       for I := 0 to CurrentItems.Count - 1 do
                         FHomeItems.Add(CurrentItems[I]);
@@ -782,6 +786,7 @@ end;
 
 procedure TPathProvideTreeView.Reload;
 begin
+  FState := GetGUID;
   FIsStarted := False;
   FIsInitialized := False;
   Clear;
@@ -800,6 +805,7 @@ begin
   AInfo := TLoadChildsInfo.Create;
   AInfo.Node := Node;
   AInfo.Data := GetNodeData(Node);
+  AInfo.State := FState;
   Cursor := crAppStart;
 
   TThreadTask.Create(FForm, AInfo,
@@ -838,7 +844,7 @@ begin
                       SearchPath: string;
                       NodeData: PData;
                     begin
-                      if GOM.IsObj(Thread.ThreadForm) then
+                      if GOM.IsObj(Thread.ThreadForm) and (Info.State = FState) then
                       begin
                         SearchPath := '';
                         if Info.Node.ChildCount > 0 then

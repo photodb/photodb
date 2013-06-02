@@ -122,8 +122,8 @@
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Build>666</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.666;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+        <VerInfo_Build>668</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.668;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>

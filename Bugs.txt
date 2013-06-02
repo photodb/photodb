@@ -22,10 +22,9 @@ Features ready:
 - png watermarks;
 - Fast Share with link;
 - Person image - use current image option;
+- Portable persons;
 
 Bugs:
-- Sycn deadlock!!!;
-- Portable persons;
 - Persons to EXIF (using XML string);
 
 Minor:

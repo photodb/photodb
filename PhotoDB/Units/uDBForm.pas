@@ -395,6 +395,9 @@ end;
 constructor TDBForm.Create(AOwner: TComponent);
 begin
   inherited;
+  if GetCurrentThreadId <> MainThreadID then
+    raise Exception.Create('Can''t create form from non-main thread!');
+
   FRefCount := 0;
   FWindowID := GUIDToString(GetGUID);
   TFormCollection.Instance.RegisterForm(Self);

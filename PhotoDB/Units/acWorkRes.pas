@@ -216,10 +216,6 @@ var
 
 function GetImageNtHeaders(module: dword) : PImageNtHeaders;
 
-function IntToHexEx(value    : integer;
-                    minLen   : integer = 1;
-                    fillChar : char    = '0') : string; overload;
-
 // same as SysUtils.CompareStr, but supports ['ä', 'é', ...]
 //function CompareStr(const s1, s2: string) : integer; assembler;
 
@@ -477,7 +473,7 @@ begin
   if GetTempPath(MAX_PATH, arrCh) > 0 then
        result := string(arrCh) + '\'
   else result := '';
-  result := result + '$mad$res' + IntToHexEx(GetCurrentProcessID, 8) + IntToHexEx(dword(res)) + '$';
+  result := result + '$pdb.tmp' + IntToHex(GetCurrentProcessID, 8) + IntToHex(dword(res), 8) + '$';
 end;
 
 // totally free the pointer tree
@@ -720,6 +716,7 @@ begin
   nh^.OptionalHeader.CheckSum := c1 + size;
 end;
 
+{$OVERFLOWCHECKS OFF}
 function EndUpdateResourceW(update: dword; discard: bool) : bool; stdcall;
 var rh             : TPResourceHandle absolute update;
     ash            : ^TAImageSectionHeader;
@@ -815,6 +812,7 @@ begin
       Dispose(rh);
     except result := false end;
 end;
+{$OVERFLOWCHECKS ON}
 
 {$R-}
 function UpdateResourceW(update: dword; type_, name: PWideChar; language: word; data: pointer; size: dword) : bool; stdcall;
@@ -1397,69 +1395,6 @@ begin
         result := nil;
     end;
   except result := nil end;
-end;
-/////////////////////////// madStrings //////////////////////////////
-
-const
-  maxCard        = high(cardinal);
-
-function RetDelete(const str : string;
-                   index     : cardinal;
-                   count     : cardinal = maxCard) : string;
-begin
-  result := str;
-  Delete(result, index, count);
-end;
-
-procedure _FillStr(var str: string; fillLen: integer; addLeft: boolean; fillChar: Char);
-var s1 : string;
-I: Integer;
-begin
-  if fillLen > 0 then begin
-    SetLength(s1, fillLen);
-    for I := 1 to fillLen do
-      s1[I] := fillChar;
-    if addLeft then begin
-      if CharInSet(fillChar, ['0'..'9']) and (str <> '') and (str[1] = '-') then
-           str := '-' + s1 + RetDelete(str, 1, 1)
-      else str := s1 + str;
-    end else str := str + s1;
-  end;
-end;
-
-function IntToHex(value: integer) : string; overload;
-var c1, c2, c3 : cardinal;
-begin
-  if value <> 0 then begin
-    c3 := cardinal(value);
-    SetLength(result, 8);
-    c1 := 8;
-    repeat
-      c2 := c3 mod $10;
-      c3 := c3 div $10;
-      if c2 > 9 then result[c1] := chr(ord('a') + c2 - $A)
-      else           result[c1] := chr(ord('0') + c2 -  0);
-      dec(c1);
-    until c3 = 0;
-    if c1 > 0 then begin
-      Move(result[c1 + 1], result[1], 8 - c1);
-      SetLength(result, 8 - c1);
-    end;
-  end else result := '0';
-end;
-
-function IntToHexEx(value    : integer;
-                    minLen   : integer = 1;
-                    fillChar : char = '0') : string; overload;
-begin
-  result := IntToHex(value);
-  if (minLen < 0) or CharInSet(fillChar, ['0'..'9','A'..'F','a'..'f']) then begin
-    _FillStr(result, abs(minLen) - Length(result), minLen > 0, fillChar);
-    result := '$' + result;
-  end else begin
-    result := '$' + result;
-    _FillStr(result, abs(minLen) - Length(result) + 1, true, fillChar);
-  end;
 end;
 
 end.

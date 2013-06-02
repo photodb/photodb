@@ -12,6 +12,7 @@ uses
 
   UnitDBDeclare,
 
+  uRuntime,
   uMemory,
   u2DUtils,
   uSettings;
@@ -710,7 +711,7 @@ end;
 
 function TFaceDetectionManager.GetIsActive: Boolean;
 begin
-  Result := (FCVDLLHandle <> 0) and AppSettings.Readbool('Options', 'ViewerFaceDetection', True);
+  Result := ((FCVDLLHandle <> 0) or FolderView) and AppSettings.Readbool('Options', 'ViewerFaceDetection', True);
 end;
 
 { TFaceDetectionResultItem }

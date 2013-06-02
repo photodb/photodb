@@ -841,6 +841,7 @@ type
     procedure BtnAnyColorClick(Sender: TObject);
     procedure TmrStartDatabasesTimer(Sender: TObject);
     procedure PnTopMenuResize(Sender: TObject);
+    procedure MiImportImagesClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -1540,6 +1541,8 @@ begin
   TbSearch.Down := AppSettings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
   TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
 
+  TbImport.Visible := not FolderView;
+
   if AppSettings.ReadBool('Explorer', 'RightPanelVisible', True) then
     ShowRightPanel(ertsPreview)
   else
@@ -1787,7 +1790,7 @@ begin
     Properties1.Visible := True;
     Open1.Visible := True;
     SlideShow1.Visible := True;
-    MiImportImages.Visible := True;
+    MiImportImages.Visible := not FolderView;
 
     Shell1.Visible := True;
   end;
@@ -1897,7 +1900,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE then
   begin
-    MiImportImages.Visible := True;
+    MiImportImages.Visible := not FolderView;
     NewWindow1.Visible := True;
     Open1.Visible := True;
     Properties1.Visible := True;
@@ -1905,7 +1908,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_STORAGE then
   begin
-    MiImportImages.Visible := True;
+    MiImportImages.Visible := not FolderView;
     NewWindow1.Visible := True;
     Open1.Visible := True;
     Properties1.Visible := True;
@@ -1913,7 +1916,7 @@ begin
 
   if Info.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY then
   begin
-    MiImportImages.Visible := True;
+    MiImportImages.Visible := not FolderView;
     NewWindow1.Visible := True;
     Open1.Visible := True;
     Properties1.Visible := True;
@@ -5848,6 +5851,18 @@ begin
   DoHomePage;
 end;
 
+procedure TExplorerForm.MiImportImagesClick(Sender: TObject);
+var
+  I, Index: Integer;
+begin
+  for I := 0 to ElvMain.Items.Count - 1 do
+    if ElvMain.Items[I].Selected then
+    begin
+      Index := ItemIndexToMenuIndex(I);
+      ImportForm.FromFolder(FFilesInfo[Index].FileName)
+    end;
+end;
+
 procedure TExplorerForm.MiInfoGroupFindClick(Sender: TObject);
 var
   WL: TWebLink;
@@ -5960,6 +5975,8 @@ begin
     Paste1.Visible := False;
 
   Paste1.Visible := CanCopyFromClipboard;
+
+
 end;
 
 procedure TExplorerForm.PmListViewTypePopup(Sender: TObject);
@@ -7261,14 +7278,18 @@ end;
 procedure TExplorerForm.TmrStartDatabasesTimer(Sender: TObject);
 begin
   TmrStartDatabases.Enabled := False;
-  FDatabaseInfo := TDatabaseInfoControl.Create(Self);
-  FDatabaseInfo.Parent := PnTopMenu;
-  ToolBarMain.Align := alNone;
-  ToolBarMain.Width := ToolBarMain.Width - 1;
-  FDatabaseInfo.Align := alRight;
-  FDatabaseInfo.LoadControl(FActiveDatabase);
-  FDatabaseInfo.OnSelectClick := TbDatabaseClick;
-  PnTopMenuResize(Sender);
+
+  if not FolderView then
+  begin
+    FDatabaseInfo := TDatabaseInfoControl.Create(Self);
+    FDatabaseInfo.Parent := PnTopMenu;
+    ToolBarMain.Align := alNone;
+    ToolBarMain.Width := ToolBarMain.Width - 1;
+    FDatabaseInfo.Align := alRight;
+    FDatabaseInfo.LoadControl(FActiveDatabase);
+    FDatabaseInfo.OnSelectClick := TbDatabaseClick;
+    PnTopMenuResize(Sender);
+  end;
 end;
 
 procedure TExplorerForm.ShowHelp(Text, Link: string);

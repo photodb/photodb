@@ -3,13 +3,14 @@ unit UnitSaveQueryThread;
 interface
 
 uses
-  Windows,
-  SysUtils,
-  Classes,
-  DB,
-  ActiveX,
-  Graphics,
-  Forms,
+  Generics.Collections,
+  Winapi.Windows,
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Forms,
+  Data.DB,
 
   Dmitry.CRC32,
   Dmitry.Utils.Files,
@@ -61,7 +62,7 @@ type
     Procedure Done;
     procedure LoadCustomDBName;
     procedure ReplaceIconAction;  
-    procedure SaveLocation(Src, Dest: TDataSet);
+    procedure SaveLocation(Src, Dest: TDataSet; MediaIds: TDictionary<Integer, Integer>);
   public
     { Public declarations }
     constructor Create(DBContext: IDBContext; DestinationPath : String; OwnerForm: TThreadForm;
@@ -136,7 +137,7 @@ begin
   OpenDS(Query);
 end;
 
-procedure TSaveQueryThread.SaveLocation(Src, Dest: TDataSet);
+procedure TSaveQueryThread.SaveLocation(Src, Dest: TDataSet; MediaIds: TDictionary<Integer, Integer>);
 begin
   if not Src.Eof then
   begin
@@ -148,6 +149,8 @@ begin
       Dest.Append;
       CopyRecordsW(Src, Dest, True, False, DBFolder, FGroupsFound);
       Dest.Post;
+      MediaIds.Add(Src.FieldByName('ID').AsInteger, Dest.FieldByName('ID').AsInteger);
+
       SetProgress(Src.RecNo);
       Src.Next;
     until Src.Eof;
@@ -165,9 +168,17 @@ var
   Destination: IDBContext;
   SettingsRSrc, SettingsRDest: ISettingsRepository;
   GroupsSrc, GroupsDest: IGroupsRepository;
+
+  PeopleSrc, PeopleDest: IPeopleRepository;
+  MediaIds, PeopleIds: TDictionary<Integer, Integer>;
+  MediaPair: TPair<Integer, Integer>;
+  PersonAreas: TPersonAreaCollection;
+  Person: TPerson;
 begin
   inherited;
   FreeOnTerminate := True;
+  MediaIds := TDictionary<Integer, Integer>.Create;
+  PeopleIds := TDictionary<Integer, Integer>.Create;
   try
     try
       CoInitializeEx(nil, COM_MODE);
@@ -199,6 +210,9 @@ begin
         GroupsSrc := FDBContext.Groups;
         GroupsDest := Destination.Groups;
 
+        PeopleSrc := FDBContext.People;
+        PeopleDest := Destination.People;
+
         FTable := GetTable(FDBFileName, DB_TABLE_IMAGES);
         try
           OpenDS(FTable);
@@ -212,14 +226,11 @@ begin
               FQuery := FDBContext.CreateQuery;
               try
                 LoadLocation(FQuery, FFileList[I], FSubFolders);
-                SaveLocation(FQuery, FTable);
+                SaveLocation(FQuery, FTable, MediaIds);
               finally
                 FreeDS(FQuery);
               end;
             end;
-
-            //statistics
-            ProgramStatistics.PortableUsed;
 
             SetMaxValue(FGroupsFound.Count);
             FRegGroups := GroupsSrc.GetAll(True, True);
@@ -238,6 +249,34 @@ begin
               end;
             finally
               F(FRegGroups);
+            end;
+
+            for MediaPair in MediaIds do
+            begin
+              PersonAreas := PeopleSrc.GetAreasOnImage(MediaPair.Key);
+              try
+                for I := 0 to PersonAreas.Count - 1 do
+                begin
+                  PersonAreas[I].ImageID := MediaPair.Value;
+
+                  if not PeopleIds.ContainsKey(PersonAreas[I].PersonID) then
+                  begin
+                    Person := PeopleSrc.GetPerson(PersonAreas[I].PersonID);
+                    try
+                      PeopleIds.Add(PersonAreas[I].PersonID, PeopleDest.CreateNewPerson(Person));
+                    finally
+                      F(Person);
+                    end;
+                  end;
+
+                  PersonAreas[I].PersonID := PeopleIds[PersonAreas[I].PersonID];
+
+                  PeopleDest.AddPersonForPhoto(nil, PersonAreas[I]);
+                end;
+
+              finally
+                F(PersonAreas);
+              end;
             end;
           finally
             F(FGroupsFound);
@@ -274,10 +313,14 @@ begin
           F(NewIcon);
         end;
 
+        //statistics
+        ProgramStatistics.PortableUsed;
       finally
         CoUninitialize;
       end;
     finally
+      F(MediaIds);
+      F(PeopleIds);
       SynchronizeEx(Done);
     end;
   except
