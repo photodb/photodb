@@ -172,7 +172,7 @@ begin
   CbLinkType.Items.Add(L(LINK_TEXT_TYPE_TXT));
   CbLinkType.Items.Add(L(LINK_TEXT_TYPE_HTML));
 
-  for I := LINK_TYPE_ID to LINK_TYPE_TXT do
+  for I := LINK_TYPE_ID to LINK_TYPE_HREF do
     CbLinkType.ItemsEx[I].ImageIndex := I;
   CbLinkType.ItemIndex := 0;
 end;

@@ -116,7 +116,7 @@
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <Debugger_RunParams>/x</Debugger_RunParams>
+        <Debugger_RunParams>&quot;D:\Dmitry\My Pictures\Animated GIF\5149773fbb5a.gif&quot;</Debugger_RunParams>
         <DCC_Optimize>false</DCC_Optimize>
         <VerInfo_MinorVer>5</VerInfo_MinorVer>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>

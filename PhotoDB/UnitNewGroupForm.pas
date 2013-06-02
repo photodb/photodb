@@ -303,7 +303,7 @@ end;
 procedure TNewGroupForm.MiUseCurrentImageClick(Sender: TObject);
 var
   FileName: string;
-  Editor: TImageEditorForm;
+  Editor: IImageEditor;
   Bitmap: TBitmap;
   FJPG: TJpegImage;
 begin
@@ -333,7 +333,7 @@ begin
         F(Bitmap);
       end;
     finally
-      R(Editor);
+      Editor := nil;
     end;
   end;
 end;

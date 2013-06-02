@@ -68,6 +68,12 @@ type
     property Images[Index: Integer]: TMediaItem read GetImageByIndex;
   end;
 
+  IImageEditor = interface(IFormInterface)
+    ['{0C5858BC-AF84-4941-AE8A-B0DF594DA7BF}']
+    function EditFile(Image: string; BitmapOut: TBitmap): Boolean;
+    procedure Close;
+  end;
+
   IAboutForm = interface(IFormInterface)
     ['{319D1068-3734-4229-9264-8922123F31C0}']
     procedure Execute;

@@ -729,7 +729,7 @@ end;
 procedure TFormCreatePerson.MiUseCurrentImageClick(Sender: TObject);
 var
   FileName: string;
-  Editor: TImageEditor;
+  Editor: IImageEditor;
   Bitmap: TBitmap;
 begin
   FileName := Screen.CurrentImageFileName;
@@ -753,7 +753,7 @@ begin
         F(Bitmap);
       end;
     finally
-      R(Editor);
+      Editor := nil;
     end;
   end;
 end;

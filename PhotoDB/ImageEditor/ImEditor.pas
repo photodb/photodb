@@ -101,7 +101,7 @@ type
   TWindowEnableStates = array of TWindowEnableState;
 
 type
-  TImageEditor = class(TImageEditorForm, ICurrentImageSource)
+  TImageEditor = class(TImageEditorForm, ICurrentImageSource, IImageEditor)
     ToolsPanel: TPanel;
     ButtomPanel: TPanel;
     ScrollBarH: TScrollBar;
@@ -1024,6 +1024,8 @@ begin
 
   if not FIsEditImage then
     DestroyTimer.Enabled := True;
+
+  DropFileTarget1.Unregister;
 end;
 
 procedure TImageEditor.FormMouseDown(Sender: TObject; Button: TMouseButton;

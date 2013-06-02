@@ -735,6 +735,8 @@ begin
 
       InTable.FieldByName('FFileName').AsString := FileName;
       InTable.FieldByName('FolderCRC').AsInteger := GetPathCRC(FileName, True);
+
+      InTable.FieldByName('StrThCrc').AsInteger := Integer(StringCRC(InTable.FieldByName('StrTh').AsString));
     end;
 
     InTable.FieldByName('Thum').AsVariant := OutTable.FieldByName('Thum').AsVariant;

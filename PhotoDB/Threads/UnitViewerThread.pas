@@ -13,6 +13,7 @@ uses
   pngimage,
   Data.DB,
 
+  Dmitry.Utils.System,
   Dmitry.Utils.Files,
 
   GIFImage,
@@ -62,15 +63,17 @@ type
     FPage: Word;
     FPages: Word;
     TransparentColor: TColor;
+    FErrorMessage: string;
     procedure OnLoadImageProgress(ProgressState: TLoadImageProgressState; BytesTotal, BytesComplete: Int64; var Break: Boolean);
   protected
+    function GetThreadID: string; override;
     procedure Execute; override;
     procedure GetPassword;
     procedure GetPasswordSynch;
-    procedure SetNOImage;
     procedure SetAnimatedImage;
     procedure SetStaticImage;
-    procedure SetNOImageAsynch;
+    procedure SetNOImage;
+    procedure SetNOImageAsynch(ErrorMessage: string);
     procedure SetStaticImageAsynch;
     procedure SetAnimatedImageAsynch;
     procedure UpdateRecord;
@@ -130,14 +133,14 @@ begin
   try
     if not IsDevicePath(FInfo.FileName) and not FileExistsEx(FInfo.FileName) then
     begin
-      SetNOImageAsynch;
+      SetNOImageAsynch(FormatEx(L('File %s not found!'), [FInfo.FileName]));
       Exit;
     end;
 
     GetPassword;
     if FIsEncrypted and (PassWord = '') then
     begin
-      SetNOImageAsynch;
+      SetNOImageAsynch(FormatEx(L('File %s is encrypted'), [FInfo.FileName]));
       Exit;
     end;
 
@@ -152,7 +155,7 @@ begin
       try
         if not LoadImageFromPath(FInfo, FPage, Password, LoadFlags, ImageInfo, Screen.Width, Screen.Height, OnLoadImageProgress) then
         begin
-          SetNOImageAsynch;
+          SetNOImageAsynch(FormatEx(L('Can''t display file ({0})'), [FInfo.FileName]));
           Exit;
         end;
 
@@ -163,7 +166,7 @@ begin
         on e: Exception do
         begin
           EventLog(e);
-          SetNOImageAsynch;
+          SetNOImageAsynch(e.Message);
           Exit;
         end;
       end;
@@ -225,8 +228,11 @@ begin
             end;
             Bitmap.PixelFormat := pf24bit;
           except
-            SetNOImageAsynch;
-            Exit;
+            on e: Exception do
+            begin
+              SetNOImageAsynch(e.Message);
+              Exit;
+            end;
           end;
 
           if not ViewerManager.ValidateState(FSID) then Exit;
@@ -315,6 +321,11 @@ begin
     PassWord := RequestPasswordForm.ForImage(FInfo.FileName);
 end;
 
+function TViewerThread.GetThreadID: string;
+begin
+  Result := 'Viewer';
+end;
+
 procedure TViewerThread.OnLoadImageProgress(
   ProgressState: TLoadImageProgressState; BytesTotal, BytesComplete: Int64;
   var Break: Boolean);
@@ -382,12 +393,13 @@ begin
       ViewerForm.Item.Rotation := DB_IMAGE_ROTATE_0;
       ViewerForm.ImageExists := False;
       ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
-      ViewerForm.LoadingFailed(FInfo.FileName);
+      ViewerForm.LoadingFailed(FInfo.FileName, FErrorMessage);
     end;
 end;
 
-procedure TViewerThread.SetNOImageAsynch;
+procedure TViewerThread.SetNOImageAsynch(ErrorMessage: string);
 begin
+  FErrorMessage := ErrorMessage;
   if not FIsForward then
   begin
     SynchronizeEx(SetNOImage);

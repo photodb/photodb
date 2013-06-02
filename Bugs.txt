@@ -24,6 +24,7 @@ Features ready:
 - Person image - use current image option;
 
 Bugs:
+- Sycn deadlock!!!;
 - Portable persons;
 - Persons to EXIF (using XML string);
 

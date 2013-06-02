@@ -161,6 +161,7 @@ end;
 
 procedure CloseProgress;
 begin
+  ShowWindow(Wnd, SW_HIDE);
   SendMessage(Wnd, WM_CLOSE, 0, 0);
 end;
 

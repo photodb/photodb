@@ -409,6 +409,7 @@ type
 
     DrawImage: TBitmap;
     FFullImage: TBitmap;
+    FErrorMessage: string;
     constructor Create(AOwner: TComponent); override;
 
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
@@ -424,7 +425,7 @@ type
     function GetSID : TGUID;
     procedure SetStaticImage(Image: TBitmap; Transparent: Boolean);
     procedure SetAnimatedImage(Image: TGraphic);
-    procedure LoadingFailed(FileName: string);
+    procedure LoadingFailed(FileName, ErrorMessage: string);
     procedure PrepareNextImage;
     procedure SetFullImageState(State: Boolean; BeginZoom: Extended; Pages, Page: Integer);
     procedure DoUpdateRecordWithDataSet(FileName: string; DS: TDataSet);
@@ -642,6 +643,7 @@ var
 begin
   Result := False;
   FIsImageLoading := True;
+  FErrorMessage := '';
   try
     NeedsUpdating := (not Item.InfoLoaded) and (Item.ID = 0);
 
@@ -738,6 +740,10 @@ var
     MessageText: string;
     TextRect, R: TRect;
   begin
+    //if there is some error from logic - display it instead of general error info
+    if FErrorMessage <> '' then
+      CustomError := FErrorMessage;
+
     if FileName <> '' then
     begin
       if CustomError = '' then
@@ -2267,6 +2273,7 @@ begin
   Zoom := 1;
   FIsWaiting := False;
   RealZoomInc := 1;
+  FErrorMessage := '';
 end;
 
 procedure TViewer.Createnote1Click(Sender: TObject);
@@ -3564,8 +3571,9 @@ begin
   FTransparentImage := Value;
 end;
 
-procedure TViewer.LoadingFailed(FileName: String);
+procedure TViewer.LoadingFailed(FileName, ErrorMessage: string);
 begin
+  FErrorMessage := ErrorMessage;
   Loading := False;
   FCurrentlyLoadedFile := FileName;
   Cursor := crDefault;

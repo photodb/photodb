@@ -8,6 +8,8 @@ uses
   System.StrUtils,
   System.Classes,
   Data.DB,
+  Data.Win.ADODB,
+  System.Variants,
 
   uMemory,
   uDBConnection,
@@ -17,6 +19,9 @@ type
   TImageTableAdapter = class(TObject)
   private
     FDS: TDataSet;
+    function FilterMemoText(Value: string): string;
+    procedure SetMemoText(FieldName, Value: string);
+
     function GetName: string;
     procedure SetName(const Value: string);
     function GetFileName: string;
@@ -98,6 +103,19 @@ implementation
 
 { TDBAdapter }
 
+function TImageTableAdapter.FilterMemoText(Value: string): string;
+begin
+  Result := Trim(Value);
+end;
+
+procedure TImageTableAdapter.SetMemoText(FieldName, Value: string);
+begin
+  if Value <> '' then
+    FDS.FieldByName(FieldName).AsString := Value
+  else
+    FDS.FieldByName(FieldName).AsString := ' ';
+end;
+
 constructor TImageTableAdapter.Create(DS: TDataSet);
 begin
   FDS := DS;
@@ -120,7 +138,7 @@ end;
 
 function TImageTableAdapter.GetComment: string;
 begin
-  Result := FDS.FieldByName('Comment').AsString;
+  Result := FilterMemoText(FDS.FieldByName('Comment').AsString);
 end;
 
 function TImageTableAdapter.GetDate: TDate;
@@ -140,7 +158,7 @@ end;
 
 function TImageTableAdapter.GetGroups: string;
 begin
-  Result := FDS.FieldByName('Groups').AsString;
+  Result := FilterMemoText(FDS.FieldByName('Groups').AsString);
 end;
 
 function TImageTableAdapter.GetHeight: Integer;
@@ -170,12 +188,12 @@ end;
 
 function TImageTableAdapter.GetKeyWords: string;
 begin
-  Result := FDS.FieldByName('Keywords').AsString;
+  Result := FilterMemoText(FDS.FieldByName('Keywords').AsString);
 end;
 
 function TImageTableAdapter.GetLinks: string;
 begin
-  Result := FDS.FieldByName('Links').AsString;
+  Result := FilterMemoText(FDS.FieldByName('Links').AsString);
 end;
 
 function TImageTableAdapter.GetLongImageID: string;
@@ -251,12 +269,12 @@ end;
 
 procedure TImageTableAdapter.SetColors(const Value: string);
 begin
-  FDS.FieldByName('Colors').AsString := Value;
+  FDS.FieldByName('Colors').AsString := Value
 end;
 
 procedure TImageTableAdapter.SetComment(const Value: string);
 begin
-  FDS.FieldByName('Comment').AsString := Value;
+  SetMemoText('Comment', Value);
 end;
 
 procedure TImageTableAdapter.SetDate(const Value: TDate);
@@ -276,7 +294,7 @@ end;
 
 procedure TImageTableAdapter.SetGroups(const Value: string);
 begin
-  FDS.FieldByName('Groups').AsString := Value;
+  SetMemoText('Groups', Value);
 end;
 
 procedure TImageTableAdapter.SetHeight(const Value: Integer);
@@ -306,12 +324,12 @@ end;
 
 procedure TImageTableAdapter.SetKeyWords(const Value: string);
 begin
-  FDS.FieldByName('Keywords').AsString := Value;
+  SetMemoText('Keywords', Value);
 end;
 
 procedure TImageTableAdapter.SetLinks(const Value: string);
 begin
-  FDS.FieldByName('Links').AsString := Value;
+  SetMemoText('Links', Value);
 end;
 
 procedure TImageTableAdapter.SetLongImageID(const Value: string);
