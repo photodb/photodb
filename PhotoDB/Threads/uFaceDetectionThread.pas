@@ -511,8 +511,6 @@ begin
       SizeAttr := DocumentElement.attributes.getNamedItem('Size');
       DateModifiedAttr := DocumentElement.attributes.getNamedItem('DateModified');
 
-      if ImageWidthAttr <> nil then
-      if ImageHeightAttr <> nil then
       if PageAttr <> nil then
         Page := StrToIntDef(PageAttr.nodeValue, 0);
       if SizeAttr <> nil then

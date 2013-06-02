@@ -23,9 +23,11 @@ Features ready:
 - Fast Share with link;
 - Person image - use current image option;
 - Portable persons;
+- Persons to EXIF (using XML string);
 
 Bugs:
-- Persons to EXIF (using XML string);
+- Load groups and persons from exif;
+- Properties dblclick on unknown group;
 
 Minor:
 Forward capatibility (recheck);

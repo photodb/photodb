@@ -2740,7 +2740,7 @@ begin
                 if not NewPerson then
                   Continue;
 
-                P := FPeopleRepository.GetPerson(PA.PersonID);
+                P := FPeopleRepository.GetPerson(PA.PersonID, True);
                 if P <> nil then
                 begin
                   Persons.Add(P);
@@ -4977,7 +4977,7 @@ begin
         end;
       FILE_ACTION_MODIFIED:
         begin
-          if not UpdatingNow(PInfo[K].FNewFileName) then
+          if not UpdatingNow(PInfo[K].FNewFileName) and not TLockFiles.Instance.IsFileLocked(PInfo[K].FNewFileName) then
           begin
             AddUpdateID(PInfo[K].FNewFileName);
             RefreshItemByName(PInfo[K].FNewFileName, True);

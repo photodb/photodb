@@ -436,6 +436,7 @@ const
   EXIF_BASE_LINKS = 'photodb_links';
   EXIF_BASE_ACCESS = 'photodb_access';
   EXIF_BASE_INCLUDE = 'photodb_include';
+  EXIF_BASE_PEOPLE = 'photodb_people';
 
 const
   PSDTransparent = True;

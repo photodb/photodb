@@ -247,7 +247,7 @@ begin
       if FGroup.GroupName <> EdName.Text then
       begin
         RenameGroup(FDBContext, FGroup, EdName.Text);
-        MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+        CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_Refresh, EventID_Param_Critical, EventID_Param_Refresh_Window], EventInfo);
       end;
 
     GroupItem := TGroupItem.Create;

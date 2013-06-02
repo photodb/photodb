@@ -255,6 +255,8 @@ begin
             Info.Groups := Groups.ToString;
           finally
             F(InRegGroups);
+            F(Groups);
+            F(GExifGroups);
           end;
         end
       );

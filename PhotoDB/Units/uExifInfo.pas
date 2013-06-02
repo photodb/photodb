@@ -138,6 +138,7 @@ var
   I: Integer;
   ICCProfileMem: TMemoryStream;
   ICCProfile: string;
+  People: TPersonAreaCollection;
 
 const
   XMPBasicValues: array[TWindowsStarRating] of UnicodeString = ('', '1', '2', '3', '4', '5');
@@ -314,6 +315,25 @@ begin
           XInsert('Links', L('Links'), SL.Join(', '));
         finally
           F(SL);
+        end;
+      end;
+
+      if ExifData.XMPPacket.People <> '' then
+      begin
+        People := TPersonAreaCollection.CreateFromXml(ExifData.XMPPacket.People);
+        try
+          SL := TStringList.Create;
+          try
+            for I := 0 to People.Count - 1 do
+              if People[I].PersonName <> '' then
+                SL.Add(People[I].PersonName);
+
+            XInsert('People', L('People on photo'), SL.Join(', '));
+          finally
+            F(SL);
+          end;
+        finally
+          F(People);
         end;
       end;
 

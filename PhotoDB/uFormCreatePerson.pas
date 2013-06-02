@@ -366,7 +366,7 @@ begin
   if not FIsEditMode then
   begin
     EnableControls(False);
-    FPerson := FPeopleRepository.GetPerson(PersonID);
+    FPerson := FPeopleRepository.GetPerson(PersonID, True);
     MarkPersonOnPhoto;
   end else
   begin

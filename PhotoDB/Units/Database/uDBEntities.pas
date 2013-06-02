@@ -321,6 +321,8 @@ type
     FImageID: Integer;
     FPersonID: Integer;
     FPage: Integer;
+    FPersonUniqId: string;
+    FPersonName: string;
   public
     constructor Create; overload;
     constructor Create(ImageID, PersonID: Integer; Area: TFaceDetectionResultItem); overload;
@@ -329,15 +331,17 @@ type
     procedure RotateRight;
     function Clone: TClonableObject; override;
     property ID: Integer read FID write FID;
-    property X: Integer read FX;
-    property Y: Integer read FY;
-    property Width: Integer read FWidth;
-    property Height: Integer read FHeight;
-    property FullWidth: Integer read FFullWidth;
-    property FullHeight: Integer read FFullHeight;
+    property X: Integer read FX write FX;
+    property Y: Integer read FY write FY;
+    property Width: Integer read FWidth write FWidth;
+    property Height: Integer read FHeight write FHeight;
+    property FullWidth: Integer read FFullWidth write FFullWidth;
+    property FullHeight: Integer read FFullHeight write FFullHeight;
     property ImageID: Integer read FImageID write FImageID;
     property PersonID: Integer read FPersonID write FPersonID;
-    property Page: Integer read FPage;
+    property Page: Integer read FPage write FPage;
+    property PersonName: string read FPersonName write FPersonName;
+    property PersonUniqId: string read FPersonUniqId write FPersonUniqId;
   end;
 
   TPersonAreaCollection = class(TObject)
@@ -353,6 +357,7 @@ type
     function Extract(Index: Integer): TPersonArea;
     procedure RotateLeft;
     procedure RotateRight;
+    procedure Add(Item: TPersonArea);
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPersonArea read GetAreaByIndex; default;
   end;
@@ -1609,6 +1614,8 @@ begin
 end;
 
 procedure TPerson.ReadFromDS(DS: TDataSet);
+var
+  ImageField: TField;
 begin
   FID := DS.FieldByName('ObjectID').AsInteger;
   FName := Trim(DS.FieldByName('ObjectName').AsString);
@@ -1628,8 +1635,13 @@ begin
     FCount := DS.FieldByName('ObjectsCount').AsInteger;
 
   F(FImage);
-  FImage := TJpegImage.Create;
-  FImage.Assign(DS.FieldByName('Image'));
+
+  ImageField := DS.FindField('Image');
+  if ImageField <> nil then
+  begin
+    FImage := TJpegImage.Create;
+    FImage.Assign(DS.FieldByName('Image'));
+  end;
   FEmpty := False;
 end;
 
@@ -1772,6 +1784,11 @@ begin
 end;
 
 { TPersonAreaCollection }
+
+procedure TPersonAreaCollection.Add(Item: TPersonArea);
+begin
+  FList.Add(Item);
+end;
 
 procedure TPersonAreaCollection.Clear;
 begin

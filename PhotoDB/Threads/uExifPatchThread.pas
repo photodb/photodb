@@ -9,14 +9,15 @@ uses
 
   Dmitry.Utils.Files,
 
+  uRuntime,
+  uConstants,
   uMemory,
   UnitDBDeclare,
   uDBThread,
   uExifUtils,
   uDBUtils,
   uDBContext,
-  uRuntime,
-  uConstants;
+  uLockedFileNotifications;
 
 type
   TExifPatchThread = class(TDBThread)
@@ -85,6 +86,7 @@ begin
           if not FileExistsSafe(FileName) then
             FileName := MediaRepository.GetFileNameById(Info.ID);
 
+          TLockFiles.Instance.AddLockedFile(FileName, 1000);
           UpdateFileExif(FileName, Info);
           F(Info);
         end;

@@ -153,8 +153,7 @@ begin
           L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING) then
         begin
           UnitGroupsTools.DeleteGroup(Context, Group);
-          MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING);
-          CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved], EventInfo);
+          CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupRemoved, EventID_Param_Refresh, EventID_Param_Critical, EventID_Param_Refresh_Window], EventInfo);
           Result := True;
           Exit;
         end;
@@ -305,17 +304,16 @@ begin
       if GroupsRepository.Update(Group) then
       begin
         RenameGroup(Context, Group, Options.NewName);
-        MessageBoxDB(Form.Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_INFORMATION);
+
+        EventInfo.FileName := Item.GroupName;
+        EventInfo.NewName := Options.NewName;
+
+        Item.GroupName := Options.NewName;
+        EventInfo.Data := Item;
+        CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged, EventID_Param_Refresh, EventID_Param_Critical, EventID_Param_Refresh_Window], EventInfo);
+
         Result := True;
       end;
-
-      EventInfo.FileName := Item.GroupName;
-      EventInfo.NewName := Options.NewName;
-
-      Item.GroupName := Options.NewName;
-      EventInfo.Data := Item;
-      CollectionEvents.DoIDEvent(Form, 0, [EventID_Param_GroupsChanged, EventID_GroupChanged], EventInfo);
-
     end;
   finally
     F(Group);

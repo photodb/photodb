@@ -225,6 +225,7 @@ begin
   F(FShowenRegGroups);
   F(FOldGroups);
   F(FSetGroups);
+  F(FGroups);
   CollectionEvents.UnRegisterChangesID(Self, ChangedDBDataGroups);
   FContext := nil;
 end;
@@ -749,11 +750,12 @@ end;
 procedure TEditGroupsForm.MoveToGroup1Click(Sender: TObject);
 var
   ToGroup: TGroup;
+  EventInfo: TEventValues;
 begin
   if SelectGroup(ToGroup) then
   begin
     MoveGroup(FContext, FSetGroups[PmGroup.Tag], ToGroup);
-    MessageBoxDB(Handle, L('Update the data in the windows to apply changes!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+    CollectionEvents.DoIDEvent(Self, 0, [EventID_Param_GroupsChanged, EventID_Param_Refresh, EventID_Param_Critical, EventID_Param_Refresh_Window], EventInfo);
   end;
 end;
 

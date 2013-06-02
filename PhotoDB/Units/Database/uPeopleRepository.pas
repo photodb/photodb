@@ -53,7 +53,7 @@ type
     procedure LoadTopPersons(CallBack: TPersonFoundCallBack);
     function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
     function FindPerson(PersonName: string; Person: TPerson): Boolean; overload;
-    function GetPerson(PersonID: Integer): TPerson;
+    function GetPerson(PersonID: Integer; LoadImage: Boolean): TPerson;
     function GetPersonByName(PersonName: string): TPerson;
     function RenamePerson(PersonName, NewName: string): Boolean;
     function CreateNewPerson(Person: TPerson): Integer;
@@ -141,6 +141,7 @@ var
   G: TGroup;
   Values: TEventValues;
   I: Integer;
+  EventFields: TEventFields;
 begin
   Result := False;
 
@@ -152,6 +153,8 @@ begin
     FindPerson(PersonArea.PersonID, P);
     if P.Empty then
       Exit;
+
+    EventFields := [EventID_Param_Person];
 
     IC := FDBContext.CreateInsert(ObjectMappingTableName);
     try
@@ -202,8 +205,7 @@ begin
 
                 Values.Groups := Groups;
                 Values.Keywords := Keywords;
-                CollectionEvents.DoIDEvent(Sender, PersonArea.ImageID, [EventID_Param_Groups, EventID_Param_KeyWords], Values);
-
+                EventFields := EventFields + [EventID_Param_Groups, EventID_Param_KeyWords];
               finally
                 F(UC);
               end;
@@ -213,6 +215,8 @@ begin
             F(SC);
           end;
         end;
+
+        CollectionEvents.DoIDEvent(Sender, PersonArea.ImageID, EventFields, Values);
 
         MarkLatestPerson(PersonArea.PersonID);
         Result := True;
@@ -235,6 +239,7 @@ function TPeopleRepository.ChangePerson(PersonArea: TPersonArea;
   ToPersonID: Integer): Boolean;
 var
   UC: TUpdateCommand;
+  Values: TEventValues;
 begin
   Result := False;
 
@@ -251,6 +256,7 @@ begin
 
       MarkLatestPerson(ToPersonID);
 
+      CollectionEvents.DoIDEvent(nil, PersonArea.ImageID, [EventID_Param_Person], Values);
       Result := True;
     except
       on E: Exception do
@@ -447,14 +453,33 @@ begin
   end;
 end;
 
-function TPeopleRepository.GetPerson(PersonID: Integer): TPerson;
+function TPeopleRepository.GetPerson(PersonID: Integer; LoadImage: Boolean): TPerson;
 var
   SC: TSelectCommand;
 begin
   Result := TPerson.Create;
   SC := FDBContext.CreateSelect(ObjectTableName);
   try
-    SC.AddParameter(TAllParameter.Create);
+    if LoadImage then
+      SC.AddParameter(TAllParameter.Create)
+    else
+    begin
+      SC.AddParameter(TIntegerParameter.Create('ObjectID'));
+      SC.AddParameter(TStringParameter.Create('ObjectName'));
+      SC.AddParameter(TStringParameter.Create('RelatedGroups'));
+      SC.AddParameter(TDateTimeParameter.Create('BirthDate'));
+      SC.AddParameter(TStringParameter.Create('Phone'));
+      SC.AddParameter(TStringParameter.Create('Address'));
+      SC.AddParameter(TStringParameter.Create('Company'));
+      SC.AddParameter(TStringParameter.Create('JobTitle'));
+      SC.AddParameter(TStringParameter.Create('IMNumber'));
+      SC.AddParameter(TStringParameter.Create('Email'));
+      SC.AddParameter(TIntegerParameter.Create('Sex'));
+      SC.AddParameter(TStringParameter.Create('ObjectComment'));
+      SC.AddParameter(TDateTimeParameter.Create('CreateDate'));
+      SC.AddParameter(TStringParameter.Create('ObjectUniqID'));
+    end;
+
     SC.AddWhereParameter(TIntegerParameter.Create('ObjectID', PersonID));
     SC.AddWhereParameter(TIntegerParameter.Create('ObjectType', PERSON_TYPE));
     try
@@ -649,6 +674,7 @@ end;
 function TPeopleRepository.RemovePersonFromPhoto(ImageID: Integer; PersonArea: TPersonArea): Boolean;
 var
   DC: TDeleteCommand;
+  Values: TEventValues;
 begin
   Result := False;
 
@@ -663,6 +689,7 @@ begin
     try
       DC.Execute;
 
+      CollectionEvents.DoIDEvent(nil, PersonArea.ImageID, [EventID_Param_Person], Values);
       Result := True;
     except
       Exit;

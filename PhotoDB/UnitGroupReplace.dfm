@@ -4,7 +4,7 @@ object FormGroupReplace: TFormGroupReplace
   BorderStyle = bsToolWindow
   Caption = 'Group Replace'
   ClientHeight = 267
-  ClientWidth = 288
+  ClientWidth = 306
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,16 +21,20 @@ object FormGroupReplace: TFormGroupReplace
   object ActionPanel: TPanel
     Left = 0
     Top = 145
-    Width = 288
+    Width = 306
     Height = 96
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
+    DesignSize = (
+      306
+      96)
     object CbExistedGroups: TComboBox
-      Left = 180
+      Left = 198
       Top = 32
       Width = 100
       Height = 21
+      Anchors = [akTop, akRight]
       Enabled = False
       ParentColor = True
       PopupMenu = PmDummy
@@ -41,8 +45,9 @@ object FormGroupReplace: TFormGroupReplace
     object RbMergeWith: TRadioButton
       Left = 8
       Top = 35
-      Width = 166
+      Width = 184
       Height = 17
+      Anchors = [akLeft, akTop, akRight]
       Caption = 'Import In Group'
       TabOrder = 1
       OnClick = RbMergeWithClick
@@ -50,8 +55,9 @@ object FormGroupReplace: TFormGroupReplace
     object RbAddWithAnotherName: TRadioButton
       Left = 8
       Top = 54
-      Width = 166
+      Width = 184
       Height = 25
+      Anchors = [akLeft, akTop, akRight]
       Caption = 'Add with another name'
       TabOrder = 3
       OnClick = RbAddWithAnotherNameClick
@@ -59,18 +65,20 @@ object FormGroupReplace: TFormGroupReplace
     object RbSkipGroup: TRadioButton
       Left = 8
       Top = 80
-      Width = 199
+      Width = 217
       Height = 17
+      Anchors = [akLeft, akTop, akRight]
       Caption = 'Do not add this group'
       TabOrder = 5
       OnClick = RbSkipGroupClick
     end
     object NewGroupNameBox: TWatermarkedEdit
       Tag = 1
-      Left = 180
+      Left = 198
       Top = 56
       Width = 100
       Height = 21
+      Anchors = [akTop, akRight]
       ReadOnly = True
       TabOrder = 4
       WatermarkText = 'Group'
@@ -90,12 +98,15 @@ object FormGroupReplace: TFormGroupReplace
   object OutGroupPanel: TPanel
     Left = 0
     Top = 89
-    Width = 288
+    Width = 306
     Height = 56
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    object Label1: TLabel
+    DesignSize = (
+      306
+      56)
+    object LbGroup: TLabel
       Left = 64
       Top = 4
       Width = 33
@@ -111,8 +122,9 @@ object FormGroupReplace: TFormGroupReplace
     object GroupNameBox: TEdit
       Left = 64
       Top = 17
-      Width = 216
+      Width = 234
       Height = 31
+      Anchors = [akLeft, akTop, akRight]
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -19
@@ -125,61 +137,21 @@ object FormGroupReplace: TFormGroupReplace
       Text = '<GroupName>'
     end
   end
-  object Panel2: TPanel
-    Left = 0
-    Top = 241
-    Width = 207
-    Height = 26
-    Align = alLeft
-    BevelOuter = bvNone
-    TabOrder = 2
-    Visible = False
-    DesignSize = (
-      207
-      26)
-    object CbReplaceImage: TCheckBox
-      Left = 8
-      Top = 8
-      Width = 200
-      Height = 17
-      Anchors = [akLeft, akTop, akRight]
-      Caption = 'Replace Image on new'
-      TabOrder = 0
-    end
-    object CbAllUnknownGroups: TCheckBox
-      Left = 8
-      Top = 24
-      Width = 200
-      Height = 17
-      Anchors = [akLeft, akTop, akRight]
-      Caption = 'This action for all unknown groups'
-      TabOrder = 1
-    end
-    object CbAllKnownGroups: TCheckBox
-      Left = 8
-      Top = 40
-      Width = 200
-      Height = 17
-      Anchors = [akLeft, akTop, akRight]
-      Caption = 'This action for all known groups'
-      TabOrder = 2
-    end
-  end
-  object Panel3: TPanel
+  object PnInfo: TPanel
     Left = 0
     Top = 0
-    Width = 288
+    Width = 306
     Height = 89
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
     DesignSize = (
-      288
+      306
       89)
     object WarningLabelText: TLabel
       Left = 80
       Top = 8
-      Width = 200
+      Width = 218
       Height = 81
       Anchors = [akLeft, akTop, akRight]
       AutoSize = False
@@ -426,12 +398,12 @@ object FormGroupReplace: TFormGroupReplace
     end
   end
   object BtnOk: TButton
-    Left = 213
-    Top = 241
+    Left = 231
+    Top = 242
     Width = 67
     Height = 21
     Caption = 'Ok'
-    TabOrder = 4
+    TabOrder = 3
     OnClick = BtnOkClick
   end
   object PmDummy: TPopupMenu

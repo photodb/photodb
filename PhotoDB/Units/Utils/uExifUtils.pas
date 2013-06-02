@@ -9,6 +9,7 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
   Vcl.Imaging.Jpeg,
+  Xml.Xmldom,
 
   Dmitry.Utils.System,
 
@@ -201,6 +202,8 @@ type
     function GetInclude: Boolean;
     procedure SetInclude(const Value: Boolean);
     function GetLens: string;
+    function GetPeople: string;
+    procedure SetPeople(const Value: string);
   published
     function ReadString(Name: string; NS: TXMPKnownNamespace = xsXMPBasic): string;
     procedure WriteString(Name, Value: string);
@@ -215,6 +218,7 @@ type
     property Access: Integer read GetAccess write SetAccess;
     property Include: Boolean read GetInclude write SetInclude;
     property Lens: string read GetLens;
+    property People: string read GetPeople write SetPeople;
   end;
 
   TExifDataHelper = class helper for TExifData
@@ -225,6 +229,12 @@ type
   end;
 
   TExifDataEx = class(TExifData);
+
+  TPersonAreaCollectionXmlHelper = class helper for TPersonAreaCollection
+  public
+    function ToXml(PeopleRepository: IPeopleRepository): string;
+    class function CreateFromXml(Xml: string): TPersonAreaCollection;
+  end;
 
 function ExifOrientationToRatation(Orientation: Integer): Integer;
 function GetExifRating(FileName: string): Integer; overload;
@@ -453,7 +463,7 @@ begin
       try
         ExifData.LoadFromFileEx(Info.FileName);
 
-        UpdateImageRecordFromExifData(Info, ExifData);
+        UpdateImageRecordFromExifData(Info, ExifData, IsDBValues, LoadGroups);
       finally
         F(ExifData);
       end;
@@ -593,8 +603,14 @@ var
   Changed: Boolean;
   OldMode: Cardinal;
   FD: Integer;
+  PeopleRepository: IPeopleRepository;
+  Peoples: TPersonAreaCollection;
+  PeopleXml: string;
 begin
   Result := False;
+
+  PeopleRepository := Info.Context.People;
+
   OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
     Changed := False;
@@ -681,6 +697,22 @@ begin
           begin
             ExifData.XMPPacket.Include := Info.Value.Include;
             Changed := True;
+          end;
+        end;
+
+        if [EventID_Param_Person] * Info.Params <> [] then
+        begin
+          Peoples := PeopleRepository.GetAreasOnImage(Info.ID);
+          try
+            PeopleXml := Peoples.ToXml(PeopleRepository);
+
+            if ExifData.XMPPacket.People <> PeopleXml then
+            begin
+              ExifData.XMPPacket.People := PeopleXml;
+              Changed := True;
+            end;
+          finally
+            F(Peoples);
           end;
         end;
 
@@ -976,6 +1008,11 @@ begin
   Result := ReadString(uConstants.EXIF_BASE_LINKS);
 end;
 
+function DBXMPPacket.GetPeople: string;
+begin
+  Result := ReadString(uConstants.EXIF_BASE_PEOPLE);
+end;
+
 function DBXMPPacket.ReadBool(Name: string; DefaultValue: Boolean): Boolean;
 begin
   try
@@ -1021,6 +1058,11 @@ end;
 procedure DBXMPPacket.SetLinks(const Value: string);
 begin
   WriteString(uConstants.EXIF_BASE_LINKS, Value);
+end;
+
+procedure DBXMPPacket.SetPeople(const Value: string);
+begin
+  WriteString(uConstants.EXIF_BASE_PEOPLE, Value);
 end;
 
 type
@@ -1183,4 +1225,163 @@ begin
   end;
 end;
 
+{ TPersonAreaCollectionXmlHelper }
+
+class function TPersonAreaCollectionXmlHelper.CreateFromXml(Xml: string): TPersonAreaCollection;
+var
+  I: Integer;
+  Doc: IDOMDocument;
+  DocumentElement: IDOMElement;
+  FacesList: IDOMNodeList;
+  FaceNode: IDOMNode;
+  XAttr, YAttr, WidthAttr, HeightAttr,
+  ImageWidthAttr, ImageHeightAttr, PageAttr, NameAttr, UniqIdAttr: IDOMNode;
+  PA: TPersonArea;
+  MS: TMemoryStream;
+  SW: TStreamWriter;
+begin
+  Result := TPersonAreaCollection.Create;
+
+  Doc := GetDOM.createDocument('', '', nil);
+  try
+    MS := TMemoryStream.Create;
+    try
+      SW := TStreamWriter.Create(MS);
+      try
+        SW.Write(Xml);
+        MS.Seek(0, soFromBeginning);
+        (Doc as IDOMPersist).loadFromStream(MS);
+      finally
+        F(SW);
+      end;
+    finally
+      F(MS);
+    end;
+
+    DocumentElement := Doc.documentElement;
+    if DocumentElement <> nil then
+    begin
+      FacesList := DocumentElement.childNodes;
+      if FacesList <> nil then
+      begin
+        for I := 0 to FacesList.length - 1 do
+        begin
+          FaceNode := FacesList.item[I];
+          if FaceNode.nodeName = 'person' then
+          begin
+            UniqIdAttr := FaceNode.attributes.getNamedItem('PersonId');
+            NameAttr := FaceNode.attributes.getNamedItem('PersonName');
+            XAttr := FaceNode.attributes.getNamedItem('X');
+            YAttr := FaceNode.attributes.getNamedItem('Y');
+            WidthAttr := FaceNode.attributes.getNamedItem('Width');
+            HeightAttr := FaceNode.attributes.getNamedItem('Height');
+            ImageWidthAttr := FaceNode.attributes.getNamedItem('ImageWidth');
+            ImageHeightAttr := FaceNode.attributes.getNamedItem('ImageHeight');
+            PageAttr := FaceNode.attributes.getNamedItem('Page');
+
+            if (XAttr <> nil) and (YAttr <> nil)
+              and (WidthAttr <> nil) and (HeightAttr <> nil)
+              and (ImageWidthAttr <> nil) and (ImageHeightAttr <> nil)
+              and (PageAttr <> nil)
+              then
+            begin
+              PA := TPersonArea.Create;
+              PA.X := StrToIntDef(XAttr.nodeValue, 0);
+              PA.Y := StrToIntDef(YAttr.nodeValue, 0);
+              PA.Width := StrToIntDef(WidthAttr.nodeValue, 0);
+              PA.Height := StrToIntDef(HeightAttr.nodeValue, 0);
+              PA.FullWidth := StrToIntDef(ImageWidthAttr.nodeValue, 0);
+              PA.FullHeight := StrToIntDef(ImageHeightAttr.nodeValue, 0);
+              PA.Page := StrToIntDef(PageAttr.nodeValue, 0);
+              PA.PersonName := NameAttr.nodeValue;
+              PA.PersonUniqId := UniqIdAttr.nodeValue;
+
+              Result.Add(PA);
+            end;
+          end;
+        end;
+      end;
+    end;
+  except
+    on e: Exception do
+     EventLog(e);
+  end;
+end;
+
+function TPersonAreaCollectionXmlHelper.ToXml(PeopleRepository: IPeopleRepository): string;
+var
+  I: Integer;
+  Doc: IDOMDocument;
+  DocumentElement: IDOMElement;
+  FaceNode: IDOMNode;
+  Person: TPerson;
+  MS: TMemoryStream;
+  SR: TStreamReader;
+
+  procedure AddProperty(Name: string; Value: string);
+  var
+    Attr: IDOMAttr;
+  begin
+    Attr := Doc.createAttribute(Name);
+    Attr.value := Value;
+    FaceNode.attributes.setNamedItem(Attr);
+  end;
+
+begin
+  Result := '';
+
+  if Count = 0 then
+    Exit;
+
+  Doc := GetDOM.createDocument('', '', nil);
+  try
+    DocumentElement := Doc.createElement('people');
+    Doc.documentElement := DocumentElement;
+
+    FaceNode := DocumentElement;
+    for I := 0 to Count - 1 do
+    begin
+      FaceNode := Doc.createElement('person');
+
+      Person := PeopleRepository.GetPerson(Self[I].PersonID, False);
+      try
+        if Person <> nil then
+        begin
+          AddProperty('X', IntToStr(Self[I].X));
+          AddProperty('Y', IntToStr(Self[I].Y));
+          AddProperty('Width', IntToStr(Self[I].Width));
+          AddProperty('Height', IntToStr(Self[I].Height));
+          AddProperty('ImageWidth', IntToStr(Self[I].FullWidth));
+          AddProperty('ImageHeight', IntToStr(Self[I].FullHeight));
+          AddProperty('Page', IntToStr(Self[I].Page));
+          AddProperty('PersonId', Person.UniqID);
+          AddProperty('PersonName', Person.Name);
+        end;
+
+      finally
+        F(Person);
+      end;
+
+      Doc.documentElement.appendChild(FaceNode);
+    end;
+
+    MS := TMemoryStream.Create;
+    try
+      (Doc as IDOMPersist).saveToStream(MS);
+      MS.Seek(0, soFromBeginning);
+
+      SR := TStreamReader.Create(MS);
+      try
+        Result := SR.ReadToEnd;
+      finally
+        F(SR);
+      end;
+    finally
+      F(MS);
+    end;
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
+end;
 end.

@@ -602,6 +602,7 @@
 	<translate name="Base search" value="Базовый поиск" />
 	<translate name="Private" value="Личная" />
 	<translate name="Links" value="Ссылки" />
+	<translate name="People on photo" value="Люди на фото" />
 	<translate name="No" value="Нет" />
 	<translate name="Yes" value="Да" />
 	<translate name="Latitude" value="Широта" />
@@ -619,7 +620,6 @@
 	<translate name="Select, please, necessary group" value="Выберите, пожалуйста, необходимую группу" />
   </scope>
   <scope name="ChangeGroup">
-	<translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах чтобы видеть изменения!" />
 	<translate name="Edit group" value="Редактировать группу" />
 	<translate name="Enter group name" value="Введите имя группы" />
 	<translate name="Group is private" value="Личная группа" />
@@ -851,7 +851,6 @@
 	<translate name="%dx%d pixels" value="%dx%d точек" />
   </scope>
   <scope name="EditGroupsList">
-	<translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
 	<translate name="Edit groups" value="Редактировать группы" />
 	<translate name="Create group" value="Создать группу" />
 	<translate name="Change group" value="Изменить группу" />
@@ -1378,6 +1377,7 @@
 	<translate name="Skip the following file masks (use &quot;;&quot; as separator)" value="Пропускать следующие маски файлов (используйте &quot;;&quot; как разделитель)"/>
 	<translate name="Please, select a folder" value="Пожалуйста, выберите папку"/>
 	<translate name="Add" value="Добавить"/>
+	<translate name="Remove" value="Удалить"/>
 	<translate name="Security" value="Безопасность"/>
 	<translate name="Global" value="Общие"/>
 	<translate name="Programs" value="Программы"/>
@@ -1606,10 +1606,8 @@
   <scope name="GroupsProvider">
 	<translate name="Do you really want to delete group &quot;%s&quot;?" value="Вы действительно хотите удалить группу &quot;%s&quot;?" />
 	<translate name="Scan collection and remove all pointers to group &quot;%s&quot;?" value="Сканировать коллекцию и удалить все указатели на группу &quot;%s&quot;?" />
-	<translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах для применения изменений!" />
 	<translate name="Group with this name already exists!" value="Группа с таким именем уже существует!" />
 	<translate name="Do you really want to change name of this group?" value="Вы действительно хотите изменить имя этой группы?" />
-	<translate name="Update the data in the windows to apply changes!" value="Обновите данные в окнах чтобы видеть изменения!" />
 	<translate name="Please delete only one group at time!" value="Удаление возможно только по одной группе!" />
   </scope>
   <scope name="PersonsProvider">

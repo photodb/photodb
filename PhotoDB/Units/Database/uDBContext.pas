@@ -66,7 +66,7 @@ type
     procedure LoadTopPersons(CallBack: TPersonFoundCallBack);
     function FindPerson(PersonID: Integer; Person: TPerson): Boolean; overload;
     function FindPerson(PersonName: string; Person: TPerson): Boolean; overload;
-    function GetPerson(PersonID: Integer): TPerson;
+    function GetPerson(PersonID: Integer; LoadImage: Boolean): TPerson;
     function GetPersonByName(PersonName: string): TPerson;
     function RenamePerson(PersonName, NewName: string): Boolean;
     function CreateNewPerson(Person: TPerson): Integer;

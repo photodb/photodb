@@ -261,7 +261,7 @@ begin
 
                   if not PeopleIds.ContainsKey(PersonAreas[I].PersonID) then
                   begin
-                    Person := PeopleSrc.GetPerson(PersonAreas[I].PersonID);
+                    Person := PeopleSrc.GetPerson(PersonAreas[I].PersonID, True);
                     try
                       PeopleIds.Add(PersonAreas[I].PersonID, PeopleDest.CreateNewPerson(Person));
                     finally

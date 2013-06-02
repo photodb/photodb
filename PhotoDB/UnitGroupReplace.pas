@@ -48,17 +48,13 @@ type
     RbSkipGroup: TRadioButton;
     OutGroupPanel: TPanel;
     GroupNameBox: TEdit;
-    Label1: TLabel;
+    LbGroup: TLabel;
     TmGroupImage: TImage;
-    Panel2: TPanel;
-    CbReplaceImage: TCheckBox;
-    Panel3: TPanel;
+    PnInfo: TPanel;
     WarningLabelText: TLabel;
     ImMain: TImage;
-    CbAllUnknownGroups: TCheckBox;
     BtnOk: TButton;
     NewGroupNameBox: TWatermarkedEdit;
-    CbAllKnownGroups: TCheckBox;
     RbAddGroup: TRadioButton;
     PmDummy: TPopupMenu;
     procedure RbAddWithAnotherNameClick(Sender: TObject);
@@ -78,11 +74,11 @@ type
     FDBContext: IDBContext;
     FGroupsRepository: IGroupsRepository;
     procedure LoadLanguage;
-    procedure SetText(GroupName : string);
+    procedure SetText(GroupName: string);
     procedure RecreateGroupsList;
   protected
     { Protected declarations }
-    function GetFormID : string; override;
+    function GetFormID: string; override;
   public
     { Public declarations }
     procedure ExecuteNoDBGroupsIn(DBContext: IDBContext; Group: TGroup; out Action: TGroupAction; Options: GroupReplaceOptions);
@@ -195,8 +191,6 @@ begin
     FAction.Action := GROUP_ACTION_NO_ADD;
   if RbAddGroup.Checked then
     FAction.Action := GROUP_ACTION_ADD;
-  FAction.ReplaceImageOnNew := CbReplaceImage.Checked;
-  FAction.ActionForAll := CbAllUnknownGroups.Checked;
   Close;
 end;
 
@@ -241,9 +235,7 @@ begin
   OutGroupPanel.Visible := False;
   FGroup := Group;
   GroupNameBox.Text := FGroup.GroupName;
-  CbReplaceImage.Enabled := False;
-  CbAllUnknownGroups.Enabled := False;
-  CbAllKnownGroups.Enabled := False;
+
   RbSkipGroup.Checked := True;
   if Options.AllowAdd then
   begin
@@ -306,9 +298,7 @@ begin
   TmGroupImage.Picture.Graphic := FGroup.GroupImage;
   GroupNameBox.Text := FGroup.GroupName;
   FAction.OutGroup := Group.Clone;
-  CbReplaceImage.Enabled := False;
-  CbAllUnknownGroups.Enabled := False;
-  CbAllKnownGroups.Enabled := False;
+
   SetText(Group.GroupName);
 
   if Options.MaxAuto then
@@ -331,7 +321,7 @@ begin
   try
     WarningLabelText.Caption := '';
     BtnOk.Caption := L('Ok');
-    Label1.Caption := L('Group') + ':';
+    LbGroup.Caption := L('Group') + ':';
     Caption := L('Replace group');
     RbAddGroup.Caption := L('Add group');
     RbMergeWith.Caption := L('Merge with');

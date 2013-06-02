@@ -49,7 +49,7 @@ object OptionsForm: TOptionsForm
     Top = 8
     Width = 574
     Height = 441
-    ActivePage = TsStyle
+    ActivePage = TsPrograms
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     OnChange = PcMainChange

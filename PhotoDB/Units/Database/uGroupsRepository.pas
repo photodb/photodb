@@ -56,8 +56,9 @@ begin
     IC.AddParameter(TStringParameter.Create('RelatedGroups', Group.RelatedGroups));   
     IC.AddParameter(TBooleanParameter.Create('IncludeInQuickList', Group.IncludeInQuickList)); 
     IC.AddParameter(TIntegerParameter.Create('GroupAccess', Group.GroupAccess));   
-  
-    IC.AddParameter(TJpegParameter.Create('GroupImage', Group.GroupImage));
+
+    if Group.GroupImage <> nil then
+      IC.AddParameter(TJpegParameter.Create('GroupImage', Group.GroupImage));
   
     Result := IC.Execute > 0;
   finally

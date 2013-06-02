@@ -18,10 +18,6 @@ type
     Action: Integer;
     OutGroup: TGroup;
     InGroup: TGroup;
-    ReplaceImageOnNew: Boolean;
-    ActionForAll: Boolean;
-    ActionForAllKnown: Boolean;
-    ActionForAllUnKnown: Boolean;
   end;
 
   TGroupsActions = array of TGroupAction;
@@ -215,7 +211,8 @@ begin
       begin
         if GroupsRepository.Add(GroupByNameOut(Groups[I].GroupName, Groups[I])) then
         begin
-          ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
+          if Action.InGroup <> nil then
+            ReplaceGroup(Action.OutGroup, Action.InGroup, Groups);
 
           Action.InGroup := GroupsRepository.GetByName(Groups[I].GroupName, False);
           Action.Action := GROUP_ACTION_ADD_IN_EXISTS;
