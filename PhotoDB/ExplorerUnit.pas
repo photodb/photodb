@@ -7290,6 +7290,8 @@ begin
     FDatabaseInfo.OnSelectClick := TbDatabaseClick;
     PnTopMenuResize(Sender);
   end;
+
+  PnTopMenu.Height := ToolBarMain.Height;
 end;
 
 procedure TExplorerForm.ShowHelp(Text, Link: string);

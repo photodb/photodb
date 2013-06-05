@@ -288,6 +288,10 @@ const
       FieldList.Add('thum');
       FieldList.Add('aTime');
       FieldList.Add('Width');
+      FieldList.Add('Colors');
+      FieldList.Add('Histogram');
+      FieldList.Add('ViewCount');
+      FieldList.Add('DateUpdated');
 
       for I := 0 to FieldList.Count - 1 do
         FieldList[I] := FormatEx(Expr, [FieldList[I]]);

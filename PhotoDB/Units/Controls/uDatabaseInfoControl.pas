@@ -73,6 +73,7 @@ type
     procedure ImageClick(Sender: TObject);
     procedure DatabaseNameOnClick(Sender: TObject);
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
+    function GetBigToolBar: Boolean;
   protected
     function L(StringToTranslate: string): string;
   public
@@ -80,6 +81,7 @@ type
     destructor Destroy; override;
     procedure LoadControl(Info: TDatabaseInfo);
     property OnSelectClick: TNotifyEvent read FOnSelectClick write FOnSelectClick;
+    property BigToolBar: Boolean read GetBigToolBar;
   end;
 
 implementation
@@ -188,7 +190,7 @@ var
   L: Integer;
   ShowLoadingSign: Boolean;
 begin
-  FMinimized := Height < 36;
+  FMinimized := not BigToolBar;
 
   ShowLoadingSign := not FMediaCountReady or FIsUpdatingCollection;
 
@@ -263,6 +265,11 @@ begin
   finally
     EnableAlign;
   end;
+end;
+
+function TDatabaseInfoControl.GetBigToolBar: Boolean;
+begin
+  Result := not AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
 end;
 
 procedure TDatabaseInfoControl.DatabaseNameOnClick(Sender: TObject);
@@ -363,14 +370,11 @@ var
   LB: TLayeredBitmap;
   Ico: HIcon;
   IconSize: Integer;
-  BigToolBar: Boolean;
 begin
   if FInfo <> nil then   
     IconFileName := FInfo.Icon;
   if IconFileName = '' then
     IconFileName := Application.ExeName + ',0';
-
-  BigToolBar := not AppSettings.Readbool('Options', 'UseSmallToolBarButtons', False);
 
   IconSize := IIF(BigToolBar, 32, 16);
 

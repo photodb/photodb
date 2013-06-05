@@ -31,6 +31,7 @@ uses
   uResources,
   uDBBaseTypes,
   uSplashThread,
+  uSiteUtils,
   uShellUtils;
 
 const
@@ -184,7 +185,7 @@ begin
   if E is EOleException then
     ErrorCode := EOleException(E).ErrorCode;
 
-  ShellExecute(0, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + 'ole-exception&code=' + IntToHex(ErrorCode, 8) + '&msg=' + E.Message), nil, nil, SW_NORMAL);
+  ShellExecute(0, 'open', PWideChar(ResolveLanguageString(ActionHelpPageURL) + 'ole-exception&code=' + IntToHex(ErrorCode, 8) + '&msg=' + E.Message + '&' + GenerateProgramSiteParameters), nil, nil, SW_NORMAL);
 end;
 
 procedure NotifyUserAboutErorrsInProviders;

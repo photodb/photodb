@@ -26,18 +26,16 @@ Features ready:
 - Persons to EXIF (using XML string);
 
 Bugs:
-- Load groups and persons from exif;
-- Properties dblclick on unknown group;
-
-Minor:
-Forward capatibility (recheck);
-- small icons in tool bar on runtime;
+- check deleting of image from directory - collection;
 - show deleted/duplicate pictures;
-- Use png/jpg for collection icons;
-check collection move
 collection pack
 Import remember skips;
 
+Minor:
+- Use png/jpg for collection icons;
+Forward capatibility (recheck);
+check collection move
+- Load groups and persons from exif;
 copy to with device images doesn't work
 - Tabs redraw issue???;
 Unable to display file on viewer;

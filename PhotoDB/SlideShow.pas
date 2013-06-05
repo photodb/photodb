@@ -349,6 +349,7 @@ type
     FIsSelectingFace: Boolean;
     FIsClosing: Boolean;
     FIsImageLoading: Boolean;
+    FMouseDowned: Boolean;
 
     FFullScreenView: IFullScreenImageForm;
     FDirectShowForm: ISlideShowForm;
@@ -510,6 +511,7 @@ begin
   RegisterMainForm(Self);
   LoadContext;
   FIsClosing := False;
+  FMouseDowned := False;
   TLoad.Instance.StartPersonsThread;
   TW.I.Start('TViewer.FormCreate');
   FDrawingFace := False;
@@ -1515,11 +1517,11 @@ begin
   end;
   FPersonMouseMoveLock := False;
 
-  if DBCanDrag then
+  if DBCanDrag or FMouseDowned then
   begin
     GetCursorPos(P);
 
-    if ZoomerOn then
+    if ZoomerOn and FMouseDowned then
     begin
       if SbVertical.Visible then
         SbVertical.Position := Max(0, Min(SbVertical.Position + (DBDragPoint.Y - P.Y), SbVertical.Max - SbVertical.PageSize));
@@ -1531,7 +1533,7 @@ begin
 
       RecreateDrawImage(Sender);
       Refresh;
-    end else
+    end else if DBCanDrag then
     begin
       if (Abs(DBDragPoint.X - P.X) > 5) or (Abs(DBDragPoint.Y - P.Y) > 5) then
       begin
@@ -1568,6 +1570,7 @@ begin
           Invalidate;
         end;
         DBCanDrag := False;
+        FMouseDowned := False;
       end;
     end;
   end;
@@ -2663,7 +2666,7 @@ var
   P: TPoint;
   PA: TPersonArea;
 begin
-  if StaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not DBCanDrag then
+  if StaticImage and (FHoverFace = nil) and (ShiftKeyDown or (Button = mbMiddle) or FIsSelectingFace) and not FMouseDowned then
   begin
     FIsSelectingFace := False;
     FDrawingFace := True;
@@ -2688,6 +2691,7 @@ begin
 
   if Button = MbLeft then
   begin
+    FMouseDowned := True;
     if FileExistsSafe(Item.FileName) then
     begin
       DBCanDrag := True;
@@ -2725,6 +2729,7 @@ begin
   Cursor := crDefault;
   F(FDrawFace);
   DBCanDrag := False;
+  FMouseDowned := False;
 end;
 
 procedure TViewer.FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
@@ -3343,7 +3348,7 @@ procedure TViewer.DropFileTarget1Drop(Sender: TObject;
 var
   FileList : TStringList;
 begin
-  if not DBCanDrag then
+  if not FMouseDowned then
   begin
     FileList := TStringList.Create;
     try

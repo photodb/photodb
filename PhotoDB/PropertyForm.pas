@@ -2564,6 +2564,9 @@ begin
     begin
       Group := FGroupsRepository.GetByCode(FNowGroups[I].GroupCode, False);
       try
+        if Group = nil then
+          Exit;
+
         GroupInfoForm.Execute(nil, Group, False);
       finally
         F(Group);

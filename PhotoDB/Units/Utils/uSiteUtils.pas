@@ -19,8 +19,14 @@ procedure DoHomeContactWithAuthor;
 procedure DoHomePage;
 procedure DoBuyApplication;
 procedure DoDonate;
+function GenerateProgramSiteParameters: string;
 
 implementation
+
+function GenerateProgramSiteParameters: string;
+begin
+  Result := '?v=' + ProductVersion + '&ac=' + TActivationManager.Instance.ApplicationCode + '&ut=' + IntToStr(GetCurrentUpTime);
+end;
 
 procedure DoHelp;
 begin
@@ -41,7 +47,7 @@ procedure DoBuyApplication;
 var
   BuyUrl: string;
 begin
-  BuyUrl := ResolveLanguageString(BuyPageURL) + '?v=' + ProductVersion + '&ac=' + TActivationManager.Instance.ApplicationCode + '&ut=' + IntToStr(GetCurrentUpTime);
+  BuyUrl := ResolveLanguageString(BuyPageURL) + GenerateProgramSiteParameters;
   ShellExecute(GetActiveWindow, 'open', PWideChar(BuyUrl), nil, nil, SW_NORMAL);
 end;
 

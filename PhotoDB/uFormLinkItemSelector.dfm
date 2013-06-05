@@ -54,7 +54,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
       Width = 169
       Height = 50
       BevelOuter = bvNone
-      DoubleBuffered = False
+      DoubleBuffered = True
       FullRepaint = False
       ParentBackground = False
       ParentDoubleBuffered = False
