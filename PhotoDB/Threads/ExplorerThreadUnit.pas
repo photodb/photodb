@@ -74,6 +74,7 @@ uses
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
   uExplorerDateStackProviders,
+  uExplorerCollectionProvider,
   uPhotoShelf,
   uImageLoader,
   uSessionPasswords;
@@ -197,6 +198,7 @@ type
     procedure SearchDB; overload;
     procedure SearchDB(DateFrom, DateTo: TDateTime; GroupName: string); overload;
     procedure SearchDB(Parameters: TDatabaseSearchParameters); overload;
+    procedure SearchDB(SQ: TSearchQuery); overload;
     function IsImage(SearchRec: TSearchRec): Boolean;
     function ProcessSearchRecord(FFiles: TExplorerFileInfos; Directory: string; SearchRec: TSearchRec): Boolean;
     procedure OnDatabasePacketReady(Sender: TDatabaseSearch; Packet: TMediaItemCollection);
@@ -864,9 +866,30 @@ begin
   end;
 end;
 
-procedure TExplorerThread.SearchDB(Parameters: TDatabaseSearchParameters);
+procedure TExplorerThread.SearchDB(SQ: TSearchQuery);
 var
   DS: TDatabaseSearch;
+begin
+  SynchronizeEx(ShowLoadingSign);
+  SynchronizeEx(ShowIndeterminateProgress);
+  try
+    DS := TDatabaseSearch.Create(Self, SQ);
+    try
+      DS.OnPacketReady := OnDatabasePacketReady;
+      DS.ExecuteSearch;
+    finally
+      F(DS);
+    end;
+  finally
+    HideProgress;
+    ShowInfo('');
+    SynchronizeEx(DoStopSearch);
+    SynchronizeEx(HideLoadingSign);
+  end;
+end;
+
+procedure TExplorerThread.SearchDB(Parameters: TDatabaseSearchParameters);
+var
   SQ: TSearchQuery;
 
   function GetSortMode: Integer;
@@ -891,47 +914,32 @@ var
   end;
 
 begin
-  SynchronizeEx(ShowLoadingSign);
-  SynchronizeEx(ShowIndeterminateProgress);
-  try
-    SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
-    SQ.Query := Parameters.Text;
+  SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
+  SQ.Query := Parameters.Text;
 
-    SQ.Groups.AddStrings(Parameters.Groups);
-    SQ.GroupsAnd := Parameters.GroupsAnd;
+  SQ.Groups.AddStrings(Parameters.Groups);
+  SQ.GroupsAnd := Parameters.GroupsAnd;
 
-    SQ.Persons.AddStrings(Parameters.Persons);
-    SQ.PersonsAnd := Parameters.PersonsAnd;
+  SQ.Persons.AddStrings(Parameters.Persons);
+  SQ.PersonsAnd := Parameters.PersonsAnd;
 
-    SQ.RatingFrom := Parameters.RatingFrom;
-    SQ.RatingTo := Parameters.RatingTo;
+  SQ.RatingFrom := Parameters.RatingFrom;
+  SQ.RatingTo := Parameters.RatingTo;
 
-    SQ.DateFrom := Parameters.DateFrom;
-    SQ.DateTo := Parameters.DateTo;
+  SQ.DateFrom := Parameters.DateFrom;
+  SQ.DateTo := Parameters.DateTo;
 
-    SQ.SortMethod := GetSortMode;
-    SQ.SortDecrement := Parameters.SortDescending;
+  SQ.SortMethod := GetSortMode;
+  SQ.SortDecrement := Parameters.SortDescending;
 
-    SQ.IsEstimate := False;
+  SQ.IsEstimate := False;
 
-    SQ.ShowPrivate := Parameters.ShowPrivate;
-    SQ.ShowAllImages := Parameters.ShowHidden;
+  SQ.ShowPrivate := Parameters.ShowPrivate;
+  SQ.ShowAllImages := Parameters.ShowHidden;
 
-    SQ.Colors.AddStrings(Parameters.Colors);
+  SQ.Colors.AddStrings(Parameters.Colors);
 
-    DS := TDatabaseSearch.Create(Self, SQ);
-    try
-      DS.OnPacketReady := OnDatabasePacketReady;
-      DS.ExecuteSearch;
-    finally
-      F(DS);
-    end;
-  finally
-    HideProgress;
-    ShowInfo('');
-    SynchronizeEx(DoStopSearch);
-    SynchronizeEx(HideLoadingSign);
-  end;
+  SearchDB(SQ);
 end;
 
 procedure TExplorerThread.OnDatabasePacketReady(Sender: TDatabaseSearch;
@@ -2201,6 +2209,14 @@ var
   CI: TPathItem;
   Icon: TIcon;
   Info: TExplorerFileInfo;
+
+  procedure LoadDefaultIcon;
+  begin
+    Icon := TIcon.Create;
+    Icon.Handle := CopyIcon(Icons[DB_IC_SIMPLEFILE]);
+    FPacketImages.AddIcon(Icon, True);
+  end;
+
 begin
   F(FFiles);
   TW.I.Start('Packet - start');
@@ -2237,13 +2253,9 @@ begin
             FPacketImages.AddBitmap(CI.Image.Bitmap, True);
             CI.Image.DetachImage;
           end else
-            raise Exception.Create('Image is empty!');
+            LoadDefaultIcon
         end else
-        begin
-          Icon := TIcon.Create;
-          Icon.Handle := CopyIcon(Icons[DB_IC_SIMPLEFILE]);
-          FPacketImages.AddIcon(Icon, True);
-        end;
+         LoadDefaultIcon;
       end;
       TW.I.Start('Packet - send');
       ABreak := not SynchronizeEx(SendPacketToExplorer);
@@ -2334,6 +2346,7 @@ var
   MI: TDateStackMonthItem;
   DI: TDateStackDayItem;
   D: TDateTime;
+  SQ: TSearchQuery;
 
   function GetGroupName(PI: TPathItem): string;
   begin
@@ -2364,6 +2377,8 @@ begin
     begin
       if PI is TDateStackItem then
         LoadProviderItemEx(PI, 1, FIcoSize, L('Loading calendar') + '...');
+      if (PI is TCollectionItem) then
+        LoadProviderItemEx(PI, 1, FIcoSize, L('Loading') + '...');
 
       FMask := GetSearchTerm(PI);
       if PI is TDateStackYearItem then
@@ -2380,12 +2395,43 @@ begin
 
         SearchDB(D, IncDay(IncMonth(D, 1), -1), GetGroupName(PI));
       end;
+
       if PI is TDateStackDayItem then
       begin
         DI := TDateStackDayItem(PI);
         D := EncodeDate(DI.Year, DI.Month, DI.Day);
 
         SearchDB(D, D, GetGroupName(PI));
+      end;
+
+      if PI is TCollectionDeletedItemsFolder then
+      begin
+        SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
+        SQ.Query := ':DeletedFiles:';
+        SQ.SortMethod := SM_DATE_TIME;
+
+        SearchDB(SQ);
+      end;
+
+      if PI is TCollectionDuplicateItemsFolder then
+      begin
+        SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
+        SQ.Query := ':Duplicates:';
+        SQ.SortMethod := SM_DUPLICATE;
+
+        SearchDB(SQ);
+      end;
+
+      if PI is TCollectionFolder then
+      begin
+        LoadProviderItemEx(PI, 1, FIcoSize, L('Loading') + '...');
+
+        SQ := TSearchQuery.Create(IIF(ExplorerInfo.View = LV_THUMBS, 0, FIcoSize));
+        SQ.Query := ':Folder(' + TCollectionFolder(PI).PhysicalPath + '):';
+        SQ.SortMethod := SM_RATING;
+        SQ.ShowPrivate := True;
+
+        SearchDB(SQ);
       end;
     end;
   finally

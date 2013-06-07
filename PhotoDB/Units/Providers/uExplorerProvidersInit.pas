@@ -10,11 +10,15 @@ uses
   uExplorerDateStackProviders,
   uExplorerGroupsProvider,
   uExplorerPersonsProvider,
-  uExplorerShelfProvider;
+  uExplorerShelfProvider,
+  uExplorerCollectionProvider;
 
 implementation
 
 initialization
+  PathProviderManager.RegisterProvider(TCollectionProvider.Create);
+  PathProviderManager.RegisterSubProvider(TMyComputerProvider, TCollectionProvider);
+
   PathProviderManager.RegisterProvider(TPortableDeviceProvider.Create);
   PathProviderManager.RegisterSubProvider(TMyComputerProvider, TPortableDeviceProvider);
 

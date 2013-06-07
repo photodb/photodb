@@ -34,6 +34,7 @@ uses
   uExplorerShelfProvider,
   uExplorerDateStackProviders,
   uExplorerSearchProviders,
+  uExplorerCollectionProvider,
   uFormListView;
 
 const
@@ -575,7 +576,15 @@ begin
   else if PI is TDateStackDayItem then
     FileType := EXPLORER_ITEM_CALENDAR_DAY
   else if PI is TSearchItem then
-    FileType := EXPLORER_ITEM_SEARCH;
+    FileType := EXPLORER_ITEM_SEARCH
+  else if PI is TCollectionItem then
+    FileType := EXPLORER_ITEM_COLLECTION
+  else if PI is TCollectionFolder then
+    FileType := EXPLORER_ITEM_COLLECTION_DIRECTORY
+  else if PI is TCollectionDeletedItemsFolder then
+    FileType := EXPLORER_ITEM_COLLECTION_DELETED
+  else if PI is TCollectionDuplicateItemsFolder then
+    FileType := EXPLORER_ITEM_COLLECTION_DUPLICATES;
 end;
 
 function TExplorerFileInfo.InitNewInstance: TMediaItem;

@@ -24,12 +24,15 @@ Features ready:
 - Person image - use current image option;
 - Portable persons;
 - Persons to EXIF (using XML string);
+- Import remember skips;
+- show deleted/duplicate pictures;
 
 Bugs:
-- check deleting of image from directory - collection;
-- show deleted/duplicate pictures;
+- most viewed;
+- sort by view count;
+- recheck collection item;
 collection pack
-Import remember skips;
+- rename/delete directory;
 
 Minor:
 - Use png/jpg for collection icons;
@@ -45,10 +48,6 @@ Unable to display file on viewer;
 - resize - raw use preview checkbox;
 
 [Maybe]
-- Не понял как добавлять папки в исключения, как быстро удалить ненужную папку из базы данных, 
-некоторые файлы после удаления из одной базы данны не добавляются в другую, неудобно, 
-что внутри категорий все папки отображаются кучей. 
-Было бы удобно дополнительное разделение по папкам, как они лежат на жестком диске  
 - Groups -> Categories
 - Groups for persons
 - Categories could have sub-categories

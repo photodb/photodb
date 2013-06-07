@@ -37,15 +37,6 @@ uses
   uSessionPasswords,
   uSearchQuery;
 
-const
-  SM_ID         = 0;
-  SM_TITLE      = 1;
-  SM_DATE_TIME  = 2;
-  SM_RATING     = 3;
-  SM_FILE_SIZE  = 4;
-  SM_IMAGE_SIZE = 5;
-  SM_COMPARING  = 6;
-
 type
   TScanFileParams = class
   public
@@ -123,7 +114,7 @@ type
     procedure AddItem(S: TDataSet);
     function CreateQuery: TDBQueryParams;
     procedure ApplyFilter(Params: TDBQueryParams; Attr: Integer);
-    procedure AddWideSearchOptions(Params: TDBQueryParams);
+    procedure AddWideSearchOptions(Params: TDBQueryParams; ShowDeleted: Boolean);
     function AddSorting(SqlParams: TDBQueryParams): string;
     procedure LoadImages;
     procedure LoadTextQuery(QueryParams: TDBQueryParams);
@@ -302,12 +293,17 @@ const
     end;
   end;
 
-  function FIELDS: string;
+  function FIELDS(TableAlias: string = ''): string;
   begin
     if FSearchParams.IsEstimate then
       Result := 'COUNT(*)'
     else
-      Result := 'TOP 1000 *';
+    begin
+      if TableAlias <> '' then
+        Result := FormatEx('TOP 1000 {0}.*', [TableAlias])
+      else
+        Result := 'TOP 1000 *';
+    end;
   end;
 
 begin
@@ -336,8 +332,10 @@ begin
       if AnsiLowerCase(Sysaction) = AnsiLowerCase('Duplicates') then
       begin
         SystemQuery := True;
-        Result.Query := Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
-        ApplyFilter(Result, Db_attr_duplicate);
+
+        Result.Query := Format('SELECT %s FROM $DB$ Im '+
+          'inner join (SELECT StrThCrc,StrTh,Max(DateToAdd) as [Date],Max(Rating) as [Rating] FROM ImageTable where Trim(StrTh) <> "" group by StrThCrc,StrTh having Count(Id) > 1) dp on dp.StrTh = Im.StrTh and dp.StrThCrc = Im.StrThCrc ' +
+          'order by dp.[Rating] desc, dp.[Date] desc, Im.StrThCrc', [FIELDS('Im')]);
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 5)) = AnsiLowerCase('Links') then
@@ -390,10 +388,12 @@ begin
 
         Result.Query := Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
         Result.AddIntParam('CRC', GetPathCRC(Folder, False));
+
+        //Result.Query := Format('Select %s From $DB$ WHERE FFileName like :Folder', [FIELDS]);
+        //Result.AddStringParam('Folder', ExcludeTrailingBackslash(Folder) + '%');
+
         if not FSearchParams.ShowPrivate then
           Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
-
-        ApplyFilter(Result, Db_attr_norm);
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 7)) = AnsiLowerCase('similar') then
@@ -656,10 +656,10 @@ begin
   if not FSearchParams.ShowPrivate then
     Params.Query := Params.Query + ' AND (Access = 0)';
 
-  AddWideSearchOptions(Params);
+  AddWideSearchOptions(Params, Attr <> Db_attr_norm);
 end;
 
-procedure TDatabaseSearch.AddWideSearchOptions(Params : TDBQueryParams);
+procedure TDatabaseSearch.AddWideSearchOptions(Params: TDBQueryParams; ShowDeleted: Boolean);
 var
   Result: string;
 begin
@@ -668,15 +668,19 @@ begin
   Result := Result + ' AND ((Rating>=' + IntToStr(FSearchParams.RatingFrom) + ') and (Rating<=' + IntToStr
     (FSearchParams.RatingTo) + ')) ';
 
-  Result := Result + ' AND ((DateToAdd >= :MinDate ) and (DateToAdd < :MaxDate ) and IsDate=True) ';
+  if not ShowDeleted then
+  begin
+    Result := Result + ' AND ((DateToAdd >= :MinDate ) and (DateToAdd < :MaxDate ) and IsDate=True) ';
 
-  Params.AddDateTimeParam('MinDate', Trunc(FSearchParams.DateFrom));
-  Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo) + 1);
+    Params.AddDateTimeParam('MinDate', Trunc(FSearchParams.DateFrom));
+    Params.AddDateTimeParam('MaxDate', Trunc(FSearchParams.DateTo) + 1);
+  end;
 
   if not FSearchParams.ShowPrivate then
     Result := Result + ' AND (Access = 0)';
 
-  Result := Result + ' AND (Attr<>' + Inttostr(Db_attr_not_exists) + ')';
+  if not ShowDeleted then
+    Result := Result + ' AND (Attr<>' + Inttostr(Db_attr_not_exists) + ')';
 
   Params.Query := Params.Query + Result;
 end;
@@ -699,6 +703,7 @@ begin
       SM_RATING:     Result := ' ORDER BY Rating'         + SortDirection + ', DateToAdd desc, aTime desc';
       SM_FILE_SIZE:  Result := ' ORDER BY FileSize'       + SortDirection;
       SM_IMAGE_SIZE: Result := ' ORDER BY (Width*Height)' + SortDirection + ', Rating, DateToAdd desc, aTime desc' + SortDirection;
+      SM_DUPLICATE:  Result := '';
     else
                      Result := ' ORDER BY ID'             + SortDirection;
     end;

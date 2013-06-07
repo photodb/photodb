@@ -282,6 +282,7 @@ var
   MediaItem: TMediaItem;
   UC: TUpdateCommand;
   Comment, Groups, KeyWords, Links: string;
+  EventInfo: TEventValues;
 
   MediaRepository: IMediaRepository;
 begin
@@ -341,6 +342,14 @@ begin
     UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
     UC.Execute;
+
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        CollectionEvents.DoIDEvent(TDBForm(Application.MainForm), ID, [EventID_Param_Critical], EventInfo);
+      end
+    );
+
   finally
     F(UC);
   end;

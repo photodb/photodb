@@ -77,6 +77,15 @@ type
     property ID: Integer read FID;
   end;
 
+  TRemoveTask = class(TDatabaseTask)
+  private
+    FID: Integer;
+  public
+    constructor Create(DBContext: IDBContext; ID: Integer; FileName: string); overload;
+    procedure Execute;
+    property ID: Integer read FID;
+  end;
+
   TAddTask = class(TDatabaseTask)
   private
     FData: TMediaItem;
@@ -641,6 +650,7 @@ end;
 procedure TUserDirectoriesWatcher.Execute(Context: IDBContext);
 begin
   inherited;
+  StopWatch;
   FDBContext := Context;
   StartWatch;
   TDatabaseDirectoriesUpdater.Create(FDBContext);
@@ -652,7 +662,6 @@ var
   FolderList: TList<TDatabaseDirectory>;
   DD: TDatabaseDirectory;
 begin
-  StopWatch;
   FState := GetGUID;
 
   //list of directories to watch
@@ -685,6 +694,7 @@ procedure TUserDirectoriesWatcher.DirectoryChanged(Sender: TObject; SID: TGUID;
   pInfos: TInfoCallBackDirectoryChangedArray);
 var
   Info: TInfoCallback;
+  IsFileExists: Boolean;
 begin
   if FState <> SID then
     Exit;
@@ -695,10 +705,11 @@ begin
     if not IsGraphicFile(Info.FNewFileName) then
       Exit;
 
+    IsFileExists := True;
     if (Info.FNewFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.FNewFileName) then
-      Continue;
+      IsFileExists := False;
     if (Info.FOldFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.FOldFileName) then
-      Continue;
+      IsFileExists := False;
 
     //TODO:
     //if not CanAddFileAutomatically(Info.FNewFileName) then
@@ -706,12 +717,15 @@ begin
 
     case Info.FAction of
       FILE_ACTION_ADDED:
-        UpdaterStorage.Add(TAddTask.Create(FDBContext, Info.FNewFileName));
-      FILE_ACTION_REMOVED,
+        if IsFileExists then
+          UpdaterStorage.Add(TAddTask.Create(FDBContext, Info.FNewFileName));
+      FILE_ACTION_REMOVED:
+        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, Info.FOldFileName));
       FILE_ACTION_RENAMED_NEW_NAME:
         Break;
       FILE_ACTION_MODIFIED:
-        UpdaterStorage.Add(TUpdateTask.Create(FDBContext, 0, Info.FNewFileName));
+        if IsFileExists then
+          UpdaterStorage.Add(TUpdateTask.Create(FDBContext, 0, Info.FNewFileName));
     end;
   end;
 end;
@@ -767,6 +781,32 @@ begin
     if not UpdateImageRecord(FDBContext, nil, FFileName, ID) then
       UpdaterStorage.AddFileWithErrors(FFileName);
 
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
+end;
+
+{ TRemoveTask }
+
+constructor TRemoveTask.Create(DBContext: IDBContext; ID: Integer;
+  FileName: string);
+begin
+  inherited Create(DBContext, FileName);
+  FFileName := FileName;
+  FID := ID;
+end;
+
+procedure TRemoveTask.Execute;
+var
+  MediaRepository: IMediaRepository;
+begin
+  MediaRepository := FDBContext.Media;
+  try
+    if FID = 0 then
+      FID := MediaRepository.GetIdByFileName(FFileName);
+
+    MediaRepository.SetAttribute(ID, Db_attr_not_exists);
   except
     on e: Exception do
       EventLog(e);
@@ -1253,6 +1293,7 @@ var
   Task: TDatabaseTask;
   AddTasks: TArray<TAddTask>;
   UpdateTask: TUpdateTask;
+  RemoveTask: TRemoveTask;
   IdleCycle: Boolean;
 begin
   inherited;
@@ -1295,6 +1336,21 @@ begin
       end;
     finally
       F(UpdateTask);
+    end;
+
+    if DBTerminating then
+      Break;
+
+    RemoveTask := UpdaterStorage.TakeOne<TRemoveTask>();
+    try
+      if RemoveTask <> nil then
+      begin
+        IdleCycle := False;
+        RemoveTask.Execute;
+        FSpeedCounter.AddSpeedInterval(100 * 1);
+      end;
+    finally
+      F(RemoveTask);
     end;
 
     if IdleCycle then

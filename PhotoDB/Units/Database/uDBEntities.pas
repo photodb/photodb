@@ -440,7 +440,7 @@ end;
 constructor TMediaItem.Create;
 begin
   inherited;
-{  FFileNameCRC32 := 0;
+  FFileNameCRC32 := 0;
   IsImageEncrypted := False;
   Tag := 0;
   ID := 0;
@@ -468,7 +468,7 @@ begin
   HasExifHeader := False;
   Colors := '';
   ViewCount := 0;
-  UpdateDate := 0;}
+  UpdateDate := 0;
 end;
 
 constructor TMediaItem.CreateFromDS(DS: TDataSet);

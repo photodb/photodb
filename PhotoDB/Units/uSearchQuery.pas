@@ -4,10 +4,12 @@ interface
 
 uses
   System.Classes,
+  System.DateUtils,
 
   Dmitry.Utils.System,
 
   uMemory,
+  uConstants,
   uDBConnection,
   uDBEntities,
   uStringUtils;
@@ -63,6 +65,15 @@ begin
   FColors := TStringList.Create;
   GroupsAnd := False;
   PersonsAnd := False;
+  RatingFrom := 0;
+  RatingTo := 10;
+  DateFrom := EncodeDateTime(1900, 1, 1, 0, 0, 0, 0);
+  DateTo := EncodeDateTime(2100, 1, 1, 0, 0, 0, 0);
+  SortMethod := SM_DATE_TIME;
+  SortDecrement := False;
+  IsEstimate := False;
+  ShowPrivate := False;
+  ShowAllImages := False;
 end;
 
 destructor TSearchQuery.Destroy;

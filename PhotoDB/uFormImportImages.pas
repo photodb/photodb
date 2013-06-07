@@ -530,6 +530,7 @@ begin
   TSelectDateItem(SDI).FItemsSize := Size;
   TSelectDateItem(SDI).Items.Add(Item.Copy);
   SDI.ItemLabel := AppSettings.ReadString('ImportPicturesSeries', FormatDateTimeShortDate(Date), '');
+  SDI.IsDisabled := AppSettings.ReadBool('DisablePicturesSeries', FormatDateTimeShortDate(Date), False);
 
   Index := -1;
 
@@ -737,6 +738,8 @@ begin
   WlLabel.Enabled := False;
   WlDate.LoadFromResource('SERIES_CANCEL');
   WlDate.Enabled := False;
+
+  AppSettings.WriteBool('DisablePicturesSeries', FormatDateTimeShortDate(SI.Date), SI.IsDisabled);
 end;
 
 procedure TSelectDateCollection.MIImport(Sender: TObject);
@@ -756,6 +759,8 @@ begin
   WlLabel.Enabled := True;
   WlDate.LoadFromResource('SERIES_DATE');
   WlDate.Enabled := True;
+
+  AppSettings.WriteBool('DisablePicturesSeries', FormatDateTimeShortDate(SI.Date), SI.IsDisabled);
 end;
 
 procedure TSelectDateCollection.MIMergeLeft(Sender: TObject);

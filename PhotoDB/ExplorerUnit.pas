@@ -130,6 +130,7 @@ uses
   uExplorerPortableDeviceProvider,
   uExplorerShelfProvider,
   uExplorerDateStackProviders,
+  uExplorerCollectionProvider,
   uTranslate,
   uTranslateUtils,
   uVCLHelpers,
@@ -1979,6 +1980,14 @@ begin
   end;
 
   if Info.FileType in [EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY] then
+  begin
+    NewWindow1.Visible := True;
+    Open1.Visible := True;
+  end;
+
+  if Info.FileType in [EXPLORER_ITEM_COLLECTION,
+    EXPLORER_ITEM_COLLECTION_DIRECTORY, EXPLORER_ITEM_COLLECTION_DELETED,
+    EXPLORER_ITEM_COLLECTION_DUPLICATES] then
   begin
     NewWindow1.Visible := True;
     Open1.Visible := True;
@@ -5160,7 +5169,9 @@ begin
                   if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
                     UpdatingDone := False
                   else if FCurrentTypePath in [EXPLORER_ITEM_SHELF, EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
-                                               EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY] then
+                                               EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
+                                               EXPLORER_ITEM_COLLECTION, EXPLORER_ITEM_COLLECTION_DIRECTORY, EXPLORER_ITEM_COLLECTION_DELETED,
+                                               EXPLORER_ITEM_COLLECTION_DUPLICATES] then
                     RefreshItemByID(EI.ID);
 
                   Progress.Position := Progress.Position + 1;
@@ -6010,7 +6021,9 @@ begin
   CanOpenOriginalDirectory := (SelCount = 1)
     and (GetCurrentPathW.PType in [EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
         EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
-        EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF])
+        EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_SHELF, EXPLORER_ITEM_COLLECTION,
+        EXPLORER_ITEM_COLLECTION_DIRECTORY, EXPLORER_ITEM_COLLECTION_DELETED,
+        EXPLORER_ITEM_COLLECTION_DUPLICATES])
     and (FSelectedInfo.FileType in [EXPLORER_ITEM_EXEFILE, EXPLORER_ITEM_FILE,
         EXPLORER_ITEM_FOLDER, EXPLORER_ITEM_DRIVE, EXPLORER_ITEM_SHARE, EXPLORER_ITEM_IMAGE,
         EXPLORER_ITEM_DEVICE_IMAGE, EXPLORER_ITEM_DEVICE_DIRECTORY, EXPLORER_ITEM_DEVICE_VIDEO,
@@ -7433,9 +7446,17 @@ begin
   else if PI is TDateStackMonthItem then
     SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_MONTH), False)
   else if PI is TDateStackDayItem then
-    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_DAY), False);
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_CALENDAR_DAY), False)
+  else if PI is TCollectionItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COLLECTION), False)
+  else if PI is TCollectionFolder then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COLLECTION_DIRECTORY), False)
+  else if PI is TCollectionDeletedItemsFolder then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COLLECTION_DELETED), False)
+  else if PI is TCollectionDuplicateItemsFolder then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COLLECTION_DUPLICATES), False)
 end;
-
+                                      
 procedure TExplorerForm.PePathChange(Sender: TObject);
 begin
   SetPathItem(PePath.CurrentPathEx);
@@ -7800,6 +7821,10 @@ begin
     or (WPath.PType = EXPLORER_ITEM_CALENDAR_YEAR)
     or (WPath.PType = EXPLORER_ITEM_CALENDAR_MONTH)
     or (WPath.PType = EXPLORER_ITEM_CALENDAR_DAY)
+    or (WPath.PType = EXPLORER_ITEM_COLLECTION)
+    or (WPath.PType = EXPLORER_ITEM_COLLECTION_DIRECTORY)
+    or (WPath.PType = EXPLORER_ITEM_COLLECTION_DELETED)
+    or (WPath.PType = EXPLORER_ITEM_COLLECTION_DUPLICATES)
     or (WPath.PType = EXPLORER_ITEM_SEARCH);
 
   UpdateCurrentHistoryFocusedItem;
@@ -7884,7 +7909,8 @@ begin
     Caption := PePath.CurrentPathEx.DisplayName;
     ThreadType := THREAD_TYPE_SHELF;
   end;
-  if WPath.PType in [EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY] then
+  if WPath.PType in [EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
+                     EXPLORER_ITEM_COLLECTION, EXPLORER_ITEM_COLLECTION_DIRECTORY, EXPLORER_ITEM_COLLECTION_DELETED, EXPLORER_ITEM_COLLECTION_DUPLICATES] then
   begin
     PI := PathProviderManager.CreatePathItem(Path);
     try
@@ -9334,6 +9360,27 @@ begin
         FSelectedInfo.FileName := L('Calendar');
         FSelectedInfo.FileTypeW := L('Your photos grouped by date');
       end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_COLLECTION) then
+      begin
+        FSelectedInfo.FileName := L('Collection');
+        FSelectedInfo.FileTypeW := L('Contains grouped photos from your collection');
+      end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_COLLECTION_DIRECTORY) then
+      begin
+        FSelectedInfo.FileName := L('Browse collection');
+        FSelectedInfo.FileTypeW := L('Contains directories structure for your collection');
+      end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_COLLECTION_DELETED) then
+      begin
+        FSelectedInfo.FileName := L('Missed items');
+        FSelectedInfo.FileTypeW := L('Missed items on your disk');
+      end;
+      if (FSelectedInfo.FileType = EXPLORER_ITEM_COLLECTION_DUPLICATES) then
+      begin
+        FSelectedInfo.FileName := L('Duplicate items');
+        FSelectedInfo.FileTypeW := L('Duplicate items in your collection');
+      end;
+
       if (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_YEAR) or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_MONTH)
          or (FSelectedInfo.FileType = EXPLORER_ITEM_CALENDAR_DAY) then
       begin
@@ -9490,7 +9537,9 @@ begin
             (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP_LIST) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_STORAGE) or
             (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_FILE) or
             (FSelectedInfo.FileType in [EXPLORER_ITEM_SHELF, EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH,
-              EXPLORER_ITEM_CALENDAR_DAY]) then
+              EXPLORER_ITEM_CALENDAR_DAY, EXPLORER_ITEM_COLLECTION,
+              EXPLORER_ITEM_COLLECTION_DIRECTORY, EXPLORER_ITEM_COLLECTION_DELETED,
+              EXPLORER_ITEM_COLLECTION_DUPLICATES]) then
           begin
             with ImPreview.Picture.Bitmap do
             begin
@@ -9539,8 +9588,9 @@ begin
               end;
 
               try
-                Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
-                  ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
+                if Ico <> nil then
+                  Canvas.Draw(ThSizeExplorerPreview div 2 - Ico.Width div 2,
+                    ThSizeExplorerPreview div 2 - Ico.Height div 2, Ico);
               finally
                 F(Ico);
               end;
@@ -10832,7 +10882,9 @@ begin
           EXPLORER_ITEM_GROUP, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_DEVICE,
           EXPLORER_ITEM_DEVICE_STORAGE, EXPLORER_ITEM_DEVICE_DIRECTORY,
           EXPLORER_ITEM_SHELF, EXPLORER_ITEM_CALENDAR, EXPLORER_ITEM_CALENDAR_YEAR,
-          EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY:
+          EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
+          EXPLORER_ITEM_COLLECTION, EXPLORER_ITEM_COLLECTION_DIRECTORY,
+          EXPLORER_ITEM_COLLECTION_DELETED, EXPLORER_ITEM_COLLECTION_DUPLICATES:
           SetNewPathW(ExplorerPath(FFilesInfo[Index].FileName,
             FFilesInfo[Index].FileType), False);
       end;
@@ -13167,6 +13219,8 @@ begin
   if FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST then
     DefaultView := LV_TILE;
   if FCurrentTypePath = EXPLORER_ITEM_MYCOMPUTER then
+    DefaultView := LV_TILE;
+  if FCurrentTypePath = EXPLORER_ITEM_COLLECTION then
     DefaultView := LV_TILE;
 
   FRegPath := MakeRegPath(FCurrentPath);

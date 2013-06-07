@@ -355,6 +355,8 @@
 	<translate name="Loading info" value="Загрузка информации" />
 	<translate name="Loading previews" value="Загрузка предпросмотров" />
 	<translate name="Loading camera images" value="Загрузка фотографий" />
+	<translate name="Loading calendar" value="Загрузка календаря" />
+	<translate name="Loading" value="Загрузка" />
 	<translate name="Initialization" value="Инициализация" />
 	<translate name="Opening computer" value="Открытие компьютера" />
 	<translate name="Scanning network" value="Сканирование сети" />
@@ -1613,6 +1615,12 @@
   <scope name="PersonsProvider">
 	<translate name="Do you really want to delete person &quot;{0}&quot; (Has {1} reference(s) on photo(s))?" value="Вы действительно хотите удалить персону &quot;{0}&quot; (Даная персона отмечена на {1} фотографиях)?"/>
 	<translate name="Please delete only one person at time!" value="Удаление возможно только по одной персоне!" />
+  </scope>
+  <scope name="CollectionProvider">
+	<translate name="Collection" value="Коллекция"/>
+	<translate name="Duplicates" value="Дубликаты"/>
+	<translate name="Missed items" value="Потеряные фото"/>
+	<translate name="Browse directories" value="Просмотр структуры"/>
   </scope>
   <scope name="Path">
 	<translate name="Network" value="Сеть"/>

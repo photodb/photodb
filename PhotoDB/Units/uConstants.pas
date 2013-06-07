@@ -312,6 +312,15 @@ const
   LimitDemoRecords = 10000;
   LimitDemoVideoSize = 1024 * 1024 * 1024; //1Gb
 
+const
+  SM_ID         = 0;
+  SM_TITLE      = 1;
+  SM_DATE_TIME  = 2;
+  SM_RATING     = 3;
+  SM_FILE_SIZE  = 4;
+  SM_IMAGE_SIZE = 5;
+  SM_COMPARING  = 6;
+  SM_DUPLICATE  = 7;
 //////////////////////////////////
 ///
 ///  Explorer
@@ -319,33 +328,37 @@ const
 //////////////////////////////////
 
 const
-  EXPLORER_ITEM_FOLDER           = 0;
-  EXPLORER_ITEM_IMAGE            = 1;
-  EXPLORER_ITEM_FILE             = 2;
-  EXPLORER_ITEM_DRIVE            = 3;
-  EXPLORER_ITEM_MYCOMPUTER       = 4;
-  EXPLORER_ITEM_NETWORK          = 5;
-  EXPLORER_ITEM_WORKGROUP        = 6;
-  EXPLORER_ITEM_COMPUTER         = 7;
-  EXPLORER_ITEM_SHARE            = 8;
-  EXPLORER_ITEM_EXEFILE          = 9;
-  EXPLORER_ITEM_OTHER            = 10;
-  EXPLORER_ITEM_SEARCH           = 11;
-  EXPLORER_ITEM_PERSON_LIST      = 12;
-  EXPLORER_ITEM_PERSON           = 13;
-  EXPLORER_ITEM_GROUP_LIST       = 14;
-  EXPLORER_ITEM_GROUP            = 15;
-  EXPLORER_ITEM_DEVICE           = 16;
-  EXPLORER_ITEM_DEVICE_STORAGE   = 17;
-  EXPLORER_ITEM_DEVICE_DIRECTORY = 18;
-  EXPLORER_ITEM_DEVICE_IMAGE     = 19;
-  EXPLORER_ITEM_DEVICE_VIDEO     = 20;
-  EXPLORER_ITEM_DEVICE_FILE      = 21;
-  EXPLORER_ITEM_SHELF            = 22;
-  EXPLORER_ITEM_CALENDAR         = 23;
-  EXPLORER_ITEM_CALENDAR_YEAR    = 24;
-  EXPLORER_ITEM_CALENDAR_MONTH   = 25;
-  EXPLORER_ITEM_CALENDAR_DAY     = 26;
+  EXPLORER_ITEM_FOLDER                 = 0;
+  EXPLORER_ITEM_IMAGE                  = 1;
+  EXPLORER_ITEM_FILE                   = 2;
+  EXPLORER_ITEM_DRIVE                  = 3;
+  EXPLORER_ITEM_MYCOMPUTER             = 4;
+  EXPLORER_ITEM_NETWORK                = 5;
+  EXPLORER_ITEM_WORKGROUP              = 6;
+  EXPLORER_ITEM_COMPUTER               = 7;
+  EXPLORER_ITEM_SHARE                  = 8;
+  EXPLORER_ITEM_EXEFILE                = 9;
+  EXPLORER_ITEM_OTHER                  = 10;
+  EXPLORER_ITEM_SEARCH                 = 11;
+  EXPLORER_ITEM_PERSON_LIST            = 12;
+  EXPLORER_ITEM_PERSON                 = 13;
+  EXPLORER_ITEM_GROUP_LIST             = 14;
+  EXPLORER_ITEM_GROUP                  = 15;
+  EXPLORER_ITEM_DEVICE                 = 16;
+  EXPLORER_ITEM_DEVICE_STORAGE         = 17;
+  EXPLORER_ITEM_DEVICE_DIRECTORY       = 18;
+  EXPLORER_ITEM_DEVICE_IMAGE           = 19;
+  EXPLORER_ITEM_DEVICE_VIDEO           = 20;
+  EXPLORER_ITEM_DEVICE_FILE            = 21;
+  EXPLORER_ITEM_SHELF                  = 22;
+  EXPLORER_ITEM_CALENDAR               = 23;
+  EXPLORER_ITEM_CALENDAR_YEAR          = 24;
+  EXPLORER_ITEM_CALENDAR_MONTH         = 25;
+  EXPLORER_ITEM_CALENDAR_DAY           = 26;
+  EXPLORER_ITEM_COLLECTION             = 27;
+  EXPLORER_ITEM_COLLECTION_DIRECTORY   = 28;
+  EXPLORER_ITEM_COLLECTION_DELETED     = 29;
+  EXPLORER_ITEM_COLLECTION_DUPLICATES  = 30;
 
 //////////////////////////////////////////////////
 
@@ -472,6 +485,10 @@ const
   cFilesSearchPath = '::files://';
   cShelfPath = 'Shelf';
   cDatesPath = 'Date';
+  cCollectionPath = 'Collection';
+  cCollectionBrowsePath = 'Browse';
+  cCollectionDeletedPath = 'Missed';
+  cCollectionDuplicatesPath = 'Duplicates';
 
 const
   ObjectTableName = 'Objects';
