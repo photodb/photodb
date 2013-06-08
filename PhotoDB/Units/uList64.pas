@@ -131,8 +131,6 @@ var
 begin
   MaxValue := MaxStatInt64;
   System.Move(MaxValue, Result, SizeOf(TDateTime));
-  if Result < 1900 then
-    Result := 1900;
 end;
 
 function TList64.GetMaxStatInteger: Integer;

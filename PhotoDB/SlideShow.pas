@@ -2142,10 +2142,10 @@ begin
   Result := ExecuteW(Sender, Info, '');
 end;
 
-function TViewer.ExecuteW(Sender: TObject; Info: TMediaItemCollection; LoadBaseFile : String) : Boolean;
+function TViewer.ExecuteW(Sender: TObject; Info: TMediaItemCollection; LoadBaseFile: string): Boolean;
 var
   I: Integer;
-  FOldImageExists, NotifyUser: Boolean;
+  NotifyUser: Boolean;
   CurrentItem, DBItem: TMediaItem;
 begin
   ForwardThreadExists := False;
@@ -2156,8 +2156,6 @@ begin
   Play := False;
   FullScreenNow := False;
   SlideShowNow := False;
-  FOldImageExists := ImageExists;
-  ImageExists := False;
   if LoadBaseFile = '' then
     ImageFrameTimer.Enabled := False;
   TW.I.Start('ToolButton1.Enabled');
@@ -2224,32 +2222,37 @@ begin
     CurrentInfo[I].FileName := ProcessPath(CurrentInfo[I].FileName, NotifyUser);
   end;
 
+  if CurrentInfo.Count = 0 then
   begin
-    if CurrentInfo.Count = 0 then
-      Exit;
-    if not FullScreenNow then
-      if FFullScreenView <> nil then
-        FFullScreenView.Close;
-    if not SlideShowNow then
-      if FDirectShowForm <> nil then
-        FDirectShowForm.Close;
+    Loading := False;
+    ImageExists := False;
+    FErrorMessage := L('List of images is empty');
+    RecreateDrawImage(Self);
+    Exit;
+  end;
 
-    CurrentFileNumber := CurrentInfo.Position;
-    if not ((LoadBaseFile <> '') and (AnsiLowerCase(Item.FileName) = AnsiLowerCase(LoadBaseFile))) then
-    begin
-      Loading := True;
-      TW.I.Start('LoadImage_');
+  if not FullScreenNow then
+    if FFullScreenView <> nil then
+      FFullScreenView.Close;
+  if not SlideShowNow then
+    if FDirectShowForm <> nil then
+      FDirectShowForm.Close;
 
-      LoadImage_(Sender, False, Zoom, False);
-    end else
-    begin
-      Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
-        [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
-        LastZoomValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
-      DisplayRating := Item.Rating;
-      FImageExists := FOldImageExists;
-      TbRotateCW.Enabled := TbRotateCCW.Enabled;
-    end;
+  CurrentFileNumber := CurrentInfo.Position;
+  if not ((LoadBaseFile <> '') and (AnsiLowerCase(Item.FileName) = AnsiLowerCase(LoadBaseFile))) then
+  begin
+    Loading := True;
+    ImageExists := False;
+    TW.I.Start('LoadImage_');
+
+    LoadImage_(Sender, False, Zoom, False);
+  end else
+  begin
+    Caption := Format(L('View') + ' - %s   [%dx%d] %f%%   [%d/%d]',
+      [ExtractFileName(Item.FileName), RealImageWidth, RealImageHeight,
+      LastZoomValue * 100, CurrentFileNumber + 1, CurrentInfo.Count]) + GetPageCaption;
+    DisplayRating := Item.Rating;
+    TbRotateCW.Enabled := TbRotateCCW.Enabled;
   end;
 
   if CurrentInfo.Count < 2 then
@@ -2692,11 +2695,11 @@ begin
   if Button = MbLeft then
   begin
     FMouseDowned := True;
+    GetCursorPos(DBDragPoint);
+
     if FileExistsSafe(Item.FileName) then
-    begin
       DBCanDrag := True;
-      GetCursorPos(DBDragPoint);
-    end;
+
     if ZoomerOn then
     begin
       Cursor := crHandPoint;
@@ -3580,6 +3583,7 @@ procedure TViewer.LoadingFailed(FileName, ErrorMessage: string);
 begin
   FErrorMessage := ErrorMessage;
   Loading := False;
+  ImageExists := False;
   FCurrentlyLoadedFile := FileName;
   Cursor := crDefault;
   TbFitToWindow.Enabled := False;
@@ -3595,7 +3599,6 @@ begin
   TbZoomIn.Down := False;
   EndWaitToImage(Self);
   ReAllignScrolls(False);
-  ImageExists := False;
   ForwardThreadExists := False;
   ForwardThreadNeeds := False;
   FForwardThreadReady := False;

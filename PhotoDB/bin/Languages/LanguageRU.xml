@@ -441,6 +441,7 @@
 	<translate name="Sort by rating" value="Сортировать по оценке" />
 	<translate name="Sort by file size" value="Сортировать по размеру файла" />
 	<translate name="Sort by image size" value="Сортировать по размеру изображения" />
+	<translate name="Sort by view count" value="Сортировать по количеству просмотров" />
 	<translate name="Find pictures" value="Найти фотографии" />
 	<translate name="Remove from list" value="Удалить из списка" />
 	<translate name="Open directory" value="Открыть папку" />
@@ -770,7 +771,8 @@
 	<translate name="Image is empty" value="Изображение пустое" />
 	<translate name="Image is encrypted" value="Изображение зашифровано" />
 	<translate name="Error displaying image!" value="Ошибка отображения изображения!" />
-	<translate name="Loading list of images" value="загрузка списка изображений" />
+	<translate name="Loading list of images" value="Загрузка списка изображений" />
+	<translate name="List of images is empty" value="Пустой список изображений" />
 	<translate name="Collection Item [%d]" value="Информация в коллекции [%d]" />
 	<translate name="Processing" value="Обработка" />
 	<translate name="Do you really want to delete file to recycle bin?" value="Вы действительно хотите удалить файл в корзину?" />
@@ -1647,6 +1649,7 @@
 	<translate name="date" value="дате"/>
 	<translate name="file size" value="размеру файла"/>
 	<translate name="image size" value="размеру изображения"/>
+	<translate name="view count" value="количеству просмотров"/>
 	<translate name=", sort by {0}, ascending" value=", сортировать по {0}, по возрастанию"/>
 	<translate name=", sort by {0}, descending" value=", сортировать по {0}, по убыванию"/>
 	<translate name="any photo" value="любое фото"/>

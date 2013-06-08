@@ -321,6 +321,7 @@ const
   SM_IMAGE_SIZE = 5;
   SM_COMPARING  = 6;
   SM_DUPLICATE  = 7;
+  SM_VIEW_COUNT = 8;
 //////////////////////////////////
 ///
 ///  Explorer

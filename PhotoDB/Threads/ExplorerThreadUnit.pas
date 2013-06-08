@@ -910,6 +910,8 @@ var
         Exit(SM_IMAGE_SIZE);
       dsmComparing:
         Exit(SM_COMPARING);
+      dsmViewCount:
+        Exit(SM_VIEW_COUNT);
     end;
   end;
 

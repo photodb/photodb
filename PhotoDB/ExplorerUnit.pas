@@ -561,6 +561,7 @@ type
     TmrStartDatabases: TTimer;
     N11: TMenuItem;
     N14: TMenuItem;
+    MiESSortByViewCount: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -1593,6 +1594,7 @@ begin
   TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBarMain.Images := ToolBarNormalImageList;
   ToolBarMain.DisabledImages := ToolBarDisabledImageList;
+  PnTopMenu.Height := ToolBarMain.Height;
 
   ToolBarBottom.DisabledImages := Icons.DisabledImageList;
 
@@ -4424,7 +4426,13 @@ begin
           Result.Captions[DetailsCount] := FI.KeyWords;
         Result.DetailCount := 3;
       end else
+      begin
+        Result.Details[1] := 1;
+        Result.Details[2] := 2;
+        Result.Captions[1] := '';
+        Result.Captions[2] := '';
         Result.DetailCount := 1;
+      end;
 
       if not Data.Include then
         Result.BorderColor := GetListItemBorderColor(Data);
@@ -4458,6 +4466,9 @@ begin
       LockDrawIcon := False;
       if not UpdatingList and ElvMain.Groups[0].Visible then
         AddItemToUpdate(Result);
+
+      if Result.Index mod 10 = 0 then
+        ElvMain.Scrollbars.Update;
       Break;
     end;
   end;
@@ -6183,17 +6194,21 @@ begin
   if IsEqualGUID(FSelectedInfo._GUID, FileGUID) then
   begin
     ClearGeoLocation;
-    FSelectedInfo.Width := Info.Width;
-    FSelectedInfo.Height := Info.Height;
-    FSelectedInfo.Id := Info.ID;
-    FSelectedInfo.Rating := Info.Rating;
-    FSelectedInfo.Access := Info.Access;
-    FSelectedInfo.Encrypted := Info.Encrypted;
-    if Info.GeoLocation <> nil then
+
+    if Info <> nil then
     begin
-      FSelectedInfo.GeoLocation := TGeoLocation.Create;
-      FSelectedInfo.GeoLocation.Latitude := Info.GeoLocation.Latitude;
-      FSelectedInfo.GeoLocation.Longitude := Info.GeoLocation.Longitude;
+      FSelectedInfo.Width := Info.Width;
+      FSelectedInfo.Height := Info.Height;
+      FSelectedInfo.Id := Info.ID;
+      FSelectedInfo.Rating := Info.Rating;
+      FSelectedInfo.Access := Info.Access;
+      FSelectedInfo.Encrypted := Info.Encrypted;
+      if Info.GeoLocation <> nil then
+      begin
+        FSelectedInfo.GeoLocation := TGeoLocation.Create;
+        FSelectedInfo.GeoLocation.Latitude := Info.GeoLocation.Latitude;
+        FSelectedInfo.GeoLocation.Longitude := Info.GeoLocation.Longitude;
+      end;
     end;
 
     if ExifInfo <> nil then
@@ -6222,10 +6237,6 @@ begin
       if IsVisible then
         EndScreenUpdate(PnInfoContainer.Handle, False);
     end;
-
-    {ReallignInfo;
-
-    ApplyLeftTabs;  }
   end;
 end;
 
@@ -7303,8 +7314,6 @@ begin
     FDatabaseInfo.OnSelectClick := TbDatabaseClick;
     PnTopMenuResize(Sender);
   end;
-
-  PnTopMenu.Height := ToolBarMain.Height;
 end;
 
 procedure TExplorerForm.ShowHelp(Text, Link: string);
@@ -11919,6 +11928,8 @@ begin
       MiESSortByFileSize.Tag := NativeInt(dsmFileSize);
       MiESSortByImageSize.Caption := L('Sort by image size');
       MiESSortByImageSize.Tag := NativeInt(dsmImageSize);
+      MiESSortByViewCount.Caption := L('Sort by view count');
+      MiESSortByViewCount.Tag := NativeInt(dsmViewCount);
 
       MiESShowHidden.Caption := L('Show hidden images');
       MiESShowPrivate.Caption := L('Show private images');
@@ -12684,6 +12695,8 @@ begin
      WlExtendedSearchSortBy.Text := L('Sort by file size');
     dsmImageSize:
      WlExtendedSearchSortBy.Text := L('Sort by image size');
+    dsmViewCount:
+     WlExtendedSearchSortBy.Text := L('Sort by view count');
   end;
 
   WlSearchRatingFrom.RefreshBuffer(True);
@@ -12763,6 +12776,7 @@ begin
   MiESSortByRating.Checked := FExtendedSearchParams.SortMode = dsmRating;
   MiESSortByFileSize.Checked := FExtendedSearchParams.SortMode = dsmFileSize;
   MiESSortByImageSize.Checked := FExtendedSearchParams.SortMode = dsmImageSize;
+  MiESSortByViewCount.Checked := FExtendedSearchParams.SortMode = dsmViewCount;
 end;
 
 procedure TExplorerForm.PmHelpPopup(Sender: TObject);

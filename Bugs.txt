@@ -26,12 +26,12 @@ Features ready:
 - Persons to EXIF (using XML string);
 - Import remember skips;
 - show deleted/duplicate pictures;
+- most viewed: sort by view count;
+- Scrollbars on loafding fix size;
 
 Bugs:
-- most viewed;
-- sort by view count;
 - recheck collection item;
-collection pack
+collection pack review;
 - rename/delete directory;
 
 Minor:

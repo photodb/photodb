@@ -73,7 +73,7 @@ type
   end;
 
 type
-  TDatabaseSortMode = (dsmID, dsmName, dsmRating, dsmDate, dsmFileSize, dsmImageSize, dsmComparing);
+  TDatabaseSortMode = (dsmID, dsmName, dsmRating, dsmDate, dsmFileSize, dsmImageSize, dsmComparing, dsmViewCount);
 
   TDatabaseSortModeHelper = record helper for TDatabaseSortMode
     function ToString: string;
@@ -370,6 +370,8 @@ begin
           SortDirection := 'image size';
         dsmComparing:
           SortDirection := 'comparing';
+        dsmViewCount:
+          SortDirection := 'view count';
       end;
 
       SortDirection := L(SortDirection);
@@ -552,6 +554,8 @@ begin
     Exit(dsmImageSize);
   if S = 'Comparing' then
     Exit(dsmComparing);
+  if S = 'Views' then
+    Exit(dsmViewCount);
 
   Exit(dsmRating);
 end;
@@ -574,6 +578,8 @@ begin
       Exit('ImageSize');
     dsmComparing:
       Exit('Comparing');
+    dsmViewCount:
+      Exit('Views');
   end;
 end;
 

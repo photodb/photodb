@@ -185,7 +185,11 @@ begin
   while IsPathDelimiter(S, Length(S)) do
     S := ExcludeTrailingPathDelimiter(S);
 
-  S := ExtractFileDir(S);
+  if S.EndsWith('::') and S.StartsWith('::') and (Pos('\', S) = 0) then
+    //this is CD mapper path
+    Exit(TCollectionFolder.CreateFromPath(cCollectionPath + '\' + cCollectionBrowsePath, PATH_LOAD_NO_IMAGE, 0))
+  else
+    S := ExtractFileDir(S);
 
   if (S = '') then
     Exit(TCollectionItem.CreateFromPath(cCollectionPath, PATH_LOAD_NO_IMAGE, 0));

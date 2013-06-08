@@ -499,7 +499,7 @@ begin
     Query := FContext.CreateQuery(dbilRead);
     try
       ReadOnlyQuery(Query);
-      Query.Active := False;
+
       SetSQL(Query, 'SELECT * FROM $DB$ WHERE FolderCRC = ' + IntToStr(GetPathCRC(FInfo.FileName, True))
           + ' AND FFileName LIKE :FFileName');
       SetStrParam(Query, 0, AnsiLowerCase(FInfo.FileName));
@@ -511,7 +511,6 @@ begin
         FInfo.ReadFromDS(Query);
         FIsNewDBInfo := True;
       end;
-      Query.Close;
     finally
       FreeDS(Query);
     end;

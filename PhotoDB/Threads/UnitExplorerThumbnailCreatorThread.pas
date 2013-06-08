@@ -133,6 +133,7 @@ begin
           try
             if (PI <> nil) and PI.Provider.ExtractPreview(PI, ThSizeExplorerPreview, ThSizeExplorerPreview, FBit, Data) then
             begin
+              FHistogramm := FillHistogramma(Fbit);
               TempBitmap := TBitmap.Create;
               try
                 TempBitmap.PixelFormat := pf32Bit;
@@ -162,6 +163,20 @@ begin
         finally
           F(FBit);
         end;
+
+        if FHistogramm.Loaded then
+        begin
+          FHistogrammImage := TBitmap.Create;
+          GetGistogrammBitmapWRGB(130, FHistogramm.Gray, FHistogramm.Red, FHistogramm.Green, FHistogramm.Blue, MinC, MaxC, FHistogrammImage, clGray);
+          SynchronizeEx(SetInfo);
+        end else
+          SynchronizeEx(
+            procedure
+            begin
+              (FOwner as TExplorerForm).ClearHistogram;
+            end
+          );
+
         Exit;
       end;
 

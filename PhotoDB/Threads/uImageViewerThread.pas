@@ -263,10 +263,6 @@ procedure TImageViewerThread.SetAnimatedImageAsynch;
 begin
   if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
   begin
-    {if FIsNewDBInfo then
-      ViewerForm.UpdateInfo(FSID, FInfo);
-    ViewerForm.SetFullImageState(FFullImage, FBeginZoom, 1, 0);
-    ViewerForm.SetAnimatedImage(Graphic);   }
     FOwnerControl.SetAnimatedImage(FGraphic, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale, FExifInfo);
     Pointer(FGraphic) := nil;
   end;
@@ -287,11 +283,6 @@ procedure TImageViewerThread.SetStaticImage;
 begin
   if IsEqualGUID(FOwnerControl.ActiveThreadId, FThreadId) then
   begin
-    {ViewerForm.Item.Encrypted := FIsEncrypted;
-    if FIsNewDBInfo then
-      ViewerForm.UpdateInfo(FSID, FInfo);
-    ViewerForm.SetFullImageState(FFullImage, FBeginZoom, FPages, FPage);
-    ViewerForm.SetStaticImage(Bitmap, FTransparent);}
     FOwnerControl.SetStaticImage(FBitmap, FRealWidth, FRealHeight, FInfo.Rotation, FRealZoomScale, FExifInfo);
     FBitmap := nil;
   end else

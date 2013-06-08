@@ -702,8 +702,9 @@ begin
       SM_DATE_TIME:  Result := ' ORDER BY DateToAdd'      + SortDirection + ', aTime' + SortDirection;
       SM_RATING:     Result := ' ORDER BY Rating'         + SortDirection + ', DateToAdd desc, aTime desc';
       SM_FILE_SIZE:  Result := ' ORDER BY FileSize'       + SortDirection;
-      SM_IMAGE_SIZE: Result := ' ORDER BY (Width*Height)' + SortDirection + ', Rating, DateToAdd desc, aTime desc' + SortDirection;
+      SM_IMAGE_SIZE: Result := ' ORDER BY (Width*Height)' + SortDirection + ', Rating, DateToAdd desc, aTime ' + SortDirection;
       SM_DUPLICATE:  Result := '';
+      SM_VIEW_COUNT: Result := ' ORDER BY ViewCount'      + SortDirection+ ', Rating, DateToAdd desc, aTime ' + SortDirection;
     else
                      Result := ' ORDER BY ID'             + SortDirection;
     end;

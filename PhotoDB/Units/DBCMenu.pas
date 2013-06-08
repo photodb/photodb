@@ -1141,7 +1141,7 @@ begin
     Context := DBManager.DBContext;
 
     FQuery := Context.CreateQuery;
-    SQL_ := 'UPDATE $DB$ SET Attr=' + Inttostr(Db_attr_not_exists) + ' WHERE ID in (';
+    SQL_ := 'DELETE FROM $DB$ WHERE ID in (';
     FirstID := True;
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
@@ -1159,15 +1159,9 @@ begin
     for I := 0 to Finfo.Count - 1 do
       if Finfo[I].Selected then
       begin
-        begin
-          if FileExistsSafe(Finfo[I].FileName) then
-          begin
-            try
-              SilentDeleteFile(Application.Handle, Finfo[I].FileName, True);
-            except
-            end;
-          end;
-        end;
+        if FileExistsSafe(Finfo[I].FileName) then
+          SilentDeleteFile(Application.Handle, Finfo[I].FileName, True);
+
         CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
       end;
     FreeDS(FQuery);
