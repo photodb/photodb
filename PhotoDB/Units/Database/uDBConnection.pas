@@ -161,7 +161,7 @@ function GetBlobStream(F: TField; Mode: TBlobStreamMode) : TStream;
 procedure AssignParam(Query: TDataSet; Index: Integer; Value: TPersistent);
 
 procedure CreateMSAccessDatabase(FileName: string);
-procedure TryRemoveConnection(FileName: string; Delete: Boolean = False);
+function TryRemoveConnection(FileName: string; Delete: Boolean = False): Boolean;
 procedure PackTable(FileName: string; Progress: TSimpleCallBackProgressRef; BackupFileName: string = '');
 
 function GetPathCRC(FileFullPath: string; IsFile: Boolean): Integer;
@@ -367,22 +367,32 @@ begin
   Result := DBConnection.Connection;
 end;
 
-procedure TryRemoveConnection(FileName: string; Delete: Boolean = false);
+function TryRemoveConnection(FileName: string; Delete: Boolean = False): Boolean;
 var
   I: Integer;
 begin
-  if ADOConnections = nil then
-    Exit;
+  Result := True;
 
-  FileName := AnsiLowerCase(FileName);
-  for I := ADOConnections.Count - 1 downto 0 do
-  begin
-    if ADOConnections[I].FileName = FileName then
-      if (not ADOConnections[I].IsBusy) and Delete then
+  FSync.Enter;
+    try
+    if ADOConnections = nil then
+      Exit;
+
+    FileName := AnsiLowerCase(FileName);
+    for I := ADOConnections.Count - 1 downto 0 do
+    begin
+      if ADOConnections[I].FileName = FileName then
       begin
-        ADOConnections[I].Free;
-        ADOConnections.RemoveAt(I);
+        Result := False;
+        if (not ADOConnections[I].IsBusy) and Delete then
+        begin
+          ADOConnections[I].Free;
+          ADOConnections.RemoveAt(I);
+        end;
       end;
+    end;
+  finally
+    FSync.Leave;
   end;
 end;
 
@@ -538,7 +548,9 @@ begin
   try
     //refresh cache because of multi-connection work
     //TODO: check time for this line
-    FlushJROCache(TCustomADODataSet(DS).Connection.ConnectionObject);
+    if TCustomADODataSet(DS).Connection <> nil then
+      if TCustomADODataSet(DS).Connection.ConnectionObject <> nil then
+        FlushJROCache(TCustomADODataSet(DS).Connection.ConnectionObject);
 
     DS.Open;
     Result := True;
@@ -788,20 +800,25 @@ begin
     WatchThread := TThread.CreateAnonymousThread(
       procedure
       var
-        CurrentSize: Int64;
+        FS, CurrentSize: Int64;
       begin
+        CurrentSize := 0;
         while PackInProgress do
         begin
-          Sleep(100);
+          Sleep(250);
           if Assigned(Progress) then
           begin
-            CurrentSize := GetFileSizeByName(Name);
+            FS := GetFileSizeByName(Name);
+            if FS > CurrentSize then
+              CurrentSize := FS;
+
             if CurrentSize > TotalSize then
               CurrentSize := TotalSize;
 
             Progress(nil, TotalSize, CurrentSize);
           end;
         end;
+        Sleep(100);
         ExitCode := 0;
       end
     );
@@ -810,7 +827,7 @@ begin
 
     PackInProgress := True;
     try
-
+                            //TODO: Dao.DBEngine.120
       V := CreateOleObject('jro.JetEngine');
       try
         V.CompactDatabase(Src, Dest);// сжимаем

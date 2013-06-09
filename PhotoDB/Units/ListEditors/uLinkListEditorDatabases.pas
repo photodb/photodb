@@ -6,6 +6,7 @@ uses
   Generics.Defaults,
   Generics.Collections,
   Winapi.Windows,
+  Winapi.ActiveX,
   System.SysUtils,
   System.Classes,
   Vcl.Controls,
@@ -26,6 +27,7 @@ uses
   uConstants,
   uMemory,
   uRuntime,
+  uLogger,
   uStringUtils,
   uDBForm,
   uDBTypes,
@@ -37,6 +39,7 @@ uses
   uVclHelpers,
   uIconUtils,
   uTranslate,
+  uTranslateUtils,
   uShellIntegration,
   uFormInterfaces,
   uCollectionUtils,
@@ -53,7 +56,9 @@ type
     procedure OnChangePlaceClick(Sender: TObject);
     procedure OnPreviewOptionsClick(Sender: TObject);
     procedure OnUpdateOptionsClick(Sender: TObject);
+    procedure OnCompactAndRepairClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure UpdateCompactAndRepairLabel;
   public
     constructor Create(Owner: TDBForm);
     destructor Destroy; override;
@@ -71,14 +76,15 @@ procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 implementation
 
 const
-  CHANGE_DB_ICON            = 1;
-  CHANGE_DB_CAPTION_EDIT    = 2;
-  CHANGE_DB_CHANGE_PATH     = 3;
-  CHANGE_DB_PATH            = 4;
-  CHANGE_DB_DESC_EDIT       = 5;
-  CHANGE_DB_DESC_LABEL      = 6;
-  CHANGE_DB_UPDATE_OPTIONS  = 7;
-  CHANGE_DB_PREVIEW_OPTIONS = 7;
+  CHANGE_DB_ICON                = 1;
+  CHANGE_DB_CAPTION_EDIT        = 2;
+  CHANGE_DB_CHANGE_PATH         = 3;
+  CHANGE_DB_PATH                = 4;
+  CHANGE_DB_DESC_EDIT           = 5;
+  CHANGE_DB_DESC_LABEL          = 6;
+  CHANGE_DB_UPDATE_OPTIONS      = 7;
+  CHANGE_DB_PREVIEW_OPTIONS     = 7;
+  CHANGE_DB_COMPACT_AND_REPAIR  = 8;
 
 procedure UpdateCurrentCollectionDirectories(CollectionFile: string);
 var
@@ -116,7 +122,7 @@ var
   DI: TDatabaseInfo;
   WlIcon: TWebLink;
   WlChangeLocation,
-  WLUpdateOptions, WlPreviewOptions: TWebLink;
+  WLUpdateOptions, WlPreviewOptions, WlCompactAndRepair: TWebLink;
   WedCaption,
   WedDescription: TWatermarkedEdit;
   LbInfo,
@@ -137,6 +143,7 @@ begin
 
   WLUpdateOptions := Editor.FindChildByTag<TWebLink>(CHANGE_DB_UPDATE_OPTIONS);
   WlPreviewOptions := Editor.FindChildByTag<TWebLink>(CHANGE_DB_PREVIEW_OPTIONS);
+  WlCompactAndRepair := Editor.FindChildByTag<TWebLink>(CHANGE_DB_COMPACT_AND_REPAIR);
 
   if WlIcon = nil then
   begin
@@ -239,6 +246,22 @@ begin
     WlPreviewOptions.RefreshBuffer(True);
     WlPreviewOptions.OnClick := OnPreviewOptionsClick;
   end;
+
+  if WlCompactAndRepair = nil then
+  begin
+    WlCompactAndRepair := TWebLink.Create(Editor);
+    WlCompactAndRepair.Parent := Editor;
+    WlCompactAndRepair.Tag := CHANGE_DB_COMPACT_AND_REPAIR;
+    WlCompactAndRepair.Height := 26;
+    WlCompactAndRepair.Left := 35;
+    WlCompactAndRepair.Top := WlPreviewOptions.Top + WlPreviewOptions.Height + 8;
+    WlCompactAndRepair.IconWidth := 16;
+    WlCompactAndRepair.IconHeight := 16;
+    WlCompactAndRepair.LoadFromResource('SERIES_SETTINGS');
+    WlCompactAndRepair.OnClick := OnCompactAndRepairClick;
+  end;
+  UpdateCompactAndRepairLabel;
+  WlCompactAndRepair.RefreshBuffer(True);
 
   Icon := ExtractSmallIconByPath(DI.Icon);
   try
@@ -499,6 +522,118 @@ begin
   end;
 end;
 
+procedure TLinkListEditorDatabases.OnCompactAndRepairClick(Sender: TObject);
+var
+  DI: TDatabaseInfo;
+  Editor: TPanel;
+
+  CompactThread: TThread;
+  ProgressForm: IBackgroundTaskStatusForm;
+begin
+  if ID_YES <> MessageBoxDB(Screen.ActiveFormHandle, TA('Do you really want to compact collection file and check it for errors?', 'System'), TA('Warning'), TD_BUTTON_YESNO, TD_ICON_WARNING) then
+    Exit;
+
+  Editor := TPanel(TControl(Sender).Parent);
+  DI := TDatabaseInfo(Editor.Tag);
+
+  ProgressForm := BackgroundTaskStatusForm;
+  try
+
+    CompactThread := TThread.CreateAnonymousThread(
+      procedure
+      var
+        Data: TDatabaseInfo;
+        StartC: Cardinal;
+        IsTaskComplete: Boolean;
+        ErrorMessage: string;
+      begin
+        Data := DI.Clone as TDatabaseInfo;
+        StartC := GetTickCount;
+        IsTaskComplete := False;
+        ErrorMessage := '';
+        try
+          //to call show modal before end of all update process
+          Sleep(100);
+
+          CoInitializeEx(nil, COM_MODE);
+          try
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                ProgressForm.SetText(TA('Locking file...', 'System'));
+                ProgressForm.SetProgress(100, 0);
+              end
+            );
+            try
+              while GetTickCount - StartC < 10000 do
+              begin
+                Sleep(100);
+                if TryRemoveConnection(Data.Path, True) then
+                begin
+
+                  TThread.Synchronize(nil,
+                    procedure
+                    begin
+                      ProgressForm.SetText(TA('Executing, %', 'System'));
+                    end
+                  );
+                  PackTable(Data.Path,
+                    procedure(Sender: TObject; Total, Value: Int64)
+                    begin
+                      TThread.Synchronize(nil,
+                        procedure
+                        begin
+                          ProgressForm.SetProgress(Total, Value);
+                        end
+                      );
+                    end
+                  ); 
+                  IsTaskComplete := True;
+                  Break;
+                end;
+              end;
+            except
+              on e: Exception do
+              begin
+                EventLog(e);
+                ErrorMessage := e.Message;
+              end;
+            end;
+          finally
+            CoUninitialize;
+          end;
+
+        finally
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              ProgressForm.CloseForm;
+              if IsTaskComplete then
+                MessageBoxDB(Screen.ActiveFormHandle, TA('Operation completed successfully!', 'System'), TA('Information'), TD_BUTTON_OK, TD_ICON_INFORMATION)
+              else
+              begin
+                if ErrorMessage <> '' then
+                  MessageBoxDB(Screen.ActiveFormHandle, FormatEx(TA('An unhandled error occurred: {0}!'), [ErrorMessage]), TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR)
+                else
+                  MessageBoxDB(Screen.ActiveFormHandle, TA('Failed to lock collection file, try again in a few seconds!', 'System'), TA('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+              end;
+
+              UpdateCompactAndRepairLabel;
+            end
+          );
+        end;
+      end
+    );
+
+    CompactThread.FreeOnTerminate := True;
+    CompactThread.Start;
+
+    ProgressForm.ShowModal;
+  finally
+    ProgressForm := nil;
+  end;
+end;
+
 function TLinkListEditorDatabases.OnDelete(Sender: ILinkItemSelectForm;
   Data: TDataObject; Editor: TPanel): Boolean;
 var
@@ -545,6 +680,19 @@ end;
 procedure TLinkListEditorDatabases.SetForm(Form: IFormLinkItemEditorData);
 begin
   FForm := Form;
+end;
+
+procedure TLinkListEditorDatabases.UpdateCompactAndRepairLabel;
+var
+  Editor: TPanel;
+  DI: TDatabaseInfo;
+  WlCompactAndRepair: TWebLink;
+begin
+  Editor := FForm.EditorPanel;
+  DI := TDatabaseInfo(Editor.Tag);
+  WlCompactAndRepair := Editor.FindChildByTag<TWebLink>(CHANGE_DB_COMPACT_AND_REPAIR);
+
+  WlCompactAndRepair.Text := FormatEx(FOwner.L('Compact ({0}) and repair'), [SizeInText(GetFileSizeByName(DI.Path))]);
 end;
 
 procedure TLinkListEditorDatabases.UpdateItemFromEditor(

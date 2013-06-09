@@ -64,7 +64,7 @@
 	<translate name="Select language" value="Выбор языка" />
 	<translate name="Please, select language of PhotoDB install" value="Пожалуйста, выберите язык для установки PhotoDB" />
   </scope>
-  <scope name="System">	
+  <scope name="System">
 	<translate name="This program is running, but isn't responding! Run new instance?" value="Программа уже запущена, но не отвечает на запросы. Запустить ещё одну копию?" />
 	<translate name="Do you really want to delete Photo Database 4.5?" value="Вы действительно хотите удалить Photo Database 4.5?" />
 	<translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
@@ -78,7 +78,11 @@
 	<translate name="Home page" value="Домашняя страница" />
 	<translate name="Please, activate the program to encrypt files larger than 1Gb!" value="Пожалуйста, активируйте программу, чтобы шифровать файлы более 1Gb!" />
 	<translate name="Transparent encryption isn't available on mobile verison." value="Прозрачное шифрование недоступно в мобильной версии." />
-	<translate name="Previous instance of the Photo Database was unexpected terminated. Check collection for errors?" value="Предыдущий запуск прораммы был неожиданно завершён. Проверить коллекцию на наличие ошибок?" />
+	<translate name="Do you really want to compact collection file and check it for errors?" value="Вы действительно хотите сжать файл коллекции и проверьте его на наличие ошибок?" />
+	<translate name="Locking file..." value="Блокировка файла..." />
+	<translate name="Executing, %" value="Выполнение, %" />
+	<translate name="Operation completed successfully!" value="Операция успешно завершена!" />
+	<translate name="Failed to lock collection file, try again in a few seconds!" value="Не удалось заблокировать коллекцию, попробуйте через несколько секунд!" />
   </scope>
   <scope name="Setup">
 	<translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
@@ -483,6 +487,7 @@
 	<translate name="Change synchronization settings" value="Изменить настройки синхронизации" />
 	<translate name="Change preview options" value="Изменить настройки предпросмотров" />
 	<translate name="Edit collection" value="Редактировать коллекцию" />
+	<translate name="Compact ({0}) and repair" value="Сжать ({0}) и починить" />
 	<translate name="Active collection can't be deleted! Please change active collection and try again." value="Текущая коллекция не может быть удалена! Пожалуйста, измените активную коллекцию и попробуйте снова." />
 	<translate name="Collection &quot;{0}&quot; already exists! Delete this collection file?" value="Коллекция &quot;{0}&quot; уже существует! Удалить этот файл с коллекцией?" />
 	<translate name="Location {0} is already in collection!" value="Путь {0} уже находится в коллекции!" />

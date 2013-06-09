@@ -28,10 +28,12 @@ Features ready:
 - show deleted/duplicate pictures;
 - most viewed: sort by view count;
 - Scrollbars on loafding fix size;
+- en free activation;
+- new activation code;
+collection pack review;
 
 Bugs:
 - recheck collection item;
-collection pack review;
 - rename/delete directory;
 
 Minor:

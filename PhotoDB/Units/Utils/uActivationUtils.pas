@@ -249,13 +249,15 @@ begin
   //N := N xor $6357A303; // v2.3
   N := N xor $6357A304; // v3.0,3.1
   N := N xor $6357A305; // v4.0
+  N := N xor $ABDC412F; // v4.5
   S := IntToHex(N, 8);
   CalcStringCRC32(S, N);
   //Check sum
   //N := N xor $162C90CA; // v2.3
   N := N xor $162C90CB; // v3.0,3.1
   N := N xor $162C90CC; // v4.0
-  Code := S + Inttohex(N, 8);
+  N := N xor $21DFAA43; // v4.5
+  Code := S + IntToHex(N, 8);
   Result := Code;
 end;
 
@@ -276,7 +278,7 @@ end;
 
 function TActivationManager.GetCanUseFreeActivation: Boolean;
 begin
-  Result := TTranslateManager.Instance.Language = 'RU';
+  Result := (TTranslateManager.Instance.Language = 'RU') or (TTranslateManager.Instance.Language = 'EN');
 end;
 
 function TActivationManager.GetIsDemoMode: Boolean;

@@ -46,6 +46,7 @@ type
     FMouseCaptured: Boolean;
     FCapturedPosition: TPoint;
     FFormPosition: TPoint;
+    FCanBeClosed: Boolean;
     procedure DrawForm;
   protected
     function GetFormID: string; override;
@@ -65,6 +66,7 @@ implementation
 
 procedure TFormBackgroundTaskStatus.CloseForm;
 begin
+  FCanBeClosed := True;
   Close;
 end;
 
@@ -121,14 +123,17 @@ end;
 
 procedure TFormBackgroundTaskStatus.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Action := caHide;
-  TmrRedraw.Enabled := False;
+  if FCanBeClosed then
+    Action := caHide
+  else
+    Action := caNone;
 end;
 
 procedure TFormBackgroundTaskStatus.FormCreate(Sender: TObject);
 begin
   LbMessage.Caption := L('Please wait...');
   FMouseCaptured := False;
+  FCanBeClosed := False;
 end;
 
 procedure TFormBackgroundTaskStatus.FormDestroy(Sender: TObject);

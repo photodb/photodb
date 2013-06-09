@@ -152,7 +152,12 @@ begin
           for I := 0 to Tasks.Count - 1 do
           begin
             Task := Tasks[I];
-            ProgressForm.SetText(Task.Text);
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                ProgressForm.SetText(Task.Text);
+              end
+            );
             CurrentVersion := Task.Execute(
               procedure(Sender: TObject; Total, Value: Int64)
               begin
@@ -178,13 +183,13 @@ begin
             );
           end;
 
+        finally
           TThread.Synchronize(nil,
             procedure
             begin
               ProgressForm.CloseForm;
             end
           );
-        finally
           CoUninitialize;
         end;
       end

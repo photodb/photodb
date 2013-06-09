@@ -4,6 +4,7 @@ interface
 
 uses
   Winapi.Windows,
+  Winapi.ShellApi,
   System.SysUtils,
   System.Classes,
   Vcl.Graphics,
@@ -141,6 +142,13 @@ begin
     if Reply = 'e' then
     begin
       MessageBoxDB(Handle, Format(L('Field "%s" is required and should be well-formatted!'), [L('E-mail')]), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+      Exit;
+    end;
+    //4.5 or later
+    if Reply.StartsWith('http://') or Reply.StartsWith('https://') then
+    begin
+      ShellExecute(GetActiveWindow, 'open', PWideChar(Reply), nil, nil, SW_NORMAL);
+      IsStepComplete := True;
       Exit;
     end;
 

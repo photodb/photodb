@@ -5,13 +5,16 @@ interface
 uses
   Classes,
   SysUtils,
+
+  Dmitry.Utils.System,
+
   uInternetUtils,
   uConstants,
   uActivationUtils,
+  uTranslate,
   uGOM,
   uDBForm,
   uDBThread,
-  Dmitry.Utils.System,
   uUpTime;
 
 type
@@ -67,7 +70,7 @@ begin
   try
     try
       QueryUrl := FreeActivationURL;
-      QueryParams := Format('?k=%s&v=%s&fn=%s&ln=%s&e=%s&p=%s&co=%s&ci=%s&a=%s&ut=%s',
+      QueryParams := Format('?k=%s&v=%s&fn=%s&ln=%s&e=%s&p=%s&co=%s&ci=%s&a=%s&ut=%s&lng=%s',
         [TActivationManager.Instance.ApplicationCode,
         ProductVersion,
         EncodeBase64Url(FInfo.FirstName),
@@ -77,7 +80,8 @@ begin
         EncodeBase64Url(FInfo.Country),
         EncodeBase64Url(FInfo.City),
         EncodeBase64Url(FInfo.Address),
-        IntToStr(GetCurrentUpTime)]);
+        IntToStr(GetCurrentUpTime),
+        TTranslateManager.Instance.Language]);
       FServerReply := DownloadFile(QueryUrl + QueryParams, TEncoding.UTF8);
     except
       on e: Exception do

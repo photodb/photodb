@@ -80,22 +80,6 @@ begin
   if GetParamStrDBBool('/close') then
     StopApplication;
 
-  {$IFNDEF DEBUG}
-  if not FolderView and not DBTerminating then
-    if not GetParamStrDBBool('/NoFaultCheck') then
-      if (AppSettings.ReadProperty('Starting', 'ApplicationStarted') = '1') then
-      begin
-        CloseSplashWindow;
-        if ID_OK = MessageBoxDB(Application.MainFormHandle, TA('Previous instance of the Photo Database was unexpected terminated. Check collection for errors?', 'System'), TA('Error'), TD_BUTTON_OKCANCEL, TD_ICON_ERROR) then
-        begin
-          AppSettings.WriteBool('StartUp', 'Pack', False);
-          Application.CreateForm(TCMDForm, CMDForm);
-          CMDForm.PackPhotoTable(Context.CollectionFileName);
-          R(CMDForm);
-        end;
-      end;
-  {$ENDIF}
-
   if not FolderView and not DBTerminating then
     if GetParamStrDBBool('/PACKTABLE') or AppSettings.ReadBool('StartUp', 'Pack', False) then
     begin

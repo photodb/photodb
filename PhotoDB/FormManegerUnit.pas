@@ -525,9 +525,12 @@ begin
     UpdaterStorage.CleanUpDatabase(DBManager.DBContext);
     UpdaterStorage.SaveStorage;
     UpdaterStorage.RestoreStorage(DBManager.DBContext);
+    FCollectionCheckCount := 0;
     if FDirectoryWatcher <> nil then
-      (FDirectoryWatcher as IUserDirectoriesWatcher).Execute(DBManager.DBContext);
-    FCollectionCheckCOunt := 0;
+    begin
+      (FDirectoryWatcher as IUserDirectoriesWatcher).StopWatch;
+      FDirectoryWatcher := nil;
+    end;
   end;
 
   if ID <= 0 then
