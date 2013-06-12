@@ -30,9 +30,11 @@ Features ready:
 - Scrollbars on loafding fix size;
 - en free activation;
 - new activation code;
-collection pack review;
+- collection pack review;
+- Import list view;
 
 Bugs:
+- sort by list menu - view count;
 - recheck collection item;
 - rename/delete directory;
 

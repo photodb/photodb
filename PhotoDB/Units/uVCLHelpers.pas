@@ -55,7 +55,7 @@ type
 type
   TCheckBoxHelper = class helper for TCheckBox
   public
-    procedure AdjustWidth;
+    procedure AdjustWidth(AdditionalWidth: Integer = 0);
   end;
 
 type
@@ -228,7 +228,7 @@ end;
 
 { TCheckBoxHelper }
 
-procedure TCheckBoxHelper.AdjustWidth;
+procedure TCheckBoxHelper.AdjustWidth(AdditionalWidth: Integer = 0);
 var
   TextSize: TSize;
   ADC: HDC;
@@ -237,7 +237,7 @@ begin
   try
     SelectObject(ADC, Font.Handle);
     GetTextExtentPoint32(ADC, PChar(Caption), Length(Caption), TextSize);
-    Width := TextSize.Cx + GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE) * 2;
+    Width := TextSize.Cx + GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE) * 2 + AdditionalWidth;
   finally
     ReleaseDc(Handle, ADC);
   end;

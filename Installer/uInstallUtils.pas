@@ -40,6 +40,7 @@ function ResolveInstallPath(Path: string): string;
 procedure CreateInternetShortcut(const FileName, LocationURL: string);
 function GetInstalledFileName: string;
 procedure ActivateBackgroundApplication(HWnd: THandle);
+function GetFontsDirectory: string;
 
 implementation
 
@@ -172,6 +173,28 @@ begin
        LocationURL) ;
   finally
     Free;
+  end;
+end;
+
+function GetFontsDirectory: string;
+var
+  shellMalloc: IMalloc;
+  ppidl: PItemIdList;
+begin
+  Result := '';
+  ppidl := nil;
+  try
+    if SHGetMalloc(shellMalloc) = NOERROR then
+    begin
+      SHGetSpecialFolderLocation(0, CSIDL_FONTS, ppidl);
+      SetLength(Result, MAX_PATH);
+      if not SHGetPathFromIDList(ppidl, PChar(Result)) then
+        Exit;
+      SetLength(Result, lStrLen(PChar(Result)));
+    end;
+  finally
+   if ppidl <> nil then
+     shellMalloc.free(ppidl);
   end;
 end;
 

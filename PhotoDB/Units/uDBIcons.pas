@@ -16,9 +16,9 @@ uses
   uImageListUtils;
 
 const
-  IconsCount = 131;
+  IconsCount = 132;
 const
-  IconsVersion = '1_3';
+  IconsVersion = '1_4';
 
 type
   TDbKernelArrayIcons = array [1 .. IconsCount] of THandle;
@@ -318,6 +318,7 @@ begin
     Icons[129] := LoadIcon(HInstance,'EDIT_PROFILE');
     Icons[130] := LoadIcon(HInstance,'AAA');
     Icons[131] := LoadIcon(HInstance,'LINK');
+    Icons[132] := LoadIcon(HInstance,'VIEW_COUNT');
 
     //disabled items are bad
     for I := 1 to IconsCount do

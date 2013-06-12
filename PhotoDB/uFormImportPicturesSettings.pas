@@ -109,7 +109,7 @@ begin
     CbOnlyImages.Caption := L('Import only supported images');
     CbDeleteAfterImport.Caption := L('Delete files after import');
     CbAddToCollection.Caption := L('Add files to collection after copying files');
-    CbOnlyImages.AdjustWidth;
+    CbOnlyImages.AdjustWidth(20);
     WlFilter.Left := CbOnlyImages.Left + CbOnlyImages.Width + 10;
     WlFilter.Top := CbOnlyImages.Top + CbOnlyImages.Height div 2 - WlFilter.Height div 2;
     CbOpenDestination.Caption := L('Open destination directory after import');

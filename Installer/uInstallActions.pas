@@ -8,6 +8,8 @@ uses
   System.Classes,
   System.StrUtils,
   System.SysUtils,
+  System.Win.Registry,
+  Winapi.ActiveX,
   Winapi.Windows,
   Winapi.Messages,
   Winapi.ShellApi,
@@ -305,6 +307,8 @@ var
   ObjectPath: string;
   StartInfo: TStartupInfo;
   ProcInfo: TProcessInformation;
+  hReg: TRegistry;
+  FontName, FontsDirectory: string;
 begin
   CurentPosition := 0;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -338,6 +342,28 @@ begin
         end;
       end;
 
+      if DiskObject.Actions[J].Scope = asInstallFont then
+      begin
+        FontsDirectory := GetFontsDirectory;
+        ObjectPath := ResolveInstallPath(IncludeTrailingBackslash(DiskObject.FinalDestination) + DiskObject.Name);
+
+        FontName := DiskObject.Name;
+        CopyFile(PChar(ObjectPath), PChar(FontsDirectory + FontName), False);
+
+        hReg := TRegistry.Create;
+        try
+          hReg.RootKey := HKEY_LOCAL_MACHINE;
+          hReg.LazyWrite := False;
+          if hReg.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Fonts', False) then
+            hReg.WriteString(DiskObject.Actions[J].CommandLine, FontName);
+          hReg.CloseKey;
+        finally
+          F(hReg);
+        end;
+
+        AddFontResource(PChar(FontsDirectory + FontName));
+        SendNotifyMessage(HWND_BROADCAST, WM_FONTCHANGE, SPI_SETDOUBLECLICKTIME, 0);
+      end;
     end;
   end;
 end;

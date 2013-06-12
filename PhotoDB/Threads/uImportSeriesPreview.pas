@@ -116,6 +116,7 @@ begin
             try
               if LoadImageFromPath(MediaItem, 1, '', [ilfGraphic, ilfICCProfile, ilfEXIF], ImageInfo, FImageSize, FImageSize) then
               begin
+                F(FBitmap);
                 FBitmap := ImageInfo.GenerateBitmap(MediaItem, FImageSize, FImageSize, pf32bit, clNone, [ilboFreeGraphic, ilboRotate, ilboApplyICCProfile, ilboQualityResize]);
                 if (FBitmap <> nil) and SynchronizeEx(UpdatePreview) then
                   FBitmap := nil;

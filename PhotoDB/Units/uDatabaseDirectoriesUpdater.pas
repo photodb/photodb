@@ -103,9 +103,9 @@ type
     FQuery: TDataSet;
     FThreadID: TGUID;
     FSkipExtensions: string;
+    FAddRawFiles: Boolean;
     FDBContext: IDBContext;
     FRescanDirectory: string;
-    FAddRawFiles: Boolean;
     function IsDirectoryChangedOnDrive(Directory: string; ItemSizes: TList<Int64>; ItemsToAdd: TList<string>; ItemsToUpdate: TList<TUpdateTask>): Boolean;
     procedure AddItemsToDatabase(Items: TList<string>);
     procedure UpdateItemsInDatabase(Items: TList<TUpdateTask>);
@@ -334,23 +334,28 @@ begin
     TDatabaseDirectoriesUpdater.Create(DBManager.DBContext, DirectoryPath);
 end;
 
-{ TDatabaseDirectoriesUpdater }
-
-function TDatabaseDirectoriesUpdater.CanAddFileAutomatically(FileName: string): Boolean;
+function CheckIfCanAddFileAutomatically(FileName: string; AddRawFiles: Boolean; SkipExtensions: string): Boolean;
 var
   Ext: string;
 begin
-  if not FAddRawFiles and IsRAWImageFile(FileName) then
+  if not AddRawFiles and IsRAWImageFile(FileName) then
     Exit(False);
 
-  if FSkipExtensions <> '' then
+  if SkipExtensions <> '' then
   begin
     Ext := AnsiLowerCase(ExtractFileExt(FileName));
-    if FSkipExtensions.IndexOf(AnsiLowerCase(Ext)) > 0 then
+    if SkipExtensions.IndexOf(AnsiLowerCase(Ext)) > 0 then
       Exit(False);
   end;
 
   Exit(True);
+end;
+
+{ TDatabaseDirectoriesUpdater }
+
+function TDatabaseDirectoriesUpdater.CanAddFileAutomatically(FileName: string): Boolean;
+begin
+  Result := CheckIfCanAddFileAutomatically(FileName, FAddRawFiles, FSkipExtensions);
 end;
 
 constructor TDatabaseDirectoriesUpdater.Create(DBContext: IDBContext; RescanDirectory: string = '');
@@ -496,7 +501,7 @@ begin
         try
           while Found = 0 do
           begin
-            if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+            if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') and (faHidden and SearchRec.Attr = 0) then
             begin
               if (faDirectory and SearchRec.Attr = 0) and IsGraphicFile(SearchRec.Name) and CanAddFileAutomatically(SearchRec.Name) then
               begin
@@ -982,7 +987,19 @@ begin
 end;
 
 procedure TUpdaterStorage.AddFile(Info: TMediaItem; Priority: TDatabaseTaskPriority);
+var
+  SkipExtensions: string;
+  AddRawFiles: Boolean;
 begin
+  if Info = nil then
+    Exit;
+
+  SkipExtensions := AnsiLowerCase(AppSettings.ReadString('Updater', 'SkipExtensions'));
+  AddRawFiles := AppSettings.ReadBool('Updater', 'AddRawFiles', False);
+
+  if not CheckIfCanAddFileAutomatically(Info.FileName, AddRawFiles, SkipExtensions) then
+    Exit;
+
   Add(TAddTask.Create(FContext, Info), Priority);
 end;
 

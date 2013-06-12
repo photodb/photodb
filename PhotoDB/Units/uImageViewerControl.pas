@@ -639,12 +639,8 @@ begin
     else
       FLastInfoHeight := InfoBarHeight;
 
-   // AddFontResourceEx('N:\MyriadPro\MyriadPro-Regular.otf', FR_PRIVATE or FR_NOT_ENUM, 0);
-
     FDrawImage.Canvas.Font.Quality := fqAntialiased;
-    //FDrawImage.Canvas.Font.Quality := fqClearTypeNatural;
-    FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular';//'MS Sans Serif';
-    //FDrawImage.Canvas.Font.Name := 'MS Sans Serif';
+    FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular';
     FDrawImage.Canvas.Font.Size := 10;
 
     DrawTransparentColorGradient(FDrawImage, Theme.ListViewColor, 0, FDrawImage.Height - InfoBarHeight, FDrawImage.Width, InfoBarHeight, 200, 0);

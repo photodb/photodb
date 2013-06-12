@@ -306,7 +306,7 @@ type
     procedure FinishScan;
     procedure AddItems(Items: TList<TScanItem>);
     procedure AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
-    procedure UpdatePreview(Item: TPathItem; Bitmap: TBitmap);
+    procedure UpdatePreview(Item: TPathItem; var Bitmap: TBitmap);
 
     //IImportForm
     procedure FromDevice(DeviceName: string);
@@ -1790,9 +1790,9 @@ begin
     begin
       WlHideShowPictures.LoadFromResource('SERIES_COLLAPSE');
       ElvPreview.Show;
-      if NewMode or (Height < 396) then
-        Height := 396;
-      GbSeries.Height := 180;
+      if NewMode or (Height < 596) then
+        Height := 596;
+      GbSeries.Height := 380;
       GbSeries.Visible := True;
       GbSeries.Caption := '';
     end else
@@ -1823,11 +1823,11 @@ begin
     SbSeries.HorzScrollBar.Visible := True;
     if FIsDisplayingPreviews then
     begin
-      if NewMode or (Height < 470) then
-        Height := 470;
+      if NewMode or (Height < 670) then
+        Height := 670;
 
-      if NewMode or (GbSeries.Height < 280) then
-      GbSeries.Height := 280;
+      if NewMode or (GbSeries.Height < 480) then
+      GbSeries.Height := 480;
       ElvPreview.Show;
     end else
     begin
@@ -1938,7 +1938,7 @@ begin
     GbSeries.Caption := FormatEx(L('Series of photos ({0})'), [Count]);
 end;
 
-procedure TFormImportImages.UpdatePreview(Item: TPathItem; Bitmap: TBitmap);
+procedure TFormImportImages.UpdatePreview(Item: TPathItem; var Bitmap: TBitmap);
 var
   I: Integer;
   PI: TPathItem;
@@ -1950,9 +1950,10 @@ begin
     begin
       FBitmapImageList[ElvPreview.Items[I].ImageIndex].Graphic := Bitmap;
       ElvPreview.Refresh;
-      Break;
+      Exit;
     end;
   end;
+  F(Bitmap);
 end;
 
 procedure TFormImportImages.DtpDateExit(Sender: TObject);

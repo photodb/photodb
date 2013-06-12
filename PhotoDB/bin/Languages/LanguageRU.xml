@@ -330,6 +330,7 @@
 	<translate name="Modify date" value="Дате изменения" />
 	<translate name="Rating" value="Рейтинг" />
 	<translate name="Number" value="Номер" />
+	<translate name="View count" value="Количеству просмотров" />
 	<translate name="Set filter" value="Установить фильтр" />
 	<translate name="Make portable viewer" value="Создать портативную коллекцию" />
 	<translate name="Thumbnail" value="Предпросмотры" />

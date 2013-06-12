@@ -324,9 +324,10 @@ var
   I, J: Integer;
   DiskObject: TDiskObject;
   CurentPosition: Int64;
-  ObjectPath: string;
+  ObjectPath, FontsDirectory, FontName: string;
   StartInfo: TStartupInfo;
   ProcInfo: TProcessInformation;
+  hReg: TRegistry;
 begin
   CurentPosition := 0;
   for I := 0 to CurrentInstall.Files.Count - 1 do
@@ -360,6 +361,28 @@ begin
         end;
       end;
 
+      if DiskObject.Actions[J].Scope = asUninstallFont then
+      begin
+        FontsDirectory := GetFontsDirectory;
+        ObjectPath := ResolveInstallPath(IncludeTrailingBackslash(DiskObject.FinalDestination) + DiskObject.Name);
+
+        FontName := DiskObject.Name;
+
+        RemoveFontResource(PChar(FontsDirectory + FontName));
+        hReg := TRegistry.Create;
+        try
+          hReg.RootKey := HKEY_LOCAL_MACHINE;
+          hReg.LazyWrite := False;
+          if hReg.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Fonts', False) then
+            hReg.DeleteValue(DiskObject.Actions[J].CommandLine);
+          hReg.CloseKey;
+        finally
+          F(hReg);
+        end;
+
+        DeleteFile(PChar(FontsDirectory + FontName));
+        SendNotifyMessage(HWND_BROADCAST, WM_FONTCHANGE, SPI_SETDOUBLECLICKTIME, 0);
+      end;
     end;
   end;
 end;

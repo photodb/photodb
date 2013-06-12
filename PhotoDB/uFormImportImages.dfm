@@ -3,8 +3,8 @@ object FormImportImages: TFormImportImages
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Import pictures'
-  ClientHeight = 435
-  ClientWidth = 605
+  ClientHeight = 652
+  ClientWidth = 685
   Color = clBtnFace
   Constraints.MinWidth = 500
   Font.Charset = DEFAULT_CHARSET
@@ -18,8 +18,8 @@ object FormImportImages: TFormImportImages
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
-    605
-    435)
+    685
+    652)
   PixelsPerInch = 96
   TextHeight = 13
   object LbImportFrom: TLabel
@@ -39,7 +39,7 @@ object FormImportImages: TFormImportImages
   object PeImportFromPath: TPathEditor
     Left = 8
     Top = 27
-    Width = 564
+    Width = 644
     Height = 25
     Anchors = [akLeft, akTop, akRight]
     OnChange = PeImportFromPathChange
@@ -50,7 +50,7 @@ object FormImportImages: TFormImportImages
     ShowBorder = True
   end
   object BtnSelectPathFrom: TButton
-    Left = 578
+    Left = 658
     Top = 27
     Width = 19
     Height = 25
@@ -62,7 +62,7 @@ object FormImportImages: TFormImportImages
   object PeImportToPath: TPathEditor
     Left = 8
     Top = 77
-    Width = 564
+    Width = 644
     Height = 25
     Anchors = [akLeft, akTop, akRight]
     LoadingText = 'Loading...'
@@ -72,7 +72,7 @@ object FormImportImages: TFormImportImages
     ShowBorder = True
   end
   object BtnSelectPathTo: TButton
-    Left = 578
+    Left = 658
     Top = 77
     Width = 19
     Height = 25
@@ -82,8 +82,8 @@ object FormImportImages: TFormImportImages
     OnClick = BtnSelectPathToClick
   end
   object BtnOk: TButton
-    Left = 523
-    Top = 402
+    Left = 603
+    Top = 619
     Width = 74
     Height = 25
     Anchors = [akRight, akBottom]
@@ -92,8 +92,8 @@ object FormImportImages: TFormImportImages
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 441
-    Top = 402
+    Left = 521
+    Top = 619
     Width = 76
     Height = 25
     Anchors = [akRight, akBottom]
@@ -104,17 +104,17 @@ object FormImportImages: TFormImportImages
   object GbSeries: TGroupBox
     Left = 8
     Top = 138
-    Width = 589
-    Height = 258
+    Width = 669
+    Height = 475
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 6
     DesignSize = (
-      589
-      258)
+      669
+      475)
     object SbSeries: TScrollBox
       Left = 3
       Top = 16
-      Width = 577
+      Width = 657
       Height = 98
       HorzScrollBar.Smooth = True
       HorzScrollBar.Tracking = True
@@ -281,8 +281,8 @@ object FormImportImages: TFormImportImages
     object ElvPreview: TEasyListview
       Left = 10
       Top = 120
-      Width = 570
-      Height = 129
+      Width = 650
+      Height = 346
       Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
       EditManager.Font.Charset = DEFAULT_CHARSET
@@ -296,7 +296,8 @@ object FormImportImages: TFormImportImages
         00000000000000000000000000000000}
       PaintInfoGroup.MarginBottom.CaptionIndent = 4
       PaintInfoItem.ShowBorder = False
-      Scrollbars.VertEnabled = False
+      Scrollbars.HorzEnabled = False
+      Scrollbars.SmoothScrolling = True
       Selection.AlphaBlend = True
       Selection.AlphaBlendSelRect = True
       Selection.EnableDragSelect = True
@@ -310,15 +311,14 @@ object FormImportImages: TFormImportImages
       Selection.UseFocusRect = False
       TabOrder = 1
       Themed = False
-      View = elsFilmStrip
-      WheelMouseDefaultScroll = edwsHorz
+      View = elsThumbnail
       OnItemDblClick = ElvPreviewItemDblClick
       OnItemThumbnailDraw = ElvPreviewItemThumbnailDraw
     end
   end
   object WlMode: TWebLink
     Left = 8
-    Top = 414
+    Top = 631
     Width = 59
     Height = 13
     Cursor = crHandPoint
@@ -338,8 +338,8 @@ object FormImportImages: TFormImportImages
     CanClick = True
   end
   object LsMain: TLoadingSign
-    Left = 326
-    Top = 403
+    Left = 406
+    Top = 620
     Width = 22
     Height = 22
     Visible = False
@@ -370,7 +370,7 @@ object FormImportImages: TFormImportImages
   object PnSimpleOptions: TPanel
     Left = 5
     Top = 109
-    Width = 595
+    Width = 675
     Height = 26
     Margins.Left = 0
     Margins.Top = 0
@@ -497,8 +497,8 @@ object FormImportImages: TFormImportImages
     end
   end
   object BtnSettings: TButton
-    Left = 354
-    Top = 402
+    Left = 434
+    Top = 619
     Width = 81
     Height = 25
     Anchors = [akRight, akBottom]

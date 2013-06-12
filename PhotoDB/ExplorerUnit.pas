@@ -562,6 +562,7 @@ type
     N11: TMenuItem;
     N14: TMenuItem;
     MiESSortByViewCount: TMenuItem;
+    ViewsCount1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -5985,6 +5986,7 @@ begin
 
   Paste1.Visible := False;
   MakeNew1.Visible := False;
+  Addfolder1.Visible := False;
 
   if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
   begin
@@ -5997,8 +5999,6 @@ begin
     Paste1.Visible := False;
 
   Paste1.Visible := CanCopyFromClipboard;
-
-
 end;
 
 procedure TExplorerForm.PmListViewTypePopup(Sender: TObject);
@@ -7636,6 +7636,7 @@ begin
     Modified1.Caption := L('Modify date');
     Rating1.Caption := L('Rating');
     Number1.Caption := L('Number');
+    ViewsCount1.Caption := L('View count');
     SetFilter1.Caption := L('Set filter');
 
     MakeFolderViewer1.Caption := L('Make portable viewer');
@@ -10449,6 +10450,14 @@ var
       end;
       Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0;
     end;
+    if aType = 6 then
+    begin
+      if L.ValueInt = R.ValueInt then
+        Result := AnsiCompareText(L.ValueStr, R.ValueStr) < 0
+      else
+        Result := L.ValueInt > R.ValueInt;
+      Exit;
+    end;
   end;
 
   procedure Swap(var X: TSortItems; I, J: Integer);
@@ -10531,36 +10540,40 @@ begin
       LI[I].Data := ElvMain.Items[I].Data;
       LI[I].ImageIndex := ElvMain.Items[I].ImageIndex;
 
-      index := ItemIndexToMenuIndex(I);
+      Index := ItemIndexToMenuIndex(I);
       case (Sender as TMenuItem).Tag of
         0:
           begin
-            SIs[I].ValueStr := ExtractFileName(FFilesInfo[index].FileName);
-            SIs[I].ValueInt := FFilesInfo[index].FileType;
+            SIs[I].ValueStr := ExtractFileName(FFilesInfo[Index].FileName);
+            SIs[I].ValueInt := FFilesInfo[Index].FileType;
           end;
         1:
           begin
-            SIs[I].ValueInt := FFilesInfo[index].Rating;
-            SIs[I].ValueStr := ExtractFileName(FFilesInfo[index].FileName);
-            if (FFilesInfo[index].FileType = EXPLORER_ITEM_FOLDER) then
+            SIs[I].ValueInt := FFilesInfo[Index].Rating;
+            SIs[I].ValueStr := ExtractFileName(FFilesInfo[Index].FileName);
+            if (FFilesInfo[Index].FileType = EXPLORER_ITEM_FOLDER) then
               SIs[I].ValueInt := -1;
           end;
         2:
           begin
-            SIs[I].ValueInt := FFilesInfo[index].FileSize;
-            SIs[I].ValueStr := ExtractFileName(FFilesInfo[index].FileName);
+            SIs[I].ValueInt := FFilesInfo[Index].FileSize;
+            SIs[I].ValueStr := ExtractFileName(FFilesInfo[Index].FileName);
           end;
         3:
-          SIs[I].ValueStr := ExtractFileName(FFilesInfo[index].FileName);
+          SIs[I].ValueStr := ExtractFileName(FFilesInfo[Index].FileName);
         4:
           begin
-            SIs[I].ValueDouble := DateModify(FFilesInfo[index].FileName);
-            SIs[I].ValueStr := ExtractFileName(FFilesInfo[index].FileName);
+            SIs[I].ValueDouble := DateModify(FFilesInfo[Index].FileName);
+            SIs[I].ValueStr := ExtractFileName(FFilesInfo[Index].FileName);
           end;
         5:
           begin
-            SIs[I].ValueStr := ExtractFileName(FFilesInfo[index].FileName);
-            SIs[I].ValueInt := FFilesInfo[index].FileType;
+            SIs[I].ValueStr := ExtractFileName(FFilesInfo[Index].FileName);
+            SIs[I].ValueInt := FFilesInfo[Index].FileType;
+          end;
+        6:
+          begin
+            SIs[I].ValueInt := FFilesInfo[Index].ViewCount;
           end;
       end;
       SIs[I].ID := I;
@@ -10577,6 +10590,8 @@ begin
         aType := 2;
       5:
         aType := 5;
+      6:
+        aType := 6;
     else
       aType := 0;
     end;
@@ -11330,6 +11345,8 @@ begin
         FileName1Click(Modified1);
       5:
         FileName1Click(Number1);
+      6:
+        FileName1Click(ViewsCount1);
     end;
   finally
     NoLockListView := False;
@@ -11513,8 +11530,13 @@ procedure TExplorerForm.TbSearchClick(Sender: TObject);
 begin
   if Sender = TbSearch then
   begin
-    TbSearch.Tag := -TbSearch.Tag;
-    TbSearch.Down := TbSearch.Tag < 0;
+    if (FActiveLeftTab <> eltsSearch) and not TbSearch.Down then
+      TbSearch.Down := True
+    else
+    begin
+      TbSearch.Tag := -TbSearch.Tag;
+      TbSearch.Down := TbSearch.Tag < 0;
+    end;
   end;
 
   if TbSearch.Down then
@@ -13436,6 +13458,7 @@ begin
   MakeFolderViewer1.ImageIndex := DB_IC_SAVE_AS_TABLE;
   MakeFolderViewer2.ImageIndex := DB_IC_SAVE_AS_TABLE;
   Number1.ImageIndex := DB_IC_RENAME;
+  ViewsCount1.ImageIndex := DB_IC_VIEW_COUNT;
 
   RatingPopupMenu.Images := Icons.ImageList;
 

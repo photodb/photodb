@@ -39,7 +39,7 @@ type
     property Items[Index: Integer]: TShortCut read GetItemByIndex; default;
   end;
 
-  TActionScope = (asInstall, asUninstall);
+  TActionScope = (asInstall, asUninstall, asInstallFont, asUninstallFont);
 
   TFileAction = class(TObject)
   public
@@ -262,6 +262,7 @@ constructor TPhotoDBInstall_V23.Create;
 var
   PhotoDBFile: TDiskObject;
   PhotoDBBridge: TDiskObject;
+  ListFont: TDiskObject;
   {$IFDEF MEDIA_PLAYER}
   DirectoryObj: TDirectoryObject;
   {$ENDIF}
@@ -279,8 +280,8 @@ begin
   Files.Add(PhotoDBFile);
 
   PhotoDBBridge := TFileObject.Create('PhotoDBBridge.exe',         '%PROGRAM%', '');
-  PhotoDBBridge.FActions.Add('/regserver', asInstall);
-  PhotoDBBridge.FActions.Add('/unregserver', asUnInstall);
+  PhotoDBBridge.Actions.Add('/regserver', asInstall);
+  PhotoDBBridge.Actions.Add('/unregserver', asUnInstall);
   Files.Add(PhotoDBBridge);
   Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
@@ -289,6 +290,11 @@ begin
   Files.Add(TFileObject.Create('libeay32.dll',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('ssleay32.dll',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('lcms2.dll',                       '%PROGRAM%', ''));
+
+  ListFont := TFileObject.Create('MyriadPro-Regular.otf',         '%PROGRAM%', '');
+  ListFont.Actions.Add('Myriad Pro Regular (TrueType)', asInstallFont);
+  ListFont.Actions.Add('Myriad Pro Regular (TrueType)', asUninstallFont);
+  Files.Add(ListFont);
 
   Files.Add(TFileObject.Create('TransparentEncryption.dll',       '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('TransparentEncryption64.dll',     '%PROGRAM%', ''));
