@@ -416,6 +416,7 @@ type
     function GetImage(FileName: string; Bitmap: TBitmap; var Width: Integer; var Height: Integer): Boolean;
     function ShowImageInDirectoryEx(FileName: string): Boolean;
     function ShowImages(Sender: TObject; Info: TMediaItemCollection): Boolean;
+    procedure CloseFullScreen;
     function ExecuteW(Sender: TObject; Info: TMediaItemCollection; LoadBaseFile: string): Boolean;
     procedure LoadLanguage;
     procedure LoadPopupMenuLanguage;
@@ -1138,8 +1139,6 @@ begin
     SlideTimer.Enabled := False;
     Play := False;
 
-    if FFullScreenView <> nil then
-      FFullScreenView.Close;
     FFullScreenView := nil;
 
     Show;
@@ -1151,8 +1150,6 @@ begin
     ImageExists := False;
     LoadImage_(Sender, False, Zoom, False);
 
-    if FDirectShowForm <> nil then
-      FDirectShowForm.Close;
     FDirectShowForm := nil;
     Show;
   end;
@@ -2156,6 +2153,7 @@ begin
   Play := False;
   FullScreenNow := False;
   SlideShowNow := False;
+  CloseFullScreen;
   if LoadBaseFile = '' then
     ImageFrameTimer.Enabled := False;
   TW.I.Start('ToolButton1.Enabled');
@@ -2230,13 +2228,6 @@ begin
     RecreateDrawImage(Self);
     Exit;
   end;
-
-  if not FullScreenNow then
-    if FFullScreenView <> nil then
-      FFullScreenView.Close;
-  if not SlideShowNow then
-    if FDirectShowForm <> nil then
-      FDirectShowForm.Close;
 
   CurrentFileNumber := CurrentInfo.Position;
   if not ((LoadBaseFile <> '') and (AnsiLowerCase(Item.FileName) = AnsiLowerCase(LoadBaseFile))) then
@@ -4359,6 +4350,16 @@ function TViewer.CloseActiveView: Boolean;
 begin
   Exit1Click(Self);
   Result := True;
+end;
+
+procedure TViewer.CloseFullScreen;
+begin
+  if not FullScreenNow then
+    if FFullScreenView <> nil then
+      FFullScreenView := nil;
+  if not SlideShowNow then
+    if FDirectShowForm <> nil then
+      FDirectShowForm := nil
 end;
 
 function TViewer.GetImagesCount: Integer;

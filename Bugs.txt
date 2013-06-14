@@ -32,9 +32,9 @@ Features ready:
 - new activation code;
 - collection pack review;
 - Import list view;
+- slide show full screen av;
 
 Bugs:
-- sort by list menu - view count;
 - recheck collection item;
 - rename/delete directory;
 
