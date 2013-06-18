@@ -33,6 +33,7 @@ Features ready:
 - collection pack review;
 - Import list view;
 - slide show full screen av;
+- Import total size negative
 
 Bugs:
 - recheck collection item;

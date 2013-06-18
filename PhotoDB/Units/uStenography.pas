@@ -11,6 +11,7 @@ uses
   Jpeg,
 
   Dmitry.CRC32,
+  Dmitry.Utils.Files,
   Dmitry.Graphics.Types,
 
   uMemory,
@@ -46,7 +47,6 @@ procedure SaveFileToCryptedStream(FileName: string; Password: string; Dest : TSt
 function MaxSizeInfoInGraphic(Graphic: TGraphic; Cell: Integer): Integer;
 // выдаёт размер Cell, наиболее оптимальный если сохранять в Graphic информацию о файле FileName
 function GetMaxPixelsInSquare(FileName: string; Graphic: TGraphic): Integer;
-function GetFileSizeByName(FileName: string): Integer;
 
 //JPEG-steno
 function CreateJPEGSteno(DataFileName, DestFileName: string; SourceJpegImage: string; Password: string): Boolean;
@@ -55,21 +55,6 @@ function IsValidJPEGSteno(FileName: string): Boolean;
 function ExtractJPEGSteno(MS, Dest: TStream; out Header: StenographyHeader): Boolean;
 
 implementation
-
-function GetFileSizeByName(FileName: string): Integer;
-var
-  FindData: TWin32FindData;
-  HFind: THandle;
-begin
-  Result := -1;
-  HFind := FindFirstFile(PChar(FileName), FindData);
-  if HFind <> INVALID_HANDLE_VALUE then
-  begin
-    Windows.FindClose(HFind);
-    if (FindData.DwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) = 0 then
-      Result := FindData.NFileSizeLow;
-  end;
-end;
 
 procedure SetPixel(P: PRGB; var C: Integer); inline;
 
