@@ -3,6 +3,7 @@ unit uMediaRepository;
 interface
 
 uses
+  Generics.Collections,
   System.SysUtils,
 
   Dmitry.CRC32,
@@ -32,6 +33,7 @@ type
     procedure SetRating(ID, Rating: Integer);
     procedure SetAttribute(ID, Attribute: Integer);
     procedure DeleteFromCollection(FileName: string; ID: Integer);
+    procedure DeleteFromCollectionEx(IDs: TList<Integer>);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
@@ -74,6 +76,28 @@ begin
     CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Delete], EventInfo);
   finally
     F(DC);
+  end;
+end;
+
+procedure TMediaRepository.DeleteFromCollectionEx(IDs: TList<Integer>);
+var
+  I: Integer;
+  DC: TDeleteCommand;
+  EventInfo: TEventValues;
+begin
+  for I := 0 to IDs.Count - 1 do
+  begin
+    DC := FContext.CreateDelete(ImageTable);
+    try
+      DC.AddWhereParameter(TIntegerParameter.Create('ID', IDs[I]));
+
+      DC.Execute;
+
+      EventInfo.ID := IDs[I];
+      CollectionEvents.DoIDEvent(nil, IDs[I], [EventID_Param_Delete], EventInfo);
+    finally
+      F(DC);
+    end;
   end;
 end;
 

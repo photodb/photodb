@@ -3,6 +3,7 @@ unit uDBContext;
 interface
 
 uses
+  Generics.Collections,
   Winapi.Windows,
   System.SysUtils,
   System.Classes,
@@ -31,6 +32,7 @@ type
     procedure SetRating(ID, Rating: Integer);
     procedure SetAttribute(ID, Attribute: Integer);
     procedure DeleteFromCollection(FileName: string; ID: Integer);
+    procedure DeleteFromCollectionEx(IDs: TList<Integer>);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;

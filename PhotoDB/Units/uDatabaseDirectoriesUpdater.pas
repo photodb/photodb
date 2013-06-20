@@ -841,7 +841,8 @@ begin
     if FID = 0 then
       FID := MediaRepository.GetIdByFileName(FFileName);
 
-    MediaRepository.DeleteFromCollection(FFileName, ID);
+    if FID > 0 then
+      MediaRepository.DeleteFromCollection(FFileName, ID);
   except
     on e: Exception do
       EventLog(e);
@@ -1381,49 +1382,54 @@ begin
 
     IdleCycle := True;
 
-    AddTasks := UpdaterStorage.Take<TAddTask>(cAddImagesAtOneStep);
     try
-      if Length(AddTasks) > 0 then
-      begin
-        IdleCycle := False;
-        AddTasks[0].Execute(AddTasks);
-        FSpeedCounter.AddSpeedInterval(100 * Length(AddTasks));
+      AddTasks := UpdaterStorage.Take<TAddTask>(cAddImagesAtOneStep);
+      try
+        if Length(AddTasks) > 0 then
+        begin
+          IdleCycle := False;
+          AddTasks[0].Execute(AddTasks);
+          FSpeedCounter.AddSpeedInterval(100 * Length(AddTasks));
 
-        UpdaterStorage.UpdateRemainingTime(FSpeedCounter);
+          UpdaterStorage.UpdateRemainingTime(FSpeedCounter);
+        end;
+      finally
+        for Task in AddTasks do
+          Task.Free;
       end;
-    finally
-      for Task in AddTasks do
-        Task.Free;
-    end;
 
-    if DBTerminating then
-      Break;
+      if DBTerminating then
+        Break;
 
-    UpdateTask := UpdaterStorage.TakeOne<TUpdateTask>();
-    try
-      if UpdateTask <> nil then
-      begin     
-        IdleCycle := False;
-        UpdateTask.Execute;
-        FSpeedCounter.AddSpeedInterval(100 * 1);
+      UpdateTask := UpdaterStorage.TakeOne<TUpdateTask>();
+      try
+        if UpdateTask <> nil then
+        begin
+          IdleCycle := False;
+          UpdateTask.Execute;
+          FSpeedCounter.AddSpeedInterval(100 * 1);
+        end;
+      finally
+        F(UpdateTask);
       end;
-    finally
-      F(UpdateTask);
-    end;
 
-    if DBTerminating then
-      Break;
+      if DBTerminating then
+        Break;
 
-    RemoveTask := UpdaterStorage.TakeOne<TRemoveTask>();
-    try
-      if RemoveTask <> nil then
-      begin
-        IdleCycle := False;
-        RemoveTask.Execute;
-        FSpeedCounter.AddSpeedInterval(100 * 1);
+      RemoveTask := UpdaterStorage.TakeOne<TRemoveTask>();
+      try
+        if RemoveTask <> nil then
+        begin
+          IdleCycle := False;
+          RemoveTask.Execute;
+          FSpeedCounter.AddSpeedInterval(100 * 1);
+        end;
+      finally
+        F(RemoveTask);
       end;
-    finally
-      F(RemoveTask);
+    except
+      on e: Exception do
+        EventLog(e);
     end;
 
     if IdleCycle then

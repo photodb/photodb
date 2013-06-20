@@ -871,6 +871,7 @@ type
     FSelectedInfo: TSelectedInfo;
     FStatusProgress: TProgressBar;
     FFilesInfo: TExplorerFileInfos;
+    FCutItems: TList<TObject>;
     FCurrentPath: string;
     FCurrentTypePath: Integer;
     LockDrawIcon: Boolean;
@@ -2117,10 +2118,13 @@ begin
 end;
 
 procedure TExplorerForm.DeleteFiles(ToRecycle: Boolean);
+const
+  FILE_NOT_FOUND_RESULT = 2;
 var
   I: Integer;
   Index: Integer;
   Files: TStringList;
+  DeletedFiles: TList<Integer>;
   Info: TExplorerFileInfo;
   PI: TPathItem;
   PL: TPathItemCollection;
@@ -2148,7 +2152,8 @@ begin
     Exit;
   end;
 
-  Files:= TStringList.Create;
+  Files := TStringList.Create;
+  DeletedFiles := TList<Integer>.Create;
   PL := TPathItemCollection.Create;
   try
     for I := 0 to ElvMain.Items.Count - 1 do
@@ -2158,7 +2163,12 @@ begin
         Info := FFilesInfo[Index];
         if (Info.FileType = EXPLORER_ITEM_FOLDER) or (Info.FileType = EXPLORER_ITEM_IMAGE)
           or (Info.FileType = EXPLORER_ITEM_FILE) or (Info.FileType = EXPLORER_ITEM_EXEFILE) then
-          Files.Add(Info.FileName);
+          begin
+            if Info.Exists <> -1 then
+              Files.Add(Info.FileName)
+            else if (Info.ID > 0) and (Info.Exists = -1) then
+              DeletedFiles.Add(Info.ID);
+          end;
 
         if (Info.FileType =  EXPLORER_ITEM_PERSON) or (Info.FileType = EXPLORER_ITEM_GROUP) or
            (Info.FileType = EXPLORER_ITEM_DEVICE_DIRECTORY) or (Info.FileType = EXPLORER_ITEM_DEVICE_IMAGE) or
@@ -2174,12 +2184,19 @@ begin
     if Files.Count > 0 then
       Dmitry.Utils.Files.DeleteFiles(Handle, Files, ToRecycle);
 
+    if DeletedFiles.Count > 0 then
+    begin
+      if ID_OK = MessageBoxDB(Handle, L('Do you really want to delete this information from collection?'), L('Question'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION) then
+        FMediaRepository.DeleteFromCollectionEx(DeletedFiles);
+    end;
+
     if PL.Count > 0 then
       PL[0].Provider.ExecuteFeature(Self, PL, PATH_FEATURE_DELETE, nil);
   finally
     PL.FreeItems;
     F(PL);
     F(Files);
+    F(DeletedFiles);
   end;
 end;
 
@@ -2240,6 +2257,7 @@ begin
   F(DirectoryWatcher);
   F(DragFilesPopup);
   F(FBitmapImageList);
+  F(FCutItems);
 
   F(FUpdateItemList);
   F(FItemUpdateTimer);
@@ -3046,6 +3064,7 @@ procedure TExplorerForm.ClearList;
 var
   I: Integer;
 begin
+  FCutItems.Clear;
   FItemUpdateTimer.Enabled := False;
   for I := 0 to ElvMain.Items.Count - 1 do
     TObject(ElvMain.Items[I].Data).Free;
@@ -6799,6 +6818,7 @@ begin
         begin
           Index := ItemIndexToMenuIndex(I);
           FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
+          FCutItems.Add(ElvMain.Items[I]);
         end;
       if FileList.Count > 0 then
         Copy_Move(Application.Handle, not IsCutAction, FileList);
@@ -6809,10 +6829,12 @@ begin
         begin
           Index := ItemIndexToMenuIndex(I);
           FileList.Add(ExtractFileName(FFilesInfo[Index].FileName));
+          FCutItems.Add(ElvMain.Items[I]);
         end;
 
       ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(FCurrentPath), FileList, Point(0, 0), nil, AnsiString(IIF(IsCutAction, 'Cut', 'Copy')));
     end;
+    ElvMain.Refresh;
   finally
     F(FileList);
   end;
@@ -10959,6 +10981,9 @@ begin
   if (Info.FileType <> EXPLORER_ITEM_IMAGE) then
     Options := Options + [daoNonImage];
 
+  if FCutItems.Contains(Item) then
+    Options := Options + [daoSemiTransparent];
+
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y,
     FShowAttributes, Info, True, '', Options);
 
@@ -13162,6 +13187,7 @@ begin
   FCanPasteFromClipboard := False;
   ElvMain := nil;
   FBitmapImageList := TBitmapImageList.Create;
+  FCutItems := TList<TObject>.Create;
   FHistory := TStringsHistoryW.Create;
   UpdatingList := False;
   GlobalLock := False;

@@ -401,7 +401,8 @@
 	<translate name="Unknown file type" value="Неизвестный тип" />
 	<translate name="Current directory" value="Текущая папка" />
 	<translate name="Next..." value="Далее..." />
-	<translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />
+	<translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />	
+	<translate name="Do you really want to delete this information from collection?" value="Вы действительно хотите удалить эту информацию из коллекции?" />
 	<translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
 	<translate name="This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?" value="В данной папке (%s) содержится %d фотографий из коллекции! Скорректировать информацию в коллекции?" />
 	<translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />

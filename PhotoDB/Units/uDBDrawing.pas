@@ -20,7 +20,7 @@ uses
   uMemory;
 
 type
-  TDrawAttributesOption = (daoEXIF, daoNonImage);
+  TDrawAttributesOption = (daoEXIF, daoNonImage, daoSemiTransparent);
   TDrawAttributesOptions = set of TDrawAttributesOption;
 
 procedure DrawAttributes(Bitmap: TBitmap; PistureSize: Integer; Info: TMediaItem);

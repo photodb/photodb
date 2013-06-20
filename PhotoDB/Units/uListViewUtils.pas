@@ -14,6 +14,7 @@ uses
   Vcl.ComCtrls,
   Vcl.Themes,
 
+  Dmitry.Utils.System,
   Dmitry.Graphics.LayeredBitmap,
 
   EasyListview,
@@ -115,7 +116,7 @@ procedure RightClickFix(EasyListview: TEasyListview; Button: TMouseButton; Shift
 procedure CreateMultiselectImage(ListView: TEasyListView; ResultImage: TBitmap; SImageList: TBitmapImageList;
   GradientFrom, GradientTo, SelectionColor: TColor; Font : TFont; Width, Height: Integer; OnlyImages: Boolean = False);
 procedure FixListViewText(ACanvas: TCanvas; Item: TEasyItem; Include: Boolean);
-procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
+procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer; Opacity: Byte = 255);
 
 const
   DrawTextOpt = DT_NOPREFIX + DT_WORDBREAK + DT_CENTER;
@@ -139,13 +140,16 @@ begin
     ACanvas.Font.Color := C;
 end;
 
-procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer);
+procedure DrawLVBitmap32MMX(ListView: TEasylistView; ACanvas: TCanvas; Graphic: TBitmap; X: Integer; var Y: Integer; Opacity: Byte = 255);
 begin
   //this method is more compatible (xp with custom theme can work bad with MPCommonUtilities.AlphaBlend
   //ACanvas.Draw calls DrawTransparent method that calls Windows.AlphaBlend and should work good on any version of windows
   Graphic.AlphaFormat := afDefined;
-  ACanvas.Draw(X, Y, Graphic, 255);
+  ACanvas.Draw(X, Y, Graphic, Opacity);
 end;
+
+type
+  TGraphicEx = class(TGraphic);
 
 procedure DrawDBListViewItem(ListView: TEasylistView; ACanvas: TCanvas; Item: TEasyItem;
                              ARect: TRect; BImageList: TBitmapImageList; var Y: Integer;
@@ -265,9 +269,14 @@ begin
       end;
       if (Graphic is TBitmap) and (TBitmap(Graphic).PixelFormat = pf32Bit) then
       begin
-        DrawLVBitmap32MMX(ListView, ACanvas, TBitmap(Graphic), X, Y);
+        DrawLVBitmap32MMX(ListView, ACanvas, TBitmap(Graphic), X, Y, IIF(daoSemiTransparent in Options, 127, 255));
       end else
-        ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), Graphic);
+      begin
+        if not (daoSemiTransparent in Options) then
+          ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), Graphic)
+        else
+          TGraphicEx(Graphic).DrawTransparent(ACanvas, Rect(X, Y, X + ImageW, Y + ImageH), 127);
+      end;
 
     finally
       F(TempBmp);

@@ -36,7 +36,6 @@ Features ready:
 - Import total size negative
 
 Bugs:
-- Add skip small items;
 - rename/delete directory;
 
 Minor:
@@ -47,6 +46,7 @@ check collection move
 copy to with device images doesn't work
 - Tabs redraw issue???;
 Unable to display file on viewer;
+-  exceptions;
 
 [New]
 - Import set password;

@@ -172,7 +172,17 @@ begin
 
   for I := 0 to L - 1 do
   begin
-    Info := GetImageIDW(DBContext, Images[I].FileName, True, Settings);
+
+    try
+      Info := GetImageIDW(DBContext, Images[I].FileName, True, Settings);
+    except
+      on e: Exception do
+      begin
+        EventLog(e);
+        Continue;
+      end;
+    end;
+
     SetLength(ThImS, I + 1);
     ThImS[I] := Info;
   end;
