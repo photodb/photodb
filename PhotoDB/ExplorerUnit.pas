@@ -6809,6 +6809,9 @@ var
   I, Index: Integer;
   FileList: TStrings;
 begin
+  if SelCount > 0 then
+    FCutItems.Clear;
+
   FileList := TStringList.Create;
   try
     if not IsDevicePath(FCurrentPath) then
@@ -6820,8 +6823,10 @@ begin
           FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
           FCutItems.Add(ElvMain.Items[I]);
         end;
+
       if FileList.Count > 0 then
         Copy_Move(Application.Handle, not IsCutAction, FileList);
+
     end else
     begin
       for I := 0 to ElvMain.Items.Count - 1 do
