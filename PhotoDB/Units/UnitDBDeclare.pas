@@ -73,7 +73,7 @@ type
     EventID_PersonAdded, EventID_PersonChanged, EventID_PersonRemoved,
     EventID_GroupAdded, EventID_GroupChanged, EventID_GroupRemoved,
     EventID_ShelfChanged, EventID_ShelfItemRemoved, EventID_ShelfItemAdded,
-    EventID_CollectionInfoChanged);
+    EventID_CollectionInfoChanged, EventID_CollectionFoldersChanged);
 
   TEventFields = set of TEventField;
 

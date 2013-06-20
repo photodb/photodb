@@ -111,9 +111,8 @@ begin
 
   if AppSettings.ReadBool('Options', 'DontAddSmallImages', True) then
   begin
-    if (AppSettings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64) > Res.ImageWidth) or
-       (AppSettings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64) > Res.ImageHeight) then
-      // small images are no photos
+    if (AppSettings.ReadInteger('Options', 'DontAddSmallImagesWidth', 240) > Res.ImageWidth) or
+       (AppSettings.ReadInteger('Options', 'DontAddSmallImagesHeight', 240) > Res.ImageHeight) then
       Exit;
   end;
 

@@ -12,7 +12,8 @@ uses
   uAppUtils,
   uMemory,
   uConstants,
-  uConfiguration;
+  uConfiguration,
+  uDBConnection;
 
 procedure CleanUpUserSettings;
 
@@ -45,7 +46,7 @@ begin
             if Reg.OpenKey(DBKeyName, False) then
             begin
               FileName := Reg.ReadString('FileName');
-
+              TryRemoveConnection(FileName, True);
               SilentDeleteFile(0, FileName, True);
             end;
           end;

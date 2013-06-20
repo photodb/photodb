@@ -31,6 +31,7 @@ type
     procedure SetRotate(ID, Rotate: Integer);
     procedure SetRating(ID, Rating: Integer);
     procedure SetAttribute(ID, Attribute: Integer);
+    procedure DeleteFromCollection(FileName: string; ID: Integer);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
@@ -55,6 +56,25 @@ destructor TMediaRepository.Destroy;
 begin
   FContext := nil;
   inherited;
+end;
+
+procedure TMediaRepository.DeleteFromCollection(FileName: string; ID: Integer);
+var
+  DC: TDeleteCommand;
+  EventInfo: TEventValues;
+begin
+  DC := FContext.CreateDelete(ImageTable);
+  try
+    DC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+
+    DC.Execute;
+
+    EventInfo.ID := ID;
+    EventInfo.FileName := FileName;
+    CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Delete], EventInfo);
+  finally
+    F(DC);
+  end;
 end;
 
 function TMediaRepository.GetCount: Integer;

@@ -11,7 +11,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -15
-  Font.Name = 'MyriadPro-Regular'
+  Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False

@@ -518,6 +518,13 @@ procedure TFormManager.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: T
 var
   UpdateInfoParams: TEventFields;
 begin
+  if Params * [EventID_CollectionFoldersChanged] <> [] then
+  begin
+    RecheckUserDirectories;
+    if FDirectoryWatcher <> nil then
+      (FDirectoryWatcher as IUserDirectoriesWatcher).Restart;
+  end;
+
   if Params * [EventID_Param_DB_Changed] <> [] then
   begin
     AppSettings.ClearCache;

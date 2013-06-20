@@ -2004,6 +2004,8 @@
   	<translate name="Add directory" value="Добавить папку для синхронизации" />
   	<translate name="Choose directories to synchronize with collection. All images in these directories will be automatically included to collection." value="Выберите папки для синхронизации с коллекцией. Все изображения в выбранных папках будут автоматически добавлены в коллекцию." />
   	<translate name="Directories synchronization with collection" value="Синхронизация папок с коллекцией" />
+  	<translate name="Rescan" value="Пересканировать" />
+  	<translate name="The cache was cleared and scanning process has been started!" value="Кэш сканирования был очищен и запущено повторное сканирование директорий!" />
   </scope>
   <scope name="CollectionUpgrade">
   	<translate name="Check file, %" value="Проверка файла, %" />

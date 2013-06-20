@@ -394,8 +394,8 @@ begin
     CbCheckLinksOnUpdate.Checked := AppSettings.ReadBool('Options', 'CheckUpdateLinks', False);
 
     CbDontAddSmallFiles.Checked := AppSettings.ReadBool('Options', 'DontAddSmallImages', True);
-    SedMinWidth.Value := AppSettings.ReadInteger('Options', 'DontAddSmallImagesWidth', 64);
-    SedMinHeight.Value := AppSettings.ReadInteger('Options', 'DontAddSmallImagesHeight', 64);
+    SedMinWidth.Value := AppSettings.ReadInteger('Options', 'DontAddSmallImagesWidth', 240);
+    SedMinHeight.Value := AppSettings.ReadInteger('Options', 'DontAddSmallImagesHeight', 240);
     SedMinWidth.Enabled := CbDontAddSmallFiles.Checked;
     SedMinHeight.Enabled := CbDontAddSmallFiles.Checked;
 

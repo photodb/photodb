@@ -640,8 +640,11 @@ begin
       FLastInfoHeight := InfoBarHeight;
 
     FDrawImage.Canvas.Font.Quality := fqAntialiased;
-    FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular';
     FDrawImage.Canvas.Font.Size := 10;
+    if IsWindowsVista then
+      FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular'
+    else
+      FDrawImage.Canvas.Font.Name := 'Tahoma';
 
     DrawTransparentColorGradient(FDrawImage, Theme.ListViewColor, 0, FDrawImage.Height - InfoBarHeight, FDrawImage.Width, InfoBarHeight, 200, 0);
 

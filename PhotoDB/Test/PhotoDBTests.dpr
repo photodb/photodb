@@ -120,6 +120,7 @@ uses
   uDBThread in '..\Threads\uDBThread.pas',
   uGOM in '..\Units\System\uGOM.pas',
   uIME in '..\Units\System\uIME.pas',
+  uUpTime in '..\Units\System\uUpTime.pas',
   uShellNamespaceUtils in '..\Units\Utils\uShellNamespaceUtils.pas',
   uPortableDeviceManager in '..\Units\PortableDevices\uPortableDeviceManager.pas',
   uPortableClasses in '..\Units\PortableDevices\uPortableClasses.pas',
@@ -137,9 +138,11 @@ uses
   uTransparentEncryption in '..\Units\uTransparentEncryption.pas',
   uResources in '..\Units\uResources.pas',
   uColorUtils in '..\Units\Utils\uColorUtils.pas',
+  uSiteUtils in '..\Units\Utils\uSiteUtils.pas',
   TestBitmapUtils in 'TestBitmapUtils.pas',
   TestCreateCollection in 'TestCreateCollection.pas',
-  uFormBackgroundTaskStatus in '..\uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus};
+  uFormBackgroundTaskStatus in '..\uFormBackgroundTaskStatus.pas' {FormBackgroundTaskStatus},
+  uIDBForm in '..\Units\Interfaces\uIDBForm.pas';
 
 {$R *.RES}
 

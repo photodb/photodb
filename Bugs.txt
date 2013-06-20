@@ -36,7 +36,7 @@ Features ready:
 - Import total size negative
 
 Bugs:
-- recheck collection item;
+- Add skip small items;
 - rename/delete directory;
 
 Minor:

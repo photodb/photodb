@@ -211,6 +211,7 @@
         <DCCReference Include="..\Threads\uDBThread.pas"/>
         <DCCReference Include="..\Units\System\uGOM.pas"/>
         <DCCReference Include="..\Units\System\uIME.pas"/>
+        <DCCReference Include="..\Units\System\uUpTime.pas"/>
         <DCCReference Include="..\Units\Utils\uShellNamespaceUtils.pas"/>
         <DCCReference Include="..\Units\PortableDevices\uPortableDeviceManager.pas"/>
         <DCCReference Include="..\Units\PortableDevices\uPortableClasses.pas"/>
@@ -228,11 +229,13 @@
         <DCCReference Include="..\Units\uTransparentEncryption.pas"/>
         <DCCReference Include="..\Units\uResources.pas"/>
         <DCCReference Include="..\Units\Utils\uColorUtils.pas"/>
+        <DCCReference Include="..\Units\Utils\uSiteUtils.pas"/>
         <DCCReference Include="TestBitmapUtils.pas"/>
         <DCCReference Include="TestCreateCollection.pas"/>
         <DCCReference Include="..\uFormBackgroundTaskStatus.pas">
             <Form>FormBackgroundTaskStatus</Form>
         </DCCReference>
+        <DCCReference Include="..\Units\Interfaces\uIDBForm.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

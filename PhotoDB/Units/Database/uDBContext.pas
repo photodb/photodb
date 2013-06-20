@@ -30,6 +30,7 @@ type
     procedure SetRotate(ID, Rotate: Integer);
     procedure SetRating(ID, Rating: Integer);
     procedure SetAttribute(ID, Attribute: Integer);
+    procedure DeleteFromCollection(FileName: string; ID: Integer);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;

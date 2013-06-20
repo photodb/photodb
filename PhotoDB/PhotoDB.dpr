@@ -470,7 +470,7 @@ begin
     DBManager := TDBManager.Create;
 
     TLoad.Instance.StartDBKernelIconsThread;
-    if not DBTerminating and not GetParamStrDBBool('/install') then
+    if not DBTerminating and not GetParamStrDBBool('/install') and not GetParamStrDBBool('/uninstall') then
     begin
       if not DBManager.LoadDefaultCollection then
         DBManager.CreateSampleDefaultCollection;
@@ -478,7 +478,7 @@ begin
 
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

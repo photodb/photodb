@@ -13,6 +13,7 @@ uses
 
   uMemory,
   uTranslate,
+  uCollectionEvents,
   uShellUtils;
 
 type
@@ -142,6 +143,7 @@ var
   Reg: TBDRegistry;
   S: TStrings;
   I: Integer;
+  EventValue: TEventValues;
 begin
   Reg := TBDRegistry.Create(REGISTRY_CURRENT_USER);
   try
@@ -169,6 +171,8 @@ begin
   finally
     F(Reg);
   end;
+
+  CollectionEvents.DoIDEvent(nil, 0, [EventID_CollectionFoldersChanged], EventValue);
 end;
 
 function IsFileInCollectionDirectories(CollectionFile: string; FileName: string): Boolean;

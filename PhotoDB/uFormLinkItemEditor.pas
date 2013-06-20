@@ -14,6 +14,8 @@ uses
   Vcl.StdCtrls,
   Vcl.ExtCtrls,
 
+  Dmitry.Utils.System,
+
   UnitDBDeclare,
 
   uMemory,
@@ -92,6 +94,9 @@ end;
 
 procedure TFormLinkItemEditor.FormCreate(Sender: TObject);
 begin
+  if IsWindowsVista then
+    Font.Name := 'MyriadPro-Regular';
+
   BtnClose.Caption := L('Cancel', '');
   BtnSave.Caption := L('Save', '');
 end;

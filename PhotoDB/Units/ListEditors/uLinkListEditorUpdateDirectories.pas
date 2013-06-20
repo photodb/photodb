@@ -34,6 +34,8 @@ uses
   uLinkListEditorFolders,
   uDatabaseDirectoriesUpdater,
   uVCLHelpers,
+  uDBManager,
+  uCollectionEvents,
   uIconUtils;
 
 type
@@ -154,6 +156,13 @@ var
 begin
   if Data = nil then
   begin
+    if Verb = 'Refresh' then
+    begin
+      ClearUpdaterCache(DBManager.DBContext);
+      RecheckUserDirectories;
+      MessageBoxDB(0, L('The cache was cleared and scanning process has been started!'), L('Info'),  TD_BUTTON_OK, TD_ICON_INFORMATION);
+      Exit;
+    end;
 
     PI := nil;
     try
@@ -165,7 +174,7 @@ begin
           DD := TDatabaseDirectory(Sender.DataList[I]);
           if StartsStr(AnsiLowerCase(DD.Path), AnsiLowerCase(PI.Path)) then
           begin
-            MessageBoxDB(Screen.ActiveFormHandle, FormatEx(L('Location {0} is already in collection!'), [PI.Path]), L('Info'),  TD_BUTTON_OK, TD_ICON_WARNING);
+            MessageBoxDB(0, FormatEx(L('Location {0} is already in collection!'), [PI.Path]), L('Info'),  TD_BUTTON_OK, TD_ICON_WARNING);
             Exit;
           end;
         end;
@@ -193,13 +202,18 @@ end;
 procedure TLinkListEditorUpdateDirectories.FillActions(Sender: ILinkItemSelectForm;
   AddActionProc: TAddActionProcedure);
 begin
-  AddActionProc(['Add'],
+  AddActionProc(['Add', 'Refresh'],
     procedure(Action: string; WebLink: TWebLink)
     begin
       if Action = 'Add' then
       begin
         WebLink.Text := L('Add directory');
         WebLink.LoadFromResource('SERIES_EXPAND');
+      end;
+      if Action = 'Refresh' then
+      begin
+        WebLink.Text := L('Rescan');
+        WebLink.LoadFromResource('SYNC');
       end;
     end
   );
@@ -248,7 +262,6 @@ end;
 function TLinkListEditorUpdateDirectories.OnApply(Sender: ILinkItemSelectForm): Boolean;
 begin
   Result := True;
-  RecheckUserDirectories;
 end;
 
 procedure TLinkListEditorUpdateDirectories.OnChangePlaceClick(Sender: TObject);

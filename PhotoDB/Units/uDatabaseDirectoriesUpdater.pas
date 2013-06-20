@@ -62,7 +62,8 @@ type
     FDBContext: IDBContext;
     FFileName: string;
   public
-    function IsPrepaired: Boolean;
+    function IsPrepaired: Boolean; virtual;
+    function SelfTest: Boolean; virtual;
     constructor Create(DBContext: IDBContext; FileName: string);
     property DBContext: IDBContext read FDBContext;
     property FileName: string read FFileName;
@@ -81,6 +82,8 @@ type
   private
     FID: Integer;
   public
+    function SelfTest: Boolean; override;
+    function IsPrepaired: Boolean; override;
     constructor Create(DBContext: IDBContext; ID: Integer; FileName: string); overload;
     procedure Execute;
     property ID: Integer read FID;
@@ -125,6 +128,7 @@ type
     procedure Execute(Context: IDBContext);
     procedure StartWatch;
     procedure StopWatch;
+    procedure Restart;
   end;
 
   TUserDirectoriesWatcher = class(TInterfacedObject, IUserDirectoriesWatcher, IDirectoryWatcher)
@@ -138,6 +142,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Execute(Context: IDBContext);
+    procedure Restart;
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray);
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
   end;
@@ -198,6 +203,7 @@ type
 function UpdaterStorage: TUpdaterStorage;
 procedure RecheckDirectoryOnDrive(DirectoryPath: string);
 procedure RecheckUserDirectories;
+procedure ClearUpdaterCache(Context: IDBContext);
 
 implementation
 
@@ -241,6 +247,19 @@ end;
 function DatabaseErrorsPersistaseFileName(CollectionPath: string): string;
 begin
   Result := GetAppDataDirectory + FolderCacheDirectory + ExtractFileName(CollectionPath) + IntToStr(StringCRC(CollectionPath)) + '.errors.cache';
+end;
+
+procedure StopCurrentUpdater;
+begin
+  DirectoriesScanID := GetGUID;
+end;
+
+procedure ClearUpdaterCache(Context: IDBContext);
+begin
+  StopCurrentUpdater;
+  DeleteFile(DatabaseFolderPersistaseFileName(Context.CollectionFileName));
+  DeleteFile(DatabaseErrorsPersistaseFileName(Context.CollectionFileName));
+  UpdaterStorage.CleanUpDatabase(nil);
 end;
 
 procedure LoadDirectoriesState(FileName: string; DirectoryCache: TDictionary<string, Int64>);
@@ -546,7 +565,7 @@ begin
           SavedDirectoriesStructure.AddOrSetValue(DirectoryPath, TotalDirectorySize);
       end;
 
-      if not IsRescanMode then
+      if not IsRescanMode and (IsValidThread or DBTerminating) then
         SaveDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
     finally
       SetErrorMode(OldMode);
@@ -661,6 +680,12 @@ begin
   TDatabaseDirectoriesUpdater.Create(FDBContext);
 end;
 
+procedure TUserDirectoriesWatcher.Restart;
+begin
+  StopWatch;
+  StartWatch;
+end;
+
 procedure TUserDirectoriesWatcher.StartWatch;
 var
   Watch: TWachDirectoryClass;
@@ -725,7 +750,7 @@ begin
         if IsFileExists then
           UpdaterStorage.Add(TAddTask.Create(FDBContext, Info.FNewFileName));
       FILE_ACTION_REMOVED:
-        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, Info.FOldFileName));
+        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, Info.FNewFileName));
       FILE_ACTION_RENAMED_NEW_NAME:
         Break;
       FILE_ACTION_MODIFIED:
@@ -763,6 +788,11 @@ begin
     if Result then
       CloseHandle(hFile);
   end;
+end;
+
+function TDatabaseTask.SelfTest: Boolean;
+begin
+  Result := FileExistsSafe(FileName);
 end;
 
 { TUpdateTask }
@@ -811,11 +841,21 @@ begin
     if FID = 0 then
       FID := MediaRepository.GetIdByFileName(FFileName);
 
-    MediaRepository.SetAttribute(ID, Db_attr_not_exists);
+    MediaRepository.DeleteFromCollection(FFileName, ID);
   except
     on e: Exception do
       EventLog(e);
   end;
+end;
+
+function TRemoveTask.IsPrepaired: Boolean;
+begin
+  Result := True;
+end;
+
+function TRemoveTask.SelfTest: Boolean;
+begin
+  Result := True;
 end;
 
 { TAddTask }
@@ -877,21 +917,31 @@ begin
           //decode jpeg in background for fasten drawing in GUI
           Res.Jpeg.DIBNeeded;
 
+          UpdaterStorage.RemoveFileWithErrors(Info.FileName);
+
+          //new file in collection
+          if Res.Count = 0 then
+          begin
+            if TDatabaseUpdateManager.AddFile(FDBContext, Info, Res) then
+            begin
+              TThread.Synchronize(nil,
+                procedure
+                begin
+                  NotifyAboutFileProcessing(Info, Res);
+                end
+              );
+            end else
+              UpdaterStorage.AddFileWithErrors(Info.FileName);
+
+            Continue;
+          end;
+
           TThread.Synchronize(nil,
             procedure
             begin
               NotifyAboutFileProcessing(Info, Res);
             end
           );
-
-          UpdaterStorage.RemoveFileWithErrors(Info.FileName);
-
-          //new file in collection
-          if Res.Count = 0 then
-          begin
-            TDatabaseUpdateManager.AddFile(FDBContext, Info, Res);
-            Continue;
-          end;
 
           if Res.Count = 1 then
           begin
@@ -1261,7 +1311,7 @@ begin
           Continue;
         end;
 
-        if not FileExistsSafe(Task.FileName) then
+        if not Task.SelfTest then
         begin
           Task.Free;
           FItems.Delete(I);
@@ -1377,7 +1427,7 @@ begin
     end;
 
     if IdleCycle then
-      Sleep(10);
+      Sleep(100);
   end;
 end;
 

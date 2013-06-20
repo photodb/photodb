@@ -584,13 +584,16 @@ var
 
   function GetExecutable(Handler: string): string;
   var
-    I: Integer;
+    I, P: Integer;
     Param: string;
   begin
     Result := '';
     for I := 0 to 255 do
     begin
       Param := ParamStrCustom(Handler, I).TrimEnd([',', ' ']);
+      P := LastDelimiter(',', Param);
+      if P > 0 then
+        Param := Param.Remove(P - 1);
 
       if Param = '' then
         Break;
@@ -641,6 +644,9 @@ begin
                     Executable := GetExecutable(ExeHandler);
 
                     VersionInfo := GetEXEVersionData(Executable);
+                    if VersionInfo.FileDescription = '' then
+                      VersionInfo.FileDescription := ExtractFileName(Executable);
+
                     Applications.Add(ExeHandler, VersionInfo.FileDescription);
 
                     Path := ParamStrCustom(ExeHandler, 0);

@@ -19,6 +19,7 @@ uses
   Vcl.ExtCtrls,
   Vcl.AppEvnts,
 
+  Dmitry.Utils.System,
   Dmitry.Controls.Base,
   Dmitry.Controls.WebLink,
   Dmitry.Controls.WatermarkedEdit,
@@ -353,9 +354,22 @@ end;
 procedure TFormLinkItemSelector.FormCreate(Sender: TObject);
 var
   Metrics: TTextMetric;
+
+  function GetFontHeight: Integer;
+  begin
+    if GetTextMetrics(Canvas.Handle, Metrics) then
+      Result := Metrics.tmHeight
+    else
+      Result := Canvas.TextHeight('Iy');
+  end;
+
 begin
-  GetTextMetrics(Canvas.Handle, Metrics);
-  FLinkHeight := Metrics.tmHeight;
+  FLinkHeight := GetFontHeight;
+  if IsWindowsVista then
+  begin
+    Font.Name := 'MyriadPro-Regular';
+    FLinkHeight := GetFontHeight;
+  end;
 
   FEditIndex := -1;
   FDragLink := nil;

@@ -467,7 +467,7 @@ begin
 
   for I := Count - 1 downto 0 do
   begin
-    S := Value;
+    S := Self[I];
     if not CaseSensetive then
       S := AnsiLowerCase(S);
 
