@@ -724,15 +724,27 @@ end;
 procedure SetLVThumbnailSize(ListView: TEasyListView; ImageSize: Integer);
 const
   LVWidthBetweenItems = 20;
+  MarginRight = 0;
+  MarginLeft = 0;
 var
-  CountOfItemsX, ThWidth, AddSize : Integer;
+  ColumnCount, ThWidth, WndWidth: Integer;
+  Metrics: TTextMetric;
 begin
-  ThWidth := ImageSize + 10 + 6;
-  CountOfItemsX := Max(1, Trunc((ListView.Width - LVWidthBetweenItems) / ThWidth));
-  AddSize := ListView.Width - LVWidthBetweenItems - ThWidth * CountOfItemsX;
 
-  ListView.CellSizes.Thumbnail.Width := ThWidth + AddSize div CountOfItemsX;
-  ListView.CellSizes.Thumbnail.Height := ImageSize + 40;
+  WndWidth := ListView.ClientWidth - 1;
+  if not ListView.Scrollbars.VertBarVisible then
+    WndWidth := WndWidth - GetSystemMetrics(SM_CYVSCROLL);
+
+  ThWidth := ImageSize + ListView.PaintInfoItem.Border * 4;
+
+  ColumnCount := WndWidth div ThWidth;
+  if ColumnCount = 0 then
+    Inc(ColumnCount);
+
+  GetTextMetrics(ListView.Canvas.Handle, Metrics);
+
+  ListView.CellSizes.Thumbnail.Width := WndWidth div ColumnCount;
+  ListView.CellSizes.Thumbnail.Height := ImageSize + Metrics.tmHeight * 2 + ListView.PaintInfoItem.Border * 3;
   ListView.Selection.RoundRect := True;
   if ListView.View = elsThumbnail then
     ListView.Selection.RoundRectRadius := Min(10, ImageSize div 10)

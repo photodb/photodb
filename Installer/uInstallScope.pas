@@ -302,6 +302,7 @@ begin
   Files.Add(TFileObject.Create('PlayEncryptedMedia64.exe',        '%PROGRAM%', ''));
   {$IFDEF DBDEBUG}
   Files.Add(TFileObject.Create('FastMM_FullDebugMode.dll', '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('PhotoDB.map',              '%PROGRAM%', ''));
   {$ENDIF}
 
   Files.Add(TDirectoryObject.Create('Actions',     '%PROGRAM%', ''));

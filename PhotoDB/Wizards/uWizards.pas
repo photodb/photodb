@@ -114,6 +114,7 @@ begin
     Frame.Parent := FOwner;
     Frame.Left := FX;
     Frame.Top := FY;
+    Frame.Width := FOwner.ClientWidth - 5 - FX;
     Frame.Visible := False;
     Frame.Init(Self, True);
     Frame.OnChange := OnStepChanged;

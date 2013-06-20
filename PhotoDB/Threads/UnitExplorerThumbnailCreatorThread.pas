@@ -62,6 +62,7 @@ type
     FExifInfo: IExifInfo;
     Ico: HIcon;
     FLoadFullImage: Boolean;
+    FThSizeExplorerPreview: Integer;
   protected
     procedure Execute; override;
     procedure SetInfo;
@@ -69,7 +70,7 @@ type
     procedure DoDrawAttributes;
     procedure UpdatePreviewIcon;
   public
-    constructor Create(Context: IDBContext; Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
+    constructor Create(Context: IDBContext; Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean; ThSizeExplorerPreview: Integer);
     destructor Destroy; override;
   end;
 
@@ -80,7 +81,7 @@ uses
 
 { TExplorerThumbnailCreator }
 
-constructor TExplorerThumbnailCreator.Create(Context: IDBContext; Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean);
+constructor TExplorerThumbnailCreator.Create(Context: IDBContext; Item: TExplorerFileInfo; FileSID: TGUID; Owner: TExplorerForm; LoadFullImage: Boolean; ThSizeExplorerPreview: Integer);
 begin
   inherited Create(Owner, False);
   FContext := Context;
@@ -91,6 +92,7 @@ begin
   FOwner := Owner;
   Priority := tpLower;
   FLoadFullImage := LoadFullImage;
+  FThSizeExplorerPreview := ThSizeExplorerPreview;
 end;
 
 procedure TExplorerThumbnailCreator.Execute;
@@ -131,13 +133,13 @@ begin
           Data := nil;
           PI := PathProviderManager.CreatePathItem(FInfo.FileName);
           try
-            if (PI <> nil) and PI.Provider.ExtractPreview(PI, ThSizeExplorerPreview, ThSizeExplorerPreview, FBit, Data) then
+            if (PI <> nil) and PI.Provider.ExtractPreview(PI, FThSizeExplorerPreview, FThSizeExplorerPreview, FBit, Data) then
             begin
               FHistogramm := FillHistogramma(Fbit);
               TempBitmap := TBitmap.Create;
               try
                 TempBitmap.PixelFormat := pf32Bit;
-                TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
+                TempBitmap.SetSize(FThSizeExplorerPreview + 4, FThSizeExplorerPreview + 4);
                 FillTransparentColor(TempBitmap, Theme.PanelColor);
 
                 ShadowImage := TBitmap.Create;
@@ -184,7 +186,7 @@ begin
       begin
         TempBitmap := TBitmap.Create;
         try
-          if ExtractVideoThumbnail(FInfo.FileName, ThSizeExplorerPreview, TempBitmap) then
+          if ExtractVideoThumbnail(FInfo.FileName, FThSizeExplorerPreview, TempBitmap) then
             SynchronizeEx(SetImage);
         finally
           F(TempBitmap);
@@ -198,7 +200,7 @@ begin
           TempBitmap := TBitmap.Create;
           try
             TempBitmap.PixelFormat := pf32Bit;
-            TempBitmap.SetSize(ThSizeExplorerPreview + 4, ThSizeExplorerPreview + 4);
+            TempBitmap.SetSize(FThSizeExplorerPreview + 4, FThSizeExplorerPreview + 4);
             FillTransparentColor(TempBitmap, Theme.PanelColor);
 
             FInfo.Image := TJPEGImage.Create;
@@ -215,7 +217,7 @@ begin
                     FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, FExifInfo);
                 end;
 
-                if (FInfo.Image.Width > ThSizeExplorerPreview) or (FInfo.Image.Height > ThSizeExplorerPreview) then
+                if (FInfo.Image.Width > FThSizeExplorerPreview) or (FInfo.Image.Height > FThSizeExplorerPreview) then
                 begin
                   TempBit := TBitmap.Create;
                   try
@@ -224,7 +226,7 @@ begin
 
                     W := TempBit.Width;
                     H := TempBit.Height;
-                    ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+                    ProportionalSize(FThSizeExplorerPreview, FThSizeExplorerPreview, W, H);
                     FBit := TBitmap.Create;
                     try
                       FBit.PixelFormat := pf24bit;
@@ -291,7 +293,7 @@ begin
 
                 FGraphic := nil;
                 try
-                  if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo, ThSizeExplorerPreview, ThSizeExplorerPreview) then
+                  if not LoadImageFromPath(FInfo, -1, '', [ilfGraphic, ilfEXIF, ilfPassword, ilfICCProfile], ImageInfo, FThSizeExplorerPreview, FThSizeExplorerPreview) then
                     Exit;
 
                   FillExifInfo(ImageInfo.ExifData, ImageInfo.RawExif, FExifInfo);
@@ -308,7 +310,7 @@ begin
                     FBit.PixelFormat := pf24bit;
                     FInfo.Height := FGraphic.Height;
                     FInfo.Width := FGraphic.Width;
-                    JPEGScale(FGraphic, ThSizeExplorerPreview, ThSizeExplorerPreview);
+                    JPEGScale(FGraphic, FThSizeExplorerPreview, FThSizeExplorerPreview);
 
                     TempBit := TBitmap.Create;
                     try
@@ -328,10 +330,10 @@ begin
                       W := TempBit.Width;
                       H := TempBit.Height;
                       FBit.PixelFormat := TempBit.PixelFormat;
-                      if Max(W,H) < ThSizeExplorerPreview then
+                      if Max(W,H) < FThSizeExplorerPreview then
                         AssignBitmap(FBit, TempBit)
                       else begin
-                        ProportionalSize(ThSizeExplorerPreview, ThSizeExplorerPreview, W, H);
+                        ProportionalSize(FThSizeExplorerPreview, FThSizeExplorerPreview, W, H);
                         DoResize(W, H, TempBit, FBit);
                       end;
                       ApplyRotate(FBit, FInfo.Rotation);
@@ -400,7 +402,7 @@ end;
 
 procedure TExplorerThumbnailCreator.DoDrawAttributes;
 begin
-  DrawAttributes(TempBitmap, ThSizeExplorerPreview, FInfo);
+  DrawAttributes(TempBitmap, FThSizeExplorerPreview, FInfo);
 end;
 
 procedure TExplorerThumbnailCreator.SetImage;

@@ -451,7 +451,6 @@ type
     DteDate: TDateTimePicker;
     ReRating: TRating;
     ImHistogramm: TImage;
-    LbHistogramImage: TLabel;
     PnESContainer: TPanel;
     PnExtendedSearch: TPanel;
     SbExtendedSearchMode: TSpeedButton;
@@ -563,6 +562,7 @@ type
     N14: TMenuItem;
     MiESSortByViewCount: TMenuItem;
     ViewsCount1: TMenuItem;
+    WlHistogramImage: TWebLink;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -845,6 +845,7 @@ type
     procedure TmrStartDatabasesTimer(Sender: TObject);
     procedure PnTopMenuResize(Sender: TObject);
     procedure MiImportImagesClick(Sender: TObject);
+    procedure WlHistogramImageClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -953,6 +954,7 @@ type
     FDatabaseInfo: TDatabaseInfoControl;
 
     FIsPastingFromClipboard: Boolean;
+    ThSizeExplorerPreview: Integer;
 
     procedure LoadContext;
     procedure CopyFilesToClipboard(IsCutAction: Boolean = False);
@@ -1058,6 +1060,7 @@ type
     procedure PmShareAdditionalTasksEnterMenuLoop(Sender: TObject);
 
     procedure LoadDefaultCollectionPictureSize;
+    procedure UpdateHistogrammLabel;
 
     property W7TaskBar: ITaskbarList3 read GetW7TaskBar;
   protected
@@ -1523,6 +1526,8 @@ begin
   SetLength(FListDragItems, 0);
   FDBCanDragW := False;
   ImPreview.Picture.Bitmap := nil;
+  ThSizeExplorerPreview := ImPreview.Width - 4;
+
   DropFileTargetFake.Register(Self);
   DropFileTargetMain.Register(ElvMain);
 
@@ -3715,7 +3720,6 @@ procedure TExplorerForm.TsInfoResize(Sender: TObject);
 begin
   BeginScreenUpdate(PnInfoContainer.Handle);
   try
-    ReRating.Left := TsInfo.Width div 2 - ReRating.Width div 2;
     WllGroups.ReallignList;
     WllGroups.AutoHeight(200);
     ReallignEditBoxes;
@@ -5077,6 +5081,18 @@ begin
   SetNewPathW(ExplorerPath(cShelfPath, EXPLORER_ITEM_SHELF), False);
 end;
 
+procedure TExplorerForm.WlHistogramImageClick(Sender: TObject);
+begin
+  BeginScreenUpdate(PnInfoContainer.Handle);
+  try
+    ImHistogramm.Visible := not ImHistogramm.Visible;
+    UpdateHistogrammLabel;
+    ReallignEditBoxes;
+  finally
+    EndScreenUpdate(PnInfoContainer.Handle, True);
+  end;
+end;
+
 procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double; Date: TDateTime);
 begin
   FMapLocationLat := Lat;
@@ -5492,6 +5508,11 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TExplorerForm.UpdateHistogrammLabel;
+begin
+  WlHistogramImage.Text := IIF(ImHistogramm.Visible, '(-) ', '(+) ') + L('Histogram');
 end;
 
 procedure TExplorerForm.ClearMap;
@@ -7696,7 +7717,7 @@ begin
     VleExif.TitleCaptions[1] := L('Value');
 
     BtnSaveInfo.Caption := L('Save');
-    LbHistogramImage.Caption := L('Histogram');
+    UpdateHistogrammLabel;
     LbEditKeywords.Caption := L('Keywords') + ':';
     LbEditComments.Caption := L('Comment') + ':';
 
@@ -9416,7 +9437,7 @@ begin
         try
           Info.FileType := FSelectedInfo.FileType;
           Info.ID := FSelectedInfo.Id;
-          TExplorerThumbnailCreator.Create(FContext, Info, FileSID, Self, True);
+          TExplorerThumbnailCreator.Create(FContext, Info, FileSID, Self, True, ThSizeExplorerPreview);
         finally
           F(Info);
         end;
@@ -9485,10 +9506,10 @@ begin
                      (FSelectedInfo.FileType = EXPLORER_ITEM_DEVICE_VIDEO) or
                      IsVideoFile(FileName) then
                   begin
-                    TExplorerThumbnailCreator.Create(FContext, Info, FSelectedInfo._GUID, Self, True);
+                    TExplorerThumbnailCreator.Create(FContext, Info, FSelectedInfo._GUID, Self, True, ThSizeExplorerPreview);
                   end else
                   begin
-                    TExplorerThumbnailCreator.Create(FContext, Info, FSelectedInfo.PreviewID, Self, False);
+                    TExplorerThumbnailCreator.Create(FContext, Info, FSelectedInfo.PreviewID, Self, False, ThSizeExplorerPreview);
                   end;
                 finally
                   F(Info);
@@ -11587,6 +11608,9 @@ end;
 
 procedure TExplorerForm.LoadSizes;
 begin
+  if FPictureSize = 0 then
+    Exit;
+
   SetLVThumbnailSize(ElvMain, FPictureSize);
 end;
 
@@ -12752,12 +12776,12 @@ begin
   ShpColor4.Top := BtnBlackWhite.AfterTop(5);
   ShpColor5.Top := BtnBlackWhite.AfterTop(5);
   ShpColor6.Top := BtnBlackWhite.AfterTop(5);
-  ShpColor7.Top := BtnBlackWhite.AfterTop(25);
-  ShpColor8.Top := BtnBlackWhite.AfterTop(25);
-  ShpColor9.Top := BtnBlackWhite.AfterTop(25);
-  ShpColor10.Top := BtnBlackWhite.AfterTop(25);
-  ShpColor11.Top := BtnBlackWhite.AfterTop(25);
-  ShpColor12.Top := BtnBlackWhite.AfterTop(25);
+  ShpColor7.Top := BtnBlackWhite.AfterTop(9 + ShpColor1.Height);
+  ShpColor8.Top := BtnBlackWhite.AfterTop(9 + ShpColor1.Height);
+  ShpColor9.Top := BtnBlackWhite.AfterTop(9 + ShpColor1.Height);
+  ShpColor10.Top := BtnBlackWhite.AfterTop(9 + ShpColor1.Height);
+  ShpColor11.Top := BtnBlackWhite.AfterTop(9 + ShpColor1.Height);
+  ShpColor12.Top := BtnBlackWhite.AfterTop(9 + ShpColor1.Height);
 
   BvColors.Top := ShpColor12.AfterTop(5);
 
@@ -12886,17 +12910,31 @@ end;
 
 procedure TExplorerForm.ReallignEditBoxes;
 begin
-  LbHistogramImage.Top := SizeLabel.BoundsRect.Bottom + 5;
-  ImHistogramm.Top := LbHistogramImage.BoundsRect.Bottom + 5;
-  ReRating.Top := ImHistogramm.BoundsRect.Bottom + 5;
-  DteDate.Top := ReRating.BoundsRect.Bottom + 5;
-  DteTime.Top := DteDate.BoundsRect.Bottom + 5;
-  WllGroups.Top := DteTime.BoundsRect.Bottom + 5;
-  LbEditKeywords.Top := WllGroups.BoundsRect.Bottom + 5;
-  MemKeyWords.Top := LbEditKeywords.BoundsRect.Bottom + 3;
-  LbEditComments.Top := MemKeyWords.BoundsRect.Bottom + 3;
-  MemComments.Top := LbEditComments.BoundsRect.Bottom + 3;
-  BtnSaveInfo.Top := MemComments.BoundsRect.Bottom + 5;
+  PnInfoContainer.DisableAlign;
+  try
+    WlHistogramImage.Top := SizeLabel.BoundsRect.Bottom + 5;
+    if ImHistogramm.Visible then
+    begin
+      ImHistogramm.Top := WlHistogramImage.BoundsRect.Bottom + 5;
+      ReRating.Top := ImHistogramm.BoundsRect.Bottom + 5;
+      ReRating.Left := TsInfo.Width div 2 - ReRating.Width div 2;
+    end else
+    begin
+      ReRating.Top := WlHistogramImage.BoundsRect.Bottom + 5;
+      ReRating.Left := WlHistogramImage.Left;
+    end;
+
+    DteDate.Top := ReRating.BoundsRect.Bottom + 5;
+    DteTime.Top := DteDate.BoundsRect.Bottom + 5;
+    WllGroups.Top := DteTime.BoundsRect.Bottom + 5;
+    LbEditKeywords.Top := WllGroups.BoundsRect.Bottom + 5;
+    MemKeyWords.Top := LbEditKeywords.BoundsRect.Bottom + 3;
+    LbEditComments.Top := MemKeyWords.BoundsRect.Bottom + 3;
+    MemComments.Top := LbEditComments.BoundsRect.Bottom + 3;
+    BtnSaveInfo.Top := MemComments.BoundsRect.Bottom + 5;
+  finally
+    PnInfoContainer.EnableAlign;
+  end;
 end;
 
 procedure TExplorerForm.MemCommentsChange(Sender: TObject);
@@ -13153,6 +13191,9 @@ var
   SettingsRepository: ISettingsRepository;
   Settings: TSettings;
   S: string;
+  GraphicClass: TGraphicClass;
+  Graphic: TGraphic;
+  B: TBitmap;
 begin
   FreeList(FDatabases, False);
   F(FActiveDatabase);
@@ -13170,11 +13211,34 @@ begin
     MI.OnClick := ChangeDBClick;
     MI.Tag := I;
 
-    Ico := ExtractSmallIconByPath(DB.Icon);
-    try
-      ImageList_ReplaceIcon(ImDBList.Handle, -1, Ico);
-    finally
-      DestroyIcon(Ico);
+    if IsIconPath(DB.Icon) then
+    begin
+      Ico := ExtractSmallIconByPath(DB.Icon);
+      try
+        ImageList_ReplaceIcon(ImDBList.Handle, -1, Ico);
+      finally
+        DestroyIcon(Ico);
+      end;
+    end else
+    begin
+     GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(DB.Icon));
+      if GraphicClass = nil then
+        Exit;
+
+      Graphic := GraphicClass.Create;
+      try
+        Graphic.LoadFromFile(DB.Icon);
+        B := TBitmap.Create;
+        try
+          AssignGraphic(B, Graphic);
+          CenterBitmap24To32ImageList(B, ImDBList.Width);
+          ImDBList.Add(B, nil);
+        finally
+          F(B);
+        end;
+      finally
+        F(Graphic);
+      end;
     end;
 
     if AnsiLowerCase(DB.Path) = AnsiLowerCase(FContext.CollectionFileName) then

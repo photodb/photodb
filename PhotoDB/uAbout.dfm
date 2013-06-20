@@ -20,6 +20,7 @@ object AboutForm: TAboutForm
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
+  Scaled = False
   object ImageLogo: TImage
     Left = 0
     Top = 0

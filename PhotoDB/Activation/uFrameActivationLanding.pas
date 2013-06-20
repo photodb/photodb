@@ -76,6 +76,8 @@ begin
   else
     RbActivateApplication.Caption := L('Activate new copy of application (FREE!)');
   RbSetCode.Caption := L('Install activation code');
+  RbActivateApplication.Width := ClientWidth - RbActivateApplication.Left * 2;
+  RbSetCode.Width := ClientWidth - RbSetCode.Left * 2;
 end;
 
 end.

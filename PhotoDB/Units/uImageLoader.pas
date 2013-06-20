@@ -164,222 +164,232 @@ begin
   EXIFRotation := DB_IMAGE_ROTATE_0;
   IsImageEncrypted := False;
 
-  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
   try
 
-    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
-    if GraphicClass = nil then
-      Exit(False);
-
-    MSICC := nil;
-
-    LoadToMemory := not (GraphicClass = TRAWImage) and (ilfEXIF in Flags);
-    if (GraphicClass = TPSDGraphic) then
-      LoadToMemory := False;
-    if IsDevicePath(Info.FileName) then
-      LoadToMemory := True;
-
-    if not LoadToMemory then
-      S := nil
-    else
-      S := TMemoryStream.Create;
+    OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
     try
-      if (ilfGraphic in Flags) then
-      begin
-        if not IsDevicePath(Info.FileName) then
+
+      GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Info.FileName));
+      if GraphicClass = nil then
+        Exit(False);
+
+      MSICC := nil;
+
+      LoadToMemory := not (GraphicClass = TRAWImage) and (ilfEXIF in Flags);
+      if (GraphicClass = TPSDGraphic) then
+        LoadToMemory := False;
+      if IsDevicePath(Info.FileName) then
+        LoadToMemory := True;
+
+      if not LoadToMemory then
+        S := nil
+      else
+        S := TMemoryStream.Create;
+      try
+        if (ilfGraphic in Flags) then
         begin
-          FS := TFileStream.Create(Info.FileName, fmOpenRead or fmShareDenyNone);
-          try
-            IsImageEncrypted := ValidCryptGraphicStream(FS);
-            Info.Encrypted := IsImageEncrypted;
-            if Info.Encrypted then
-            begin
-              if ilfPassword in Flags then
-                Password := SessionPasswords.FindForFile(Info.FileName);
-
-              if (Password = '') and (ilfAskUserPassword in flags) then
-                TThread.Synchronize(nil,
-                  procedure
-                  begin
-                    Password := RequestPasswordForm.ForImage(Info.FileName);
-                  end
-                );
-
-              if (Password = '') and (ilfThrowError in Flags) then
-                raise Exception.Create(FormatEx(TA('Can''t decrypt image "{0}"', 'Image'), [Info.FileName]));
-
-              if S = nil then
-                S := TMemoryStream.Create;
-              DecryptStreamToStream(FS, S, Password);
-            end else
-            begin
-              if not LoadToMemory then
+          if not IsDevicePath(Info.FileName) then
+          begin
+            FS := TFileStream.Create(Info.FileName, fmOpenRead or fmShareDenyNone);
+            try
+              IsImageEncrypted := ValidCryptGraphicStream(FS);
+              Info.Encrypted := IsImageEncrypted;
+              if Info.Encrypted then
               begin
-                S := FS;
-                FS := nil;
-              end else
-                S.CopyFromEx(FS, FS.Size, 1024 * 1024, Progress);
-            end;
-          finally
-            F(FS);
-          end;
-        end else
-        begin
-          if S = nil then
-            S := TMemoryStream.Create;
-          ReadStreamFromDevice(Info.FileName, S);
-        end;
-      end;
+                if ilfPassword in Flags then
+                  Password := SessionPasswords.FindForFile(Info.FileName);
 
-      LoadOnlyExif := (ilfEXIF in Flags) and not (ilfGraphic in Flags);
+                if (Password = '') and (ilfAskUserPassword in flags) then
+                  TThread.Synchronize(nil,
+                    procedure
+                    begin
+                      Password := RequestPasswordForm.ForImage(Info.FileName);
+                    end
+                  );
 
-      if ((S <> nil) and (S.Size > 0)) or LoadOnlyExif then
-      begin
-        if Flags * [ilfICCProfile, ilfEXIF, ilfGraphic] <> [] then
-        begin
-          if not LoadOnlyExif then
-            S.Seek(0, soFromBeginning);
+                if (Password = '') and (ilfThrowError in Flags) then
+                  raise Exception.Create(FormatEx(TA('Can''t decrypt image "{0}"', 'Image'), [Info.FileName]));
 
-          ExifData := TExifData.Create(nil);
-          if IsRAWImageFile(Info.FileName) then
-            RawExif := TRAWExif.Create;
-
-          try
-            if Flags * [ilfEXIF] <> [] then
-            begin
-              if LoadOnlyExif then
-              begin
-                ExifData.LoadFromFileEx(Info.FileName, False);
-                if RawExif <> nil then
-                  RawExif.LoadFromFile(Info.FileName);
+                if S = nil then
+                  S := TMemoryStream.Create;
+                DecryptStreamToStream(FS, S, Password);
               end else
               begin
-                ExifData.LoadFromGraphic(S);
-                if RawExif <> nil then
+                if not LoadToMemory then
                 begin
+                  S := FS;
+                  FS := nil;
+                end else
+                  S.CopyFromEx(FS, FS.Size, 1024 * 1024, Progress);
+              end;
+            finally
+              F(FS);
+            end;
+          end else
+          begin
+            if S = nil then
+              S := TMemoryStream.Create;
+            ReadStreamFromDevice(Info.FileName, S);
+          end;
+        end;
+
+        LoadOnlyExif := (ilfEXIF in Flags) and not (ilfGraphic in Flags);
+
+        if ((S <> nil) and (S.Size > 0)) or LoadOnlyExif then
+        begin
+          if Flags * [ilfICCProfile, ilfEXIF, ilfGraphic] <> [] then
+          begin
+            if not LoadOnlyExif then
+              S.Seek(0, soFromBeginning);
+
+            ExifData := TExifData.Create(nil);
+            if IsRAWImageFile(Info.FileName) then
+              RawExif := TRAWExif.Create;
+
+            try
+              if Flags * [ilfEXIF] <> [] then
+              begin
+                if LoadOnlyExif then
+                begin
+                  ExifData.LoadFromFileEx(Info.FileName, False);
+                  if RawExif <> nil then
+                    RawExif.LoadFromFile(Info.FileName);
+                end else
+                begin
+                  ExifData.LoadFromGraphic(S);
+                  if RawExif <> nil then
+                  begin
+                    S.Seek(0, soFromBeginning);
+                    RawExif.LoadFromStream(S);
+                  end;
+                end;
+
+                if not ExifData.Empty then
+                begin
+                  if not (ilfDontUpdateInfo in Flags) then
+                  begin
+                    Info.HasExifHeader := True;
+                    if (ExifData.ImageDateTime > 0) and (YearOf(ExifData.ImageDateTime) >= cMinEXIFYear) then
+                    begin
+                      Info.Date := DateOf(ExifData.ImageDateTime);
+                      Info.Time := TimeOf(ExifData.ImageDateTime);
+                    end;
+                  end;
+
+                  if (ilfEXIF in Flags) then
+                    EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+
+                  if (ilfICCProfile in Flags) then
+                  begin
+                    if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
+                      or (ExifData.ColorSpace = csICCProfile) then
+                    begin
+                      if ExifData.HasICCProfile then
+                      begin
+                        MSICC := TMemoryStream.Create;
+                        ExifData.ExtractICCProfile(MSICC);
+                      end;
+                      if MSICC = nil then
+                      begin
+                        XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
+                        if XMPICCProperty <> nil then
+                          XMPICCPrifile := XMPICCProperty.ReadValue();
+                      end;
+                    end;
+                  end;
+                end;
+              end;
+
+              if (ilfGraphic in Flags) then
+              begin
+                Graphic := GraphicClass.Create;
+                try
+                  InitGraphic(Graphic);
+                  if (Graphic is TRAWImage) then
+                  begin
+                     TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
+                     if TRAWImage(Graphic).IsPreview then
+                       TRAWImage(Graphic).PreviewSize := Max(Width, Height);
+                     if (ilfHalfRawSize in Flags) then
+                       TRAWImage(Graphic).HalfSizeLoad := True;
+                  end;
+
+                  if not (ilfDontUpdateInfo in flags) and (Info.ID = 0) {and not IsDevicePath(Info.FileName)} then
+                    Info.Rotation := EXIFRotation or DB_IMAGE_ROTATE_NO_DB;
+
                   S.Seek(0, soFromBeginning);
-                  RawExif.LoadFromStream(S);
-                end;
-              end;
+                  if (Graphic is TTiffImage) then
+                  begin
+                    TiffImage := TTiffImage(Graphic);
+                    TiffImage.LoadFromStreamEx(S, LoadPage);
+                    ImageTotalPages := TiffImage.Pages;
+                  end else
+                    Graphic.LoadFromStream(S);
 
-              if not ExifData.Empty then
+                  if not Graphic.Empty then
+                  begin
+                    //load ICC profile from PNG image
+                    if (Graphic is TPngImage) and (ilfICCProfile in Flags) and (MSICC = nil) then
+                      ApplyPNGIccProfile(TPngImage(Graphic), DisplayProfileName);
+
+                    ImageInfo := TLoadImageInfo.Create(
+                      Graphic,
+                      ImageTotalPages,
+                      EXIFRotation,
+                      XMPICCPrifile,
+                      MSICC,
+                      ExifData,
+                      RawExif,
+                      IsImageEncrypted,
+                      Password);
+                    ExifData := nil;
+                    MSICC := nil;
+                    Graphic := nil;
+                    Result := True;
+                  end else
+                  begin
+                    if (Graphic = nil) and (ilfThrowError in Flags) then
+                      raise Exception.Create(FormatEx(TA('Can''t load image "{0}"', 'Image'), [Info.FileName]));
+                  end;
+                finally
+                  F(Graphic);
+                end;
+              end else
               begin
-                if not (ilfDontUpdateInfo in Flags) then
-                begin
-                  Info.HasExifHeader := True;
-                  if (ExifData.ImageDateTime > 0) and (YearOf(ExifData.ImageDateTime) >= cMinEXIFYear) then
-                  begin
-                    Info.Date := DateOf(ExifData.ImageDateTime);
-                    Info.Time := TimeOf(ExifData.ImageDateTime);
-                  end;
-                end;
-
-                if (ilfEXIF in Flags) then
-                  EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-
-                if (ilfICCProfile in Flags) then
-                begin
-                  if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
-                    or (ExifData.ColorSpace = csICCProfile) then
-                  begin
-                    if ExifData.HasICCProfile then
-                    begin
-                      MSICC := TMemoryStream.Create;
-                      ExifData.ExtractICCProfile(MSICC);
-                    end;
-                    if MSICC = nil then
-                    begin
-                      XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
-                      if XMPICCProperty <> nil then
-                        XMPICCPrifile := XMPICCProperty.ReadValue();
-                    end;
-                  end;
-                end;
+                ImageInfo := TLoadImageInfo.Create(
+                  nil,
+                  ImageTotalPages,
+                  EXIFRotation,
+                  XMPICCPrifile,
+                  MSICC,
+                  ExifData,
+                  RawExif,
+                  IsImageEncrypted,
+                  Password);
+                ExifData := nil;
+                MSICC := nil;
+                Result := True;
               end;
+
+            finally
+              F(ExifData);
             end;
-
-            if (ilfGraphic in Flags) then
-            begin
-              Graphic := GraphicClass.Create;
-              try
-                InitGraphic(Graphic);
-                if (Graphic is TRAWImage) then
-                begin
-                   TRAWImage(Graphic).IsPreview := not (ilfFullRAW in Flags);
-                   if TRAWImage(Graphic).IsPreview then
-                     TRAWImage(Graphic).PreviewSize := Max(Width, Height);
-                   if (ilfHalfRawSize in Flags) then
-                     TRAWImage(Graphic).HalfSizeLoad := True;
-                end;
-
-                if not (ilfDontUpdateInfo in flags) and (Info.ID = 0) {and not IsDevicePath(Info.FileName)} then
-                  Info.Rotation := EXIFRotation or DB_IMAGE_ROTATE_NO_DB;
-
-                S.Seek(0, soFromBeginning);
-                if (Graphic is TTiffImage) then
-                begin
-                  TiffImage := TTiffImage(Graphic);
-                  TiffImage.LoadFromStreamEx(S, LoadPage);
-                  ImageTotalPages := TiffImage.Pages;
-                end else
-                  Graphic.LoadFromStream(S);
-
-                if not Graphic.Empty then
-                begin
-                  //load ICC profile from PNG image
-                  if (Graphic is TPngImage) and (ilfICCProfile in Flags) and (MSICC = nil) then
-                    ApplyPNGIccProfile(TPngImage(Graphic), DisplayProfileName);
-
-                  ImageInfo := TLoadImageInfo.Create(
-                    Graphic,
-                    ImageTotalPages,
-                    EXIFRotation,
-                    XMPICCPrifile,
-                    MSICC,
-                    ExifData,
-                    RawExif,
-                    IsImageEncrypted,
-                    Password);
-                  ExifData := nil;
-                  MSICC := nil;
-                  Graphic := nil;
-                  Result := True;
-                end else
-                begin
-                  if (Graphic = nil) and (ilfThrowError in Flags) then
-                    raise Exception.Create(FormatEx(TA('Can''t load image "{0}"', 'Image'), [Info.FileName]));
-                end;
-              finally
-                F(Graphic);
-              end;
-            end else
-            begin
-              ImageInfo := TLoadImageInfo.Create(
-                nil,
-                ImageTotalPages,
-                EXIFRotation,
-                XMPICCPrifile,
-                MSICC,
-                ExifData,
-                RawExif,
-                IsImageEncrypted,
-                Password);
-              ExifData := nil;
-              MSICC := nil;
-              Result := True;
-            end;
-
-          finally
-            F(ExifData);
           end;
         end;
+      finally
+        F(S);
+        F(MSICC);
       end;
     finally
-      F(S);
-      F(MSICC);
+      SetErrorMode(OldMode);
     end;
-  finally
-    SetErrorMode(OldMode);
+  except
+    on e: Exception do
+    begin
+      EventLog(e);
+      if (ilfThrowError in Flags) then
+        raise;
+    end;
   end;
 end;
 

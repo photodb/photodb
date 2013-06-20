@@ -46,6 +46,7 @@ function GetMyPicturesPath: string;
 function GetAppDataPath: string;
 function GetTempDirectory: string;
 function GetTempFileName: TFileName;
+function GetTempFileNameEx(Directory, Extension: string): TFileName;
 procedure RefreshSystemIconCache;
 
 implementation
@@ -523,6 +524,15 @@ begin
   if Windows.GetTempFileName(PChar(GetTempDirectory), '~', 0, TempFileName) = 0 then
     raise Exception.Create(SysErrorMessage(GetLastError));
   Result := TempFileName;
+end;
+
+function GetTempFileNameEx(Directory, Extension: string): TFileName;
+var
+  TempFileName: array [0..MAX_PATH-1] of char;
+begin
+  if Windows.GetTempFileName(PChar(Directory), '~', 0, TempFileName) = 0 then
+    raise Exception.Create(SysErrorMessage(GetLastError));
+  Result := TempFileName + Extension;
 end;
 
 procedure RefreshSystemIconCache;

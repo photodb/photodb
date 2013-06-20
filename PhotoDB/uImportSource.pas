@@ -334,6 +334,7 @@ begin
     Button := TSpeedButton.Create(Self);
     Button.Parent := Self;
     Button.Width := 132;
+
     Button.Height := 132 + 20;
     Button.Top := 4;
     Button.OnClick := SelectSourceClick;
@@ -354,6 +355,7 @@ begin
 
     FButtons.Add(Button);
 
+    ClientHeight := Button.Height + 5 * 2;
     ReorderForm;
   finally
     if Visible then

@@ -924,7 +924,10 @@ begin
       finally
         for I := 0 to Length(ResArray) - 1 do
           if ResArray[I].Jpeg <> nil then
-             ResArray[I].Jpeg.Free;
+          begin
+            ResArray[I].Jpeg.Free;
+            ResArray[I].Jpeg := nil;
+          end;
       end;
     finally
       F(Infos);
@@ -932,7 +935,10 @@ begin
 
   except
     on e: Exception do
+    begin
       EventLog(e);
+      raise;
+    end;
   end;
 end;
 
@@ -1371,7 +1377,7 @@ begin
     end;
 
     if IdleCycle then
-      Sleep(100);
+      Sleep(10);
   end;
 end;
 

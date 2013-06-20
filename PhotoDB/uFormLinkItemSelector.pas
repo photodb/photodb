@@ -74,6 +74,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    FLinkHeight: Integer;
     FLinks: TList<TWebLink>;
     FLabels: TList<Tlabel>;
     FData: TList<TDataObject>;
@@ -127,7 +128,6 @@ implementation
 const
   LinksLimit = 20;
   PaddingTop = 8;
-  LinkHeight = 18;
   LinksDy = 6;
   AnimationDuration = 1 / (24 * 60 * 60 * 2); //0.5s
   AnimationDurationMs = 500;
@@ -174,7 +174,7 @@ var
       Exit;
     end;
 
-    Top := PaddingTop + (FLinks.Count - 1) * (LinkHeight + LinksDy);
+    Top := PaddingTop + (FLinks.Count - 1) * (FLinkHeight + LinksDy);
     if MouseY > Top then
     begin
       Progress := (MouseY - Top) / 100;
@@ -272,8 +272,8 @@ begin
     Info := FLabels[I];
     if Link <> FDragLink then
     begin
-      LinkReplacePosStart := PaddingTop + I * (LinkHeight + LinksDy) - LinksDy + (LinksDy div 2 - LinkHeight div 2);
-      LinkReplacePosEnd := LinkReplacePosStart + LinkHeight + LinksDy;
+      LinkReplacePosStart := PaddingTop + I * (FLinkHeight + LinksDy) - LinksDy + (LinksDy div 2 - FLinkHeight div 2);
+      LinkReplacePosEnd := LinkReplacePosStart + FLinkHeight + LinksDy;
 
       if (LinkReplacePosStart < FDragLink.Top) and (FDragLink.Top < LinkReplacePosEnd) then
       begin
@@ -351,7 +351,12 @@ begin
 end;
 
 procedure TFormLinkItemSelector.FormCreate(Sender: TObject);
+var
+  Metrics: TTextMetric;
 begin
+  GetTextMetrics(Canvas.Handle, Metrics);
+  FLinkHeight := Metrics.tmHeight;
+
   FEditIndex := -1;
   FDragLink := nil;
   FDragLabel := nil;
@@ -419,7 +424,7 @@ end;
 
 function TFormLinkItemSelector.GetFormHeight: Integer;
 begin
-  Result := PaddingTop * 2 + FLinks.Count * (LinkHeight + LinksDy) + 60;
+  Result := PaddingTop * 2 + FLinks.Count * (FLinkHeight + LinksDy) + BtnSave.Height + 5 * 2 + WlRemove.Height + 3 * 2;
 end;
 
 function TFormLinkItemSelector.GetFormID: string;
@@ -446,7 +451,7 @@ begin
   WL := TWebLink.Create(Self);
   WL.Parent := PnMain;
   WL.Tag := FLinks.Count;
-  WL.Height := LinkHeight;
+  WL.Height := FLinkHeight;
   WL.Width := ClientWidth;
   WL.Left := PaddingTop;
   WL.Font.Assign(Font);
@@ -618,7 +623,7 @@ var
   NewPos: Integer;
   Link: TWebLink;
 begin
-  NewPos := PaddingTop + Index * (LinkHeight + LinksDy);
+  NewPos := PaddingTop + Index * (FLinkHeight + LinksDy);
 
   if Control is TWebLink then
   begin
@@ -748,7 +753,7 @@ begin
   PnEditorPanel.AutoSize := True;
   FEditor.CreateEditorForItem(Self, FData[FEditIndex], Self);
   PnEditorPanel.Left := 8;
-  PnEditorPanel.Top := PaddingTop + LinkHeight + LinksDy;
+  PnEditorPanel.Top := PaddingTop + FLinkHeight + LinksDy;
 
   if PnTop.Visible then
     ToWidth := ClientWidth

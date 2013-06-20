@@ -49,7 +49,7 @@ cd ..
 cd ..
 
 cd Uninstall
-"%DCC32%" %NS% UnInstall -D"UNINSTALL" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% UnInstall -D"UNINSTALL;DBDEBUG" -E"..\PhotoDB\bin" -N0"\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 cd Bridge
@@ -57,21 +57,21 @@ cd Bridge
 cd ..
 
 cd Installer
-"%DCC32%" %NS% InstallMaker -D"EXTERNAL;%PLAYER%" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% InstallMaker -D"EXTERNAL;DBDEBUG;%PLAYER%" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 cd ..
 
 
-cd TransparentEncryption
-"%DCC32%" %NS% TransparentEncryption -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-"%DCC64%" %NS% TransparentEncryption64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-"%DCC32%" %NS% PlayEncryptedMedia -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-"%DCC64%" %NS% PlayEncryptedMedia64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
-cd ..
+rem cd TransparentEncryption
+rem "%DCC32%" %NS% TransparentEncryption -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+rem "%DCC64%" %NS% TransparentEncryption64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+rem "%DCC32%" %NS% PlayEncryptedMedia -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+rem "%DCC64%" %NS% PlayEncryptedMedia64 -E"..\PhotoDB\bin" -N0"..\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+rem cd ..
 
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE" -Ebin -V -W -N0dcu --inline:on -U"%DM%";"External\Mustangpeak\EasyListview\Source";"External\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM;"External\Controls\virtual-treeview\Common" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE;DEBUG;FullDebugMode;DBDEBUG" -Ebin -V -VN -GD -W -N0dcu --inline:on -U"%DM%";"External\Mustangpeak\EasyListview\Source";"External\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM;"External\Controls\virtual-treeview\Common;"External\jcl\source\windows";"External\jcl\source\common" -I"External\jcl\source\include" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..
@@ -96,12 +96,14 @@ cd ..
 cd ..
 cd Installer
 InstallMaker SETUP$ZIP.dat
-"%BRCC32%" SETUP_ZIP.rc
-"%DCC32%" %NS% Install -D"INSTALL;%PLAYER%" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+rem use VS resource compiler because borland's fails on big files
+RC SETUP_ZIP.rc
+"%DCC32%" %NS% Install -D"INSTALL;%PLAYER%;DBDEBUG" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 InstallMaker /setup Install.exe
-"%BRCC32%" Install_Package.rc
-"%DCC32%" %NS% PhotoDBInstall -E".." -D"INSTALL" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+rem use VS resource compiler because borland's fails on big files
+RC Install_Package.rc
+"%DCC32%" %NS% PhotoDBInstall -E".." -D"INSTALL;DBDEBUG" -N0"..\PhotoDB\dcu" -U"%DM%" -$D- -$I+ -$O+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 
 cd ..
 cd PhotoDB

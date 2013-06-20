@@ -10,8 +10,30 @@ uses
 
 function ExtractSmallIconByPath(IconPath: string; Big: Boolean = False): HIcon;
 function ImageSizeToIconSize16_32_48(ImageSize: Integer): Integer;
+function IsIconPath(Path: string): Boolean;
 
 implementation
+
+function IsIconPath(Path: string): Boolean;
+var
+  P: Integer;
+  SIndex, Ext: string;
+begin
+  Result := False;
+  P := Path.LastDelimiter(',');
+  if P > 0 then
+  begin
+    SIndex := Path.Substring(P + 1);
+    if StrToIntDef(SIndex, MaxInt) <> MaxInt then
+      Path := Path.Remove(P)
+    else
+      Exit;
+  end;
+
+  Ext := AnsiLowerCase(ExtractFileExt(Path));
+  if (Ext = '.ico') or (Ext = '.dll') or (Ext = '.exe') or (Ext = '.ocx') or (Ext = '.scr') then
+    Result := True;
+end;
 
 function ImageSizeToIconSize16_32_48(ImageSize: Integer): Integer;
 begin

@@ -17,6 +17,7 @@ object FormImportImages: TFormImportImages
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  Scaled = False
   DesignSize = (
     685
     652)

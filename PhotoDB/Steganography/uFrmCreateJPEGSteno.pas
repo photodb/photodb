@@ -156,6 +156,7 @@ constructor TFrmCreateJPEGSteno.Create(AOwner: TComponent);
 begin
   inherited;
   FBitmapImage := nil;
+  BtnChooseFile.Height := EdDataFileName.Height;
 end;
 
 procedure TFrmCreateJPEGSteno.ErrorLoadingImageHandler(FileName: string);

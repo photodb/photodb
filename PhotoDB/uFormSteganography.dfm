@@ -30,7 +30,7 @@ object FormSteganography: TFormSteganography
     Top = 135
     Width = 97
     Height = 182
-    Anchors = [akLeft, akTop, akBottom]
+    Anchors = [akLeft, akTop, akRight, akBottom]
     AutoSize = False
     Caption = 
       'The advantage of steganography, over cryptography alone, is that' +

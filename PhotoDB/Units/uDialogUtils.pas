@@ -16,6 +16,7 @@ uses
 
 procedure LoadNickJpegImage(Image: TPicture; JpegCompressionQuality: TJPEGQualityRange);
 function GetImageFromUser(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
+function DBLoadImage(FileName: string; var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer): Boolean;
 
 implementation
 

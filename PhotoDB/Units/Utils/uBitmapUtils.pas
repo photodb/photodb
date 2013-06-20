@@ -833,6 +833,8 @@ begin
       adrOut := NativeInt(S.ScanLine[y]);
       yi1 := yi2 {+ 1};
       yi2 := ((y+1) * bufh) div outh - 1;
+      if yi2 < 0 then
+        yi2 := 0;
       if yi2 > bufh-1 then yi2 := bufh;
       xi2 := 0;
       for x := 0 to outw-1 do
@@ -877,6 +879,8 @@ begin
       adrOut := NativeInt(S.ScanLine[y]);
       yi1 := yi2 {+ 1};
       yi2 := ((y+1) * bufh) div outh - 1;
+      if yi2 < 0 then
+        yi2 := 0;
       if yi2 > bufh-1 then yi2 := bufh;
       xi2 := 0;
       for x := 0 to outw-1 do

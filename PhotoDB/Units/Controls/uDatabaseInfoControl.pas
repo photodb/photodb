@@ -9,6 +9,7 @@ uses
   Winapi.ActiveX,
   System.Math,
   System.Classes,
+  System.SysUtils,
   Vcl.Graphics,
   Vcl.Controls,
   Vcl.StdCtrls,
@@ -29,10 +30,12 @@ uses
 
   uRuntime,
   uMemory,
+  uLogger,
   uResources,
   uTranslateUtils,
   uJpegUtils,
   uBitmapUtils,
+  uGraphicUtils,
   uIconUtils,
   uSettings,
   uFormInterfaces,
@@ -42,6 +45,7 @@ uses
   uDBForm,
   uThreadForm,
   uThreadTask,
+  uAssociations,
   uCollectionEvents,
   uLinkListEditorDatabases;
 
@@ -370,6 +374,9 @@ var
   LB: TLayeredBitmap;
   Ico: HIcon;
   IconSize: Integer;
+  GraphicClass: TGraphicClass;
+  Graphic: TGraphic;
+  B: TBitmap;
 begin
   if FInfo <> nil then   
     IconFileName := FInfo.Icon;
@@ -378,19 +385,55 @@ begin
 
   IconSize := IIF(BigToolBar, 32, 16);
 
-  Ico := ExtractSmallIconByPath(IconFileName, BigToolBar);
-  try
-    LB := TLayeredBitmap.Create;
+  if IsIconPath(IconFileName) then
+  begin
+    Ico := ExtractSmallIconByPath(IconFileName, BigToolBar);
     try
-      LB.LoadFromHIcon(Ico, IconSize, IconSize);
+      LB := TLayeredBitmap.Create;
+      try
+        LB.LoadFromHIcon(Ico, IconSize, IconSize);
 
-      F(FCollectionPicture);
-      Exchange(FCollectionPicture, LB);
+        F(FCollectionPicture);
+        Exchange(FCollectionPicture, LB);
+      finally
+        F(LB);
+      end;
     finally
-      F(LB);
+      DestroyIcon(Ico);
     end;
-  finally
-    DestroyIcon(Ico);
+  end else
+  begin
+    GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(IconFileName));
+    if GraphicClass = nil then
+      Exit;
+
+    try
+      Graphic := GraphicClass.Create;
+      try
+        Graphic.LoadFromFile(IconFileName);
+        if (Graphic.Width > IconSize) or (Graphic.Height > IconSize) then
+        begin
+          B := TBitmap.Create;
+          try
+            AssignGraphic(B, Graphic);
+            KeepProportions(B, IconSize, IconSize);
+            F(B);
+            Exchange(FCollectionPicture, B);
+          finally
+            F(B);
+          end;
+        end else
+        begin
+          F(FCollectionPicture);
+          Exchange(FCollectionPicture, Graphic);
+        end;
+      finally
+        F(Graphic);
+      end;
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
   end;
 
   FImage.Picture.Graphic := FCollectionPicture;

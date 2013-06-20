@@ -28,6 +28,7 @@ uses
   uMemory,
   uRuntime,
   uLogger,
+  uConfiguration,
   uStringUtils,
   uDBForm,
   uDBTypes,
@@ -39,10 +40,15 @@ uses
   uVclHelpers,
   uIconUtils,
   uTranslate,
+  uAssociations,
   uTranslateUtils,
+  uShellUtils,
   uShellIntegration,
+  uGraphicUtils,
+  uBitmapUtils,
   uFormInterfaces,
   uCollectionUtils,
+  uDialogUtils,
   uLinkListEditorUpdateDirectories;
 
 type
@@ -52,7 +58,7 @@ type
     FDeletedCollections: TStrings;
     FForm: IFormLinkItemEditorData;
     procedure LoadIconForLink(Link: TWebLink; Path, Icon: string);
-    procedure OnPlaceIconClick(Sender: TObject);
+    procedure OnCollectionIconClick(Sender: TObject);
     procedure OnChangePlaceClick(Sender: TObject);
     procedure OnPreviewOptionsClick(Sender: TObject);
     procedure OnUpdateOptionsClick(Sender: TObject);
@@ -127,7 +133,6 @@ var
   WedDescription: TWatermarkedEdit;
   LbInfo,
   LbDescription: TLabel;
-  Icon: HICON;
   Editor: TPanel;
 begin
   Editor := EditorData.EditorPanel;
@@ -154,7 +159,7 @@ begin
     WlIcon.Height := 16;
     WlIcon.Left := 8;
     WlIcon.Top := 8;
-    WlIcon.OnClick := OnPlaceIconClick;
+    WlIcon.OnClick := OnCollectionIconClick;
   end;
 
   if LbInfo = nil then
@@ -263,12 +268,7 @@ begin
   UpdateCompactAndRepairLabel;
   WlCompactAndRepair.RefreshBuffer(True);
 
-  Icon := ExtractSmallIconByPath(DI.Icon);
-  try
-    WlIcon.LoadFromHIcon(Icon);
-  finally
-    DestroyIcon(Icon);
-  end;
+  LoadIconForLink(WlIcon, DI.Path, DI.Icon);
   WedCaption.Text := DI.Title;
   LbInfo.Caption := DI.Path;
   WedDescription.Text := DI.Description;
@@ -435,16 +435,43 @@ end;
 
 procedure TLinkListEditorDatabases.LoadIconForLink(Link: TWebLink; Path, Icon: string);
 var
-  Ico: HIcon;
+  Ico: HIcon; 
+  GraphicClass: TGraphicClass;
+  Graphic: TGraphic;
+  B: TBitmap;
 begin
-  if Icon <> '' then
-    Ico := ExtractSmallIconByPath(Icon)
-  else
-    Ico := ExtractAssociatedIconSafe(Path);
+  if IsIconPath(Icon) then
+  begin
+    if Icon <> '' then
+      Ico := ExtractSmallIconByPath(Icon)
+    else
+      Ico := ExtractAssociatedIconSafe(Path);
+    try
+      Link.LoadFromHIcon(Ico);
+    finally
+      DestroyIcon(Ico);
+    end;
+    Exit;
+  end;
+
+  GraphicClass := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(Icon));
+  if GraphicClass = nil then
+    Exit;
+
+  Graphic := GraphicClass.Create;
   try
-    Link.LoadFromHIcon(Ico);
+    Graphic.LoadFromFile(Icon);
+    B := TBitmap.Create;
+    try
+      AssignGraphic(B, Graphic);
+      CenterBitmap24To32ImageList(B, Link.IconWidth);
+      Link.LoadBitmap(B);
+      Link.RefreshBuffer;
+    finally
+      F(B);
+    end;
   finally
-    DestroyIcon(Ico);
+    F(Graphic);
   end;
 end;
 
@@ -522,6 +549,120 @@ begin
   end;
 end;
 
+function TLinkListEditorDatabases.OnDelete(Sender: ILinkItemSelectForm;
+  Data: TDataObject; Editor: TPanel): Boolean;
+var
+  DI: TDatabaseInfo;
+  Context: IDBContext;
+begin
+  DI := TDatabaseInfo(Editor.Tag);
+
+  Context := DBManager.DBContext;
+  if AnsiLowerCase(Context.CollectionFileName) = AnsiLowerCase(DI.Path) then
+  begin
+    MessageBoxDB(FOwner.Handle, FOwner.L('Active collection can''t be deleted! Please change active collection and try again.'), FOwner.L('Warning'), '', TD_BUTTON_OK, TD_ICON_WARNING);
+    Exit(False);
+  end;
+
+  if FileExistsSafe(DI.Path) then
+  begin
+    TryRemoveConnection(DI.Path, True);
+    FDeletedCollections.Add(DI.Path);
+  end;
+
+  Result := True;
+end;
+
+procedure TLinkListEditorDatabases.OnCollectionIconClick(Sender: TObject);
+var
+  DI: TDatabaseInfo;
+  Icon, TmpDir: string;
+  Editor: TPanel;
+  WlIcon: TWebLink;  
+  OpenPictureDialog: DBOpenPictureDialog;
+  Bitmap: TBitmap;
+  ExeExts: TDictionary<string, string>;
+begin
+  Editor := TPanel(TControl(Sender).Parent);
+  DI := TDatabaseInfo(Editor.Tag);
+  WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_DB_ICON);
+  
+  Icon := DI.Icon;
+
+  ExeExts := TDictionary<string, string>.Create;
+  OpenPictureDialog := DBOpenPictureDialog.Create;
+  try
+    ExeExts.Add('.ico,.exe,.dll,.scr,.ocx', TA('Icons and executables', 'Associations'));
+    OpenPictureDialog.Filter := TFileAssociations.Instance.GetExtendedFullFilter(True, True, ExeExts);
+    if OpenPictureDialog.Execute then
+    begin
+      Icon := OpenPictureDialog.FileName;
+
+      if IsIconPath(Icon) then
+      begin
+        if ChangeIconDialog(0, Icon) then
+        begin
+          DI.Icon := Icon;
+          LoadIconForLink(WlIcon, DI.Path, DI.Icon);
+        end;
+      end else
+      begin
+        if DBLoadImage(Icon, Bitmap, 32, 32) then
+        begin
+          TmpDir := GetAppDataDirectory + TmpDirectory;
+          CreateDirA(TmpDir);
+          Icon := GetTempFileNameEx(TmpDir, '.bmp');
+          Bitmap.SaveToFile(Icon);
+          F(Bitmap);
+          DI.Icon := Icon;
+          LoadIconForLink(WlIcon, DI.Path, DI.Icon);
+        end;
+      end;
+    end;
+  finally
+    F(OpenPictureDialog);
+    F(ExeExts);
+  end;
+end;
+
+procedure TLinkListEditorDatabases.SetForm(Form: IFormLinkItemEditorData);
+begin
+  FForm := Form;
+end;
+
+procedure TLinkListEditorDatabases.UpdateCompactAndRepairLabel;
+var
+  Editor: TPanel;
+  DI: TDatabaseInfo;
+  WlCompactAndRepair: TWebLink;
+begin
+  Editor := FForm.EditorPanel;
+  DI := TDatabaseInfo(Editor.Tag);
+  WlCompactAndRepair := Editor.FindChildByTag<TWebLink>(CHANGE_DB_COMPACT_AND_REPAIR);
+
+  WlCompactAndRepair.Text := FormatEx(FOwner.L('Compact ({0}) and repair'), [SizeInText(GetFileSizeByName(DI.Path))]);
+end;
+
+procedure TLinkListEditorDatabases.UpdateItemFromEditor(
+  Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
+var
+  DI: TDatabaseInfo;
+  WedCaption,
+  WedDesctiption: TWatermarkedEdit;
+  Editor: TPanel;
+begin
+  Editor := EditorData.EditorPanel;
+  DI := TDatabaseInfo(Data);
+
+  WedCaption := Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_CAPTION_EDIT);
+  WedDesctiption :=  Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_DESC_EDIT);
+
+  DI.Assign(EditorData.EditorData);
+  DI.Title := WedCaption.Text;
+  DI.Description := WedDesctiption.Text;
+end;
+
+
 procedure TLinkListEditorDatabases.OnCompactAndRepairClick(Sender: TObject);
 var
   DI: TDatabaseInfo;
@@ -587,7 +728,7 @@ begin
                         end
                       );
                     end
-                  ); 
+                  );
                   IsTaskComplete := True;
                   Break;
                 end;
@@ -632,86 +773,6 @@ begin
   finally
     ProgressForm := nil;
   end;
-end;
-
-function TLinkListEditorDatabases.OnDelete(Sender: ILinkItemSelectForm;
-  Data: TDataObject; Editor: TPanel): Boolean;
-var
-  DI: TDatabaseInfo;
-  Context: IDBContext;
-begin
-  DI := TDatabaseInfo(Editor.Tag);
-
-  Context := DBManager.DBContext;
-  if AnsiLowerCase(Context.CollectionFileName) = AnsiLowerCase(DI.Path) then
-  begin
-    MessageBoxDB(FOwner.Handle, FOwner.L('Active collection can''t be deleted! Please change active collection and try again.'), FOwner.L('Warning'), '', TD_BUTTON_OK, TD_ICON_WARNING);
-    Exit(False);
-  end;
-
-  if FileExistsSafe(DI.Path) then
-  begin
-    TryRemoveConnection(DI.Path, True);
-    FDeletedCollections.Add(DI.Path);
-  end;
-
-  Result := True;
-end;
-
-procedure TLinkListEditorDatabases.OnPlaceIconClick(Sender: TObject);
-var
-  DI: TDatabaseInfo;
-  Icon: string;
-  Editor: TPanel;
-  WlIcon: TWebLink;
-begin
-  Editor := TPanel(TControl(Sender).Parent);
-  DI := TDatabaseInfo(Editor.Tag);
-
-  Icon := DI.Icon;
-  if ChangeIconDialog(0, Icon) then
-  begin
-    DI.Icon := Icon;
-    WlIcon := Editor.FindChildByTag<TWebLink>(CHANGE_DB_ICON);
-    LoadIconForLink(WlIcon, DI.Path, DI.Icon);
-  end;
-end;
-
-procedure TLinkListEditorDatabases.SetForm(Form: IFormLinkItemEditorData);
-begin
-  FForm := Form;
-end;
-
-procedure TLinkListEditorDatabases.UpdateCompactAndRepairLabel;
-var
-  Editor: TPanel;
-  DI: TDatabaseInfo;
-  WlCompactAndRepair: TWebLink;
-begin
-  Editor := FForm.EditorPanel;
-  DI := TDatabaseInfo(Editor.Tag);
-  WlCompactAndRepair := Editor.FindChildByTag<TWebLink>(CHANGE_DB_COMPACT_AND_REPAIR);
-
-  WlCompactAndRepair.Text := FormatEx(FOwner.L('Compact ({0}) and repair'), [SizeInText(GetFileSizeByName(DI.Path))]);
-end;
-
-procedure TLinkListEditorDatabases.UpdateItemFromEditor(
-  Sender: ILinkItemSelectForm; Data: TDataObject; EditorData: IFormLinkItemEditorData);
-var
-  DI: TDatabaseInfo;
-  WedCaption,
-  WedDesctiption: TWatermarkedEdit;
-  Editor: TPanel;
-begin
-  Editor := EditorData.EditorPanel;
-  DI := TDatabaseInfo(Data);
-
-  WedCaption := Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_CAPTION_EDIT);
-  WedDesctiption :=  Editor.FindChildByTag<TWatermarkedEdit>(CHANGE_DB_DESC_EDIT);
-
-  DI.Assign(EditorData.EditorData);
-  DI.Title := WedCaption.Text;
-  DI.Description := WedDesctiption.Text;
 end;
 
 end.

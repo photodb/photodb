@@ -164,92 +164,118 @@ var
   FQuery: TDataSet;
   Temp, Sql, FromDB: string;
   ThImS: TMediaInfoArray;
+  Info: TMediaInfo;
 begin
   L := Images.Count;
-  SetLength(ThImS, L);
-  SetLength(Result, L);
+  SetLength(ThImS, 0);
+  SetLength(Result, 0);
+
   for I := 0 to L - 1 do
-    ThImS[I] := GetImageIDW(DBContext, Images[I].FileName, True, Settings);
+  begin
+    Info := GetImageIDW(DBContext, Images[I].FileName, True, Settings);
+    SetLength(ThImS, I + 1);
+    ThImS[I] := Info;
+  end;
 
   FQuery := DBContext.CreateQuery(dbilRead);
-
-  Sql := '';
-
-  FromDB := '(SELECT ID, FFileName, Attr, StrTh FROM $DB$ WHERE ';
-  for I := 1 to L do
-  begin
-    if I = 1 then
-      Sql := Sql + Format(' (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I])
-    else
-      Sql := Sql + Format(' or (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I]);
-  end;
-  FromDB := FromDB + Sql + ')';
-
-  Sql := 'SELECT ID, FFileName, Attr, StrTh FROM ' + FromDB + ' WHERE ';
-
-  for I := 1 to L do
-  begin
-    if I = 1 then
-      Sql := Sql + Format(' (StrTh = :str%d) ', [I])
-    else
-      Sql := Sql + Format(' or (StrTh = :str%d) ', [I]);
-  end;
-  SetSQL(FQuery, Sql);
-
-
-  for I := 0 to L - 1 do
-  begin
-    Result[I] := ThImS[I];
-    SetIntParam(FQuery, I, Integer(StringCRC(ThImS[I].ImTh)));
-  end;
-  for I := L to 2 * L - 1 do
-    SetStrParam(FQuery, I, ThImS[I - L].ImTh);
-
   try
-    OpenDS(FQuery);
-  except
-    FreeDS(FQuery);
+    Sql := '';
+
+    FromDB := '(SELECT ID, FFileName, Attr, StrTh FROM $DB$ WHERE ';
+    for I := 1 to L do
+    begin
+      if I = 1 then
+        Sql := Sql + Format(' (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I])
+      else
+        Sql := Sql + Format(' or (IsNull(StrThCrc) or StrThCrc = :strcrc%d) ', [I]);
+    end;
+    FromDB := FromDB + Sql + ')';
+
+    Sql := 'SELECT ID, FFileName, Attr, StrTh FROM ' + FromDB + ' WHERE ';
+
+    for I := 1 to L do
+    begin
+      if I = 1 then
+        Sql := Sql + Format(' (StrTh = :str%d) ', [I])
+      else
+        Sql := Sql + Format(' or (StrTh = :str%d) ', [I]);
+    end;
+    SetSQL(FQuery, Sql);
+
+    SetLength(Result, L);
     for I := 0 to L - 1 do
     begin
-      Setlength(Result[I].Ids, 0);
-      Setlength(Result[I].FileNames, 0);
-      Setlength(Result[I].Attr, 0);
-      Result[I].Count := 0;
-      Result[I].ImTh := '';
-      if Result[I].Jpeg <> nil then
-        Result[I].Jpeg.Free;
-      Result[I].Jpeg := nil;
+      Result[I] := ThImS[I];
+      SetIntParam(FQuery, I, Integer(StringCRC(ThImS[I].ImTh)));
     end;
-    Exit;
-  end;
+    for I := L to 2 * L - 1 do
+      SetStrParam(FQuery, I, ThImS[I - L].ImTh);
 
-  for K := 0 to L - 1 do
-  begin
-    Setlength(Result[K].Ids, 0);
-    Setlength(Result[K].FileNames, 0);
-    Setlength(Result[K].Attr, 0);
-    Len := 0;
-    FQuery.First;
-    for I := 1 to FQuery.RecordCount do
-    begin
-
-      Temp := FQuery.FieldByName('StrTh').AsString;
-      if Temp = ThImS[K].ImTh then
+    try
+      OpenDS(FQuery);
+    except
+      for I := 0 to L - 1 do
       begin
-        Inc(Len);
-        Setlength(Result[K].Ids, Len);
-        Setlength(Result[K].FileNames, Len);
-        Setlength(Result[K].Attr, Len);
-        Result[K].Ids[Len - 1] := FQuery.FieldByName('ID').AsInteger;
-        Result[K].FileNames[Len - 1] := FQuery.FieldByName('FFileName').AsString;
-        Result[K].Attr[Len - 1] := FQuery.FieldByName('Attr').AsInteger;
+        Setlength(Result[I].Ids, 0);
+        Setlength(Result[I].FileNames, 0);
+        Setlength(Result[I].Attr, 0);
+        Result[I].Count := 0;
+        Result[I].ImTh := '';
+        if Result[I].Jpeg <> nil then
+          Result[I].Jpeg.Free;
+        Result[I].Jpeg := nil;
       end;
-      FQuery.Next;
+      Exit;
     end;
-    Result[K].Count := Len;
-    Result[K].ImTh := ThImS[K].ImTh;
+
+    for K := 0 to L - 1 do
+    begin
+      Setlength(Result[K].Ids, 0);
+      Setlength(Result[K].FileNames, 0);
+      Setlength(Result[K].Attr, 0);
+      Len := 0;
+      FQuery.First;
+      for I := 1 to FQuery.RecordCount do
+      begin
+
+        Temp := FQuery.FieldByName('StrTh').AsString;
+        if Temp = ThImS[K].ImTh then
+        begin
+          Inc(Len);
+          Setlength(Result[K].Ids, Len);
+          Setlength(Result[K].FileNames, Len);
+          Setlength(Result[K].Attr, Len);
+          Result[K].Ids[Len - 1] := FQuery.FieldByName('ID').AsInteger;
+          Result[K].FileNames[Len - 1] := FQuery.FieldByName('FFileName').AsString;
+          Result[K].Attr[Len - 1] := FQuery.FieldByName('Attr').AsInteger;
+        end;
+        FQuery.Next;
+      end;
+      Result[K].Count := Len;
+      Result[K].ImTh := ThImS[K].ImTh;
+    end;
+  finally
+    FreeDS(FQuery);
   end;
-  FreeDS(FQuery);
+end;
+
+procedure ClearMediaInfo(var Info: TMediaInfo);
+begin
+  Info.ImTh := '';
+  Info.Jpeg := nil;
+  Info.ImageWidth := 0;
+  Info.ImageHeight := 0;
+  Info.IsEncrypted := False;
+  Info.Password := '';
+  Info.Size := 0;
+  Info.Count := 0;
+  SetLength(Info.IDs, 0);
+  SetLength(Info.FileNames, 0);
+  SetLength(Info.ChangedRotate, 0);
+  SetLength(Info.Attr, 0);
+  SetLength(Info.Colors, 0);
+  Info.Histogram.Loaded := False;
+  Info.Histogram.Loading := False;
 end;
 
 function GenerateImageInfo(FileName: string; Options: TImageInfoOptions; ThumbnailSize: Integer; JpegCompressionQuality: TJPEGQualityRange): TMediaInfo;
@@ -262,7 +288,7 @@ var
   Colors: TList<TColor>;
   LoadFlags: TImageLoadFlags;
 begin
-  FillChar(Result, SizeOf(Result), 0);
+  ClearMediaInfo(Result);
 
   Colors := TList<TColor>.Create;
   MediaItem := TMediaItem.CreateFromFile(FileName);
@@ -305,7 +331,6 @@ begin
             Result.Jpeg.CompressionQuality := JpegCompressionQuality;
             Result.Jpeg.Assign(Bmp);
             Result.Jpeg.JPEGNeeded;
-            AssignGraphic(Bmp, Result.Jpeg);
           end;
 
         end;
@@ -327,7 +352,7 @@ var
   SettingsRepository: ISettingsRepository;
   DuplicatesInfo: TMediaInfo;
 begin
-  FillChar(Result, SizeOf(Result), 0);
+  ClearMediaInfo(Result);
 
   if Settings <> nil then
   begin

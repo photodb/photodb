@@ -141,6 +141,7 @@
 	<translate name="DirectDraw Surface graphics" value="Изображения поверхностей DirectDraw" />
 	<translate name="HDR Images" value="HDR изображения" />
 	<translate name="JPEG Network Graphic" value="JPEG Network изображения" />	
+	<translate name="Icons and executables" value="Иконки и исполняемые файлы" />	
   </scope>
   <scope name="JPEG">
 	<translate name="JPEG compression" value="JPEG компрессия" />

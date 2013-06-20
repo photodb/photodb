@@ -83,8 +83,7 @@ begin
       Result := True;
       Res.Jpeg.DIBNeeded;
       NotifyFileAdded(Info, Res);
-    end else
-      F(Res.Jpeg);
+    end;
 
   except
     on e: Exception do

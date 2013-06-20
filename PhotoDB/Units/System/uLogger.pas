@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.SyncObjs,
   Winapi.Windows,
+  uConfiguration,
   uMemory;
 
 {$DEFINE _EVENTLOG}
@@ -33,7 +34,6 @@ implementation
 
 var
   Logger: TLogger = nil;
-
 
 procedure EventLog(Ex: Exception);
 var

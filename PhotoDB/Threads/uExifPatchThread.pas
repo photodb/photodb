@@ -117,6 +117,7 @@ begin
     Info.ID := ID;
     Info.Params := Params;
     Info.Value := Value;
+    Info.Value.JPEGImage := nil; //don't copy JPEG image
     Info.Context := Context;
     FData.Add(Info);
     StartThread;

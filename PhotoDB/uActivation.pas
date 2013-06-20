@@ -83,7 +83,7 @@ begin
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;
   FWizard.AddStep(TFrameActivationLanding);
-  FWizard.Start(Self, 190, 8);
+  FWizard.Start(Self, ImActivationImage.Left + ImActivationImage.Width + 5, 8);
 
   LsLoading.Color := Theme.WizardColor;
   Activation := GetActivationImage;

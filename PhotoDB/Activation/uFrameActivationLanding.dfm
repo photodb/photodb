@@ -8,6 +8,7 @@ inherited FrameActivationLanding: TFrameActivationLanding
     Top = 16
     Width = 314
     Height = 33
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'RbActivateApplication'
     Checked = True
     TabOrder = 0
@@ -18,6 +19,7 @@ inherited FrameActivationLanding: TFrameActivationLanding
     Top = 63
     Width = 314
     Height = 33
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'RbSetCode'
     TabOrder = 1
   end

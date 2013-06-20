@@ -7,6 +7,7 @@ object ActivateForm: TActivateForm
   ClientHeight = 377
   ClientWidth = 541
   Color = clWhite
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -46,7 +47,7 @@ object ActivateForm: TActivateForm
     Top = 200
     Width = 145
     Height = 135
-    Anchors = [akLeft, akTop, akBottom]
+    Anchors = [akLeft, akTop, akRight, akBottom]
     AutoSize = False
     Caption = 'LbInfo'
     WordWrap = True

@@ -3,6 +3,7 @@ unit uAssociations;
 interface
 
 uses
+  generics.Collections,
   System.Classes,
   System.SysUtils,
   System.StrUtils,
@@ -91,7 +92,8 @@ type
     class function Instance: TFileAssociations;
     destructor Destroy; override;
     function GetCurrentAssociationState(Extension: string): TAssociationState;
-    function GetFilter(ExtList: string; UseGroups: Boolean; ForOpening: Boolean): string;
+    function GetFilter(ExtList: string; UseGroups: Boolean; ForOpening: Boolean; AdditionalExtInfo: TDictionary<string, string> = nil): string;
+    function GetExtendedFullFilter(UseGroups: Boolean; ForOpening: Boolean; AdditionalExtInfo: TDictionary<string, string>): string;
     function GetGraphicClass(Ext: String): TGraphicClass;
     function IsConvertableExt(Ext: String): Boolean;
     function GetGraphicClassExt(GraphicClass: TGraphicClass): string;
@@ -273,6 +275,7 @@ var
   P: Integer;
   SL: TStringList;
   S, Ext, State: string;
+  Association: TFileAssociation;
 begin
   SL := TStringList.Create;
   try
@@ -290,7 +293,11 @@ begin
         Delete(S, 1, P);
         State := S;
 
-        TFileAssociations.Instance.Exts[Ext].State := StringToAssociationState(State);
+        Association := TFileAssociations.Instance.Exts[Ext];
+        if Association = nil then
+          Continue;
+
+        Association.State := StringToAssociationState(State);
       end;
     end;
   finally
@@ -658,7 +665,7 @@ begin
 end;
 
 function TFileAssociations.GetAssociationByExt(
-  Ext : string): TFileAssociation;
+  Ext: string): TFileAssociation;
 var
   I : Integer;
 begin
@@ -671,9 +678,6 @@ begin
       Exit;
     end;
   end;
-
-  if Result = nil then
-    raise Exception.Create('Can''t find association for ' + Ext);
 end;
 
 function TFileAssociations.GetAssociations(Index: Integer): TFileAssociation;
@@ -748,15 +752,43 @@ begin
   end;
 end;
 
+function TFileAssociations.GetExtendedFullFilter(UseGroups, ForOpening: Boolean; AdditionalExtInfo: TDictionary<string, string>): string;
+var
+  Association: TFileAssociation;
+  AllExtensions: TStrings;
+  I: Integer;
+  OldGroup: Integer;
+begin
+  AllExtensions := TStringList.Create;
+  try
+    OldGroup := -1;
+    for I := 0 to Self.Count - 1 do
+    begin
+      Association := Self[I];
+      if OldGroup <> Association.Group then
+        AllExtensions.Add(Association.Extension);
+
+      OldGroup := Association.Group;
+    end;
+
+    Result := GetFilter(JoinList(AllExtensions, '|'), True, True, AdditionalExtInfo) + '|';
+  finally
+    F(AllExtensions);
+  end;
+end;
+
 function TFileAssociations.GetFilter(ExtList: string; UseGroups,
-  ForOpening: Boolean): string;
+  ForOpening: Boolean; AdditionalExtInfo: TDictionary<string, string> = nil): string;
 var
   I, J: Integer;
   ResultList,
   EList,
   AllExtList,
-  RequestExts: TStrings;
+  RequestExts, AdditionalExts: TStrings;
   Association: TFileAssociation;
+  AGroup: Integer;
+  AExt, ADesc: string;
+  Pair: TPair<string, string>;
 begin
   FSync.Enter;
   try
@@ -769,20 +801,56 @@ begin
       try
         SplitString(ExtList, '|', RequestExts);
 
+        if AdditionalExtInfo <> nil then
+          for Pair in AdditionalExtInfo do
+            RequestExts.Add(Pair.Key);
+
         for I := 0 to RequestExts.Count - 1 do
         begin
+          AGroup := -1;
           EList.Clear;
           Association := Self.Exts[RequestExts[I]];
+          if Association = nil then
+          begin
+            if AdditionalExtInfo = nil then
+              Continue;
+
+            AExt := RequestExts[I];
+            ADesc := AdditionalExtInfo[AExt];
+          end else
+          begin
+            AGroup := Association.Group;
+            AExt := Association.Extension;
+            ADesc := Association.Description;
+          end;
+
           if UseGroups then
           begin
-            for J := 0 to Self.Count - 1 do
-              if Self[J].Group = Association.Group then
-                EList.Add('*' + Self[J].Extension);
+            if Association <> nil then
+              for J := 0 to Self.Count - 1 do
+                if Self[J].Group = AGroup then
+                  EList.Add('*' + Self[J].Extension);
+
+            if Association = nil then
+            begin
+              AdditionalExts := TStringList.Create;
+              try
+                SplitString(AExt, ',', AdditionalExts);
+                for J := 0 to AdditionalExts.Count - 1 do
+                  EList.Add('*' + AdditionalExts[J])
+              finally
+                F(AdditionalExts);
+              end;
+            end;
+
           end else
-            EList.Add('*' + Association.Extension);
+          begin
+            if Association <> nil then
+              EList.Add('*' + AExt);
+          end;
 
           ResultList.Add(Format('%s (%s)|%s',
-                    [TA(Association.Description, 'Associations'),
+                    [TA(ADesc, 'Associations'),
                     JoinList(EList, ','),
                     JoinList(EList, ';')]));
 

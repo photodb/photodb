@@ -33,7 +33,7 @@ type
     BtnCancel: TButton;
     BtnPrevious: TButton;
     BtnFinish: TButton;
-    Image2: TImage;
+    ImStenoLogo: TImage;
     LsWorking: TLoadingSign;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnFinishClick(Sender: TObject);
@@ -113,7 +113,7 @@ begin
   FWizard := TWizardManager.Create(Self);
   FWizard.OnChange := StepChanged;
   FWizard.AddStep(TFrmSteganographyLanding);
-  FWizard.Start(Self, 127, 8);
+  FWizard.Start(Self, ImStenoLogo.Left + ImStenoLogo.Width + 5, 8);
   LoadLanguage;
   if StyleServices.Enabled then
     Color := StyleServices.GetStyleColor(scWindow);

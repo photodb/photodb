@@ -186,6 +186,7 @@ begin
   inherited;
   FBitmapImage := nil;
   FImagePassword := '';
+  BtnChooseFile.Height := EdDataFileName.Height;
 end;
 
 procedure TFrmCreatePNGSteno.ErrorLoadingImageHandler(FileName: string);
