@@ -30,7 +30,7 @@ type
 
   IDirectoryWatcher = interface(IInterface)
     ['{887A08D0-3D36-4744-9241-9454BAAA9D53}']
-    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray);
+    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray; WatchType: TDirectoryWatchType);
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
   end;
 

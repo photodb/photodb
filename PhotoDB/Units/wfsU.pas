@@ -47,17 +47,19 @@ type
     FOnThreadClosing: TNotifyEvent;
     FPublicOwner: TObject;
     FCID: TGUID;
+    FWatchType:  TDirectoryWatchType;
     function CreateDirHandle(ADir: string): THandle;
     procedure WatchEvent;
     procedure HandleEvent;
   protected
     procedure Execute; override;
     procedure DoCallBack;
-    procedure DoTerminate;
+    procedure TerminateWatch;
     procedure DoClosingEvent;
   public
     constructor Create(PublicOwner: TObject; pName: string;
-      pFilter: cardinal; pSubTree: boolean; pInfoCallback: TWatchFileSystemCallback;  OnNeedClosing: TThreadExNotify; OnThreadClosing : TNotifyEvent; CID : TGUID);
+      WatchType: TDirectoryWatchType; pSubTree: boolean; pInfoCallback: TWatchFileSystemCallback;
+      OnNeedClosing: TThreadExNotify; OnThreadClosing: TNotifyEvent; CID: TGUID);
     destructor Destroy; override;
   end;
 
@@ -68,21 +70,23 @@ type
     FCID: TGUID;
     FOwner: TObject;
     FWatcherCallBack: IDirectoryWatcher;
+    FWatchType: TDirectoryWatchType;
     { Start monitoring file system
       Parametrs:
       pName    - Directory name for monitoring
       pFilter  - Monitoring type ( FILE_NOTIFY_XXX )
       pSubTree - Watch sub directories
       pInfoCallback - callback porcedure, this procedure called with synchronization for main thread }
-    procedure StartWatch(PName: string; PFilter: Cardinal; PSubTree: Boolean;
+    procedure StartWatch(PName: string; WatchType: TDirectoryWatchType; PSubTree: Boolean;
       PInfoCallback: TWatchFileSystemCallback; CID: TGUID);
-    procedure CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
+    procedure CallBack(WatchType: TDirectoryWatchType; PInfo: TInfoCallBackDirectoryChangedArray);
     procedure OnNeedClosing(Sender: TObject; StateID: TGUID);
     procedure OnThreadClosing(Sender: TObject);
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Start(Directory: string; Owner: TObject; WatcherCallBack: IDirectoryWatcher; CID: TGUID; WatchSubTree: Boolean);
+    procedure Start(Directory: string; Owner: TObject; WatcherCallBack: IDirectoryWatcher; CID: TGUID;
+                    WatchSubTree: Boolean; WatchType: TDirectoryWatchType = dwtBoth);
     procedure StopWatch;
     procedure UpdateStateID(NewStateID: TGUID);
     property OnDirectoryChanged: TNotifyDirectoryChangeW read FOnDirectoryChanged write FOnDirectoryChanged;
@@ -115,10 +119,10 @@ var
   FSync: TCriticalSection = nil;
   FIoCompletionManager: TIoCompletionManager = nil;
 
-procedure TWachDirectoryClass.CallBack(PInfo: TInfoCallBackDirectoryChangedArray);
+procedure TWachDirectoryClass.CallBack(WatchType: TDirectoryWatchType; PInfo: TInfoCallBackDirectoryChangedArray);
 begin
   if GOM.IsObj(FOwner) then
-    FWatcherCallBack.DirectoryChanged(Self, FCID, PInfo)
+    FWatcherCallBack.DirectoryChanged(Self, FCID, PInfo, FWatchType)
 end;
 
 constructor TWachDirectoryClass.Create;
@@ -144,26 +148,26 @@ begin
   //empty stub
 end;
 
-procedure TWachDirectoryClass.Start(Directory: string; Owner: TObject; WatcherCallBack: IDirectoryWatcher; CID: TGUID; WatchSubTree: Boolean);
+procedure TWachDirectoryClass.Start(Directory: string; Owner: TObject; WatcherCallBack: IDirectoryWatcher; CID: TGUID; WatchSubTree: Boolean; WatchType: TDirectoryWatchType);
 begin
   TW.I.Start('TWachDirectoryClass.Start');
   FCID := CID;
   FOwner := Owner;
   FWatcherCallBack := WatcherCallBack;
+  FWatchType := WatchType;
   FSync.Enter;
   try
-    StartWatch(Directory, FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_DIR_NAME + FILE_NOTIFY_CHANGE_CREATION +
-        FILE_NOTIFY_CHANGE_LAST_WRITE, WatchSubTree, CallBack, CID);
+    StartWatch(Directory, FWatchType, WatchSubTree, CallBack, CID);
   finally
     FSync.Leave;
   end;
 end;
 
-procedure TWachDirectoryClass.StartWatch(PName: string; PFilter: Cardinal; PSubTree: Boolean;
+procedure TWachDirectoryClass.StartWatch(PName: string; WatchType: TDirectoryWatchType; PSubTree: Boolean;
   PInfoCallback: TWatchFileSystemCallback; CID : TGUID);
 begin
   TW.I.Start('TWFS.Create');
-  WFS := TWFS.Create(Self, PName, PFilter, pSubTree, PInfoCallback, OnNeedClosing, OnThreadClosing, CID);
+  WFS := TWFS.Create(Self, PName, WatchType, pSubTree, PInfoCallback, OnNeedClosing, OnThreadClosing, CID);
 end;
 
 procedure TWachDirectoryClass.StopWatch;
@@ -203,8 +207,8 @@ begin
   end;
 end;
 
-constructor TWFS.Create(PublicOwner: TObject; PName: string; PFilter: Cardinal; PSubTree: Boolean; PInfoCallback: TWatchFileSystemCallback;
-  OnNeedClosing: TThreadExNotify; OnThreadClosing : TNotifyEvent; CID : TGUID);
+constructor TWFS.Create(PublicOwner: TObject; PName: string; WatchType: TDirectoryWatchType; PSubTree: Boolean; PInfoCallback: TWatchFileSystemCallback;
+  OnNeedClosing: TThreadExNotify; OnThreadClosing: TNotifyEvent; CID: TGUID);
 begin
   TW.I.Start('TWFS.Create');
   inherited Create(nil, False);
@@ -212,7 +216,15 @@ begin
   OM.AddObj(Self);
   FPublicOwner := PublicOwner;
   FName := IncludeTrailingBackslash(pName);
-  FFilter := pFilter;
+  FWatchType := WatchType;
+
+  FFilter := 0;
+  if (FWatchType = dwtBoth) or (FWatchType = dwtFiles)  then
+    FFilter := FFilter + FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_SIZE;
+
+  if (FWatchType = dwtBoth) or (FWatchType = dwtDirectories)  then
+    FFilter := FFilter + FILE_NOTIFY_CHANGE_DIR_NAME;
+
   FSubTree := pSubTree;
   FOldFileName := EmptyStr;
   ZeroMemory(@FOverLapp, SizeOf(TOverLapped));
@@ -268,7 +280,7 @@ end;
 
 procedure TWFS.HandleEvent;
 var
-  FInfoCallback  : TInfoCallback;
+  FInfoCallback: TInfoCallback;
   Ptr: Pointer;
   FileName: PWideChar;
   NoMoreFilesFound, FileSkipped: Boolean;
@@ -288,8 +300,8 @@ begin
       else if FileSkipped then
         Continue;
 
-      FInfoCallback.FAction := PFileNotifyInformation(Ptr).Action;
-      if (FInfoCallback.FAction = 0) and (FileName = '') and not DirectoryExists(FName + FileName) then
+      FInfoCallback.Action := PFileNotifyInformation(Ptr).Action;
+      if (FInfoCallback.Action = 0) and (FileName = '') and not DirectoryExists(FName + FileName) then
       begin
         TW.I.Start('WATCHER - CLOSE, file = "' + FName + FileName + '", BytesWrite = ' + IntToStr(FBytesWrite)
         + ' hEvent = ' + IntToStr(FPOverLapp.hEvent)
@@ -298,16 +310,16 @@ begin
         + ' Offset = ' + IntToStr(FPOverLapp.Offset)
         + ' OffsetHigh = ' + IntToStr(FPOverLapp.OffsetHigh));
 
-        Synchronize(DoTerminate);
+        Synchronize(TerminateWatch);
         Terminate;
         Exit;
       end;
-      FInfoCallback.FNewFileName := FName + FileName;
+      FInfoCallback.NewFileName := FName + FileName;
       case PFileNotifyInformation(Ptr).Action of
         FILE_ACTION_RENAMED_OLD_NAME:
           FOldFileName := FName + FileName;
         FILE_ACTION_RENAMED_NEW_NAME:
-          FInfoCallback.FOldFileName := FOldFileName;
+          FInfoCallback.OldFileName := FOldFileName;
       end;
       if PFileNotifyInformation(Ptr).Action <> FILE_ACTION_RENAMED_OLD_NAME then
       begin
@@ -374,10 +386,10 @@ end;
 procedure TWFS.DoCallBack;
 begin
   if OM.IsObj(FPublicOwner) then
-    FInfoCallback(InfoCallback);
+    FInfoCallback(FWatchType, InfoCallback);
 end;
 
-procedure TWFS.DoTerminate;
+procedure TWFS.TerminateWatch;
 begin
   if OM.IsObj(FPublicOwner) then
     FOnNeedClosing(Self, FCID);

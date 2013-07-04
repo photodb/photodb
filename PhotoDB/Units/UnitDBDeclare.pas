@@ -137,15 +137,16 @@ type
   PInfoCallback = ^TInfoCallback;
 
   TInfoCallback = record
-    FAction: Integer; // тип изменения (константы FILE_ACTION_XXX)
-    FOldFileName: string; // имя файла до переименования
-    FNewFileName: string; // имя файла после переименования
+    Action: Integer; // тип изменения (константы FILE_ACTION_XXX)
+    OldFileName: string; // имя файла до переименования
+    NewFileName: string; // имя файла после переименования
   end;
 
   TInfoCallBackDirectoryChangedArray = array of TInfoCallback;
 
+  TDirectoryWatchType = (dwtBoth, dwtDirectories, dwtFiles);
   // callback процедура, вызываемая при изменении в файловой системе
-  TWatchFileSystemCallback = procedure(PInfo: TInfoCallBackDirectoryChangedArray) of object;
+  TWatchFileSystemCallback = procedure(WatchType: TDirectoryWatchType; PInfo: TInfoCallBackDirectoryChangedArray) of object;
 
   TNotifyDirectoryChangeW = procedure(Sender: TObject; SID: string; pInfo: TInfoCallBackDirectoryChangedArray) of object;
 

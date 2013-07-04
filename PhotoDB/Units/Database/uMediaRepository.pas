@@ -34,6 +34,7 @@ type
     procedure SetAttribute(ID, Attribute: Integer);
     procedure DeleteFromCollection(FileName: string; ID: Integer);
     procedure DeleteFromCollectionEx(IDs: TList<Integer>);
+    procedure DeleteDirectoryFromCollection(DirectoryName: string);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;
@@ -58,6 +59,47 @@ destructor TMediaRepository.Destroy;
 begin
   FContext := nil;
   inherited;
+end;
+
+procedure TMediaRepository.DeleteDirectoryFromCollection(DirectoryName: string);
+var
+  DC: TDeleteCommand;
+  SC: TSelectCommand;
+  EventInfo: TEventValues;
+  MediaItem: TMediaItem;
+begin
+  SC := FContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TAllParameter.Create);
+    SC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', Integer(GetPathCRC(DirectoryName, False))));
+    SC.AddWhereParameter(TStringParameter.Create('FFileName', AnsiLowerCase(DirectoryName) + '%', paLike));
+
+    if SC.Execute > 0 then
+    begin
+
+      DC := FContext.CreateDelete(ImageTable);
+      try
+        DC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', Integer(GetPathCRC(DirectoryName, False))));
+        DC.AddWhereParameter(TStringParameter.Create('FFileName', AnsiLowerCase(DirectoryName) + '%', paLike));
+
+        DC.Execute;
+
+        while not SC.DS.Eof do
+        begin
+          MediaItem := TMediaItem.CreateFromDS(SC.DS);
+
+          EventInfo.ID := MediaItem.ID;
+          CollectionEvents.DoIDEvent(nil, MediaItem.ID, [EventID_Param_Delete], EventInfo);
+
+          SC.DS.Next;
+        end;
+      finally
+        F(DC);
+      end;
+    end;
+  finally
+    F(SC);
+  end;
 end;
 
 procedure TMediaRepository.DeleteFromCollection(FileName: string; ID: Integer);

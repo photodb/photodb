@@ -64,7 +64,7 @@ begin
 
   if FolderView then
   begin
-    if not IsGraphicFile(FileName) then
+    if not IsGraphicFile(FileName) and (Password <> '') then
       MessageBoxDB(0, TA('Transparent encryption isn''t available on mobile verison.', 'System'), TA('Information'), TD_BUTTON_OK, TD_ICON_WARNING);
     Exit;
   end;

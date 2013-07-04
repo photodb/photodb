@@ -476,17 +476,23 @@ end;
 procedure TDatabaseInfoControl.ShowDatabaseProperties;
 var
   Editor: ILinkEditor;
+  Info: TDatabaseInfo;
 begin
   if FInfo = nil then
     Exit;
 
+  Info := TDatabaseInfo(FInfo.Clone);
   Editor := TLinkListEditorDatabases.Create(TDBForm(Self.Owner));
   try
-    if FormLinkItemEditor.Execute(L('Edit collection'), FInfo, Editor) then
-      DBManager.UpdateUserCollection(FInfo, -1);
+    if FormLinkItemEditor.Execute(L('Edit collection'), Info, Editor) then
+    begin
+      FInfo.Assign(Info);
+      DBManager.UpdateUserCollection(Info, -1);
+    end;
 
   finally
     Editor := nil;
+    F(Info);
   end;
 end;
 

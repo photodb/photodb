@@ -33,6 +33,7 @@ type
     procedure SetAttribute(ID, Attribute: Integer);
     procedure DeleteFromCollection(FileName: string; ID: Integer);
     procedure DeleteFromCollectionEx(IDs: TList<Integer>);
+    procedure DeleteDirectoryFromCollection(FirectoryName: string);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
     function GetMenuItemsByID(ID: Integer): TMediaItemCollection;

@@ -164,11 +164,13 @@ var
   W, H: Integer;
   ImageW, ImageH, OriginalRating: Integer;
   X: Integer;
-  TempBmp: TBitmap;
+  TempBmp, B: TBitmap;
   TempBmpShadow: TBitmap;
   RectArray: TEasyRectArrayObject;
   ColorFrom, ColorTo, ColorFromOriginal, ColorToOriginal: TColor;
   SelectionRect, R: TRect;
+  DIB: TDIBSection;
+  piconinfo: TIconInfo;
 begin
   OriginalRating := 0;
 
@@ -275,7 +277,33 @@ begin
         if not (daoSemiTransparent in Options) then
           ACanvas.StretchDraw(Rect(X, Y, X + ImageW, Y + ImageH), Graphic)
         else
-          TGraphicEx(Graphic).DrawTransparent(ACanvas, Rect(X, Y, X + ImageW, Y + ImageH), 127);
+        begin
+          if Graphic is TIcon then
+          begin
+            if GetIconInfo(TIcon(Graphic).Handle, piconinfo) then
+            begin
+              try
+                GetObject(piconinfo.hbmColor, SizeOf(DIB), @DIB);
+                if (DIB.dsBm.bmWidth > 16) and (DIB.dsBm.bmHeight > 16) then
+                begin
+                  B := TBitmap.Create;
+                  try
+                    B.Handle := piconinfo.hbmColor;
+                    B.MaskHandle := piconinfo.hbmMask;
+                    TGraphicEx(B).DrawTransparent(ACanvas, Rect(X, Y, X + ImageW, Y + ImageH), 127);
+                  finally
+                    F(B);
+                  end;
+                end;
+              finally
+                DeleteObject(piconinfo.hbmMask);
+                DeleteObject(piconinfo.hbmColor);
+              end;
+            end;
+
+          end else
+            TGraphicEx(Graphic).DrawTransparent(ACanvas, Rect(X, Y, X + ImageW, Y + ImageH), 127);
+        end;
       end;
 
     finally

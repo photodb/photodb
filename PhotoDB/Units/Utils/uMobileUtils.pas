@@ -48,7 +48,7 @@ end;
 procedure UpdateExeResources(ExeFileName: string);
 var
   MS: TMemoryStream;
-  ScriptsDirectory, FileName,
+  FileName,
   LanguageXMLFileName, LicenseTxtFileName: string;
   Header: TInternalFSHeader;
   Files: TStrings;
@@ -114,11 +114,6 @@ begin
 
     LicenseTxtFileName := ExtractFilePath(ParamStr(0)) + Format('Licenses\License%s.txt', [TTranslateManager.Instance.Language]);
     AddFileToStream(LicenseTxtFileName, FSLicenseFileName);
-
-    ScriptsDirectory := ExtractFilePath(ParamStr(0)) + ScriptsFolder;
-    GetFilesOfPath(ScriptsDirectory, Files);
-    for FileName in Files do
-      AddFileToStream(FileName);
 
     TW.I.Check('BeginUpdateResourceW');
     Counter := 0;

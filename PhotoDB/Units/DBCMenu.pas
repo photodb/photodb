@@ -1209,7 +1209,10 @@ begin
       ExecSQL(FQuery);
       for I := 0 to Finfo.Count - 1 do
         if Finfo[I].Selected then
-          CollectionEvents.DoIDEvent(FOwner, Finfo[I].ID, [EventID_Param_Delete], EventInfo);
+        begin
+          EventInfo.ID := FInfo[I].ID;
+          CollectionEvents.DoIDEvent(FOwner, FInfo[I].ID, [EventID_Param_Delete], EventInfo);
+        end;
     finally
       FreeDS(FQuery);
     end;

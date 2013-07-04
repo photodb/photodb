@@ -89,6 +89,14 @@ type
     property ID: Integer read FID;
   end;
 
+  TRemoveDirectoryTask = class(TDatabaseTask)
+  public
+    function SelfTest: Boolean; override;
+    function IsPrepaired: Boolean; override;
+    constructor Create(DBContext: IDBContext; DirectoryName: string); overload;
+    procedure Execute;
+  end;
+
   TAddTask = class(TDatabaseTask)
   private
     FData: TMediaItem;
@@ -143,7 +151,8 @@ type
     destructor Destroy; override;
     procedure Execute(Context: IDBContext);
     procedure Restart;
-    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray);
+    procedure CheckDirectoryMoveRename(Info: TInfoCallback);
+    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray; WatchType: TDirectoryWatchType);
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
   end;
 
@@ -230,13 +239,18 @@ end;
 
 function UpdaterStorage: TUpdaterStorage;
 begin
-  if FUpdaterStorage = nil then
-  begin
-    FUpdaterStorage := TUpdaterStorage.Create(DBManager.DBContext);
-    FUpdaterStorage.RestoreStorage(DBManager.DBContext);
-  end;
+  FStorageLock.Enter;
+  try
+    if FUpdaterStorage = nil then
+    begin
+      FUpdaterStorage := TUpdaterStorage.Create(DBManager.DBContext);
+      FUpdaterStorage.RestoreStorage(DBManager.DBContext);
+    end;
 
-  Result := FUpdaterStorage;
+    Result := FUpdaterStorage;
+  finally
+    FStorageLock.Leave;
+  end;
 end;
 
 function DatabaseFolderPersistaseFileName(CollectionPath: string): string;
@@ -702,7 +716,11 @@ begin
     begin
       Watch := TWachDirectoryClass.Create;
       FWatchers.Add(Watch);
-      Watch.Start(DD.Path, Self, Self, FState, True);
+      Watch.Start(DD.Path, Self, Self, FState, True, dwtFiles);
+
+      Watch := TWachDirectoryClass.Create;
+      FWatchers.Add(Watch);
+      Watch.Start(DD.Path, Self, Self, FState, True, dwtDirectories);
     end;
 
   finally
@@ -720,11 +738,23 @@ begin
   FreeList(FWatchers, False);
 end;
 
+procedure TUserDirectoriesWatcher.CheckDirectoryMoveRename(Info: TInfoCallback);
+begin
+  case Info.Action of
+    FILE_ACTION_REMOVED:
+      UpdaterStorage.Add(TRemoveDirectoryTask.Create(FDBContext, Info.NewFileName));
+    FILE_ACTION_RENAMED_NEW_NAME:
+      //not implemented (program explorer handles this situation)
+  end;
+end;
+
 procedure TUserDirectoriesWatcher.DirectoryChanged(Sender: TObject; SID: TGUID;
-  pInfos: TInfoCallBackDirectoryChangedArray);
+  pInfos: TInfoCallBackDirectoryChangedArray; WatchType: TDirectoryWatchType);
 var
   Info: TInfoCallback;
   IsFileExists: Boolean;
+  FileName, SkipExtensions: string;
+  AddRawFiles: Boolean;
 begin
   if FState <> SID then
     Exit;
@@ -732,30 +762,36 @@ begin
   for Info in pInfos do
   begin
 
-    if not IsGraphicFile(Info.FNewFileName) then
-      Exit;
+    if not IsGraphicFile(Info.NewFileName) and (WatchType = dwtDirectories) then
+    begin
+      CheckDirectoryMoveRename(Info);
+      Continue;
+    end;
 
     IsFileExists := True;
-    if (Info.FNewFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.FNewFileName) then
+    if (Info.NewFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.NewFileName) then
       IsFileExists := False;
-    if (Info.FOldFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.FOldFileName) then
+    if (Info.OldFileName <> '') and TLockFiles.Instance.IsFileLocked(Info.OldFileName) then
       IsFileExists := False;
 
-    //TODO:
-    //if not CanAddFileAutomatically(Info.FNewFileName) then
-    //  Exit;
+    FileName := Info.NewFileName;
+    SkipExtensions := AnsiLowerCase(AppSettings.ReadString('Updater', 'SkipExtensions'));
+    AddRawFiles := AppSettings.ReadBool('Updater', 'AddRawFiles', False);
 
-    case Info.FAction of
+    if not CheckIfCanAddFileAutomatically(FileName, AddRawFiles, SkipExtensions) then
+       Exit;
+
+    case Info.Action of
       FILE_ACTION_ADDED:
         if IsFileExists then
-          UpdaterStorage.Add(TAddTask.Create(FDBContext, Info.FNewFileName));
+          UpdaterStorage.Add(TAddTask.Create(FDBContext, FileName));
       FILE_ACTION_REMOVED:
-        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, Info.FNewFileName));
+        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, FileName));
       FILE_ACTION_RENAMED_NEW_NAME:
         Break;
       FILE_ACTION_MODIFIED:
         if IsFileExists then
-          UpdaterStorage.Add(TUpdateTask.Create(FDBContext, 0, Info.FNewFileName));
+          UpdaterStorage.Add(TUpdateTask.Create(FDBContext, 0, FileName));
     end;
   end;
 end;
@@ -859,6 +895,38 @@ begin
   Result := True;
 end;
 
+{ TRemoveDirectoryTask }
+
+constructor TRemoveDirectoryTask.Create(DBContext: IDBContext;
+  DirectoryName: string);
+begin
+  inherited Create(DBContext, DirectoryName);
+  FFileName := DirectoryName;
+end;
+
+procedure TRemoveDirectoryTask.Execute;
+var
+  MediaRepository: IMediaRepository;
+begin
+  MediaRepository := FDBContext.Media;
+  try
+    MediaRepository.DeleteDirectoryFromCollection(FFileName);
+  except
+    on e: Exception do
+      EventLog(e);
+  end;
+end;
+
+function TRemoveDirectoryTask.IsPrepaired: Boolean;
+begin
+  Result := True;
+end;
+
+function TRemoveDirectoryTask.SelfTest: Boolean;
+begin
+  Result := True;
+end;
+
 { TAddTask }
 
 constructor TAddTask.Create(DBContext: IDBContext; Data: TMediaItem);
@@ -949,7 +1017,7 @@ begin
             //moved file
             if (StaticPath(Res.FileNames[0]) and not FileExists(Res.FileNames[0])) or (Res.Attr[0] = Db_attr_not_exists) then
             begin
-              TDatabaseUpdateManager.MergeWithExistedInfo(FDBContext, Res.IDs[0], Info, Res);
+              TDatabaseUpdateManager.MergeWithExistedInfo(FDBContext, Res.IDs[0], Info, True);
               Continue;
             end;
 
@@ -1325,6 +1393,8 @@ begin
       try
         for I := 0 to FItemsNotReady.Count - 1 do
           FTasks.Insert(0, FItemsNotReady[I]);
+
+        FItemsNotReady.Clear;
       finally
         FSync.Leave;
       end;
@@ -1368,6 +1438,7 @@ var
   AddTasks: TArray<TAddTask>;
   UpdateTask: TUpdateTask;
   RemoveTask: TRemoveTask;
+  RemoveDirectoryTask: TRemoveDirectoryTask;
   IdleCycle: Boolean;
 begin
   inherited;
@@ -1427,6 +1498,19 @@ begin
       finally
         F(RemoveTask);
       end;
+
+      RemoveDirectoryTask := UpdaterStorage.TakeOne<TRemoveDirectoryTask>();
+      try
+        if RemoveDirectoryTask <> nil then
+        begin
+          IdleCycle := False;
+          RemoveDirectoryTask.Execute;
+          FSpeedCounter.AddSpeedInterval(100 * 1);
+        end;
+      finally
+        F(RemoveDirectoryTask);
+      end;
+
     except
       on e: Exception do
         EventLog(e);

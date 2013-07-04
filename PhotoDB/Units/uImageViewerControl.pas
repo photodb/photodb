@@ -38,6 +38,7 @@ uses
   DBCMenu,
 
   uMemory,
+  uRuntime,
   uConstants,
   u2DUtils,
   uDBForm,
@@ -641,7 +642,7 @@ begin
 
     FDrawImage.Canvas.Font.Quality := fqAntialiased;
     FDrawImage.Canvas.Font.Size := 10;
-    if IsWindowsVista then
+    if IsWindowsVista and not FolderView and HasFont(FDrawImage.Canvas, 'MyriadPro-Regular') then
       FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular'
     else
       FDrawImage.Canvas.Font.Name := 'Tahoma';

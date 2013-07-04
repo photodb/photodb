@@ -458,6 +458,17 @@ begin
     PcMain.Pages[0].TabVisible := False;
     PcMain.Pages[1].TabVisible := False;
     PcMain.ActivePageIndex := 2;
+
+    GbProxySettings.Hide;
+    CbDontAddSmallFiles.Hide;
+    SedMinWidth.Hide;
+    LbAddWidth.Hide;
+    SedMinHeight.Hide;
+    LbAddHeight.Hide;
+    GbAutoAdding.Hide;
+    CbCheckLinksOnUpdate.Hide;
+
+    GbEXIF.Top := CbSmoothScrolling.AfterTop(5);
   end;
 
   FReadingPlayerChanges := True;
@@ -956,6 +967,8 @@ var
 
 begin
   IsStyleSelected := False;
+  if FolderView then
+    Exit;
 
   CurrentStyle := AppSettings.ReadString('Style', 'FileName', DefaultThemeName);
 

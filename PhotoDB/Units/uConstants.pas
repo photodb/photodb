@@ -19,7 +19,6 @@ const
   ThemesDirectory = 'Themes\';
   CommonCacheDirectory = '\Cache\';
   BackUpFolder: string = '\DBBackUp\';
-  ScriptsFolder: string = 'Scripts\';
   StylesFolder: string = 'Styles\';
   ActionsFolder: string = 'Actions\';
   ImagesFolder: string = 'Images\';

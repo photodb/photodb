@@ -409,7 +409,8 @@ uses
   uCollectionUtils in 'Units\Database\uCollectionUtils.pas',
   uSecondCopy in 'Units\uSecondCopy.pas',
   uIDBForm in 'Units\Interfaces\uIDBForm.pas',
-  uExplorerCollectionProvider in 'Units\Providers\uExplorerCollectionProvider.pas';
+  uExplorerCollectionProvider in 'Units\Providers\uExplorerCollectionProvider.pas',
+  uFormSelectDuplicateDirectories in 'uFormSelectDuplicateDirectories.pas' {FormSelectDuplicateDirectories};
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -465,9 +466,6 @@ begin
     TW.I.Start('FindRunningVersion');
     if not GetParamStrDBBool('/NoPrevVersion') then
       FindRunningVersion;
-
-    EventLog('TDBKernel.Create');
-    DBManager := TDBManager.Create;
 
     TLoad.Instance.StartDBKernelIconsThread;
     if not DBTerminating and not GetParamStrDBBool('/install') and not GetParamStrDBBool('/uninstall') then

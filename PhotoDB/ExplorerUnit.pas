@@ -165,6 +165,7 @@ uses
   uDBContext,
   uDBEntities,
   uDBManager,
+  uDBUpdateUtils,
   uDatabaseDirectoriesUpdater,
   uPathProvideTreeView,
   uDBInfoEditorUtils,
@@ -563,6 +564,9 @@ type
     MiESSortByViewCount: TMenuItem;
     ViewsCount1: TMenuItem;
     WlHistogramImage: TWebLink;
+    N16: TMenuItem;
+    MiHelp: TMenuItem;
+    TbbDuplicates: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -578,7 +582,7 @@ type
     procedure HintTimerTimer(Sender: TObject);
     procedure ListView1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure SetInfoToItem(Info: TMediaItem; FileGUID: TGUID; Loaded: Boolean = False);
-    procedure SpeedButton3Click(Sender: TObject);
+    procedure GoUpClick(Sender: TObject);
     procedure Open1Click(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure SplLeftPanelCanResize(Sender: TObject; var NewSize: Integer; var Accept: Boolean);
@@ -588,8 +592,8 @@ type
     procedure Refresh2Click(Sender: TObject);
     procedure Exit2Click(Sender: TObject);
     procedure Addfolder1Click(Sender: TObject);
-    procedure SpeedButton1Click(Sender: TObject);
-    procedure SpeedButton2Click(Sender: TObject);
+    procedure GoBackClick(Sender: TObject);
+    procedure GoForwardClick(Sender: TObject);
     procedure HistoryChanged(Sender: TObject);
     procedure ListView1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure ListView1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -846,6 +850,8 @@ type
     procedure PnTopMenuResize(Sender: TObject);
     procedure MiImportImagesClick(Sender: TObject);
     procedure WlHistogramImageClick(Sender: TObject);
+    procedure MiHelpClick(Sender: TObject);
+    procedure TbbDuplicatesClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -1147,7 +1153,7 @@ type
     procedure ClearHistogram;
     procedure AddInfoAboutFile(Info: TExplorerFileInfos);
     procedure UpdateMenuItems(Menu: TPopupActionBar; PathList: TArExplorerPath; PathIcons: TPathItemCollection);
-    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray);
+    procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfo: TInfoCallBackDirectoryChangedArray; WatchType: TDirectoryWatchType);
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
     procedure LoadInfoAboutFiles(Info: TExplorerFileInfos);
     function FileNeededW(FileSID: TGUID): Boolean;  //для больших имаг
@@ -2117,18 +2123,367 @@ begin
   end;
 end;
 
-procedure TExplorerForm.DeleteFiles(ToRecycle: Boolean);
-const
-  FILE_NOT_FOUND_RESULT = 2;
+type
+  TUserDuplicateChoose = class
+  public
+    FavoriteDirectory: string;
+    InputDirectories: TList<string>;
+    FilesToDelete: TList<string>;
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
+constructor TUserDuplicateChoose.Create;
+begin
+  InputDirectories := TList<string>.Create;
+  FilesToDelete := TList<string>.Create;
+end;
+
+destructor TUserDuplicateChoose.Destroy;
+begin
+  F(InputDirectories);
+  F(FilesToDelete);
+end;
+
+type
+  TMergeInfo = class
+  public
+    MergeItems: TList<TMediaItem>;
+    BaseItem: TMediaItem;
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
+constructor TMergeInfo.Create;
+begin
+  MergeItems := TList<TMediaItem>.Create;
+end;
+
+destructor TMergeInfo.Destroy;
+begin
+  FreeList(MergeItems);
+  F(BaseItem);
+end;
+
+procedure TExplorerForm.TbbDuplicatesClick(Sender: TObject);
 var
-  I: Integer;
+  I, J, DuplicatesCount, MergeFileRemainCount: Integer;
+  MergeFileRemainSize: Int64;
+  FileName, Directory: string;
+  DuplicateFiles, TotalFilesToDelete, FilesToRemain: TList<TMediaItem>;
+  DuplicateDirectoriesInfo, UserChoose: TUserDuplicateChoose;
+  UserChooses: TList<TUserDuplicateChoose>;
+  SelectedInfo, Info: TExplorerFileInfos;
+  FilesToDelete: TStringList;
+  ItemsToRemoveFromCollection: TList<Integer>;
+  MergeInfo: TMergeInfo;
+  MergeInfos: TList<TMergeInfo>;
+
+  function FindUserAnswer(DuplicateInfo: TUserDuplicateChoose): TUserDuplicateChoose;
+  var
+    I, J: Integer;
+    UserChoose: TUserDuplicateChoose;
+  begin
+    Result := nil;
+
+    for I := 0 to UserChooses.Count - 1 do
+    begin
+      UserChoose := UserChooses[I];
+
+      for J := 0 to DuplicateInfo.InputDirectories.Count - 1 do
+        if not UserChoose.InputDirectories.Contains(DuplicateInfo.InputDirectories[J]) then
+          Continue;
+
+      if not DuplicateInfo.InputDirectories.Contains(UserChoose.FavoriteDirectory) then
+        Continue;
+
+      Exit(UserChoose);
+    end;
+  end;
+
+  function GetTotalSize(Items: TList<TMediaItem>): Int64;
+  var
+    I: Integer;
+  begin
+    Result := 0;
+    for I := 0 to Items.Count - 1 do
+      Inc(Result, Items[I].FileSize);
+  end;
+
+  function GetMergeCount(Items: TList<TMergeInfo>): Integer;
+  var
+    I: Integer;
+  begin
+    Result := 0;
+    for I := 0 to Items.Count - 1 do
+      Inc(Result, Items[I].MergeItems.Count);
+  end;
+
+  function GetMergeSize(Items: TList<TMergeInfo>): Integer;
+  var
+    I, J: Integer;
+  begin
+    Result := 0;
+    for I := 0 to Items.Count - 1 do
+      for J := 0 to Items[I].MergeItems.Count - 1 do
+        Inc(Result, Items[I].MergeItems[J].FileSize);
+  end;
+
+begin
+  SelectedInfo := GetCurrentPopUpMenuInfo(nil, SelCount > 0);
+  Info := GetCurrentPopUpMenuInfo(nil, SelCount > 0);
+  UserChooses := TList<TUserDuplicateChoose>.Create;
+  PrepaireMask;
+  ShowMask;
+  try
+
+    while Info.Count > 0 do
+    begin
+
+      DuplicateDirectoriesInfo := TUserDuplicateChoose.Create;
+      try
+
+        for I := Info.Count - 1 downto 0 do
+        begin
+          if Info[0].LongImageID = Info[I].LongImageID then
+          begin
+            FileName := Info[I].FileName;
+            Directory := AnsiLowerCase(ExtractFileDir(FileName));
+
+            if FileExistsSafe(FileName) then
+            begin
+              if not DuplicateDirectoriesInfo.InputDirectories.Contains(Directory) then
+                DuplicateDirectoriesInfo.InputDirectories.Add(Directory);
+            end;
+
+            Info.Delete(I);
+          end;
+        end;
+
+        if FindUserAnswer(DuplicateDirectoriesInfo) <> nil then
+          Continue;
+
+        if DuplicateDirectoriesInfo.InputDirectories.Count > 1 then
+        begin
+          DuplicateDirectoriesInfo.FavoriteDirectory := FormSelectDuplicateDirectories.Execute(DuplicateDirectoriesInfo.InputDirectories);
+          if DuplicateDirectoriesInfo.FavoriteDirectory = '' then
+            Exit;
+
+          UserChooses.Add(DuplicateDirectoriesInfo);
+          DuplicateDirectoriesInfo := nil;
+        end;
+
+      finally
+        F(DuplicateDirectoriesInfo);
+      end;
+    end;
+
+    FilesToRemain := TList<TMediaItem>.Create;
+    TotalFilesToDelete := TList<TMediaItem>.Create;
+    MergeInfos := TList<TMergeInfo>.Create;
+    MergeFileRemainCount := 0;
+    MergeFileRemainSize := 0;
+    try
+      while SelectedInfo.Count > 0 do
+      begin
+        DuplicateDirectoriesInfo := TUserDuplicateChoose.Create;
+        DuplicateFiles := TList<TMediaItem>.Create;
+        MergeInfo := TMergeInfo.Create;
+        DuplicatesCount := 0;
+        try
+
+          for I := SelectedInfo.Count - 1 downto 0 do
+          begin
+            if SelectedInfo[0].LongImageID = SelectedInfo[I].LongImageID then
+            begin
+              Inc(DuplicatesCount);
+              Directory := AnsiLowerCase(ExtractFileDir(SelectedInfo[I].FileName));
+
+              if FileExistsSafe(FileName) then
+              begin
+
+                if not DuplicateDirectoriesInfo.InputDirectories.Contains(Directory) then
+                  DuplicateDirectoriesInfo.InputDirectories.Add(Directory)
+                else
+                  MergeInfo.MergeItems.Add(SelectedInfo[I].Copy);
+
+              end else
+                MergeInfo.MergeItems.Add(SelectedInfo[I].Copy);
+
+              DuplicateFiles.Add(SelectedInfo[I].Copy);
+              SelectedInfo.Delete(I);
+            end;
+          end;
+
+          UserChoose := FindUserAnswer(DuplicateDirectoriesInfo);
+          if UserChoose <> nil then
+          begin
+            for I := DuplicateFiles.Count - 1 downto 0 do
+            begin
+              Directory := AnsiLowerCase(ExtractFileDir(DuplicateFiles[I].FileName));
+              if UserChoose.FavoriteDirectory = Directory then
+              begin
+                FilesToRemain.Add(DuplicateFiles[I].Copy);
+                MergeInfo.BaseItem := DuplicateFiles[I].Copy;
+                DuplicateFiles[I].Free;
+                DuplicateFiles.Delete(I);
+              end;
+            end;
+
+            for I := DuplicateFiles.Count - 1 downto 0 do
+              TotalFilesToDelete.Add(DuplicateFiles[I].Copy);
+          end;
+
+          if (DuplicatesCount > 1) and (MergeInfo.MergeItems.Count > 0) and (MergeInfo.BaseItem = nil) then
+          begin
+            //there is some duplicates and we should choose base file
+            for I := 0 to DuplicateFiles.Count - 1 do
+              if FileExistsSafe(DuplicateFiles[I].FileName) then
+              begin
+                for J := 0 to MergeInfo.MergeItems.Count - 1 do
+                  if MergeInfo.MergeItems[J].ID <> DuplicateFiles[I].ID then
+                  begin
+                    MergeInfo.BaseItem := DuplicateFiles[I].Copy;
+                    Inc(MergeFileRemainCount);
+                    Inc(MergeFileRemainSize, MergeInfo.BaseItem.FileSize);
+                    Break;
+                  end;
+
+                if MergeInfo.BaseItem <> nil then
+                  Break;
+              end;
+          end;
+
+          if (DuplicatesCount > 1) and (DuplicatesCount = MergeInfo.MergeItems.Count) and (MergeInfo.BaseItem = nil) then
+          begin
+            MergeInfo.BaseItem := MergeInfo.MergeItems[0].Copy;
+            Inc(MergeFileRemainCount);
+            Inc(MergeFileRemainSize, MergeInfo.BaseItem.FileSize);
+          end;
+
+          if (MergeInfo.MergeItems.Count > 0) and (MergeInfo.BaseItem <> nil) then
+          begin
+            MergeInfos.Add(MergeInfo);
+            MergeInfo := nil;
+          end;
+
+        finally
+          F(DuplicateDirectoriesInfo);
+          F(MergeInfo);
+          FreeList(DuplicateFiles);
+        end;
+      end;
+
+      if ((TotalFilesToDelete.Count > 0) or (MergeInfos.Count > 0)) then
+      begin
+        if (ID_OK = MessageBoxDB(Handle,
+          FormatEx(L('Do you really want to delete {0} duplicates ({1}) to recycle bin? {2} original items ({3}) will remain on your drive!'), [TotalFilesToDelete.Count + GetMergeCount(MergeInfos), SizeInText(GetTotalSize(TotalFilesToDelete) + GetMergeSize(MergeInfos)), FilesToRemain.Count + MergeFileRemainCount, SizeInText(GetTotalSize(FilesToRemain) + MergeFileRemainSize)]),
+          L('Question'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION)) then
+        begin
+          FilesToDelete := TStringList.Create;
+          ItemsToRemoveFromCollection := TList<Integer>.Create;
+          try
+
+            for I := TotalFilesToDelete.Count - 1 downto 0 do
+            begin
+              FilesToDelete.Add(TotalFilesToDelete[I].FileName);
+              ItemsToRemoveFromCollection.Add(TotalFilesToDelete[I].ID);
+            end;
+
+            for I := 0 to MergeInfos.Count - 1 do
+            begin
+              MergeInfo := MergeInfos[I];
+              if (MergeInfo.BaseItem <> nil) and (MergeInfo.MergeItems.Count > 0) then
+              begin
+                for J := 0 to MergeInfo.MergeItems.Count - 1 do
+                begin
+                  TDatabaseUpdateManager.MergeWithExistedInfo(FContext, MergeInfo.BaseItem.ID, MergeInfo.MergeItems[J], False);
+                  ItemsToRemoveFromCollection.Add(MergeInfo.MergeItems[J].ID);
+
+                  if FileExistsSafe(MergeInfo.MergeItems[J].FileName) and (AnsiLowerCase(MergeInfo.MergeItems[J].FileName) <> AnsiLowerCase(MergeInfo.BaseItem.FileName)) then
+                    FilesToDelete.Add(MergeInfo.MergeItems[J].FileName);
+                end;
+              end;
+            end;
+
+            if FilesToDelete.Count > 0 then
+              Dmitry.Utils.Files.SilentDeleteFiles(Handle, FilesToDelete, True);
+
+            if ItemsToRemoveFromCollection.Count > 0 then
+              FMediaRepository.DeleteFromCollectionEx(ItemsToRemoveFromCollection);
+
+          finally
+            F(FilesToDelete);
+            F(ItemsToRemoveFromCollection);
+          end;
+        end;
+      end else
+        MessageBoxDB(Handle, L('Automatically removing of duplicates is impossible. Please try to remove the duplicates manually!'), L('Warning'), TD_BUTTON_OK, TD_ICON_WARNING);
+
+    finally
+      FreeList(TotalFilesToDelete);
+      FreeList(FilesToRemain);
+      FreeList(MergeInfos);
+    end;
+
+  finally
+    FreeList(UserChooses);
+    F(SelectedInfo);
+    F(Info);
+    HideMask;
+  end;
+end;
+
+procedure TExplorerForm.DeleteFiles(ToRecycle: Boolean);
+var
+  I, J: Integer;
   Index: Integer;
   Files: TStringList;
   DeletedFiles: TList<Integer>;
   Info: TExplorerFileInfo;
   PI: TPathItem;
   PL: TPathItemCollection;
+
+  TotalDuplicatesCount, DuplicatesToRemove: Integer;
+  DuplicateInfo: TExplorerFileInfo;
 begin
+  if FCurrentTypePath = EXPLORER_ITEM_COLLECTION_DUPLICATES then
+  begin
+    if (ElvMain.Items.Count = SelCount) or (SelCount = 0) then
+    begin
+      TbbDuplicatesClick(Self);
+      Exit;
+    end;
+
+    for I := ElvMain.Items.Count - 1 downto 0 do
+      if ElvMain.Items[I].Selected then
+      begin
+        Index := ItemIndexToMenuIndex(I);
+        Info := FFilesInfo[Index];
+
+        TotalDuplicatesCount := 0;
+        DuplicatesToRemove := 0;
+
+        for J := ElvMain.Items.Count - 1 downto 0 do
+        begin
+          Index := ItemIndexToMenuIndex(J);
+          DuplicateInfo := FFilesInfo[Index];
+          if DuplicateInfo.LongImageID = Info.LongImageID then
+          begin
+            Inc(TotalDuplicatesCount);
+            if ElvMain.Items[J].Selected then
+              Inc(DuplicatesToRemove);
+          end;
+        end;
+
+        if (TotalDuplicatesCount > 1) and (DuplicatesToRemove = TotalDuplicatesCount) then
+        begin
+          TbbDuplicatesClick(Self);
+          Exit;
+        end;
+      end;
+  end;
+
   if SelCount = 0 then
     Exit;
 
@@ -2623,7 +2978,7 @@ begin
     ListView1SelectItem(nil, nil, False);
 end;
 
-procedure TExplorerForm.SpeedButton3Click(Sender: TObject);
+procedure TExplorerForm.GoUpClick(Sender: TObject);
 var
   Dir: string;
   B: Boolean;
@@ -3291,7 +3646,7 @@ begin
   end;
 
   ImParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
-  if ImParams * params<> [] then
+  if ImParams * params <> [] then
   begin
     if EventID_Param_Delete in ImParams then
     begin
@@ -3300,12 +3655,14 @@ begin
         Info := FFilesInfo[I];
         if Info.ID = ID then
         begin
-          if not Info.FileExists then
+          if not Info.FileExists or IsVirtualDirectoryType(FCurrentTypePath) then
           begin
             Index := ItemIndexToMenuIndex(I);
             DeleteItemWithIndex(Index);
             Exit;
-          end;
+          end else
+            RefreshItemByID(Info.ID);
+
           Break;
         end;
       end;
@@ -3545,7 +3902,7 @@ begin
   PopupMenuForward.Items.Add(MenuForward);
 end;
 
-procedure TExplorerForm.SpeedButton1Click(Sender: TObject);
+procedure TExplorerForm.GoBackClick(Sender: TObject);
 var
   Path: TExplorerPath;
 begin
@@ -3559,7 +3916,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.SpeedButton2Click(Sender: TObject);
+procedure TExplorerForm.GoForwardClick(Sender: TObject);
 var
   Path: TExplorerPath;
 begin
@@ -4736,11 +5093,11 @@ begin
   begin
     WindowsMenuTickCount := GetTickCount;
     if (Msg.Wparam = VK_LEFT) and CtrlKeyDown and TbBack.Enabled then
-      SpeedButton1Click(Self);
+      GoBackClick(Self);
     if (Msg.Wparam = VK_RIGHT) and CtrlKeyDown and TbForward.Enabled then
-      SpeedButton2Click(Self);
+      GoForwardClick(Self);
     if (Msg.Wparam = VK_UP) and CtrlKeyDown and TbUp.Enabled then
-      SpeedButton3Click(Self);
+      GoUpClick(Self);
     if (Msg.Wparam = 83) and CtrlKeyDown then
       if PePath.CanBreakLoading then
         TbStopClick(Self);
@@ -4886,17 +5243,17 @@ end;
 
 procedure TExplorerForm.Back1Click(Sender: TObject);
 begin
-  SpeedButton1Click(Sender);
+  GoBackClick(Sender); 
 end;
 
 procedure TExplorerForm.Forward1Click(Sender: TObject);
 begin
-  SpeedButton2Click(Sender);
+  GoForwardClick(Sender);
 end;
 
 procedure TExplorerForm.Up1Click(Sender: TObject);
 begin
-  SpeedButton3Click(Sender);
+  GoUpClick(Sender);
 end;
 
 procedure TExplorerForm.DeleteItemWithIndex(Index: Integer);
@@ -4933,7 +5290,7 @@ begin
   end;
 end;
 
-procedure TExplorerForm.DirectoryChanged(Sender: TObject; SID: TGUID; PInfo: TInfoCallBackDirectoryChangedArray);
+procedure TExplorerForm.DirectoryChanged(Sender: TObject; SID: TGUID; PInfo: TInfoCallBackDirectoryChangedArray; WatchType: TDirectoryWatchType);
 var
   I, K, Index: Integer;
   UpdaterInfo: TUpdaterInfo;
@@ -4948,34 +5305,34 @@ begin
 
   for K := 0 to Length(PInfo) - 1 do
   begin
-    case PInfo[K].FAction of
+    case PInfo[K].Action of
       FILE_ACTION_ADDED,
       FILE_ACTION_REMOVED:
-       if TLockFiles.Instance.IsFileLocked(PInfo[K].FNewFileName) then
-         PInfo[K].FAction := 0;
+       if TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
+         PInfo[K].Action := 0;
       FILE_ACTION_RENAMED_NEW_NAME:
-       if TLockFiles.Instance.IsFileLocked(PInfo[K].FNewFileName) then
+       if TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
        begin
-         if not TLockFiles.Instance.IsFileLocked(PInfo[K].FOldFileName) then
+         if not TLockFiles.Instance.IsFileLocked(PInfo[K].OldFileName) then
          begin
            //remove old file from view
-           PInfo[K].FAction := FILE_ACTION_REMOVED;
-           PInfo[K].FNewFileName := PInfo[K].FOldFileName;
+           PInfo[K].Action := FILE_ACTION_REMOVED;
+           PInfo[K].NewFileName := PInfo[K].OldFileName;
          end else
-           PInfo[K].FAction := 0;
+           PInfo[K].Action := 0;
        end;
     end;
 
-    case PInfo[K].FAction of
+    case PInfo[K].Action of
       FILE_ACTION_ADDED:
         begin
           if FolderView then
-            if GetExt(PInfo[K].FOldFileName) = 'LDB' then
+            if GetExt(PInfo[K].OldFileName) = 'LDB' then
               Exit;
 
           Info := TExplorerFileInfo.Create;
           try
-            Info.FileName := PInfo[K].FNewFileName;
+            Info.FileName := PInfo[K].NewFileName;
 
             UpdaterInfo := TUpdaterInfo.Create(FContext, Info);
             UpdaterInfo.IsUpdater := True;
@@ -4996,11 +5353,11 @@ begin
             Exit;
 
           if IsExplorerTreeViewVisible then
-            TreeView.DeletePath(PInfo[K].FNewFileName);
+            TreeView.DeletePath(PInfo[K].NewFileName);
 
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
-            FOldFileName := PInfo[K].FNewFileName;
+            FOldFileName := PInfo[K].NewFileName;
             Index := ItemIndexToMenuIndex(I);
             if Index > FFilesInfo.Count - 1 then
               Exit;
@@ -5021,10 +5378,10 @@ begin
         end;
       FILE_ACTION_MODIFIED:
         begin
-          if not UpdatingNow(PInfo[K].FNewFileName) and not TLockFiles.Instance.IsFileLocked(PInfo[K].FNewFileName) then
+          if not UpdatingNow(PInfo[K].NewFileName) and not TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
           begin
-            AddUpdateID(PInfo[K].FNewFileName);
-            RefreshItemByName(PInfo[K].FNewFileName, True);
+            AddUpdateID(PInfo[K].NewFileName);
+            RefreshItemByName(PInfo[K].NewFileName, True);
           end;
           Continue;
         end;
@@ -5039,31 +5396,31 @@ begin
             Index := ItemIndexToMenuIndex(I);
             if index > FFilesInfo.Count - 1 then
               Exit;
-            if AnsiLowerCase(FFilesInfo[index].FileName) = AnsiLowerCase(PInfo[K].FOldFileName) then
+            if AnsiLowerCase(FFilesInfo[index].FileName) = AnsiLowerCase(PInfo[K].OldFileName) then
             begin
-              if (not DirectoryExists(PInfo[K].FOldFileName) and DirectoryExists(PInfo[K].FNewFileName)) or
-                (not FileExistsSafe(PInfo[K].FOldFileName) and FileExistsSafe(PInfo[K].FNewFileName)) then
+              if (not DirectoryExists(PInfo[K].OldFileName) and DirectoryExists(PInfo[K].NewFileName)) or
+                (not FileExistsSafe(PInfo[K].OldFileName) and FileExistsSafe(PInfo[K].NewFileName)) then
               begin
-                ElvMain.Items[I].Caption := ExtractFileName(PInfo[K].FNewFileName);
-                FFilesInfo[index].FileName := PInfo[K].FNewFileName;
-                if FFilesInfo[index].FileType = EXPLORER_ITEM_IMAGE then
-                  if not IsGraphicFile(PInfo[K].FNewFileName) then
+                ElvMain.Items[I].Caption := ExtractFileName(PInfo[K].NewFileName);
+                FFilesInfo[Index].FileName := PInfo[K].NewFileName;
+                if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
+                  if not IsGraphicFile(PInfo[K].NewFileName) then
                   begin
-                    FFilesInfo[index].FileType := EXPLORER_ITEM_FILE;
-                    FFilesInfo[index].ID := 0;
+                    FFilesInfo[Index].FileType := EXPLORER_ITEM_FILE;
+                    FFilesInfo[Index].ID := 0;
                   end;
-                if FFilesInfo[index].FileType = EXPLORER_ITEM_FILE then
-                  if IsGraphicFile(PInfo[K].FNewFileName) then
+                if FFilesInfo[Index].FileType = EXPLORER_ITEM_FILE then
+                  if IsGraphicFile(PInfo[K].NewFileName) then
                   begin
-                    FFilesInfo[index].FileType := EXPLORER_ITEM_IMAGE;
+                    FFilesInfo[Index].FileType := EXPLORER_ITEM_IMAGE;
                   end;
-                if GetExt(PInfo[K].FOldFileName) <> GetExt(PInfo[K].FNewFileName) then
+                if GetExt(PInfo[K].OldFileName) <> GetExt(PInfo[K].NewFileName) then
                   RefreshItem(I, True);
-                if AnsiLowerCase(FSelectedInfo.FileName) = AnsiLowerCase(PInfo[K].FOldFileName) then
+                if AnsiLowerCase(FSelectedInfo.FileName) = AnsiLowerCase(PInfo[K].OldFileName) then
                   ListView1SelectItem(ElvMain, ListView1Selected, ListView1Selected = nil);
               end
               else
-                RenamefileWithDB(FContext, KernelEventCallBack, PInfo[K].FOldFileName, PInfo[K].FNewFileName, FFilesInfo[index].ID, True);
+                RenamefileWithDB(FContext, KernelEventCallBack, PInfo[K].OldFileName, PInfo[K].NewFileName, FFilesInfo[Index].ID, True);
               Continue;
             end;
           end;
@@ -5909,6 +6266,11 @@ begin
   ExtendedSearchRealign;
 end;
 
+procedure TExplorerForm.MiHelpClick(Sender: TObject);
+begin
+  DoHelp;
+end;
+
 procedure TExplorerForm.MiHomePageClick(Sender: TObject);
 begin
   DoHomePage;
@@ -6038,7 +6400,7 @@ begin
   if (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_STORAGE) or (GetCurrentPathW.PType = EXPLORER_ITEM_DEVICE_DIRECTORY) then
     Paste1.Visible := False;
 
-  Paste1.Visible := CanCopyFromClipboard;
+  Paste1.Visible := Paste1.Visible and CanCopyFromClipboard;
 end;
 
 procedure TExplorerForm.PmListViewTypePopup(Sender: TObject);
@@ -6530,6 +6892,17 @@ begin
       TbbCreateObject.Tag := BAR_ITEM_HIDDEN;
     end;
 
+    if (FCurrentTypePath = EXPLORER_ITEM_COLLECTION_DUPLICATES) then
+    begin
+      TbbDuplicates.Caption := L('Remove duplicates');
+      TbbDuplicates.Visible := True;
+      TbbDuplicates.Tag := BAR_ITEM_VISIBLE;
+    end else
+    begin
+      TbbDuplicates.Visible := False;
+      TbbDuplicates.Tag := BAR_ITEM_HIDDEN;
+    end;
+
     if ((FSelectedInfo.FileType = EXPLORER_ITEM_EXEFILE) or (FSelectedInfo.FileType = EXPLORER_ITEM_FILE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_FOLDER) or (FSelectedInfo.FileType = EXPLORER_ITEM_IMAGE) or
         (FSelectedInfo.FileType = EXPLORER_ITEM_GROUP) or (FSelectedInfo.FileType = EXPLORER_ITEM_PERSON)) and
@@ -6821,7 +7194,8 @@ begin
         begin
           Index := ItemIndexToMenuIndex(I);
           FileList.Add(ProcessPath(FFilesInfo[Index].FileName));
-          FCutItems.Add(ElvMain.Items[I]);
+          if IsCutAction then
+            FCutItems.Add(ElvMain.Items[I]);
         end;
 
       if FileList.Count > 0 then
@@ -6834,7 +7208,8 @@ begin
         begin
           Index := ItemIndexToMenuIndex(I);
           FileList.Add(ExtractFileName(FFilesInfo[Index].FileName));
-          FCutItems.Add(ElvMain.Items[I]);
+          if IsCutAction then
+            FCutItems.Add(ElvMain.Items[I]);
         end;
 
       ExecuteShellPathRelativeToMyComputerMenuAction(Handle, PhotoDBPathToDevicePath(FCurrentPath), FileList, Point(0, 0), nil, AnsiString(IIF(IsCutAction, 'Cut', 'Copy')));
@@ -7452,8 +7827,10 @@ begin
     if Effects = DROPEFFECT_MOVE then
     begin
       CopyFiles(FContext, Handle, Files, Path, True, False, Self);
+      FCutItems.Clear;
       ClipBoard.Clear;
       TbPaste.Enabled := False;
+      ElvMain.Refresh;
     end;
     if (Effects = DROPEFFECT_COPY) or (Effects = DROPEFFECT_COPY + DROPEFFECT_LINK) or (Effects = DROPEFFECT_NONE) then
       CopyFiles(FContext, Handle, Files, Path, False, False, Self);
@@ -7644,6 +8021,7 @@ begin
     MiTreeViewOpenInNewWindow.Caption := L('Open in new window');
     MiTreeViewRefresh.Caption := L('Refresh');
 
+    MiHelp.Caption := L('Help');
     StAddress.Caption := L('Address') + ':';
     CryptFile1.Caption := L('Encrypt file');
     ResetPassword1.Caption := L('Decrypt file');
@@ -11546,7 +11924,7 @@ begin
   PhotoShelf.Clear;
   CollectionEvents.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
 
-  SpeedButton1Click(Sender);
+  GoBackClick(Sender);
 end;
 
 procedure TExplorerForm.TbbCreateObjectClick(Sender: TObject);
@@ -13455,6 +13833,7 @@ begin
   TbbShare.ImageIndex := DB_IC_PHOTO_SHARE;
   TbbOpenDirectory.ImageIndex := DB_IC_DIRECTORY;
   TbbCreateObject.ImageIndex := DB_IC_NEW_SHELL;
+  TbbDuplicates.ImageIndex := DB_IC_DEL_DUPLICAT;
   TbbClear.ImageIndex := DB_IC_DELETE_INFO;
   ToolBarBottom.EnableToolBarForButtons;
 
@@ -13514,6 +13893,7 @@ begin
   MiTreeViewOpenInNewWindow.ImageIndex := DB_IC_EXPLORER;
   MiTreeViewRefresh.ImageIndex := DB_IC_REFRESH_THUM;
 
+  MiHelp.ImageIndex := DB_IC_HELP;
   CryptFile1.ImageIndex := DB_IC_CRYPTIMAGE;
   ResetPassword1.ImageIndex := DB_IC_DECRYPTIMAGE;
   EnterPassword1.ImageIndex := DB_IC_PASSWORD;

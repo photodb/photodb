@@ -407,6 +407,7 @@ begin
   Include := Item.Include;
   Links := Item.Links;
   Selected := Item.Selected;
+  LongImageID := Item.LongImageID;
   Tag := Item.Tag;
   IsImageEncrypted := Item.IsImageEncrypted;
   Width := Item.Width;

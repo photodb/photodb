@@ -38,6 +38,7 @@ procedure LoadImageX(Image: TGraphic; Bitmap: TBitmap; BackGround: TColor);
 procedure InitGraphic(G: TGraphic);
 function IsAnimatedGraphic(G: TGraphic): Boolean;
 function IsWallpaper(FileName: string): Boolean;
+function HasFont(Canvas: TCanvas; FontName: string): Boolean;
 
 implementation
 
@@ -246,6 +247,24 @@ begin
       end;
   end;
   AssignGraphic(Bitmap, Image);
+end;
+
+function HasFont(Canvas: TCanvas; FontName: string): Boolean;
+var
+  OldName: string;
+  Metrics: TTextMetric;
+begin
+  Result := False;
+
+  OldName := Canvas.Font.Name;
+  try
+    Canvas.Font.Name := FontName;
+
+    if GetTextMetrics(Canvas.Handle, Metrics) then
+      Result := Metrics.tmHeight >= 8;
+  finally
+    Canvas.Font.Name := OldName;
+  end;
 end;
 
 end.

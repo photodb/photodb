@@ -230,11 +230,25 @@ type
   end;
 
 function ExplorerPath(Path: string; PType: Integer): TExplorerPath;
+function IsVirtualDirectoryType(PType: Integer): Boolean;
 
 implementation
 
 uses
   ExplorerUnit;
+
+function IsVirtualDirectoryType(PType: Integer): Boolean;
+begin
+  Result := True;
+  if PType = EXPLORER_ITEM_FOLDER then Exit(False);
+  if PType = EXPLORER_ITEM_DRIVE then Exit(False);
+  if PType = EXPLORER_ITEM_SHARE then Exit(False);
+  if PType = EXPLORER_ITEM_SEARCH then Exit(False);
+  if PType = EXPLORER_ITEM_SHELF then Exit(False);
+  if PType = EXPLORER_ITEM_DEVICE_STORAGE then Exit(False);
+  if PType = EXPLORER_ITEM_DEVICE_DIRECTORY then Exit(False);
+  if PType = EXPLORER_ITEM_DEVICE_DIRECTORY then Exit(False);
+end;
 
 function ExplorerPath(Path : string; PType: Integer): TExplorerPath;
 begin

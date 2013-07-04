@@ -65,7 +65,6 @@ object ExplorerForm: TExplorerForm
     ParentColor = True
     TabOrder = 0
     OnResize = MainPanelResize
-    ExplicitHeight = 679
     object PcTasks: TPageControl
       Left = 0
       Top = 0
@@ -78,7 +77,6 @@ object ExplorerForm: TExplorerForm
       ShowHint = False
       TabOrder = 0
       OnChange = PcTasksChange
-      ExplicitHeight = 650
       object TsExplorer: TTabSheet
         Caption = 'Explorer'
         ImageIndex = 1
@@ -119,7 +117,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitHeight = 622
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -129,7 +126,6 @@ object ExplorerForm: TExplorerForm
           BevelOuter = bvNone
           ParentBackground = False
           TabOrder = 0
-          ExplicitHeight = 622
           DesignSize = (
             132
             614)
@@ -883,7 +879,6 @@ object ExplorerForm: TExplorerForm
       ParentBackground = False
       TabOrder = 1
       Visible = False
-      ExplicitTop = 650
       object WlGoToShelf: TWebLink
         Left = 5
         Top = 6
@@ -1087,7 +1082,6 @@ object ExplorerForm: TExplorerForm
     FullRepaint = False
     ParentColor = True
     TabOrder = 3
-    ExplicitHeight = 679
     object SplRightPanel: TSplitter
       Left = 507
       Top = 33
@@ -1106,7 +1100,6 @@ object ExplorerForm: TExplorerForm
       Align = alBottom
       TabOrder = 0
       Visible = False
-      ExplicitTop = 646
       object LbFilter: TLabel
         Left = 38
         Top = 9
@@ -1701,7 +1694,6 @@ object ExplorerForm: TExplorerForm
       Constraints.MinWidth = 100
       TabOrder = 2
       Visible = False
-      ExplicitHeight = 613
       DesignSize = (
         358
         605)
@@ -1750,7 +1742,6 @@ object ExplorerForm: TExplorerForm
         Align = alClient
         TabOrder = 0
         OnChange = PcRightPreviewChange
-        ExplicitHeight = 611
         object TsMediaPreview: TTabSheet
           Caption = 'TsMediaPreview'
           ImageIndex = 1
@@ -1920,7 +1911,6 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitHeight = 583
           object PnGeoSearch: TPanel
             Left = 0
             Top = 540
@@ -1928,7 +1918,6 @@ object ExplorerForm: TExplorerForm
             Height = 35
             Align = alBottom
             TabOrder = 0
-            ExplicitTop = 548
             DesignSize = (
               348
               35)
@@ -2032,7 +2021,6 @@ object ExplorerForm: TExplorerForm
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 3
-      ExplicitHeight = 613
       object StatusBarMain: TStatusBar
         Left = 0
         Top = 585
@@ -2046,7 +2034,6 @@ object ExplorerForm: TExplorerForm
             Width = 500
           end>
         Visible = False
-        ExplicitTop = 593
       end
     end
   end
@@ -2062,7 +2049,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.946060590280000000
+      Date = 41177.556773310190000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2109,7 +2096,6 @@ object ExplorerForm: TExplorerForm
     AutoSize = True
     BevelOuter = bvNone
     TabOrder = 6
-    ExplicitTop = 725
     object ToolBarBottom: TToolBar
       Left = 0
       Top = 0
@@ -2118,7 +2104,7 @@ object ExplorerForm: TExplorerForm
       Align = alBottom
       AutoSize = True
       ButtonHeight = 27
-      ButtonWidth = 106
+      ButtonWidth = 101
       EdgeInner = esNone
       GradientEndColor = 11319229
       List = True
@@ -2138,8 +2124,17 @@ object ExplorerForm: TExplorerForm
         Visible = False
         OnClick = TbbCreateObjectClick
       end
-      object TbbPlay: TToolButton
+      object TbbDuplicates: TToolButton
         Left = 99
+        Top = 0
+        AutoSize = True
+        Caption = 'TbbDuplicates'
+        ImageIndex = 10
+        Visible = False
+        OnClick = TbbDuplicatesClick
+      end
+      object TbbPlay: TToolButton
+        Left = 182
         Top = 0
         AutoSize = True
         Caption = 'TbbPlay'
@@ -2147,7 +2142,7 @@ object ExplorerForm: TExplorerForm
         OnClick = SlideShowLinkClick
       end
       object TbbEncrypt: TToolButton
-        Left = 153
+        Left = 236
         Top = 0
         AutoSize = True
         Caption = 'TbbEncrypt'
@@ -2155,7 +2150,7 @@ object ExplorerForm: TExplorerForm
         OnClick = EncryptLinkClick
       end
       object TbbShare: TToolButton
-        Left = 224
+        Left = 307
         Top = 0
         AutoSize = True
         Caption = 'TbbShare'
@@ -2165,7 +2160,7 @@ object ExplorerForm: TExplorerForm
         OnClick = WlShareClick
       end
       object TbbGeo: TToolButton
-        Left = 286
+        Left = 369
         Top = 0
         AutoSize = True
         Caption = 'TbbGeo'
@@ -2173,7 +2168,7 @@ object ExplorerForm: TExplorerForm
         OnClick = WlGeoLocationClick
       end
       object TbbResize: TToolButton
-        Left = 339
+        Left = 422
         Top = 0
         AutoSize = True
         Caption = 'TbbResize'
@@ -2181,7 +2176,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Resize1Click
       end
       object TbbConvert: TToolButton
-        Left = 404
+        Left = 487
         Top = 0
         AutoSize = True
         Caption = 'TbbConvert'
@@ -2189,7 +2184,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Convert1Click
       end
       object TbbCrop: TToolButton
-        Left = 477
+        Left = 560
         Top = 0
         AutoSize = True
         Caption = 'TbbCrop'
@@ -2197,7 +2192,7 @@ object ExplorerForm: TExplorerForm
         OnClick = WlCropClick
       end
       object TbbEditor: TToolButton
-        Left = 534
+        Left = 617
         Top = 0
         AutoSize = True
         Caption = 'TbbEditor'
@@ -2205,7 +2200,7 @@ object ExplorerForm: TExplorerForm
         OnClick = ImageEditorLinkClick
       end
       object TbbPrint: TToolButton
-        Left = 596
+        Left = 679
         Top = 0
         AutoSize = True
         Caption = 'TbbPrint'
@@ -2213,24 +2208,24 @@ object ExplorerForm: TExplorerForm
         OnClick = PrintLinkClick
       end
       object TbBottomFileActionsSeparator: TToolButton
-        Left = 652
+        Left = 735
         Top = 0
         Width = 8
         ImageIndex = 9
         Style = tbsSeparator
       end
       object TbbOpenDirectory: TToolButton
-        Left = 660
+        Left = 743
         Top = 0
         AutoSize = True
-        Caption = 'TbbOpenDirectory'
+        Caption = 'TbbDirectories'
         DropdownMenu = PmLocations
         ImageIndex = 9
         Style = tbsDropDown
         OnClick = TbbOpenDirectoryClick
       end
       object TbbRename: TToolButton
-        Left = 785
+        Left = 849
         Top = 0
         AutoSize = True
         Caption = 'TbbRename'
@@ -2238,7 +2233,7 @@ object ExplorerForm: TExplorerForm
         OnClick = Rename1Click
       end
       object TbbProperties: TToolButton
-        Left = 858
+        Left = 922
         Top = 0
         AutoSize = True
         Caption = 'TbbProperties'
@@ -2246,7 +2241,7 @@ object ExplorerForm: TExplorerForm
         OnClick = PropertiesLinkClick
       end
       object TbbClear: TToolButton
-        Left = 941
+        Left = 1005
         Top = 0
         AutoSize = True
         Caption = 'TbbClear'
@@ -2291,7 +2286,7 @@ object ExplorerForm: TExplorerForm
         DropdownMenu = PopupMenuBack
         ImageIndex = 0
         Style = tbsDropDown
-        OnClick = SpeedButton1Click
+        OnClick = GoBackClick
         OnMouseDown = TbBackMouseDown
       end
       object TbForward: TToolButton
@@ -2301,7 +2296,7 @@ object ExplorerForm: TExplorerForm
         DropdownMenu = PopupMenuForward
         ImageIndex = 2
         Style = tbsDropDown
-        OnClick = SpeedButton2Click
+        OnClick = GoForwardClick
         OnMouseDown = TbForwardMouseDown
       end
       object TbUp: TToolButton
@@ -2309,7 +2304,7 @@ object ExplorerForm: TExplorerForm
         Top = 0
         AutoSize = True
         ImageIndex = 1
-        OnClick = SpeedButton3Click
+        OnClick = GoUpClick
       end
       object ToolButton4: TToolButton
         Left = 78
@@ -3332,6 +3327,13 @@ object ExplorerForm: TExplorerForm
     OnPopup = PmHelpPopup
     Left = 448
     Top = 480
+    object MiHelp: TMenuItem
+      Caption = 'Help'
+      OnClick = MiHelpClick
+    end
+    object N16: TMenuItem
+      Caption = '-'
+    end
     object MiActivation: TMenuItem
       Caption = 'MiActivation'
       OnClick = MiActivationClick

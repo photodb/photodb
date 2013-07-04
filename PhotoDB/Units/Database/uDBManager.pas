@@ -73,10 +73,20 @@ type
     property DBContext: IDBContext read FDBContext;
   end;
 
-var
-  DBManager: TDBManager = nil;
+function DBManager: TDBManager;
 
 implementation
+
+var
+  FDBManager: TDBManager = nil;
+
+function DBManager: TDBManager;
+begin
+  if FDBManager = nil then
+    FDBManager := TDBManager.Create;
+
+  Result := FDBManager;
+end;
 
 class function TDBManager.UpdateDatabaseQuery(FileName: string): Boolean;
 var
@@ -478,6 +488,6 @@ end;
 
 initialization
 finalization
-  F(DBManager);
+  F(FDBManager);
 
 end.

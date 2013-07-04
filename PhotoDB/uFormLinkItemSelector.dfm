@@ -95,7 +95,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Tag = 2
     Left = 8
     Top = 166
-    Width = 59
+    Width = 56
     Height = 18
     Cursor = crHandPoint
     Anchors = [akLeft, akBottom]
@@ -115,7 +115,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Tag = 2
     Left = 73
     Top = 166
-    Width = 64
+    Width = 63
     Height = 18
     Cursor = crHandPoint
     Anchors = [akLeft, akBottom]
@@ -135,7 +135,7 @@ object FormLinkItemSelector: TFormLinkItemSelector
     Tag = 2
     Left = 143
     Top = 166
-    Width = 73
+    Width = 75
     Height = 18
     Cursor = crHandPoint
     Anchors = [akLeft, akBottom]

@@ -19,7 +19,9 @@ uses
   UnitDBDeclare,
 
   uMemory,
+  uRuntime,
   uDBForm,
+  uGraphicUtils,
   uFormInterfaces;
 
 type
@@ -94,7 +96,7 @@ end;
 
 procedure TFormLinkItemEditor.FormCreate(Sender: TObject);
 begin
-  if IsWindowsVista then
+  if IsWindowsVista and not FolderView and HasFont(Canvas, 'MyriadPro-Regular') then
     Font.Name := 'MyriadPro-Regular';
 
   BtnClose.Caption := L('Cancel', '');

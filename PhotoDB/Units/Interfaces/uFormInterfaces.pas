@@ -197,6 +197,11 @@ type
     procedure CloseForm;
   end;
 
+  IFormSelectDuplicateDirectories = interface(IFormInterface)
+    ['{80EA9FEA-2958-4CB4-84C9-7D729C054618}']
+    function Execute(DirectoriesInfo: TList<string>): string;
+  end;
+
   TListElementType = (leWebLink, leInfoLabel);
   TListElements = TDictionary<TListElementType, TControl>;
 
@@ -320,6 +325,7 @@ function LinkItemSelectForm: ILinkItemSelectForm;
 function BackgroundTaskStatusForm: IBackgroundTaskStatusForm;
 function CollectionPreviewSettings: IFormCollectionPreviewSettings;
 function FormLinkItemEditor: IFormLinkItemEditor;
+function FormSelectDuplicateDirectories: IFormSelectDuplicateDirectories;
 
 function FullScreenControl: IFullScreenControl;
 function FullScreenImageForm: IFullScreenImageForm;
@@ -481,6 +487,11 @@ end;
 function SlideShowForm: ISlideShowForm;
 begin
   Result := FormInterfaces.CreateForm<ISlideShowForm>();
+end;
+
+function FormSelectDuplicateDirectories: IFormSelectDuplicateDirectories;
+begin
+  Result := FormInterfaces.CreateForm<IFormSelectDuplicateDirectories>();
 end;
 
 { TFormInterfaces }

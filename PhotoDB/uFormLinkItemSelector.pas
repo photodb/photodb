@@ -27,6 +27,7 @@ uses
   UnitDBDeclare,
 
   uMemory,
+  uRuntime,
   uDBForm,
   uFormInterfaces,
   uGraphicUtils,
@@ -365,7 +366,7 @@ var
 
 begin
   FLinkHeight := GetFontHeight;
-  if IsWindowsVista then
+  if IsWindowsVista and not FolderView and HasFont(Canvas, 'MyriadPro-Regular') then
   begin
     Font.Name := 'MyriadPro-Regular';
     FLinkHeight := GetFontHeight;

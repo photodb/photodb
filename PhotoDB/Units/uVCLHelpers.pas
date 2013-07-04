@@ -41,6 +41,7 @@ type
   public
     procedure AdjustButtonWidth;
     procedure SetEnabledEx(Value: Boolean);
+    procedure AdjustButtonHeight;
   end;
 
 type
@@ -176,6 +177,75 @@ end;
 function MakMessageEvent(const ANotifyRef: TMessageEventRef): TMessageEvent;
 begin
   MethRefToMethPtr(ANotifyRef, Result);
+end;
+
+type
+  TCustomButtonEx = class(TButton);
+
+procedure TButtonHelper.AdjustButtonHeight;
+const
+  PaddingLeft = 40;
+  PaddingTop = 15;
+
+var
+  DrawRect: TRect;
+  TextRect: TRect;
+  Surface: TBitmap;
+  ACanvas: TCanvas;
+  DrawOptions,
+  CaptionHeight: Integer;
+
+begin
+  DrawRect := Self.ClientRect;
+  Surface := TBitmap.Create;
+  try
+    ACanvas := Surface.Canvas;
+
+    DrawRect := Rect(0, 0, 0, 0);
+    if (GetWindowLong(Self.Handle, GWL_STYLE) and BS_COMMANDLINK) = BS_COMMANDLINK then
+    begin
+      TextRect := Self.ClientRect;
+      Dec(TextRect.Right, PaddingLeft + 15);
+      Dec(TextRect.Bottom, PaddingTop + 15);
+      TextRect.Bottom := MaxInt;
+
+      ACanvas.Font := TCustomButtonEx(Self).Font;
+      ACanvas.Font.Style := [];
+      ACanvas.Font.Size := 12;
+      DrawText(ACanvas.Handle, PChar(Self.Caption), Length(Self.Caption), TextRect, DT_LEFT or DT_SINGLELINE or DT_CALCRECT);
+
+      CaptionHeight := TextRect.Height + 2;
+
+      OffsetRect(TextRect, PaddingLeft, PaddingTop);
+      UnionRect(DrawRect, DrawRect, TextRect);
+
+      ACanvas.Font.Size := 8;
+      TextRect := Self.ClientRect;
+      Dec(TextRect.Right, PaddingLeft);
+      Dec(TextRect.Bottom, PaddingTop);
+      TextRect.Bottom := MaxInt;
+      DrawText(ACanvas.Handle, PChar(Self.CommandLinkHint), Length(Self.CommandLinkHint), TextRect, DT_LEFT or DT_WORDBREAK or DT_CALCRECT);
+      OffsetRect(TextRect, PaddingLeft, PaddingTop + CaptionHeight);
+
+      UnionRect(DrawRect, DrawRect, TextRect);
+
+      Self.SetBounds(Self.Left, Self.Top, Self.Width, DrawRect.Height + PaddingTop + 15);
+    end else
+    begin
+      TextRect := Self.ClientRect;
+      DrawOptions := DT_LEFT or DT_CALCRECT;
+
+      if TCustomButtonEx(Self).WordWrap then
+        DrawOptions := DrawOptions or DT_WORDBREAK;
+
+      DrawText(ACanvas.Handle, PChar(Self.Caption), Length(Self.Caption), TextRect, DrawOptions);
+
+      Self.SetBounds(Self.Left, Self.Top, Self.Width, TextRect.Height + 10);
+    end;
+
+  finally
+    Surface.Free;
+  end;
 end;
 
 procedure TButtonHelper.AdjustButtonWidth;

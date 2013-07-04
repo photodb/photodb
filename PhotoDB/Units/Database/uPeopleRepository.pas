@@ -189,7 +189,8 @@ begin
                 for I := 0 to GS.Count - 1 do
                 begin
                   G := GroupRepository.GetByName(GS[I].GroupName, False);
-                  AddWordsA(G.GroupKeyWords, KeyWords);
+                  if G <> nil then
+                    AddWordsA(G.GroupKeyWords, KeyWords);
                 end;
               finally
                 F(GS);

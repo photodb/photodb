@@ -351,6 +351,7 @@
 	<translate name="Zoom in" value="Увеличить" />
 	<translate name="Zoom out" value="Уменьшить" />
 	<translate name="Stop" value="Прервать" />
+	<translate name="Remove duplicates" value="Удалить дубликаты" />
 	<translate name="Query in collection..." value="Получение информации из коллекции..." />
 	<translate name="Reading directory" value="Чтение директории" />
 	<translate name="Reading directory [%d objects found]" value="Чтение директории [найдено %d объектов]" />
@@ -403,6 +404,8 @@
 	<translate name="Next..." value="Далее..." />
 	<translate name="Do you really want to add full drive with subfolders?" value="Вы действительно хотите добавить весь диск с подпапками?" />	
 	<translate name="Do you really want to delete this information from collection?" value="Вы действительно хотите удалить эту информацию из коллекции?" />
+	<translate name="Do you really want to delete {0} duplicates ({1}) to recycle bin? {2} original items ({3}) will remain on your drive!" value="Вы действительно хотите удалить {0} дубликатов ({1}) в корзину? {2} оригинальных изображений ({3}) останутся на жёстком диске!" />
+	<translate name="Automatically removing of duplicates is impossible. Please try to remove the duplicates manually!" value="Автоматическое удаление дубликатов невозможно. Попробуйте удалить дубликаты вручную." />
 	<translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
 	<translate name="This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?" value="В данной папке (%s) содержится %d фотографий из коллекции! Скорректировать информацию в коллекции?" />
 	<translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />
@@ -2011,5 +2014,10 @@
   <scope name="CollectionUpgrade">
   	<translate name="Check file, %" value="Проверка файла, %" />
   	<translate name="Upgdate file, %" value="Обновление файла, %" />
+  </scope>
+  <scope name="DuplicatesSelectDirectory">
+  	<translate name="Cancel pending operation" value="Отмена текущей операции" />
+  	<translate name="Select directory with originals" value="Выберите директорию с оригиналами" />
+  	<translate name="Please select directory with original photos. Duplicate photos from other directories will be deleted." value="Пожалуйста, выберите каталог с оригинальными фотографиями. Дубликаты фотографий из других каталогов будут удалены." />
   </scope>
 </language>

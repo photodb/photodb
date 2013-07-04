@@ -304,16 +304,16 @@ var
 begin
 
   SetLength(Info, 1);
-  Info[0].FAction := FILE_ACTION_MODIFIED;
-  Info[0].FOldFileName := FileName;
-  Info[0].FNewFileName := FileName;
+  Info[0].Action := FILE_ACTION_MODIFIED;
+  Info[0].OldFileName := FileName;
+  Info[0].NewFileName := FileName;
 
   for I := 0 to TFormCollection.Instance.Count - 1 do
   begin
     Form := TFormCollection.Instance[I];
 
     if Form.GetInterface(IDirectoryWatcher, Watcher) then
-      Watcher.DirectoryChanged(Self, SystemDirectoryWatchNotification, Info);
+      Watcher.DirectoryChanged(Self, SystemDirectoryWatchNotification, Info, dwtBoth);
   end;
 end;
 

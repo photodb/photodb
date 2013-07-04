@@ -73,7 +73,6 @@ object OptionsForm: TOptionsForm
         Height = 297
         Anchors = [akLeft, akTop, akRight, akBottom]
         Transparent = True
-        ExplicitWidth = 318
       end
       object LbThemePreview: TLabel
         Left = 176
@@ -136,10 +135,6 @@ object OptionsForm: TOptionsForm
     end
     object TsAssociations: TTabSheet
       Caption = 'Associations'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         566
         413)
@@ -152,7 +147,6 @@ object OptionsForm: TOptionsForm
         AutoSize = False
         Caption = '- File extension ignored'
         WordWrap = True
-        ExplicitWidth = 174
       end
       object LblAddSubmenuItem: TLabel
         Left = 282
@@ -163,7 +157,6 @@ object OptionsForm: TOptionsForm
         AutoSize = False
         Caption = '- File option will added for this file type'
         WordWrap = True
-        ExplicitWidth = 174
       end
       object LblUseExt: TLabel
         Left = 282
@@ -174,7 +167,6 @@ object OptionsForm: TOptionsForm
         AutoSize = False
         Caption = '- File will open with this Program'
         WordWrap = True
-        ExplicitWidth = 174
       end
       object Bevel2: TBevel
         Left = 6
@@ -271,10 +263,6 @@ object OptionsForm: TOptionsForm
     object TsExplorer: TTabSheet
       Caption = 'Explorer'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         566
         413)
@@ -285,7 +273,6 @@ object OptionsForm: TOptionsForm
         Height = 9
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
-        ExplicitWidth = 421
       end
       object BtnClearIconCache: TButton
         Left = 3
@@ -422,10 +409,6 @@ object OptionsForm: TOptionsForm
     object TsView: TTabSheet
       Caption = 'View'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         566
         413)
@@ -437,7 +420,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = 'Count of Steps for FullScreen mode (50)'
-        ExplicitWidth = 420
       end
       object Label22: TLabel
         Left = 6
@@ -455,7 +437,6 @@ object OptionsForm: TOptionsForm
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = 'Slide Speed (5000)'
-        ExplicitWidth = 420
       end
       object lbDetectionSize: TLabel
         Left = 8
@@ -579,10 +560,6 @@ object OptionsForm: TOptionsForm
     object TsSecurity: TTabSheet
       Caption = 'Security'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         566
         413)
@@ -995,8 +972,8 @@ object OptionsForm: TOptionsForm
         object WblMethod: TWebLink
           Left = 8
           Top = 135
-          Width = 84
-          Height = 16
+          Width = 77
+          Height = 13
           Cursor = crHandPoint
           Text = 'BlowFish - 56'
           ImageIndex = 0
@@ -1248,10 +1225,6 @@ object OptionsForm: TOptionsForm
     object TsPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         566
         413)
@@ -1366,8 +1339,8 @@ object OptionsForm: TOptionsForm
       object WlAddPlayerExtension: TWebLink
         Left = 3
         Top = 391
-        Width = 40
-        Height = 16
+        Width = 34
+        Height = 13
         Cursor = crHandPoint
         Anchors = [akLeft, akBottom]
         Color = clBtnFace
@@ -1387,8 +1360,8 @@ object OptionsForm: TOptionsForm
       object WlRemovePlayerExtension: TWebLink
         Left = 49
         Top = 391
-        Width = 60
-        Height = 16
+        Width = 55
+        Height = 13
         Cursor = crHandPoint
         Anchors = [akLeft, akBottom]
         Color = clBtnFace
@@ -1408,8 +1381,8 @@ object OptionsForm: TOptionsForm
       object WlSavePlayerChanges: TWebLink
         Left = 259
         Top = 245
-        Width = 88
-        Height = 16
+        Width = 83
+        Height = 13
         Cursor = crHandPoint
         Anchors = [akLeft, akBottom]
         Color = clBtnFace

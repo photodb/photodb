@@ -54,7 +54,7 @@ type
   public
     class function AddFile(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
     class function AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
-    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; Info: TMediaItem; Res: TMediaInfo): Boolean;
+    class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; InfoToAdd: TMediaItem; MoveFile: Boolean): Boolean;
   end;
 
 implementation
@@ -275,7 +275,7 @@ begin
 end;
 
 class function TDatabaseUpdateManager.MergeWithExistedInfo(Context: IDBContext; ID: Integer;
-  Info: TMediaItem; Res: TMediaInfo): Boolean;
+  InfoToAdd: TMediaItem; MoveFile: Boolean): Boolean;
 var
   MediaItem: TMediaItem;
   UC: TUpdateCommand;
@@ -294,48 +294,57 @@ begin
 
   UC := Context.CreateUpdate(ImageTable);
   try
-    if Info.Comment <> '' then
+    if InfoToAdd.Comment <> '' then
     begin
-      Comment := Info.Comment;
+      Comment := InfoToAdd.Comment;
       if MediaItem.Comment <> '' then
         Comment := Comment + sLineBreak + MediaItem.Comment;
 
       UC.AddParameter(TStringParameter.Create('Comment', Comment));
+    end else
+    begin
+      if MediaItem.Comment <> '' then
+        Comment := MediaItem.Comment;
+
+      UC.AddParameter(TStringParameter.Create('Comment', Comment));
     end;
 
-    if (Info.Rotation <> DB_IMAGE_ROTATE_0) and (Info.Rotation <> DB_IMAGE_ROTATE_UNKNOWN) then
-      UC.AddParameter(TIntegerParameter.Create('Rotated', Info.Rotation));
+    if (InfoToAdd.Rotation <> DB_IMAGE_ROTATE_0) and (InfoToAdd.Rotation <> DB_IMAGE_ROTATE_UNKNOWN) then
+      UC.AddParameter(TIntegerParameter.Create('Rotated', InfoToAdd.Rotation));
 
-    if Info.Rating <> 0 then
-      UC.AddParameter(TIntegerParameter.Create('Rating', Info.Rating));
+    if InfoToAdd.Rating <> 0 then
+      UC.AddParameter(TIntegerParameter.Create('Rating', InfoToAdd.Rating));
 
-    if Info.Groups <> '' then
+    if InfoToAdd.Groups <> '' then
     begin
-      Groups := Info.Groups;
+      Groups := InfoToAdd.Groups;
       TGroups.AddGroupsToGroups(Groups, MediaItem.Groups);
       UC.AddParameter(TStringParameter.Create('Groups', Groups));
     end;
 
-    if Info.KeyWords <> '' then
+    if InfoToAdd.KeyWords <> '' then
     begin
-      KeyWords := Info.KeyWords;
+      KeyWords := InfoToAdd.KeyWords;
       AddWordsA(MediaItem.KeyWords, KeyWords);
       UC.AddParameter(TStringParameter.Create('KeyWords', KeyWords));
     end;
 
-    if Info.Links <> '' then
+    if InfoToAdd.Links <> '' then
     begin
-      Links := Info.Links;
+      Links := InfoToAdd.Links;
       ReplaceLinks('', MediaItem.Links, Links);
       UC.AddParameter(TStringParameter.Create('Links', Links));
     end;
 
-    if not Info.Include then
-      UC.AddParameter(TBooleanParameter.Create('Include', Info.Include));
+    if not InfoToAdd.Include then
+      UC.AddParameter(TBooleanParameter.Create('Include', InfoToAdd.Include));
 
-    UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(Info.FileName)));
-    UC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(Info.FileName)));
-    UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(Info.FileName, True)));
+    if MoveFile then
+    begin
+      UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(InfoToAdd.FileName)));
+      UC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(InfoToAdd.FileName)));
+      UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(InfoToAdd.FileName, True)));
+    end;
 
     UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
 
@@ -344,6 +353,7 @@ begin
     TThread.Synchronize(nil,
       procedure
       begin
+        EventInfo.ID := ID;
         CollectionEvents.DoIDEvent(TDBForm(Application.MainForm), ID, [EventID_Param_Critical], EventInfo);
       end
     );
