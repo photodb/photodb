@@ -48,7 +48,8 @@ uses
   uDBEntities,
   uDBManager,
   uDBContext,
-  uSettings;
+  uSettings,
+  uProgramStatInfo;
 
 type
   TFormShareLink = class(TThreadForm, IShareLinkForm)
@@ -566,6 +567,7 @@ begin
   LnkPublicLink.Enabled := True;
   EndProgress;
   CheckShortLink;
+  ProgramStatistics.FastShareUsed;
 end;
 
 procedure TFormShareLink.WlSettingsClick(Sender: TObject);

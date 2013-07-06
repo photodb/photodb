@@ -46,16 +46,20 @@ type
     procedure GroupUsed; //GO
     procedure PortableUsed; //PV
     procedure DBUsed; //DB
+    procedure DuplicatesCleanUpUsed; //DC
 
-    procedure DBExportUsed; //DBE
-    procedure DBChangePathUsed; //DBCH
-    procedure DBMergeUsed; //DBM
-    procedure DBSplitUsed; //DBS
     procedure PropertyLinksUsed; //PRL
     procedure MassRenameUsed; //RM
     procedure CDExportUsed; //CDE
     procedure CDMappingUsed; //CDM
-    procedure InitialImportUsed; //II
+
+    procedure QuickLinksUsed; //QL
+    procedure WatermarkImageUsed; //WI
+    procedure WatermarkTextUsed; //WT
+    procedure FastShareUsed;  //FS
+    procedure OpenWithLinksUsed; //OW
+    procedure CompactCollectionUsed; //CC
+
     function ToString: string; override;
   end;
 
@@ -91,29 +95,14 @@ begin
   UpdateProperty('CDM');
 end;
 
+procedure TProgramStatInfo.CompactCollectionUsed;
+begin
+  UpdateProperty('CC');
+end;
+
 procedure TProgramStatInfo.ConverterUsed;
 begin
   UpdateProperty('C');
-end;
-
-procedure TProgramStatInfo.DBChangePathUsed;
-begin
-  UpdateProperty('DBCH');
-end;
-
-procedure TProgramStatInfo.DBExportUsed;
-begin
-  UpdateProperty('DBE');
-end;
-
-procedure TProgramStatInfo.DBMergeUsed;
-begin
-  UpdateProperty('DBM');
-end;
-
-procedure TProgramStatInfo.DBSplitUsed;
-begin
-  UpdateProperty('DBS');
 end;
 
 procedure TProgramStatInfo.DBUsed;
@@ -136,6 +125,11 @@ begin
   UpdateProperty('DST');
 end;
 
+procedure TProgramStatInfo.DuplicatesCleanUpUsed;
+begin
+  UpdateProperty('DC');
+end;
+
 procedure TProgramStatInfo.EditorUsed;
 begin
   UpdateProperty('E');
@@ -154,6 +148,11 @@ end;
 procedure TProgramStatInfo.FaceDetectionUsed;
 begin
   UpdateProperty('F');
+end;
+
+procedure TProgramStatInfo.FastShareUsed;
+begin
+  UpdateProperty('FS');
 end;
 
 procedure TProgramStatInfo.GeoInfoReadUsed;
@@ -181,14 +180,14 @@ begin
   UpdateProperty('I');
 end;
 
-procedure TProgramStatInfo.InitialImportUsed;
-begin
-  UpdateProperty('II');
-end;
-
 procedure TProgramStatInfo.MassRenameUsed;
 begin
   UpdateProperty('RM');
+end;
+
+procedure TProgramStatInfo.OpenWithLinksUsed;
+begin
+  UpdateProperty('OW');
 end;
 
 procedure TProgramStatInfo.PersonUsed;
@@ -231,6 +230,11 @@ begin
   UpdateProperty('PRL');
 end;
 
+procedure TProgramStatInfo.QuickLinksUsed;
+begin
+  UpdateProperty('QL');
+end;
+
 procedure TProgramStatInfo.SearchDatabaseUsed;
 begin
   UpdateProperty('SD');
@@ -264,6 +268,16 @@ end;
 procedure TProgramStatInfo.StyleUsed;
 begin
   UpdateProperty('STY');
+end;
+
+procedure TProgramStatInfo.WatermarkImageUsed;
+begin
+  UpdateProperty('WI');
+end;
+
+procedure TProgramStatInfo.WatermarkTextUsed;
+begin
+  UpdateProperty('WT');
 end;
 
 function ProcessCount(I: Integer): Integer;

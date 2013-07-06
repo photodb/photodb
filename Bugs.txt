@@ -37,8 +37,6 @@ Features ready:
 - Use png/jpg for collection icons;
 - Warn of removing duplicates with originals;
 
-=> New features counters;
-
 Minor:
 Forward capatibility (recheck);
 check collection move

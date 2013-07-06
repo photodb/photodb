@@ -566,6 +566,14 @@ begin
   // fill params of processing
   FillProcessingParams;
 
+  if CbWatermark.Checked then
+  begin
+    if FProcessingParams.WatermarkOptions.DrawMode = WModeImage then
+      ProgramStatistics.WatermarkImageUsed
+    else
+      ProgramStatistics.WatermarkTextUsed;
+  end;
+
   NewFormState;
   FProcessingParams.PreviewOptions.GeneratePreview := False;
   for I := 1 to Min(FData.Count, ProcessorCount) do

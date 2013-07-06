@@ -49,7 +49,8 @@ uses
   uFormInterfaces,
   uCollectionUtils,
   uDialogUtils,
-  uLinkListEditorUpdateDirectories;
+  uLinkListEditorUpdateDirectories,
+  uProgramStatInfo;
 
 type
   TLinkListEditorDatabases = class(TInterfacedObject, ILinkEditor)
@@ -673,6 +674,8 @@ var
 begin
   if ID_YES <> MessageBoxDB(Screen.ActiveFormHandle, TA('Do you really want to compact collection file and check it for errors?', 'System'), TA('Warning'), TD_BUTTON_YESNO, TD_ICON_WARNING) then
     Exit;
+
+  ProgramStatistics.CompactCollectionUsed;
 
   Editor := TPanel(TControl(Sender).Parent);
   DI := TDatabaseInfo(Editor.Tag);

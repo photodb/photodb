@@ -2380,6 +2380,8 @@ begin
           FormatEx(L('Do you really want to delete {0} duplicates ({1}) to recycle bin? {2} original items ({3}) will remain on your drive!'), [TotalFilesToDelete.Count + GetMergeCount(MergeInfos), SizeInText(GetTotalSize(TotalFilesToDelete) + GetMergeSize(MergeInfos)), FilesToRemain.Count + MergeFileRemainCount, SizeInText(GetTotalSize(FilesToRemain) + MergeFileRemainSize)]),
           L('Question'), TD_BUTTON_OKCANCEL, TD_ICON_QUESTION)) then
         begin
+          ProgramStatistics.DuplicatesCleanUpUsed;
+
           FilesToDelete := TStringList.Create;
           ItemsToRemoveFromCollection := TList<Integer>.Create;
           try

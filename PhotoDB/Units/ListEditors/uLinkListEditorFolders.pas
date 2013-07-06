@@ -23,6 +23,7 @@ uses
   uVCLHelpers,
   uFormInterfaces,
   uShellIntegration,
+  uProgramStatInfo,
   uIconUtils;
 
 type
@@ -291,6 +292,7 @@ end;
 
 function TLinkListEditorFolder.OnApply(Sender: ILinkItemSelectForm): Boolean;
 begin
+  ProgramStatistics.QuickLinksUsed;
   Result := True;
 end;
 

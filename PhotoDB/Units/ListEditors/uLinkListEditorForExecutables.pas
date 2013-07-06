@@ -23,7 +23,8 @@ uses
   uIconUtils,
   uShellIntegration,
   uTranslate,
-  uFormInterfaces;
+  uFormInterfaces,
+  uProgramStatInfo;
 
 type
   TExecutableInfo = class(TDataObject)
@@ -290,6 +291,7 @@ end;
 
 function TLinkListEditorForExecutables.OnApply(Sender: ILinkItemSelectForm): Boolean;
 begin
+  ProgramStatistics.OpenWithLinksUsed;
   Result := True;
 end;
 
