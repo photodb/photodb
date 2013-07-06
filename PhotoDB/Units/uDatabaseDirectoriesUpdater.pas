@@ -45,6 +45,7 @@ uses
   uDBManager,
   uLogger,
   uCounters,
+  uSettings,
   uFormInterfaces,
   uConfiguration,
   uDBUpdateUtils,
@@ -53,8 +54,7 @@ uses
   uLockedFileNotifications,
   uCDMappingTypes,
   uCollectionEvents,
-  uCollectionUtils,
-  uSettings;
+  uCollectionUtils;
 
 type
   TDatabaseTask = class(TObject)
@@ -109,6 +109,17 @@ type
     property Data: TMediaItem read FData;
   end;
 
+  TUpdateAttributeTask = class(TDatabaseTask)
+  private
+    FData: TMediaItem;
+    FAttr: Integer;
+  public
+    constructor Create(DBContext: IDBContext; Data: TMediaItem; Attr: Integer); overload;
+    destructor Destroy; override;
+    procedure Execute();
+    property Data: TMediaItem read FData;
+  end;
+
   TDatabaseDirectoriesUpdater = class(TDBThread)
   private
     FQuery: TDataSet;
@@ -121,6 +132,7 @@ type
     procedure AddItemsToDatabase(Items: TList<string>);
     procedure UpdateItemsInDatabase(Items: TList<TUpdateTask>);
     function UpdateDatabaseItems: Boolean;
+    function SearchForDeletedItems: Boolean;
     function GetIsValidThread: Boolean;
     function CanAddFileAutomatically(FileName: string): Boolean;
     property IsValidThread: Boolean read GetIsValidThread;
@@ -191,6 +203,9 @@ type
     procedure AddFileWithErrors(FileName: string);
     procedure RemoveFileWithErrors(FileName: string);
     procedure RemoveFilesWithErrors(Files: TList<string>; FileSizes: TList<Int64>);
+
+    procedure MarkItemAsDeleted(Item: TMediaItem);
+    procedure MarkItemAsExisted(Item: TMediaItem);
 
     procedure UpdateRemainingTime(Conter:  TSpeedEstimateCounter);
     property EstimateRemainingTime: TTime read GetEstimateRemainingTime;
@@ -273,6 +288,8 @@ begin
   StopCurrentUpdater;
   DeleteFile(DatabaseFolderPersistaseFileName(Context.CollectionFileName));
   DeleteFile(DatabaseErrorsPersistaseFileName(Context.CollectionFileName));
+  AppSettings.WriteDateTime(GetCollectionRootKey(Context.CollectionFileName), 'CheckForDeletedItems', 0);
+
   UpdaterStorage.CleanUpDatabase(nil);
 end;
 
@@ -464,6 +481,64 @@ begin
   end;
 end;
 
+function TDatabaseDirectoriesUpdater.SearchForDeletedItems: Boolean;
+var
+  SettingsRepository: ISettingsRepository;
+  MediaItem: TMediaItem;
+  SC: TSelectCommand;
+  FileName: string;
+  ID, BaseID, Attr: Integer;
+  FE: Boolean;
+begin
+  SettingsRepository := FDBContext.Settings;
+  Result := False;
+
+  BaseID := AppSettings.ReadInteger(GetCollectionRootKey(FDBContext.CollectionFileName), 'DeletedCheckPosition', 0);
+
+  SC := FDBContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TIntegerParameter.Create('ID'));
+    SC.AddParameter(TStringParameter.Create('FFileName'));
+    SC.AddParameter(TStringParameter.Create('Attr'));
+    SC.TopRecords := 500;
+
+    SC.AddWhereParameter(TIntegerParameter.Create('ID', BaseID, paGrateThan));
+
+    SC.OrderBy('ID');
+
+    SC.Execute;
+
+    while not SC.DS.EOF do
+    begin
+      if DBTerminating or not IsValidThread then
+        Exit(False);
+
+      ID := SC.DS.FindField('ID').AsInteger;
+      FileName := SC.DS.FindField('FFileName').AsString;
+      Attr := SC.DS.FindField('Attr').AsInteger;
+
+      FE := not StaticPath(FileName) or FileExistsSafe(FileName);
+      if FE and (Attr = Db_attr_not_exists) then
+        FDBContext.Media.SetAttribute(ID, Db_attr_norm);
+
+      if not FE and (Attr <> Db_attr_not_exists) then
+        FDBContext.Media.SetAttribute(ID, Db_attr_not_exists);
+
+      Result := True;
+
+      SC.DS.Next;
+    end;
+
+    if not Result then
+      AppSettings.WriteInteger(GetCollectionRootKey(FDBContext.CollectionFileName), 'DeletedCheckPosition', 0)
+    else
+      AppSettings.WriteInteger(GetCollectionRootKey(FDBContext.CollectionFileName), 'DeletedCheckPosition', SC.DS.FindField('ID').AsInteger);
+
+  finally
+    F(SC);
+  end;
+end;
+
 procedure TDatabaseDirectoriesUpdater.Execute;
 var
   FolderList: TList<TDatabaseDirectory>;
@@ -492,6 +567,15 @@ begin
 
     if not IsRescanMode then
       while UpdateDatabaseItems do;
+
+    if Now - AppSettings.ReadDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', 0) > 7 then
+    begin
+      if not IsRescanMode then
+        while SearchForDeletedItems do;
+
+      if not DBTerminating and IsValidThread then
+        AppSettings.WriteDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', Now);
+    end;
 
     Directories := TQueue<string>.Create;
     ItemsToAdd := TList<string>.Create;
@@ -927,6 +1011,26 @@ begin
   Result := True;
 end;
 
+{ TMaskAsDeletedTask }
+
+constructor TUpdateAttributeTask.Create(DBContext: IDBContext; Data: TMediaItem;
+  Attr: Integer);
+begin
+  inherited Create(DBContext, Data.FileName);
+  FData := Data.Copy
+end;
+
+destructor TUpdateAttributeTask.Destroy;
+begin
+  F(FData);
+  inherited;
+end;
+
+procedure TUpdateAttributeTask.Execute;
+begin
+  FDBContext.Media.SetAttribute(FData.ID, FAttr);
+end;
+
 { TAddTask }
 
 constructor TAddTask.Create(DBContext: IDBContext; Data: TMediaItem);
@@ -1277,6 +1381,26 @@ begin
   end;
 end;
 
+procedure TUpdaterStorage.MarkItemAsDeleted(Item: TMediaItem);
+begin
+  FSync.Enter;
+  try
+    FTasks.Add(TUpdateAttributeTask.Create(FContext, Item.Copy, Db_attr_not_exists));
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.MarkItemAsExisted(Item: TMediaItem);
+begin
+  FSync.Enter;
+  try
+    FTasks.Add(TUpdateAttributeTask.Create(FContext, Item.Copy, Db_attr_norm));
+  finally
+    FSync.Leave;
+  end;
+end;
+
 procedure TUpdaterStorage.UpdateRemainingTime(Conter: TSpeedEstimateCounter);
 begin
   FSync.Enter;
@@ -1439,6 +1563,7 @@ var
   UpdateTask: TUpdateTask;
   RemoveTask: TRemoveTask;
   RemoveDirectoryTask: TRemoveDirectoryTask;
+  UpdateAttributeTask: TUpdateAttributeTask;
   IdleCycle: Boolean;
 begin
   inherited;
@@ -1511,6 +1636,17 @@ begin
         F(RemoveDirectoryTask);
       end;
 
+      UpdateAttributeTask := UpdaterStorage.TakeOne<TUpdateAttributeTask>();
+      try
+        if RemoveDirectoryTask <> nil then
+        begin
+          IdleCycle := False;
+          UpdateAttributeTask.Execute;
+          FSpeedCounter.AddSpeedInterval(100 * 1);
+        end;
+      finally
+        F(UpdateAttributeTask);
+      end;
     except
       on e: Exception do
         EventLog(e);

@@ -77,7 +77,8 @@ uses
   uExplorerCollectionProvider,
   uPhotoShelf,
   uImageLoader,
-  uSessionPasswords;
+  uSessionPasswords,
+  uDatabaseDirectoriesUpdater;
 
 type
   TExplorerThread = class(TMultiCPUThread)
@@ -191,6 +192,7 @@ type
     procedure DoMultiProcessorTask; override;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
+    procedure CheckFileExistance(Info: TExplorerFileInfo);
     procedure SendPacket;
     procedure SendInfoToExplorer(Info: TExplorerFileInfo; var LastPacketTime: Cardinal);
     procedure SendPacketToExplorer;
@@ -1059,6 +1061,8 @@ begin
   //load icon
   GUIDParam := Info.SID;
   CurrentFile := Info.FileName;
+
+  CheckFileExistance(Info);
 
   if Info.FileType = EXPLORER_ITEM_FOLDER then
   begin
@@ -2696,6 +2700,18 @@ begin
     end else
       F(TempBitmap);
   end;
+end;
+
+procedure TExplorerThread.CheckFileExistance(Info: TExplorerFileInfo);
+begin
+  if Info.Tag = 1 then
+  begin
+    if Info.Attr = Db_attr_not_exists then
+      UpdaterStorage.MarkItemAsExisted(Info);
+  end;
+
+  if (Info.Tag = -1) and (Info.Attr <> Db_attr_not_exists) then
+    UpdaterStorage.MarkItemAsDeleted(Info);
 end;
 
 procedure TExplorerThread.CheckIsFileEncrypted;

@@ -2398,7 +2398,9 @@ begin
                 for J := 0 to MergeInfo.MergeItems.Count - 1 do
                 begin
                   TDatabaseUpdateManager.MergeWithExistedInfo(FContext, MergeInfo.BaseItem.ID, MergeInfo.MergeItems[J], False);
-                  ItemsToRemoveFromCollection.Add(MergeInfo.MergeItems[J].ID);
+
+                  if MergeInfo.MergeItems[J].ID <> MergeInfo.BaseItem.ID then
+                    ItemsToRemoveFromCollection.Add(MergeInfo.MergeItems[J].ID);
 
                   if FileExistsSafe(MergeInfo.MergeItems[J].FileName) and (AnsiLowerCase(MergeInfo.MergeItems[J].FileName) <> AnsiLowerCase(MergeInfo.BaseItem.FileName)) then
                     FilesToDelete.Add(MergeInfo.MergeItems[J].FileName);

@@ -444,6 +444,11 @@ begin
       UC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
       UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
 
+      if not FileExistsSafe(FileName) then
+        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_not_exists))
+      else
+        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_norm));
+
       HS := TMemoryStream.Create;
       HS.WriteBuffer(Res.Histogram, SizeOf(Res.Histogram));
       HS.Seek(0, soFromBeginning);
