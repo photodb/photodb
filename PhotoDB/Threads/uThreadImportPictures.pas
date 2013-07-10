@@ -24,6 +24,7 @@ uses
   uMemory,
   uPortableDeviceUtils,
   uConstants,
+  uLogger,
   uPortableClasses,
   uExplorerPortableDeviceProvider,
   uTranslate,
@@ -32,6 +33,8 @@ uses
   uImportPicturesUtils,
   uSettings,
   uDBThread,
+  uDBContext,
+  uCollectionUtils,
   uDatabaseDirectoriesUpdater;
 
 type
@@ -77,6 +80,7 @@ type
     FDate: TDateTime;
     FAutoSplit: Boolean;
     FNamePattern: string;
+    FDBContext: IDBContext;
     function GetCount: Integer;
     function GetTaskByIndex(Index: Integer): TImportPicturesTask;
     procedure SetSource(const Value: TPathItem);
@@ -96,6 +100,7 @@ type
     property TasksCount: Integer read GetCount;
     property Tasks[Index: Integer]: TImportPicturesTask read GetTaskByIndex;
     property AutoSplit: Boolean read FAutoSplit write FAutoSplit;
+    property DBContext: IDBContext read FDBContext write FDBContext;
   end;
 
   TThreadImportPictures = class(TDBThread)
@@ -407,6 +412,7 @@ var
   FO: TFileOperationTask;
   Items: TPathItemCollection;
   PFO: TPathFeatureDeleteOptions;
+  FinalDirectories: TStrings;
 
   procedure AddToList(Item: TPathItem);
   var
@@ -431,192 +437,128 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitializeEx(nil, COINIT_MULTITHREADED);
   try
-
-    FTotalItems := 0;
-    FTotalBytes := 0;
-    FBytesCopyed := 0;
-    FCopiedItems := 0;
-
-    if FOptions.TasksCount = 0 then
-      Exit;
-
-    if FOptions.Tasks[0].OperationsCount = 0 then
-      Exit;
-
-    Source := FOptions.Source.Path;
-
-    if IsDevicePath(Source) then
-      Delete(Source, 1, Length(cDevicesPath) + 1);
-
-    HR := SynchronizeEx(
-      procedure
-      begin
-        Application.CreateForm(TFormMoveFilesProgress, FProgress);
-        FProgress.Title := L('Calculating...');
-        FProgress.Options['Name'].SetDisplayName(L('Name')).SetValue(L('Calculating...'));
-        FProgress.Options['From'].SetDisplayName(L('From')).SetValue(Source).SetImportant(True);
-        FProgress.Options['To'].SetDisplayName(L('To')).SetValue(FOptions.Destination.Path).SetImportant(True);
-        FProgress.Options['Items remaining'].SetDisplayName(L('Items remaining')).SetValue(L('Calculating...'));
-        FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
-        FProgress.Options['Speed'].SetDisplayName(L('Speed')).SetValue(L('Calculating...'));
-        FProgress.IsCalculating := True;
-        FProgress.RefreshOptionList;
-        FProgress.Show;
-      end
-    );
+    CoInitializeEx(nil, COINIT_MULTITHREADED);
+    FinalDirectories := TStringList.Create;
     try
 
-      FSpeedCounter := TSpeedEstimateCounter.Create(2 * 1000);
+      FTotalItems := 0;
+      FTotalBytes := 0;
+      FBytesCopyed := 0;
+      FCopiedItems := 0;
+
+      if FOptions.TasksCount = 0 then
+        Exit;
+
+      if FOptions.Tasks[0].OperationsCount = 0 then
+        Exit;
+
+      Source := FOptions.Source.Path;
+
+      if IsDevicePath(Source) then
+        Delete(Source, 1, Length(cDevicesPath) + 1);
+
+      HR := SynchronizeEx(
+        procedure
+        begin
+          Application.CreateForm(TFormMoveFilesProgress, FProgress);
+          FProgress.Title := L('Calculating...');
+          FProgress.Options['Mode'].SetDisplayName(L('Import mode')).SetValue(IIF(FOptions.DeleteFilesAfterImport, L('Move'), L('Copy')));
+          FProgress.Options['Name'].SetDisplayName(L('Name')).SetValue(L('Calculating...'));
+          FProgress.Options['From'].SetDisplayName(L('From')).SetValue(Source).SetImportant(True);
+          FProgress.Options['To'].SetDisplayName(L('To')).SetValue(FOptions.Destination.Path).SetImportant(True);
+          FProgress.Options['Items remaining'].SetDisplayName(L('Items remaining')).SetValue(L('Calculating...'));
+          FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
+          FProgress.Options['Speed'].SetDisplayName(L('Speed')).SetValue(L('Calculating...'));
+          FProgress.IsCalculating := True;
+          FProgress.RefreshOptionList;
+          FProgress.Show;
+        end
+      );
       try
 
-        if HR then
-        begin
-          FileOperations := TList<TFileOperationTask>.Create;
-          try
+        FSpeedCounter := TSpeedEstimateCounter.Create(2 * 1000);
+        try
 
-            CurrentLevel := TList<TPathItem>.Create;
-            NextLevel := TList<TPathItem>.Create;
+          if HR then
+          begin
+            FileOperations := TList<TFileOperationTask>.Create;
             try
 
-              for I := 0 to FOptions.TasksCount - 1 do
-              begin
-                for J := 0 to FOptions.Tasks[I].OperationsCount - 1 do
+              CurrentLevel := TList<TPathItem>.Create;
+              NextLevel := TList<TPathItem>.Create;
+              try
+
+                for I := 0 to FOptions.TasksCount - 1 do
                 begin
-                  FO := FOptions.Tasks[I].Operations[J];
-                  if FO.IsDirectory then
-                    NextLevel.Add(FO.Source.Copy)
-                  else if IsGraphicFile(FO.Source.Path) or not FOptions.OnlySupportedImages then
+                  for J := 0 to FOptions.Tasks[I].OperationsCount - 1 do
                   begin
-                    Inc(FTotalItems);
-                    Inc(FTotalBytes, FO.Source.FileSize);
-                    FileOperations.Add(TFileOperationTask.Create(FO.Source, FO.Destination));
+                    FO := FOptions.Tasks[I].Operations[J];
+                    if FO.IsDirectory then
+                      NextLevel.Add(FO.Source.Copy)
+                    else if IsGraphicFile(FO.Source.Path) or not FOptions.OnlySupportedImages then
+                    begin
+                      Inc(FTotalItems);
+                      Inc(FTotalBytes, FO.Source.FileSize);
+                      FileOperations.Add(TFileOperationTask.Create(FO.Source, FO.Destination));
+                    end;
                   end;
                 end;
-              end;
 
-              while NextLevel.Count > 0 do
-              begin
-                FreeList(CurrentLevel, False);
-                CurrentLevel.AddRange(NextLevel);
-                NextLevel.Clear;
-
-                for I := 0 to CurrentLevel.Count - 1 do
+                while NextLevel.Count > 0 do
                 begin
-                  if Terminated then
-                    Break;
-                  Childs := TPathItemCollection.Create;
-                  try
-                    CurrentLevel[I].Provider.FillChilds(Self, CurrentLevel[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+                  FreeList(CurrentLevel, False);
+                  CurrentLevel.AddRange(NextLevel);
+                  NextLevel.Clear;
 
-                    for J := 0 to Childs.Count - 1 do
-                    begin
-                      if Childs[J].IsDirectory then
+                  for I := 0 to CurrentLevel.Count - 1 do
+                  begin
+                    if Terminated then
+                      Break;
+                    Childs := TPathItemCollection.Create;
+                    try
+                      CurrentLevel[I].Provider.FillChilds(Self, CurrentLevel[I], Childs, PATH_LOAD_NO_IMAGE or PATH_LOAD_FAST, 0);
+
+                      for J := 0 to Childs.Count - 1 do
                       begin
-                        NextLevel.Add(Childs[J].Copy);
-                      end else
-                      begin
-                        if IsGraphicFile(Childs[J].Path) or not FOptions.OnlySupportedImages then
+                        if Childs[J].IsDirectory then
                         begin
-                          AddToList(Childs[J]);
+                          NextLevel.Add(Childs[J].Copy);
+                        end else
+                        begin
+                          if IsGraphicFile(Childs[J].Path) or not FOptions.OnlySupportedImages then
+                          begin
+                            AddToList(Childs[J]);
 
-                          Inc(FTotalBytes, Childs[J].FileSize);
-                          Inc(FTotalItems);
+                            Inc(FTotalBytes, Childs[J].FileSize);
+                            Inc(FTotalItems);
 
-                          //notify updated size
-                          SynchronizeEx(
-                            procedure
-                            begin
-                              FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems, SizeInText(FTotalBytes)]));
-                              if FProgress.IsCanceled then
-                                Terminate;
-                            end
-                          );
+                            //notify updated size
+                            SynchronizeEx(
+                              procedure
+                              begin
+                                FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems, SizeInText(FTotalBytes)]));
+                                if FProgress.IsCanceled then
+                                  Terminate;
+                              end
+                            );
+                          end;
                         end;
                       end;
+
+                    finally
+                      Childs.FreeItems;
+                      F(Childs);
                     end;
-
-                  finally
-                    Childs.FreeItems;
-                    F(Childs);
                   end;
-                end;
 
-              end
+                end
 
-            finally
-              FreeList(CurrentLevel);
-              FreeList(NextLevel);
-            end;
-
-            FSpeedCounter.Reset;
-
-            SynchronizeEx(
-              procedure
-              begin
-                FProgress.Title := FormatEx(L('Importing {0} items ({1})'), [FTotalItems, SizeInText(FTotalBytes)]);
-                FProgress.ProgressMax := FTotalBytes;
-                FProgress.ProgressValue := 0;
-                FProgress.IsCalculating := False;
-                FProgress.UpdateOptions(True);
-              end
-            );
-
-            //calculating done,
-            for I := 0 to FileOperations.Count - 1 do
-            begin
-              if Terminated then
-                Break;
-
-              FO := FileOperations[I];
-              if FO.IsDirectory then
-                Continue;
-
-              FCurrentItem := FO.Source;
-
-              ErrorCount := 0;
-              while True do
-              begin
-                try
-                  if IsDevicePath(FO.Source.Path) then
-                    CopyDeviceFile(FO)
-                  else
-                    CopyFSFile(FO);
-                except
-                  on e: Exception do
-                  begin
-                    Inc(ErrorCount);
-                    if ErrorCount < 5 then
-                    begin
-                      Sleep(100);
-                      Continue;
-                    end;
-
-                    FErrorMessage := e.Message;
-                    Synchronize(ShowErrorMessage);
-
-                    if FDialogResult = IDABORT then
-                    begin
-                      Exit;
-                    end else if FDialogResult = IDRETRY then
-                      Continue
-                    else if FDialogResult = IDIGNORE then
-                      Break;
-                  end;
-                end;
-
-                Break;
+              finally
+                FreeList(CurrentLevel);
+                FreeList(NextLevel);
               end;
 
-            end;
-
-            if FOptions.DeleteFilesAfterImport then
-            begin
-              FBytesCopyed := 0;
-              FCopiedItems := 0;
-              F(FSpeedCounter);
-              FSpeedCounter := TSpeedEstimateCounter.Create(10000);
               FSpeedCounter.Reset;
 
               SynchronizeEx(
@@ -625,14 +567,12 @@ begin
                   FProgress.Title := FormatEx(L('Importing {0} items ({1})'), [FTotalItems, SizeInText(FTotalBytes)]);
                   FProgress.ProgressMax := FTotalBytes;
                   FProgress.ProgressValue := 0;
-                  FProgress.Options['Name'].SetVisible(False);
-                  FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems, SizeInText(FTotalBytes)]));
-                  FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
-                  FProgress.Options['Speed'].SetVisible(False);
-                  FProgress.RefreshOptionList;
+                  FProgress.IsCalculating := False;
+                  FProgress.UpdateOptions(True);
                 end
               );
 
+              //calculating done,
               for I := 0 to FileOperations.Count - 1 do
               begin
                 if Terminated then
@@ -644,82 +584,161 @@ begin
 
                 FCurrentItem := FO.Source;
 
-                //delete item...
-                PFO := TPathFeatureDeleteOptions.Create(True);
-                try
-                  Items := TPathItemCollection.Create;
+                ErrorCount := 0;
+                while True do
+                begin
                   try
-                    Items.Add(FCurrentItem);
-                    FCurrentItem.Provider.ExecuteFeature(Self, Items, PATH_FEATURE_DELETE, PFO);
-                  finally
-                    F(Items);
+                    if IsDevicePath(FO.Source.Path) then
+                      CopyDeviceFile(FO)
+                    else
+                      CopyFSFile(FO);
+
+                    FinalDirectories.Add(FO.Destination.Path)
+                  except
+                    on e: Exception do
+                    begin
+                      Inc(ErrorCount);
+                      if ErrorCount < 5 then
+                      begin
+                        Sleep(100);
+                        Continue;
+                      end;
+
+                      FErrorMessage := e.Message;
+                      Synchronize(ShowErrorMessage);
+
+                      if FDialogResult = IDABORT then
+                      begin
+                        Exit;
+                      end else if FDialogResult = IDRETRY then
+                        Continue
+                      else if FDialogResult = IDIGNORE then
+                        Break;
+                    end;
                   end;
-                finally
-                  F(PFO);
+
+                  Break;
                 end;
 
-                Inc(FBytesCopyed, FCurrentItem.FileSize);
-                Inc(FCopiedItems);
-                FSpeedCounter.AddSpeedInterval(1);
+              end;
+
+              if FOptions.DeleteFilesAfterImport then
+              begin
+                FBytesCopyed := 0;
+                FCopiedItems := 0;
+                F(FSpeedCounter);
+                FSpeedCounter := TSpeedEstimateCounter.Create(10000);
+                FSpeedCounter.Reset;
+
                 SynchronizeEx(
                   procedure
                   begin
-                    FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalItems - FCopiedItems)));
-                    FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
-                    FProgress.ProgressValue := FBytesCopyed;
-                    FProgress.UpdateOptions(False);
-                    if FProgress.IsCanceled then
-                      Terminate;
+                    FProgress.Title := FormatEx(L('Importing {0} items ({1})'), [FTotalItems, SizeInText(FTotalBytes)]);
+                    FProgress.ProgressMax := FTotalBytes;
+                    FProgress.ProgressValue := 0;
+                    FProgress.Options['Name'].SetVisible(False);
+                    FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems, SizeInText(FTotalBytes)]));
+                    FProgress.Options['Time remaining'].SetDisplayName(L('Time remaining')).SetValue(L('Calculating...'));
+                    FProgress.Options['Speed'].SetVisible(False);
+                    FProgress.RefreshOptionList;
+                  end
+                );
+
+                for I := 0 to FileOperations.Count - 1 do
+                begin
+                  if Terminated then
+                    Break;
+
+                  FO := FileOperations[I];
+                  if FO.IsDirectory then
+                    Continue;
+
+                  FCurrentItem := FO.Source;
+
+                  //delete item...
+                  PFO := TPathFeatureDeleteOptions.Create(True);
+                  try
+                    Items := TPathItemCollection.Create;
+                    try
+                      Items.Add(FCurrentItem);
+                      FCurrentItem.Provider.ExecuteFeature(Self, Items, PATH_FEATURE_DELETE, PFO);
+                    finally
+                      F(Items);
+                    end;
+                  finally
+                    F(PFO);
+                  end;
+
+                  Inc(FBytesCopyed, FCurrentItem.FileSize);
+                  Inc(FCopiedItems);
+                  FSpeedCounter.AddSpeedInterval(1);
+                  SynchronizeEx(
+                    procedure
+                    begin
+                      FProgress.Options['Time remaining'].SetValue(TimeIntervalInString(FSpeedCounter.GetTimeRemaining(FTotalItems - FCopiedItems)));
+                      FProgress.Options['Items remaining'].SetValue(FormatEx('{0} ({1})', [FTotalItems - FCopiedItems, SizeInText(FTotalBytes - FBytesCopyed)]));
+                      FProgress.ProgressValue := FBytesCopyed;
+                      FProgress.UpdateOptions(False);
+                      if FProgress.IsCanceled then
+                        Terminate;
+                    end
+                  );
+                end;
+              end;
+
+              if FOptions.AddToCollection then
+              begin
+                for I := 0 to FileOperations.Count - 1 do
+                begin
+
+                  FO := FileOperations[I];
+                  if FO.IsDirectory then
+                    Continue;
+
+                  if not IsFileInCollectionDirectories(FOptions.DBContext.CollectionFileName, FO.Destination.Path, False) then
+                    UpdaterStorage.AddFile(FO.Destination.Path);
+                end;
+              end;
+
+              if (AppSettings.ReadBool('ImportPictures', 'OpenDestination', True)) then
+              begin
+                SynchronizeEx(
+                  procedure
+                  begin
+                    with ExplorerManager.NewExplorer(False) do
+                    begin
+                      SetPath(GetCommonDirectory(FinalDirectories));
+                      Show;
+                    end;
                   end
                 );
               end;
+
+            finally
+              FreeList(FileOperations);
             end;
-
-            //TODO: check if fils in collection directory - they will be added automatically
-            if FOptions.AddToCollection then
-            begin
-              for I := 0 to FileOperations.Count - 1 do
-              begin
-
-                FO := FileOperations[I];
-                if FO.IsDirectory then
-                  Continue;
-
-                UpdaterStorage.AddFile(FO.Destination.Path);
-              end;
-            end;
-
-            if (AppSettings.ReadBool('ImportPictures', 'OpenDestination', True)) then
-            begin
-              SynchronizeEx(
-                procedure
-                begin
-                  with ExplorerManager.NewExplorer(False) do
-                  begin
-                    SetPath(FOptions.Destination.Path);
-                    Show;
-                  end;
-                end
-              );
-            end;
-
-          finally
-            FreeList(FileOperations);
           end;
+        finally
+          F(FSpeedCounter);
         end;
       finally
-        F(FSpeedCounter);
+        SynchronizeEx(
+          procedure
+          begin
+            R(FProgress);
+          end
+        );
       end;
     finally
-      SynchronizeEx(
-        procedure
-        begin
-          R(FProgress);
-        end
-      );
+      F(FinalDirectories);
+      CoUninitialize;
     end;
-  finally
-    CoUninitialize;
+  except
+    on e: Exception do
+    begin
+      EventLog(e);
+      TThread.Synchronize(nil, procedure begin Application.HandleException(e); end);
+    end;
   end;
 end;
 

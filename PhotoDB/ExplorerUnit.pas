@@ -4865,6 +4865,10 @@ var
 begin
   if Key = Chr(VK_RETURN) then
     EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
+
+  if Key = Chr(VK_SPACE) then
+    if not ElvMain.EditManager.Editing and (FActiveRightTab = ertsPreview) then
+      TbPreviewNextClick(Self);
 end;
 
 procedure TExplorerForm.AeMainMessage(var Msg: tagMSG; var Handled: Boolean);
@@ -6397,7 +6401,7 @@ begin
   if (GetCurrentPathW.PType = EXPLORER_ITEM_FOLDER) or (GetCurrentPathW.PType = EXPLORER_ITEM_DRIVE) or (GetCurrentPathW.PType = EXPLORER_ITEM_SHARE) then
   begin
     Paste1.Visible := True;
-    Addfolder1.Visible := not FolderView and not IsFileInCollectionDirectories(FContext.CollectionFileName, FCurrentPath);
+    Addfolder1.Visible := not FolderView and not IsFileInCollectionDirectories(FContext.CollectionFileName, FCurrentPath, True);
     MakeNew1.Visible := True;
   end;
 
@@ -8252,7 +8256,7 @@ begin
   OldDir := GetCurrentPath;
   Path := WPath.Path;
 
-  ElvMain.BackGround.Enabled := IsFileInCollectionDirectories(FContext.CollectionFileName, Path)
+  ElvMain.BackGround.Enabled := IsFileInCollectionDirectories(FContext.CollectionFileName, Path, True)
     or (WPath.PType = EXPLORER_ITEM_PERSON_LIST)
     or (WPath.PType = EXPLORER_ITEM_PERSON)
     or (WPath.PType = EXPLORER_ITEM_GROUP_LIST)

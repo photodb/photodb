@@ -14,10 +14,10 @@ object FormImportImages: TFormImportImages
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  Scaled = False
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  Scaled = False
   DesignSize = (
     685
     652)

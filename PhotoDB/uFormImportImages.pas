@@ -62,6 +62,7 @@ uses
   uList64,
   uImportPicturesUtils,
   uBox,
+  uDBManager,
   uProgramStatInfo,
   uFormInterfaces;
 
@@ -303,7 +304,7 @@ type
     { Public declarations }
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
-    procedure FinishScan;
+    procedure FinishScan(Canceled: Boolean);
     procedure AddItems(Items: TList<TScanItem>);
     procedure AddPreviews(FPacketInfos: TList<TPathItem>; FPacketImages: TBitmapImageList);
     procedure UpdatePreview(Item: TPathItem; var Bitmap: TBitmap);
@@ -1471,6 +1472,7 @@ begin
   Options.AddToCollection := AppSettings.ReadBool('ImportPictures', 'AddToCollection', True);
   Options.Source := PeImportFromPath.PathEx;
   Options.Destination := PeImportToPath.PathEx;
+  Options.DBContext := DBManager.DBContext;
   Task := TImportPicturesTask.Create;
   Options.AddTask(Task);
 
@@ -1638,25 +1640,28 @@ begin
   DrawDBListViewItem(TEasyListView(Sender), ACanvas, Item, ARect, FBitmapImageList, Y, False, nil, False);
 end;
 
-procedure TFormImportImages.FinishScan;
+procedure TFormImportImages.FinishScan(Canceled: Boolean);
 var
   SI: TBaseSelectItem;
   Data: TList<TPathItem>;
 
 begin
   HideLoadingSign;
-  FIsReady := True;
+  FIsReady := not Canceled;
+
+  if FMode = piModeExtended then
+    BtnOk.Enabled := (FSeries.Count > 0) and FIsReady;
+
   if FMode = piModeSimple then
   begin
     Data := TList<TPathItem>.Create;
-    for SI in FSeries.InnerItems do
-      SI.FillItems(Data);
+      for SI in FSeries.InnerItems do
+        SI.FillItems(Data);
 
     NewFormState;
     ClearItems;
     TImportSeriesPreview.Create(Self, Data, 125);
-  end else if FMode = piModeExtended then
-    BtnOk.Enabled := FSeries.Count > 0;
+  end;
 end;
 
 procedure TFormImportImages.FormClose(Sender: TObject;
@@ -2030,7 +2035,7 @@ begin
   FIsDisplayingPreviews := False;
   AppSettings.WriteInteger('ImportPictures', 'Mode', Integer(FMode));
   SwitchMode;
-  FinishScan;
+  FinishScan(True);
 end;
 
 procedure TFormImportImages.WlResetDateClick(Sender: TObject);

@@ -405,9 +405,12 @@ begin
       FW7TaskBar.SetProgressState(Handle, TBPF_NORMAL);
   end;
 
+  if ProgressValue > ProgressMax then
+    ProgressValue := ProgressMax;
+
   PbMain.Max := MAXWORD;
   if ProgressMax > 0 then
-    PbMain.Position := Round(MAXWORD * ProgressValue / ProgressMax)
+    PbMain.Position := Round(MAXWORD * 1.0 * ProgressValue / ProgressMax)
   else
     PbMain.Position := 0;
   if FW7TaskBar <> nil then

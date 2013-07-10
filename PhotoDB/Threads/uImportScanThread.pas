@@ -105,7 +105,7 @@ begin
         finally
           SynchronizeEx(procedure
           begin
-            TFormImportImages(OwnerForm).FinishScan;
+            TFormImportImages(OwnerForm).FinishScan(Terminated);
           end
           );
         end;

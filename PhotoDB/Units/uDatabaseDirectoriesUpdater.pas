@@ -380,7 +380,7 @@ var
 begin
   Context := DBManager.DBContext;
 
-  if IsFileInCollectionDirectories(Context.CollectionFileName, DirectoryPath) then
+  if IsFileInCollectionDirectories(Context.CollectionFileName, DirectoryPath, True) then
     TDatabaseDirectoriesUpdater.Create(DBManager.DBContext, DirectoryPath);
 end;
 
@@ -1196,7 +1196,7 @@ var
   FolderList: TList<TDatabaseDirectory>;
   DD: TDatabaseDirectory;
 begin
-  if IsFileInCollectionDirectories(FContext.CollectionFileName, DirectoryPath) then
+  if IsFileInCollectionDirectories(FContext.CollectionFileName, DirectoryPath, True) then
     Exit;
 
   FolderList := TList<TDatabaseDirectory>.Create;

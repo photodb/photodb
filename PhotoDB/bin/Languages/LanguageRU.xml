@@ -1722,6 +1722,9 @@
 	<translate name="Import only supported images" value="Импорт только поддерживаемых типов файлов"/>
 	<translate name="Delete files after import" value="Удалить файлы после импорта"/>
 	<translate name="Add files to collection after copying files" value="Добавить в коллекцию после импорта"/>
+	<translate name="Import mode" value="Режим импорта"/>
+	<translate name="Copy" value="Копия"/>
+	<translate name="Move" value="Перемещение"/>
 	<translate name="Importing {0} items ({1})" value="Импорт {0} объектов ({1})"/>
 	<translate name="Error processing item {0}: {1}" value="Ошибка обработки объекта {0}: {1}"/>
 	<translate name="Simple mode" value="Простой режим"/>

@@ -33,7 +33,7 @@ type
 
 procedure SaveDatabaseSyncDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
 procedure ReadDatabaseSyncDirectories(FolderList: TList<TDatabaseDirectory>; CollectionFile: string);
-function IsFileInCollectionDirectories(CollectionFile: string; FileName: string): Boolean;
+function IsFileInCollectionDirectories(CollectionFile: string; FileName: string; IsDirectory: Boolean): Boolean;
 procedure CheckDefaultSyncDirectoryForCollection(CollectionFile: string);
 
 implementation
@@ -175,7 +175,7 @@ begin
   CollectionEvents.DoIDEvent(nil, 0, [EventID_CollectionFoldersChanged], EventValue);
 end;
 
-function IsFileInCollectionDirectories(CollectionFile: string; FileName: string): Boolean;
+function IsFileInCollectionDirectories(CollectionFile: string; FileName: string; IsDirectory: Boolean): Boolean;
 var
   FolderList: TList<TDatabaseDirectory>;
   I: Integer;
@@ -187,8 +187,10 @@ begin
   if FileName = '' then
     Exit;
 
-
-  FileDirectory := AnsiLowerCase(ExtractFileDir(FileName));
+  if IsDirectory then
+    FileDirectory := FileName
+  else
+    FileDirectory := AnsiLowerCase(ExtractFileDir(FileName));
 
   FolderList := TList<TDatabaseDirectory>.Create;
   try
@@ -197,7 +199,7 @@ begin
     for I := 0 to FolderList.Count - 1 do
     begin
       S := ExcludeTrailingPathDelimiter(AnsiLowerCase(FolderList[I].Path));
-      if FileDirectory.StartsWith(S) then
+      if AnsiLowerCase(FileDirectory).StartsWith(S) then
         Exit(True);
     end;
   finally
