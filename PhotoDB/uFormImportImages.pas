@@ -1647,7 +1647,8 @@ var
 
 begin
   HideLoadingSign;
-  FIsReady := not Canceled;
+  if not Canceled then
+    FIsReady := True;
 
   if FMode = piModeExtended then
     BtnOk.Enabled := (FSeries.Count > 0) and FIsReady;
