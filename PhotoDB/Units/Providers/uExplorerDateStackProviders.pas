@@ -206,7 +206,7 @@ var
 
   function ImagesFilter: string;
   begin
-    Result := FormatEx('(Attr <> {0} and DateToAdd > ' + IntToStr(cMinEXIFYear) + ' and IsDate = True)', [Db_attr_not_exists]);
+    Result := FormatEx('(Attr <> {0} AND Attr <> {1} AND DateToAdd > ' + IntToStr(cMinEXIFYear) + ' and IsDate = True)', [Db_attr_missed, Db_attr_deleted]);
   end;
 
   function PersonsJoin: string;

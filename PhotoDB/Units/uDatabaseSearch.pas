@@ -326,7 +326,7 @@ begin
       begin
         SystemQuery := True;
         Result.Query := Format('SELECT %s FROM $DB$ WHERE ', [FIELDS]);
-        ApplyFilter(Result, Db_attr_not_exists);
+        ApplyFilter(Result, Db_attr_missed);
       end;
 
       if AnsiLowerCase(Sysaction) = AnsiLowerCase('Duplicates') then
@@ -646,11 +646,11 @@ procedure TDatabaseSearch.ApplyFilter(Params: TDBQueryParams; Attr: Integer);
 begin
   case Attr of
     db_attr_norm:
-      Params.Query := Params.Query + Format(' AND (Attr <> %d)',[db_attr_not_exists]);
+      Params.Query := Params.Query + Format(' AND (Attr <> %d) AND (Attr <> %d)', [Db_attr_missed, Db_attr_deleted]);
     db_attr_duplicate:
       Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_duplicate]);
-    db_attr_not_exists:
-      Params.Query := Params.Query + Format(' (Attr = %d)', [db_attr_not_exists]);
+    Db_attr_missed:
+      Params.Query := Params.Query + Format(' (Attr = %d)', [Db_attr_missed]);
   end;
 
   if not FSearchParams.ShowPrivate then
@@ -680,7 +680,7 @@ begin
     Result := Result + ' AND (Access = 0)';
 
   if not ShowDeleted then
-    Result := Result + ' AND (Attr<>' + Inttostr(Db_attr_not_exists) + ')';
+    Result := Result + ' AND (Attr<>' + IntToStr(Db_attr_missed) + ')' + ' AND (Attr<>' + IntToStr(Db_attr_deleted) + ')';
 
   Params.Query := Params.Query + Result;
 end;

@@ -1919,6 +1919,7 @@ begin
   ExeParams := FUserMenu[(Sender as TMenuItem).Tag].Parameters;
 
   DllApplication := Pos('rundll32', AnsiLowerCase(ExeFile)) > 0;
+  Params := '';
 
   for I := 0 to Finfo.Count - 1 do
     if FInfo[I].Selected then
@@ -1929,7 +1930,7 @@ begin
         Break;
       end;
 
-      Params := ' "' + Finfo[I].FileName + '" ';
+      Params := Params + ' "' + Finfo[I].FileName + '" ';
     end;
 
   Params := Trim(Params);

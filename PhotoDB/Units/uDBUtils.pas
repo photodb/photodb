@@ -55,7 +55,7 @@ type
 
 procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
-  OldFileName, NewFileName: string; Ask: Boolean = True);
+  OldFileName, NewFileName: string);
 function RenameFileWithDB(Context: IDBContext; CallBack: TDBKernelCallBack; OldFileName, NewFileName: string; ID: Integer; OnlyBD: Boolean): Boolean;
 
 function UpdateImageRecord(DBContext: IDBContext; Caller: TDBForm; FileName: string; ID: Integer): Boolean;
@@ -161,7 +161,7 @@ begin
     FQuery := Context.CreateQuery;
     try
 
-    //TODO: review
+      //TODO: review
       NewFileName := ExcludeTrailingBackslash(NewFileName);
       if not FolderView then
       begin
@@ -203,16 +203,17 @@ end;
 
 procedure RenameFolderWithDB(Context: IDBContext; CallBack: TDBKernelCallBack;
   CreateProgress: TProgressValueHandler; ShowProgress: TNotifyEvent; UpdateProgress: TProgressValueHandler; CloseProgress: TNotifyEvent;
-  OldFileName, NewFileName: string; Ask: Boolean = True);
+  OldFileName, NewFileName: string);
 var
   ProgressWindow: TProgressActionForm;
-  FQuery, SetQuery: TDataSet;
+  FQuery: TDataSet;
+  UC: TUpdateCommand;
   EventInfo: TEventValues;
-  Crc: Cardinal;
-  I, Int: Integer;
-  FFolder, DBFolder, NewPath, OldPath, Sql, Dir, S: string;
+  I: Integer;
+  FFolder, DBFolder, NewPath, OldPath, Dir: string;
   Dirs: TStrings;
 begin
+  ProgressWindow := nil;
   if DirectoryExists(NewFileName) or DirectoryExists(OldFileName) then
   begin
     OldFileName := ExcludeTrailingBackslash(OldFileName);
@@ -233,10 +234,8 @@ begin
       OpenDS(FQuery);
       FQuery.First;
       if FQuery.RecordCount > 0 then
-        if Ask or (ID_OK = MessageBoxDB(GetActiveWindow, Format(TA('This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?', 'Explorer'),
-              [OldFileName, FQuery.RecordCount]), TA('Warning'), TD_BUTTON_OKCANCEL, TD_ICON_WARNING)) then
-        begin
-
+      begin
+        try
           ProgressWindow := nil;
           if not Assigned(CreateProgress) then
           begin
@@ -247,8 +246,6 @@ begin
             CreateProgress(FQuery.RecordCount);
 
           try
-            SetQuery := Context.CreateQuery;
-
             if FQuery.RecordCount > 1 then
             begin
               if not Assigned(ShowProgress) then
@@ -260,65 +257,63 @@ begin
                 ShowProgress(nil);
             end;
 
-            try
-              for I := 1 to FQuery.RecordCount do
-              begin
+            for I := 1 to FQuery.RecordCount do
+            begin
 
-                NewPath := FQuery.FieldByName('FFileName').AsString;
-                Delete(NewPath, 1, Length(OldFileName));
-                NewPath := NewFileName + NewPath;
-                OldPath := FQuery.FieldByName('FFileName').AsString;
+              NewPath := FQuery.FieldByName('FFileName').AsString;
+              Delete(NewPath, 1, Length(OldFileName));
+              NewPath := NewFileName + NewPath;
+              OldPath := FQuery.FieldByName('FFileName').AsString;
 
-                if not FolderView then
-                begin
-                  CalcStringCRC32(AnsiLowerCase(NewFileName), Crc);
-                end else
-                begin
-                  S := ExcludeTrailingBackslash(NewFileName);
-                  Delete(S, 1, Length(ProgramDir));
-                  CalcStringCRC32(AnsiLowerCase(S), Crc);
-                  NewPath := AnsiLowerCase(IncludeTrailingBackslash(S) + ExtractFileName(FQuery.FieldByName('FFileName').AsString));
-                end;
-                Int := Integer(Crc);
-                Sql := 'UPDATE $DB$ SET FFileName= ' + AnsiLowerCase(NormalizeDBString(NewPath))
-                  + ' , FolderCRC = ' + IntToStr(Int) + ' where ID = ' + Inttostr(FQuery.FieldByName('ID').AsInteger);
-                SetSQL(SetQuery, Sql);
+              UC := Context.CreateUpdate(ImageTable);
+              try
+                UC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(NewPath)));
+                UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(NewPath, True)));
 
-                ExecSQL(SetQuery);
-                EventInfo.FileName := OldPath;
-                EventInfo.NewName := NewPath;
-                CallBack(0, [EventID_Param_Name], EventInfo);
-                try
-
-                  if (I < 10) or (I mod 10 = 0) then
-                  begin
-                    if not Assigned(UpdateProgress) then
-                    begin
-                      ProgressWindow.XPosition := I;
-                      ProgressWindow.Repaint;
-                    end else
-                      UpdateProgress(I);
-                  end;
-
-                except
-                end;
-                FQuery.Next;
+                UC.AddWhereParameter(TIntegerParameter.Create('ID', FQuery.FieldByName('ID').AsInteger));
+                UC.Execute;
+              finally
+                F(UC);
               end;
-            except
+
+              EventInfo.FileName := OldPath;
+              EventInfo.NewName := NewPath;
+              CallBack(0, [EventID_Param_Name], EventInfo);
+              try
+
+                if (I < 10) or (I mod 10 = 0) then
+                begin
+                  if not Assigned(UpdateProgress) then
+                  begin
+                    ProgressWindow.XPosition := I;
+                    ProgressWindow.Repaint;
+                  end else
+                    UpdateProgress(I);
+                end;
+
+              except
+                on e: Exception do
+                  MessageBoxDB(0, e.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+              end;
+              FQuery.Next;
             end;
-            FreeDS(SetQuery);
-          finally
-            if not Assigned(CloseProgress) then
-              ProgressWindow.Release
-            else
-              CloseProgress(nil);
+          except
+            on e: Exception do
+              MessageBoxDB(0, e.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
           end;
 
+        finally
+          if not Assigned(CloseProgress) then
+            ProgressWindow.Release
+          else
+            CloseProgress(nil);
         end;
+      end;
     finally
       FreeDS(FQuery);
     end;
   end;
+
   Dir := '';
   OldFileName := ExcludeTrailingBackslash(OldFileName);
   NewFileName := ExcludeTrailingBackslash(NewFileName);
@@ -445,7 +440,7 @@ begin
       UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
 
       if not FileExistsSafe(FileName) then
-        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_not_exists))
+        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_missed))
       else
         UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_norm));
 
@@ -525,7 +520,7 @@ begin
       if Res.Count > 1 then
       begin
         for I := 0 to Res.Count - 1 do
-          if (Res.IDs[I] <> Info.ID) and (Res.Attr[I] <> Db_attr_not_exists) then
+          if (Res.IDs[I] <> Info.ID) and (Res.Attr[I] <> Db_attr_missed) then
           begin
             Attribute := Db_attr_duplicate;
             Break;
@@ -748,7 +743,7 @@ begin
     if FileExistsSafe(OutTable.FieldByName('FFileName').AsString) then
       InTable.FieldByName('Attr').AsInteger := Db_attr_norm
     else
-      InTable.FieldByName('Attr').AsInteger := Db_attr_not_exists;
+      InTable.FieldByName('Attr').AsInteger := Db_attr_missed;
 
   finally
     F(Rec);

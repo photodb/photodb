@@ -988,7 +988,7 @@ begin
   end;
 end;
 
-function IsRAWImageFile(FileName : String) : Boolean;
+function IsRAWImageFile(FileName: string): Boolean;
 begin
   Result := TFileAssociations.Instance.GetGraphicClass(ExtractFileExt(FileName)) = TRAWImage;
 end;

@@ -79,13 +79,20 @@ function TInstallCloseRelatedApplications.NotifyUserAboutClosingApplication(
   AppList: TStrings): Boolean;
 var
   ApplicationForm: TFormBusyApplications;
+  IsApplicationClosed: Boolean;
 begin
-  ApplicationForm := TFormBusyApplications.Create(nil);
-  try
-    Result := ApplicationForm.Execute(AppList);
-  finally
-    R(ApplicationForm);
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      ApplicationForm := TFormBusyApplications.Create(nil);
+      try
+        IsApplicationClosed := ApplicationForm.Execute(AppList);
+      finally
+        R(ApplicationForm);
+      end;
+    end
+  );
+  Result := IsApplicationClosed;
 end;
 
 end.

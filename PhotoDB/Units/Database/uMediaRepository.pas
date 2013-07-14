@@ -34,6 +34,7 @@ type
     procedure SetAttribute(ID, Attribute: Integer);
     procedure DeleteFromCollection(FileName: string; ID: Integer);
     procedure DeleteFromCollectionEx(IDs: TList<Integer>);
+    procedure PermanentlyDeleteFromCollectionEx(IDs: TList<Integer>);
     procedure DeleteDirectoryFromCollection(DirectoryName: string);
     function GetCount: Integer;
     function GetMenuItemByID(ID: Integer): TMediaItem;
@@ -63,7 +64,7 @@ end;
 
 procedure TMediaRepository.DeleteDirectoryFromCollection(DirectoryName: string);
 var
-  DC: TDeleteCommand;
+  UC: TUpdateCommand;
   SC: TSelectCommand;
   EventInfo: TEventValues;
   MediaItem: TMediaItem;
@@ -77,24 +78,30 @@ begin
     if SC.Execute > 0 then
     begin
 
-      DC := FContext.CreateDelete(ImageTable);
+      UC := FContext.CreateUpdate(ImageTable);
       try
-        DC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', Integer(GetPathCRC(DirectoryName, False))));
-        DC.AddWhereParameter(TStringParameter.Create('FFileName', AnsiLowerCase(DirectoryName) + '%', paLike));
+        UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
+        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_deleted));
 
-        DC.Execute;
+        UC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', Integer(GetPathCRC(DirectoryName, False))));
+        UC.AddWhereParameter(TStringParameter.Create('FFileName', AnsiLowerCase(DirectoryName) + '%', paLike));
+
+        UC.Execute;
 
         while not SC.DS.Eof do
         begin
           MediaItem := TMediaItem.CreateFromDS(SC.DS);
-
-          EventInfo.ID := MediaItem.ID;
-          CollectionEvents.DoIDEvent(nil, MediaItem.ID, [EventID_Param_Delete], EventInfo);
+          try
+            EventInfo.ID := MediaItem.ID;
+            CollectionEvents.DoIDEvent(nil, MediaItem.ID, [EventID_Param_Delete], EventInfo);
+          finally
+            F(MediaItem);
+          end;
 
           SC.DS.Next;
         end;
       finally
-        F(DC);
+        F(UC);
       end;
     end;
   finally
@@ -104,24 +111,51 @@ end;
 
 procedure TMediaRepository.DeleteFromCollection(FileName: string; ID: Integer);
 var
-  DC: TDeleteCommand;
+  UC: TUpdateCommand;
   EventInfo: TEventValues;
 begin
-  DC := FContext.CreateDelete(ImageTable);
+  UC := FContext.CreateUpdate(ImageTable);
   try
-    DC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+    UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
+    UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_deleted));
 
-    DC.Execute;
+    UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
+
+    UC.Execute;
 
     EventInfo.ID := ID;
     EventInfo.FileName := FileName;
     CollectionEvents.DoIDEvent(nil, ID, [EventID_Param_Delete], EventInfo);
   finally
-    F(DC);
+    F(UC);
   end;
 end;
 
 procedure TMediaRepository.DeleteFromCollectionEx(IDs: TList<Integer>);
+var
+  I: Integer;
+  UC: TUpdateCommand;
+  EventInfo: TEventValues;
+begin
+  for I := 0 to IDs.Count - 1 do
+  begin
+    UC := FContext.CreateUpdate(ImageTable);
+    try
+      UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
+      UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_deleted));
+      UC.AddWhereParameter(TIntegerParameter.Create('ID', IDs[I]));
+
+      UC.Execute;
+
+      EventInfo.ID := IDs[I];
+      CollectionEvents.DoIDEvent(nil, IDs[I], [EventID_Param_Delete], EventInfo);
+    finally
+      F(UC);
+    end;
+  end;
+end;
+
+procedure TMediaRepository.PermanentlyDeleteFromCollectionEx(IDs: TList<Integer>);
 var
   I: Integer;
   DC: TDeleteCommand;

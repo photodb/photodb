@@ -345,6 +345,7 @@ begin
                     ExifData := nil;
                     MSICC := nil;
                     Graphic := nil;
+                    RawExif := nil;
                     Result := True;
                   end else
                   begin
@@ -367,6 +368,7 @@ begin
                   IsImageEncrypted,
                   Password);
                 ExifData := nil;
+                RawExif := nil;
                 MSICC := nil;
                 Result := True;
               end;
@@ -379,6 +381,7 @@ begin
       finally
         F(S);
         F(MSICC);
+        F(RawExif);
       end;
     finally
       SetErrorMode(OldMode);

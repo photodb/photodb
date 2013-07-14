@@ -2706,11 +2706,11 @@ procedure TExplorerThread.CheckFileExistance(Info: TExplorerFileInfo);
 begin
   if Info.Tag = 1 then
   begin
-    if Info.Attr = Db_attr_not_exists then
+    if Info.Attr in [Db_attr_missed, Db_attr_deleted] then
       UpdaterStorage.MarkItemAsExisted(Info);
   end;
 
-  if (Info.Tag = -1) and (Info.Attr <> Db_attr_not_exists) then
+  if (Info.Tag = -1) and not (Info.Attr in [Db_attr_missed, Db_attr_deleted]) then
     UpdaterStorage.MarkItemAsDeleted(Info);
 end;
 

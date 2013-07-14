@@ -407,7 +407,6 @@
 	<translate name="Do you really want to delete {0} duplicates ({1}) to recycle bin? {2} original items ({3}) will remain on your drive!" value="Вы действительно хотите удалить {0} дубликатов ({1}) в корзину? {2} оригинальных изображений ({3}) останутся на жёстком диске!" />
 	<translate name="Automatically removing of duplicates is impossible. Please try to remove the duplicates manually!" value="Автоматическое удаление дубликатов невозможно. Попробуйте удалить дубликаты вручную." />
 	<translate name="Do you really want to replace extension to selected object?" value="Вы действительно хотите изменить расширение для выбранного объекта?" />
-	<translate name="This folder (%s) contains %d photos in the collection!. Adjust the information in the collection?" value="В данной папке (%s) содержится %d фотографий из коллекции! Скорректировать информацию в коллекции?" />
 	<translate name="Folder &quot;%s&quot; not found!" value="Папка &quot;%s&quot; не найдена!" />
 	<translate name="There are no images to display!" value="Нет файлов для отображения!" />
 	<translate name="Search in directory" value="Искать в папке" />

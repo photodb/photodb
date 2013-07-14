@@ -132,6 +132,7 @@ type
     procedure AddItemsToDatabase(Items: TList<string>);
     procedure UpdateItemsInDatabase(Items: TList<TUpdateTask>);
     function UpdateDatabaseItems: Boolean;
+    function SearchForMissedItems: Boolean;
     function SearchForDeletedItems: Boolean;
     function GetIsValidThread: Boolean;
     function CanAddFileAutomatically(FileName: string): Boolean;
@@ -149,6 +150,14 @@ type
     procedure StartWatch;
     procedure StopWatch;
     procedure Restart;
+    procedure SuppressEvent(FileName: string; Action: Integer);
+    procedure ResumeEvent(FileName: string; Action: Integer);
+  end;
+
+type
+  TSuppressInfo = record
+    FileName: string;
+    Action: Integer;
   end;
 
   TUserDirectoriesWatcher = class(TInterfacedObject, IUserDirectoriesWatcher, IDirectoryWatcher)
@@ -156,13 +165,17 @@ type
     FWatchers: TList<TWachDirectoryClass>;
     FState: TGUID;
     FDBContext: IDBContext;
+    FSuppressInfos: TList<TSuppressInfo>;
     procedure StartWatch;
     procedure StopWatch;
+    function IsEventSupressed(FileName: string; Action: Integer): Boolean;
   public
     constructor Create;
     destructor Destroy; override;
     procedure Execute(Context: IDBContext);
     procedure Restart;
+    procedure SuppressEvent(FileName: string; Action: Integer);
+    procedure ResumeEvent(FileName: string; Action: Integer);
     procedure CheckDirectoryMoveRename(Info: TInfoCallback);
     procedure DirectoryChanged(Sender: TObject; SID: TGUID; pInfos: TInfoCallBackDirectoryChangedArray; WatchType: TDirectoryWatchType);
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
@@ -460,6 +473,12 @@ begin
       Result := True;
       MediaItem := TMediaItem.CreateFromDS(SC.DS);
       try
+        if MediaItem.Attr = Db_attr_deleted then
+        begin
+          SC.DS.Next;
+          Continue;
+        end;
+
         try
           if not UpdateImageRecordEx(FDBContext, nil, MediaItem, Settings) then
             MarkRecordAsUpdated(FDBContext, MediaItem.ID);
@@ -483,8 +502,52 @@ end;
 
 function TDatabaseDirectoriesUpdater.SearchForDeletedItems: Boolean;
 var
+  SC: TSelectCommand;
+  IDs: TList<Integer>;
+begin
+  Result := False;
+
+  SC := FDBContext.CreateSelect(ImageTable);
+  try
+    SC.AddParameter(TIntegerParameter.Create('ID'));
+    SC.AddParameter(TStringParameter.Create('Attr'));
+    SC.TopRecords := 100;
+
+    SC.AddWhereParameter(TIntegerParameter.Create('Attr', Db_attr_deleted, paEquals));
+    SC.AddWhereParameter(TDateTimeParameter.Create('DateUpdated', Now - 1, paLessThan));
+
+    SC.OrderBy('ID');
+
+    SC.Execute;
+
+    IDs := TList<Integer>.Create;
+    try
+      while not SC.DS.EOF do
+      begin
+        if DBTerminating or not IsValidThread then
+          Exit(False);
+
+        IDs.Add(SC.DS.FindField('ID').AsInteger);
+
+        Result := True;
+
+        SC.DS.Next;
+      end;
+
+      if IDs.Count > 0 then
+        FDBContext.Media.DeleteFromCollectionEx(IDs);
+    finally
+      F(IDs);
+    end;
+
+  finally
+    F(SC);
+  end;
+end;
+
+function TDatabaseDirectoriesUpdater.SearchForMissedItems: Boolean;
+var
   SettingsRepository: ISettingsRepository;
-  MediaItem: TMediaItem;
   SC: TSelectCommand;
   FileName: string;
   ID, BaseID, Attr: Integer;
@@ -518,11 +581,11 @@ begin
       Attr := SC.DS.FindField('Attr').AsInteger;
 
       FE := not StaticPath(FileName) or FileExistsSafe(FileName);
-      if FE and (Attr = Db_attr_not_exists) then
+      if FE and (Attr in [Db_attr_missed, Db_attr_deleted]) then
         FDBContext.Media.SetAttribute(ID, Db_attr_norm);
 
-      if not FE and (Attr <> Db_attr_not_exists) then
-        FDBContext.Media.SetAttribute(ID, Db_attr_not_exists);
+      if not FE and not (Attr in [Db_attr_missed, Db_attr_deleted]) then
+        FDBContext.Media.SetAttribute(ID, Db_attr_missed);
 
       Result := True;
 
@@ -568,10 +631,13 @@ begin
     if not IsRescanMode then
       while UpdateDatabaseItems do;
 
+    if not IsRescanMode then
+      while SearchForDeletedItems do;
+
     if Now - AppSettings.ReadDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', 0) > 7 then
     begin
       if not IsRescanMode then
-        while SearchForDeletedItems do;
+        while SearchForMissedItems do;
 
       if not DBTerminating and IsValidThread then
         AppSettings.WriteDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', Now);
@@ -758,6 +824,7 @@ end;
 constructor TUserDirectoriesWatcher.Create;
 begin
   FWatchers := TList<TWachDirectoryClass>.Create;
+  FSuppressInfos := TList<TSuppressInfo>.Create;
   GOM.AddObj(Self);
 end;
 
@@ -765,6 +832,7 @@ destructor TUserDirectoriesWatcher.Destroy;
 begin
   StopWatch;
   FreeList(FWatchers);
+  F(FSuppressInfos);
   GOM.RemoveObj(Self);
   inherited;
 end;
@@ -822,8 +890,52 @@ begin
   FreeList(FWatchers, False);
 end;
 
+function TUserDirectoriesWatcher.IsEventSupressed(FileName: string; Action: Integer): Boolean;
+var
+  SI: TSuppressInfo;
+begin
+  FileName := AnsiLowerCase(FileName);
+  for SI in FSuppressInfos do
+    if (SI.FileName = FileName) and (SI.Action = Action) then
+      Exit(True);
+
+  Exit(False);
+end;
+
+procedure TUserDirectoriesWatcher.SuppressEvent(FileName: string; Action: Integer);
+var
+  SI: TSuppressInfo;
+begin
+  if IsEventSupressed(FileName, Action) then
+    Exit;
+
+  SI.FileName := AnsiLowerCase(FileName);
+  SI.Action := Action;
+
+  FSuppressInfos.Add(SI);
+end;
+
+procedure TUserDirectoriesWatcher.ResumeEvent(FileName: string; Action: Integer);
+var
+  I: Integer;
+begin
+  FileName := AnsiLowerCase(FileName);
+  for I := 0 to FSuppressInfos.Count - 1 do
+    if (FSuppressInfos[I].FileName = FileName) and (FSuppressInfos[I].Action = Action) then
+    begin
+      FSuppressInfos.Delete(I);
+      Exit;
+    end;
+end;
+
 procedure TUserDirectoriesWatcher.CheckDirectoryMoveRename(Info: TInfoCallback);
 begin
+  if IsEventSupressed(Info.NewFileName, Info.Action) then
+  begin
+    ResumeEvent(Info.NewFileName, Info.Action);
+    Exit;
+  end;
+
   case Info.Action of
     FILE_ACTION_REMOVED:
       UpdaterStorage.Add(TRemoveDirectoryTask.Create(FDBContext, Info.NewFileName));
@@ -1109,39 +1221,43 @@ begin
             Continue;
           end;
 
-          TThread.Synchronize(nil,
-            procedure
-            begin
-              NotifyAboutFileProcessing(Info, Res);
-            end
-          );
+          try
 
-          if Res.Count = 1 then
-          begin
-            //moved file
-            if (StaticPath(Res.FileNames[0]) and not FileExists(Res.FileNames[0])) or (Res.Attr[0] = Db_attr_not_exists) then
+            if Res.Count = 1 then
             begin
-              TDatabaseUpdateManager.MergeWithExistedInfo(FDBContext, Res.IDs[0], Info, True);
-              Continue;
+              //moved file
+              if (StaticPath(Res.FileNames[0]) and not FileExists(Res.FileNames[0])) or (Res.Attr[0] in [Db_attr_missed, Db_attr_deleted]) then
+              begin
+                TDatabaseUpdateManager.MergeWithExistedInfo(FDBContext, Res.IDs[0], Info, True);
+                Continue;
+              end;
+
+              //the same file was deleted
+              if (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName)) and (Res.Attr[0] in [Db_attr_missed, Db_attr_deleted]) then
+              begin
+                MediaRepository.SetAttribute(Info.ID, Db_attr_norm);
+                Continue;
+              end;
+
+              //the same file, skip
+              if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
+              begin
+                MediaRepository.SetFileNameById(Res.IDs[0], Info.FileName);
+                Continue;
+              end;
             end;
 
-            //the same file was deleted
-            if (AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName)) and (Res.Attr[0] = Db_attr_not_exists) then
-            begin
-              MediaRepository.SetAttribute(Info.ID, Db_attr_norm);
-              Continue;
-            end;
+            //add file as duplicate
+            TDatabaseUpdateManager.AddFileAsDuplicate(FDBContext, Info, Res);
 
-            //the same file, skip
-            if AnsiLowerCase(Res.FileNames[0]) = AnsiLowerCase(Info.FileName) then
-            begin
-              MediaRepository.SetFileNameById(Res.IDs[0], Info.FileName);
-              Continue;
-            end;
+          finally
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                NotifyAboutFileProcessing(Info, Res);
+              end
+            );
           end;
-
-          //add file as duplicate
-          TDatabaseUpdateManager.AddFileAsDuplicate(FDBContext, Info, Res);
         end;
 
       finally
@@ -1170,8 +1286,9 @@ var
   EventInfo: TEventValues;
 begin
   Info.SaveToEvent(EventInfo);
+  EventInfo.NewName := Info.FileName;
   EventInfo.JPEGImage := Res.Jpeg;
-  CollectionEvents.DoIDEvent(Application.MainForm as TDBForm, Info.ID, [EventID_FileProcessed], EventInfo);
+  CollectionEvents.DoIDEvent(Application.MainForm as TDBForm, Info.ID, [EventID_FileProcessed, EventID_Param_Name], EventInfo);
 end;
 
 { TUpdaterStorage }
@@ -1385,7 +1502,7 @@ procedure TUpdaterStorage.MarkItemAsDeleted(Item: TMediaItem);
 begin
   FSync.Enter;
   try
-    FTasks.Add(TUpdateAttributeTask.Create(FContext, Item.Copy, Db_attr_not_exists));
+    FTasks.Add(TUpdateAttributeTask.Create(FContext, Item.Copy, Db_attr_missed));
   finally
     FSync.Leave;
   end;

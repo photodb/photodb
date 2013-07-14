@@ -285,8 +285,9 @@ const
   Db_access_private = 1;
   Db_access_none = 0;
   Db_attr_norm = 0;
-  Db_attr_not_exists = 1;
+  Db_attr_missed = 1;
   Db_attr_duplicate = 2;
+  Db_attr_deleted = 4;
 
 const
   DB_IMAGE_ROTATE_UNKNOWN = -1;

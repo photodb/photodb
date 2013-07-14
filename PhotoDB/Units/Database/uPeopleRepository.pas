@@ -190,7 +190,10 @@ begin
                 begin
                   G := GroupRepository.GetByName(GS[I].GroupName, False);
                   if G <> nil then
+                  begin
                     AddWordsA(G.GroupKeyWords, KeyWords);
+                    F(G);
+                  end;
                 end;
               finally
                 F(GS);

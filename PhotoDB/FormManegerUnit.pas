@@ -504,9 +504,7 @@ procedure TFormManager.AeMainException(Sender: TObject; E: Exception);
 begin
   CloseSplashWindow;
   EventLog(E);
-  //{$IFDEF DEBUG}
   MessageBoxDB(Handle, FormatEx(TA('An unhandled error occurred: {0}!'), [E.ToString + sLineBreak + E.StackTrace]), L('Error'),  TD_BUTTON_OK, TD_ICON_ERROR);
-  //{$ENDIF}
 end;
 
 procedure TFormManager.CalledTimerTimer(Sender: TObject);
@@ -518,6 +516,14 @@ procedure TFormManager.ChangedDBDataByID(Sender: TObject; ID: Integer; Params: T
 var
   UpdateInfoParams: TEventFields;
 begin
+  if FDirectoryWatcher <> nil then
+  begin
+    if Params * [EventID_CollectionFolderWatchSupress] <> [] then
+     (FDirectoryWatcher as IUserDirectoriesWatcher).SuppressEvent(Value.FileName, Value.Attr);
+    if Params * [EventID_CollectionFolderWatchResume] <> [] then
+     (FDirectoryWatcher as IUserDirectoriesWatcher).ResumeEvent(Value.FileName, Value.Attr);
+  end;
+
   if Params * [EventID_CollectionFoldersChanged] <> [] then
   begin
     RecheckUserDirectories;
@@ -558,6 +564,8 @@ begin
 end;
 
 procedure TFormManager.CheckTimerTimer(Sender: TObject);
+const
+  RestartTime = 36000 * 24;
 var
   Context: IDBContext;
   MediaRepository: IMediaRepository;
@@ -576,6 +584,8 @@ begin
 
     Inc(FGlobalCheckCount);
     Inc(FCollectionCheckCount);
+    if FCollectionCheckCount > RestartTime then
+      FCollectionCheckCount := 0;
 
     if (FCollectionCheckCount = 5) and not FolderView then
     begin

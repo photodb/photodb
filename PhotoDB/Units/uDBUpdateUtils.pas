@@ -267,11 +267,22 @@ begin
 end;
 
 class procedure TDatabaseUpdateManager.CleanUp;
+var
+  I: Integer;
 begin
   F(FGroupReplaceActions.ActionForUnKnown.OutGroup);
   F(FGroupReplaceActions.ActionForUnKnown.InGroup);
   F(FGroupReplaceActions.ActionForKnown.OutGroup);
   F(FGroupReplaceActions.ActionForKnown.InGroup);
+
+  for I := 0 to Length(FGroupReplaceActions.Actions) - 1 do
+  begin
+    if FGroupReplaceActions.Actions[I].InGroup <> nil then
+      FGroupReplaceActions.Actions[I].InGroup.Free;
+    if FGroupReplaceActions.Actions[I].OutGroup <> nil then
+      FGroupReplaceActions.Actions[I].OutGroup.Free;
+  end;
+  SetLength(FGroupReplaceActions.Actions, 0);
 end;
 
 class function TDatabaseUpdateManager.MergeWithExistedInfo(Context: IDBContext; ID: Integer;
@@ -360,6 +371,7 @@ begin
 
   finally
     F(UC);
+    F(MediaItem);
   end;
 end;
 

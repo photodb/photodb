@@ -44,6 +44,8 @@ type
     procedure KernelEventCallBack(ID: Integer; Params: TEventFields; Value: TEventValues);
     procedure KernelEventCallBackSync;
     procedure DoOnDone;
+    procedure SupressFolderWatch;
+    procedure ResumeFolderWatch;
   protected
     procedure Execute; override;
     procedure CreateProgress(MaxCount: Integer);
@@ -107,7 +109,7 @@ begin
     if DirectoryExists(FN) then
     begin
       Adest := Dest + '\' + ExtractFileName(Src[I]);
-      RenameFolderWithDB(FContext, KernelEventCallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress, Src[I], Adest, False);
+      RenameFolderWithDB(FContext, KernelEventCallBack, CreateProgress, ShowProgress, UpdateProgress, CloseProgress, Src[I], Adest);
     end;
     if FileExistsSafe(FN) then
     begin
@@ -126,7 +128,12 @@ begin
   try
     CoInitializeEx(nil, COM_MODE);
     try
+      //suspend watch for folders because  windows does 2 events: add new directory and remove old directory
+      SupressFolderWatch;
       Res := CopyFilesSynch(FHandle, FSrc, FDest, FMove, FAutoRename) = 0;
+
+      if not Res then
+        ResumeFolderWatch;
 
       if Res and (FOwnerForm <> nil) and FMove then
         CorrectPath(FOwnerForm, FSrc, FDest);
@@ -134,7 +141,7 @@ begin
       CoUninitialize;
     end;
   except
-    on e : Exception do
+    on e: Exception do
       EventLog(e.Message);
   end;
   if Assigned(FOnDone) then
@@ -189,6 +196,32 @@ begin
   FProgressWindow.Show;
   FProgressWindow.Repaint;
   FProgressWindow.DoubleBuffered := True;
+end;
+
+procedure TWindowsCopyFilesThread.SupressFolderWatch;
+var
+  FValue: TEventValues;
+  I: Integer;
+begin
+  for I := 0 to FSrc.Count - 1 do
+  begin
+    FValue.Attr := FILE_ACTION_REMOVED;
+    FValue.FileName := FSrc[I];
+    CollectionEvents.DoIDEvent(FOwnerForm, 0, [EventID_CollectionFolderWatchSupress], FValue);
+  end;
+end;
+
+procedure TWindowsCopyFilesThread.ResumeFolderWatch;
+var
+  FValue: TEventValues;
+  I: Integer;
+begin
+  for I := 0 to FSrc.Count - 1 do
+  begin
+    FValue.Attr := FILE_ACTION_REMOVED;
+    FValue.FileName := FSrc[I];
+    CollectionEvents.DoIDEvent(FOwnerForm, 0, [EventID_CollectionFolderWatchResume], FValue);
+  end;
 end;
 
 procedure TWindowsCopyFilesThread.UpdateProgressSync;
