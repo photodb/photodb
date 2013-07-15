@@ -367,7 +367,7 @@ begin
           try
             FillDataRecordWithUserInfo(FileInfo, UserInput);
 
-            UpdaterStorage.AddFile(FileInfo);
+            UpdaterStorage.AddFile(FileInfo, dtpHighAndSkipFilters);
           finally
             F(FileInfo);
           end;

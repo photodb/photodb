@@ -99,7 +99,7 @@ uses
 
 procedure TImageConvertThread.AddInfoToCollection;
 begin
-  UpdaterStorage.AddFile(FDataParam);
+  UpdaterStorage.AddFile(FDataParam, dtpHighAndSkipFilters);
 end;
 
 procedure TImageConvertThread.AsyncDrawCallBack(Bitmap: TBitmap; Rct: TRect;

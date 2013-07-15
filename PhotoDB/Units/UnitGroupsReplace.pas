@@ -24,11 +24,6 @@ type
 
   TGroupsActionsW = record
     Actions: TGroupsActions;
-    IsActionForUnKnown: Boolean;
-    ActionForUnKnown: TGroupAction;
-    IsActionForKnown: Boolean;
-    ActionForKnown: TGroupAction;
-    MaxAuto: Boolean;
   end;
 
 procedure FilterGroups(DBContext: IDBContext; var Groups: TGroups; var OutRegGroups, InRegGroups: TGroups; var Actions: TGroupsActionsW);
@@ -184,7 +179,6 @@ begin
         else
           Options.AllowAdd := False;
       end;
-      Options.MaxAuto := Actions.MaxAuto;
       Options.AllowAdd := True;
 
       if GrNameOut = '' then
@@ -203,7 +197,7 @@ begin
 
       if Action.Action = GROUP_ACTION_NO_ADD then
       begin
-        Groups.RemoveGroup(Action.InGroup);
+        Groups.RemoveGroup(Action.OutGroup);
         Pi^ := I - 1;
       end;
 
@@ -237,7 +231,7 @@ begin
 
       if Action.Action = GROUP_ACTION_NO_ADD then
       begin
-        Groups.RemoveGroup(Action.InGroup);
+        Groups.RemoveGroup(Action.OutGroup);
         Pi^ := I - 1;
       end;
     end;

@@ -161,7 +161,7 @@ const
 
 var
   Graphic: TGraphic;
-  W, H: Integer;
+  W, H, BPP: Integer;
   ImageW, ImageH, OriginalRating: Integer;
   X: Integer;
   TempBmp, B: TBitmap;
@@ -290,6 +290,14 @@ begin
                   try
                     B.Handle := piconinfo.hbmColor;
                     B.MaskHandle := piconinfo.hbmMask;
+
+                    BPP := GetDeviceCaps(ACanvas.Handle, BITSPIXEL) * GetDeviceCaps(ACanvas.Handle, PLANES);
+                    if BPP >= 16 then
+                    begin
+                      B.PixelFormat := pf32Bit;
+                      B.AlphaFormat := afDefined;
+                    end;
+
                     TGraphicEx(B).DrawTransparent(ACanvas, Rect(X, Y, X + ImageW, Y + ImageH), 127);
                   finally
                     F(B);

@@ -1476,7 +1476,7 @@ begin
             GroupName := Copy(GroupName, 2, Length(GroupName) - 2);
             Break;
           end;
-      if IsGroupName and IsGroupCode then
+      if IsGroupName and IsGroupCode and (GroupName <> '') then
       begin
         Group := TGroup.Create;
         Group.GroupName := GroupName;
@@ -1516,6 +1516,9 @@ procedure TGroups.RemoveGroup(Group: TGroup);
 var
   I: Integer;
 begin
+  if Group = nil then
+    Exit;
+
   for I := Count - 1 downto 0 do
     if Self[I].GroupCode = Group.GroupCode then
     begin

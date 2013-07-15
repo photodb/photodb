@@ -83,6 +83,15 @@
 	<translate name="Executing, %" value="Выполнение, %" />
 	<translate name="Operation completed successfully!" value="Операция успешно завершена!" />
 	<translate name="Failed to lock collection file, try again in a few seconds!" value="Не удалось заблокировать коллекцию, попробуйте через несколько секунд!" />
+	<translate name="Updating collection items" value="Обновление данных в коллекции" />
+	<translate name="Searching for deleted items" value="Поиск удалённых записей" />
+	<translate name="Searching for missed items" value="Поиск потерянных файлов" />
+	<translate name="Scaning items on hard drive ({0})" value="Поиск новых фотографий на жёстком диске ({0})" />
+	<translate name="Adding file quot;{0}quot;" value="Добавление файла quot;{0}quot;" />
+	<translate name="Updating item quot;{0}quot;" value="Обновление файла quot;{0}quot;" />
+	<translate name="Deleting file quot;{0}quot;" value="Удаление файла quot;{0}quot;" />
+	<translate name="Deleting directory quot;{0}quot;" value="Удаление директории quot;{0}quot;" />
+	<translate name="Updating attributes for quot;{0}quot;" value="Обновление аттрибутов для quot;{0}quot;" />
   </scope>
   <scope name="Setup">
 	<translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />

@@ -39,6 +39,7 @@ uses
   uShellIntegration,
   uRuntime,
   uDBUtils,
+  uDBUpdateUtils,
   uDBConnection,
   uDBContext,
   uDBManager,
@@ -535,6 +536,8 @@ begin
   begin
     AppSettings.ClearCache;
     TPeopleRepository.ClearCache;
+
+    TDatabaseUpdateManager.CleanUp;
     UpdaterStorage.CleanUpDatabase(DBManager.DBContext);
     UpdaterStorage.SaveStorage;
     UpdaterStorage.RestoreStorage(DBManager.DBContext);

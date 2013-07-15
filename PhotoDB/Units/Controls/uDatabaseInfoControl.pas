@@ -162,6 +162,18 @@ begin
     DoAlignInfo;
   end;
 
+  if not FMediaCountReady or FIsUpdatingCollection then
+  begin
+    FImage.Hint := UpdaterStorage.CurrentUpdaterState;
+    FLsMain.Hint := FImage.Hint;
+    FImage.ShowHint := True;
+    FLsMain.ShowHint := True;
+  end else
+  begin
+    FImage.ShowHint := False;
+    FLsMain.ShowHint := False;
+  end;
+
   if FIsCustomImage and not ActualUpdatingCollection then
     LoadColectionImage;
 end;
@@ -223,6 +235,8 @@ begin
         FLsMain.Left := FImage.Left + FImage.Width + 3;
         FLsMain.Top := FDatabaseName.Top + FDatabaseName.Height + 3;
         FLsMain.Visible := True;
+        FImage.Hint := UpdaterStorage.CurrentUpdaterState;
+        FLsMain.Hint := FImage.Hint;
       end else
       begin
         FLsMain.Left := FImage.Left + FImage.Width - FLsMain.Width;

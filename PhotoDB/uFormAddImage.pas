@@ -131,7 +131,7 @@ procedure TFormAddingImage.Execute(Info: TMediaItem);
 begin
   FInfo := Info;
   FInfo.Include := True;
-  UpdaterStorage.AddFile(FInfo);
+  UpdaterStorage.AddFile(FInfo, dtpHighAndSkipFilters);
   DrawForm;
   TmrCheck.Enabled := True;
   ShowModal;

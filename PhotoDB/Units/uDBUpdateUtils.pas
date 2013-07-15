@@ -47,11 +47,11 @@ type
   class var
     FGroupReplaceActions: TGroupsActionsW;
   protected
-    class procedure CleanUp;
     class procedure NotifyFileAdded(Info: TMediaItem; Res: TMediaInfo);
     class function AddNewImageRecord(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
     class procedure ProcessGroups(Context: IDBContext; Info: TMediaItem; ExifGroups: string);
   public
+    class procedure CleanUp;
     class function AddFile(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
     class function AddFileAsDuplicate(Context: IDBContext; Info: TMediaItem; Res: TMediaInfo): Boolean;
     class function MergeWithExistedInfo(Context: IDBContext; ID: Integer; InfoToAdd: TMediaItem; MoveFile: Boolean): Boolean;
@@ -270,11 +270,6 @@ class procedure TDatabaseUpdateManager.CleanUp;
 var
   I: Integer;
 begin
-  F(FGroupReplaceActions.ActionForUnKnown.OutGroup);
-  F(FGroupReplaceActions.ActionForUnKnown.InGroup);
-  F(FGroupReplaceActions.ActionForKnown.OutGroup);
-  F(FGroupReplaceActions.ActionForKnown.InGroup);
-
   for I := 0 to Length(FGroupReplaceActions.Actions) - 1 do
   begin
     if FGroupReplaceActions.Actions[I].InGroup <> nil then

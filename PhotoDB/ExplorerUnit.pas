@@ -2582,7 +2582,7 @@ begin
         end;
         if FFilesInfo[Index].FileType = EXPLORER_ITEM_IMAGE then
         begin
-          UpdaterStorage.AddFile(FFilesInfo[Index].FileName);
+          UpdaterStorage.AddFile(FFilesInfo[Index].FileName, dtpHighAndSkipFilters);
           Continue;
         end;
       end;
@@ -11150,7 +11150,7 @@ begin
       FileInfo.Rating := (Sender as TMenuItem).Tag;
       FileInfo.Include := True;
 
-      UpdaterStorage.AddFile(FileInfo);
+      UpdaterStorage.AddFile(FileInfo, dtpHighAndSkipFilters);
     finally
       F(FileInfo);
     end;

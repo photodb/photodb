@@ -52,6 +52,7 @@ uses
   uShellUtils,
   uTranslate,
   uLockedFileNotifications,
+  uShellIntegration,
   uCDMappingTypes,
   uCollectionEvents,
   uCollectionUtils;
@@ -181,7 +182,7 @@ type
     procedure TerminateWatcher(Sender: TObject; SID: TGUID; Folder: string);
   end;
 
-  TDatabaseTaskPriority = (dtpNormal, dtpHigh);
+  TDatabaseTaskPriority = (dtpNormal, dtpHigh, dtpHighAndSkipFilters);
 
   TUpdaterStorage = class(TObject)
   private
@@ -191,8 +192,11 @@ type
     FTasks: TList<TDatabaseTask>;
     FErrorFileList: TStringList;
     FContext: IDBContext;
+    FCurrentUpdaterState: string;
     function GetEstimateRemainingTime: TTime;
     function GetActiveItemsCount: Integer;
+    procedure SetCurrentUpdaterState(const Value: string);
+    function GetCurrentUpdaterState: string;
   public
     constructor Create(Context: IDBContext);
     destructor Destroy; override;
@@ -202,11 +206,11 @@ type
 
     function Take<T: TDatabaseTask>(Count: Integer): TArray<T>;
     function TakeOne<T: TDatabaseTask>: T;
-    procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
-    procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
+    procedure Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority);
+    procedure AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority);
 
-    procedure AddFile(Info: TMediaItem; Priority: TDatabaseTaskPriority = dtpHigh); overload;
-    procedure AddFile(FileName: string; Priority: TDatabaseTaskPriority = dtpHigh); overload;
+    procedure AddFile(Info: TMediaItem; Priority: TDatabaseTaskPriority); overload;
+    procedure AddFile(FileName: string; Priority: TDatabaseTaskPriority); overload;
     procedure AddDirectory(DirectoryPath: string);
 
     function HasFile(FileName: string): Boolean;
@@ -225,6 +229,8 @@ type
 
     property TotalItemsCount: Integer  read FTotalItemsCount;
     property ActiveItemsCount: Integer read GetActiveItemsCount;
+
+    property CurrentUpdaterState: string read GetCurrentUpdaterState write SetCurrentUpdaterState;
   end;
 
   TDatabaseUpdater = class(TDBThread)
@@ -458,6 +464,7 @@ begin
     SC.TopRecords := 50;
 
     SC.AddWhereParameter(TIntegerParameter.Create('PreviewSize', Settings.ThSize, paNotEquals));
+    SC.AddWhereParameter(TIntegerParameter.Create('Attr', Db_attr_deleted, paNotEquals));
     SC.AddWhereParameter(TDateTimeParameter.Create('DateUpdated', IncDay(Now, -14), paLessThan));
 
     SC.OrderBy('DateUpdated');
@@ -473,12 +480,6 @@ begin
       Result := True;
       MediaItem := TMediaItem.CreateFromDS(SC.DS);
       try
-        if MediaItem.Attr = Db_attr_deleted then
-        begin
-          SC.DS.Next;
-          Continue;
-        end;
-
         try
           if not UpdateImageRecordEx(FDBContext, nil, MediaItem, Settings) then
             MarkRecordAsUpdated(FDBContext, MediaItem.ID);
@@ -618,130 +619,154 @@ var
   FileName, Dir, DirectoryPath: string;
   SavedDirectoriesStructure: TDictionary<string, Int64>;
   IsRescanMode: Boolean;
+
+ procedure NotifyTask(Task: string);
+ begin
+   TThread.Synchronize(nil,
+     procedure
+     begin
+       UpdaterStorage.CurrentUpdaterState := Task;
+     end
+   );
+ end;
+
 begin
   inherited;
   FreeOnTerminate := True;
   Priority := tpLower;
-
-  Inc(UserDirectoryUpdaterCount);
-  CoInitializeEx(nil, COM_MODE);
   try
-    IsRescanMode := FRescanDirectory <> '';
-
-    if not IsRescanMode then
-      while UpdateDatabaseItems do;
-
-    if not IsRescanMode then
-      while SearchForDeletedItems do;
-
-    if Now - AppSettings.ReadDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', 0) > 7 then
-    begin
-      if not IsRescanMode then
-        while SearchForMissedItems do;
-
-      if not DBTerminating and IsValidThread then
-        AppSettings.WriteDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', Now);
-    end;
-
-    Directories := TQueue<string>.Create;
-    ItemsToAdd := TList<string>.Create;
-    ItemsToUpdate := TList<TUpdateTask>.Create;
-    ItemSizes := TList<Int64>.Create;
-    SavedDirectoriesStructure := TDictionary<string, Int64>.Create;
-    OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+    Inc(UserDirectoryUpdaterCount);
+    CoInitializeEx(nil, COM_MODE);
     try
+      IsRescanMode := FRescanDirectory <> '';
+
       if not IsRescanMode then
+        while UpdateDatabaseItems do
+          NotifyTask(TA('Updating collection items', 'System'));
+
+      if not IsRescanMode then
+        while SearchForDeletedItems do
+          NotifyTask(TA('Searching for deleted items', 'System'));
+
+      if Now - AppSettings.ReadDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', 0) > 7 then
       begin
-        ScanInformationFileName := DatabaseFolderPersistaseFileName(FDBContext.CollectionFileName);
-        LoadDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
-
-        //list of directories to scan
-        FolderList := TList<TDatabaseDirectory>.Create;
-        try
-          ReadDatabaseSyncDirectories(FolderList, FDBContext.CollectionFileName);
-          for DD in FolderList do
-            Directories.Enqueue(DD.Path);
-
-        finally
-          FreeList(FolderList);
-        end;
-      end else
-        Directories.Enqueue(FRescanDirectory);
-
-      while Directories.Count > 0 do
-      begin
-        if DBTerminating or not IsValidThread then
-          Break;
-
-        Dir := Directories.Dequeue;
-        Dir := IncludeTrailingBackslash(Dir);
-
-        TotalDirectorySize := 0;
-        ItemSizes.Clear;
-        ItemsToAdd.Clear;
-        FreeList(ItemsToUpdate, False);
-        Found := FindFirst(Dir + '*.*', faDirectory, SearchRec);
-        try
-          while Found = 0 do
-          begin
-            if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') and (faHidden and SearchRec.Attr = 0) then
-            begin
-              if (faDirectory and SearchRec.Attr = 0) and IsGraphicFile(SearchRec.Name) and CanAddFileAutomatically(SearchRec.Name) then
-              begin
-                FileName := Dir + SearchRec.Name;
-                Inc(TotalDirectorySize, SearchRec.Size);
-
-                ItemsToAdd.Add(FileName);
-                ItemSizes.Add(SearchRec.Size);
-              end;
-
-              if faDirectory and SearchRec.Attr <> 0 then
-                Directories.Enqueue(Dir + SearchRec.Name);
-            end;
-            Found := System.SysUtils.FindNext(SearchRec);
-          end;
-        finally
-          FindClose(SearchRec);
-        end;
-
-        DirectoryPath := AnsiLowerCase(Dir);
-
         if not IsRescanMode then
-        begin
-          if SavedDirectoriesStructure.ContainsKey(DirectoryPath) then
-          begin
-            //directory is unchanged
-            if TotalDirectorySize = SavedDirectoriesStructure[DirectoryPath] then
-              Continue;
-          end;
-        end;
+          while SearchForMissedItems do
+            NotifyTask(TA('Searching for missed items', 'System'));
 
-        if not IsRescanMode then
-          UpdaterStorage.RemoveFilesWithErrors(ItemsToAdd, ItemSizes);
-
-        if (ItemsToAdd.Count > 0) and IsDirectoryChangedOnDrive(Dir, ItemSizes, ItemsToAdd, ItemsToUpdate) and IsValidThread then
-        begin
-          if ItemsToAdd.Count > 0 then
-            AddItemsToDatabase(ItemsToAdd);
-          if ItemsToUpdate.Count > 0 then
-            UpdateItemsInDatabase(ItemsToUpdate);
-        end else
-          SavedDirectoriesStructure.AddOrSetValue(DirectoryPath, TotalDirectorySize);
+        if not DBTerminating and IsValidThread then
+          AppSettings.WriteDateTime(GetCollectionRootKey(FDBContext.CollectionFileName), 'CheckForDeletedItems', Now);
       end;
 
-      if not IsRescanMode and (IsValidThread or DBTerminating) then
-        SaveDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
+      Directories := TQueue<string>.Create;
+      ItemsToAdd := TList<string>.Create;
+      ItemsToUpdate := TList<TUpdateTask>.Create;
+      ItemSizes := TList<Int64>.Create;
+      SavedDirectoriesStructure := TDictionary<string, Int64>.Create;
+      OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+      try
+        if not IsRescanMode then
+        begin
+          ScanInformationFileName := DatabaseFolderPersistaseFileName(FDBContext.CollectionFileName);
+          LoadDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
+
+          //list of directories to scan
+          FolderList := TList<TDatabaseDirectory>.Create;
+          try
+            ReadDatabaseSyncDirectories(FolderList, FDBContext.CollectionFileName);
+            for DD in FolderList do
+              Directories.Enqueue(DD.Path);
+
+          finally
+            FreeList(FolderList);
+          end;
+        end else
+          Directories.Enqueue(FRescanDirectory);
+
+        while Directories.Count > 0 do
+        begin
+          if DBTerminating or not IsValidThread then
+            Break;
+
+          Dir := Directories.Dequeue;
+
+          NotifyTask(FormatEx(TA('Scaning items on hard drive ({0})', 'System'), [Dir]));
+
+          Dir := IncludeTrailingBackslash(Dir);
+
+          TotalDirectorySize := 0;
+          ItemSizes.Clear;
+          ItemsToAdd.Clear;
+          FreeList(ItemsToUpdate, False);
+          Found := FindFirst(Dir + '*.*', faDirectory, SearchRec);
+          try
+            while Found = 0 do
+            begin
+              if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') and (faHidden and SearchRec.Attr = 0) then
+              begin
+                if (faDirectory and SearchRec.Attr = 0) and IsGraphicFile(SearchRec.Name) and CanAddFileAutomatically(SearchRec.Name) then
+                begin
+                  FileName := Dir + SearchRec.Name;
+                  Inc(TotalDirectorySize, SearchRec.Size);
+
+                  ItemsToAdd.Add(FileName);
+                  ItemSizes.Add(SearchRec.Size);
+                end;
+
+                if faDirectory and SearchRec.Attr <> 0 then
+                  Directories.Enqueue(Dir + SearchRec.Name);
+              end;
+              Found := System.SysUtils.FindNext(SearchRec);
+            end;
+          finally
+            FindClose(SearchRec);
+          end;
+
+          DirectoryPath := AnsiLowerCase(Dir);
+
+          if not IsRescanMode then
+          begin
+            if SavedDirectoriesStructure.ContainsKey(DirectoryPath) then
+            begin
+              //directory is unchanged
+              if TotalDirectorySize = SavedDirectoriesStructure[DirectoryPath] then
+                Continue;
+            end;
+          end;
+
+          if not IsRescanMode then
+            UpdaterStorage.RemoveFilesWithErrors(ItemsToAdd, ItemSizes);
+
+          if (ItemsToAdd.Count > 0) and IsDirectoryChangedOnDrive(Dir, ItemSizes, ItemsToAdd, ItemsToUpdate) and IsValidThread then
+          begin
+            if ItemsToAdd.Count > 0 then
+              AddItemsToDatabase(ItemsToAdd);
+            if ItemsToUpdate.Count > 0 then
+              UpdateItemsInDatabase(ItemsToUpdate);
+          end else
+            SavedDirectoriesStructure.AddOrSetValue(DirectoryPath, TotalDirectorySize);
+        end;
+
+        if not IsRescanMode and (IsValidThread or DBTerminating) then
+          SaveDirectoriesState(ScanInformationFileName, SavedDirectoriesStructure);
+      finally
+        SetErrorMode(OldMode);
+        F(ItemSizes);
+        F(ItemsToAdd);
+        FreeList(ItemsToUpdate);
+        F(SavedDirectoriesStructure);
+        F(Directories);
+      end;
     finally
-      SetErrorMode(OldMode);
-      F(ItemSizes);
-      F(ItemsToAdd);
-      FreeList(ItemsToUpdate);
-      F(SavedDirectoriesStructure);
-      F(Directories);
+      CoUninitialize;
+      Dec(UserDirectoryUpdaterCount);
     end;
-  finally
-    CoUninitialize;
-    Dec(UserDirectoryUpdaterCount);
+  except
+    on e: Exception do
+    begin
+      EventLog(e);
+      MessageBoxDB(0, e.Message, TA('Error'), TD_BUTTON_OK, TD_ICON_ERROR);
+    end;
   end;
 end;
 
@@ -796,10 +821,9 @@ begin
     Exit(True);
 end;
 
-procedure TDatabaseDirectoriesUpdater.UpdateItemsInDatabase(
-  Items: TList<TUpdateTask>);
+procedure TDatabaseDirectoriesUpdater.UpdateItemsInDatabase(Items: TList<TUpdateTask>);
 begin
-  UpdaterStorage.AddRange(TList<TDatabaseTask>(Items));
+  UpdaterStorage.AddRange(TList<TDatabaseTask>(Items), dtpHigh);
   Items.Clear;
 end;
 
@@ -813,7 +837,7 @@ begin
      for FileName in Items do
        AddTasks.Add(TAddTask.Create(FDBContext, FileName));
 
-     UpdaterStorage.AddRange(TList<TDatabaseTask>(AddTasks));
+     UpdaterStorage.AddRange(TList<TDatabaseTask>(AddTasks), dtpHigh);
   finally
      F(AddTasks);
   end;
@@ -938,7 +962,7 @@ begin
 
   case Info.Action of
     FILE_ACTION_REMOVED:
-      UpdaterStorage.Add(TRemoveDirectoryTask.Create(FDBContext, Info.NewFileName));
+      UpdaterStorage.Add(TRemoveDirectoryTask.Create(FDBContext, Info.NewFileName), dtpHigh);
     FILE_ACTION_RENAMED_NEW_NAME:
       //not implemented (program explorer handles this situation)
   end;
@@ -980,14 +1004,14 @@ begin
     case Info.Action of
       FILE_ACTION_ADDED:
         if IsFileExists then
-          UpdaterStorage.Add(TAddTask.Create(FDBContext, FileName));
+          UpdaterStorage.Add(TAddTask.Create(FDBContext, FileName), dtpHigh);
       FILE_ACTION_REMOVED:
-        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, FileName));
+        UpdaterStorage.Add(TRemoveTask.Create(FDBContext, FileName), dtpHigh);
       FILE_ACTION_RENAMED_NEW_NAME:
         Break;
       FILE_ACTION_MODIFIED:
         if IsFileExists then
-          UpdaterStorage.Add(TUpdateTask.Create(FDBContext, 0, FileName));
+          UpdaterStorage.Add(TUpdateTask.Create(FDBContext, 0, FileName), dtpHigh);
     end;
   end;
 end;
@@ -1293,13 +1317,13 @@ end;
 
 { TUpdaterStorage }
 
-procedure TUpdaterStorage.Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority = dtpHigh);
+procedure TUpdaterStorage.Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority);
 begin
   FSync.Enter;
   try
     if Priority = dtpNormal then
       FTasks.Add(Task);
-    if Priority = dtpHigh then
+    if Priority in [dtpHigh, dtpHighAndSkipFilters] then
       FTasks.Insert(0, Task);
 
     Inc(FTotalItemsCount);
@@ -1340,11 +1364,14 @@ begin
   if Info = nil then
     Exit;
 
-  SkipExtensions := AnsiLowerCase(AppSettings.ReadString('Updater', 'SkipExtensions'));
-  AddRawFiles := AppSettings.ReadBool('Updater', 'AddRawFiles', False);
+  if Priority <> dtpHighAndSkipFilters then
+  begin
+    SkipExtensions := AnsiLowerCase(AppSettings.ReadString('Updater', 'SkipExtensions'));
+    AddRawFiles := AppSettings.ReadBool('Updater', 'AddRawFiles', False);
 
-  if not CheckIfCanAddFileAutomatically(Info.FileName, AddRawFiles, SkipExtensions) then
-    Exit;
+    if not CheckIfCanAddFileAutomatically(Info.FileName, AddRawFiles, SkipExtensions) then
+      Exit;
+  end;
 
   Add(TAddTask.Create(FContext, Info), Priority);
 end;
@@ -1405,7 +1432,7 @@ begin
   end;
 end;
 
-procedure TUpdaterStorage.AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority = dtpHigh);
+procedure TUpdaterStorage.AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority);
 begin
   FSync.Enter;
   try
@@ -1464,6 +1491,26 @@ begin
   FSync.Enter;
   try
     Result := FTasks.Count;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.SetCurrentUpdaterState(const Value: string);
+begin
+  FSync.Enter;
+  try
+    FCurrentUpdaterState := Value;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TUpdaterStorage.GetCurrentUpdaterState: string;
+begin
+  FSync.Enter;
+  try
+    Result := FCurrentUpdaterState;
   finally
     FSync.Leave;
   end;
@@ -1682,6 +1729,17 @@ var
   RemoveDirectoryTask: TRemoveDirectoryTask;
   UpdateAttributeTask: TUpdateAttributeTask;
   IdleCycle: Boolean;
+
+   procedure NotifyTask(Task: string);
+   begin
+     TThread.Synchronize(nil,
+       procedure
+       begin
+         UpdaterStorage.CurrentUpdaterState := Task;
+       end
+     );
+   end;
+
 begin
   inherited;
   FreeOnTerminate := True;
@@ -1705,6 +1763,7 @@ begin
           FSpeedCounter.AddSpeedInterval(100 * Length(AddTasks));
 
           UpdaterStorage.UpdateRemainingTime(FSpeedCounter);
+          NotifyTask(FormatEx(TA('Adding file "{0}"', 'System'), [AddTasks[0].FileName]));
         end;
       finally
         for Task in AddTasks do
@@ -1721,6 +1780,7 @@ begin
           IdleCycle := False;
           UpdateTask.Execute;
           FSpeedCounter.AddSpeedInterval(100 * 1);
+          NotifyTask(FormatEx(TA('Updating item "{0}"', 'System'), [UpdateTask.FileName]));
         end;
       finally
         F(UpdateTask);
@@ -1736,6 +1796,7 @@ begin
           IdleCycle := False;
           RemoveTask.Execute;
           FSpeedCounter.AddSpeedInterval(100 * 1);
+          NotifyTask(FormatEx(TA('Deleting file "{0}"', 'System'), [RemoveTask.FileName]));
         end;
       finally
         F(RemoveTask);
@@ -1748,6 +1809,7 @@ begin
           IdleCycle := False;
           RemoveDirectoryTask.Execute;
           FSpeedCounter.AddSpeedInterval(100 * 1);
+          NotifyTask(FormatEx(TA('Deleting directory "{0}"', 'System'), [RemoveDirectoryTask.FileName]));
         end;
       finally
         F(RemoveDirectoryTask);
@@ -1760,6 +1822,7 @@ begin
           IdleCycle := False;
           UpdateAttributeTask.Execute;
           FSpeedCounter.AddSpeedInterval(100 * 1);
+          NotifyTask(FormatEx(TA('Updating attributes for "{0}"', 'System'), [UpdateAttributeTask.FileName]));
         end;
       finally
         F(UpdateAttributeTask);

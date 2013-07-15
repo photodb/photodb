@@ -439,11 +439,6 @@ begin
       UC.AddParameter(TIntegerParameter.Create('PreviewSize', Res.Size));
       UC.AddParameter(TDateTimeParameter.Create('DateUpdated', Now));
 
-      if not FileExistsSafe(FileName) then
-        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_missed))
-      else
-        UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_norm));
-
       HS := TMemoryStream.Create;
       HS.WriteBuffer(Res.Histogram, SizeOf(Res.Histogram));
       HS.Seek(0, soFromBeginning);
@@ -488,8 +483,9 @@ begin
               UC.AddParameter(TIntegerParameter.Create('Rotated', MediaFile.Rotation));
 
               EF := EF + [EventID_Param_Rotate];
-              EventInfo.Rotation := MediaFile.Rotation;
             end;
+            //in any case add rotation to rotate image
+            EventInfo.Rotation := MediaFile.Rotation;
 
             if (MediaFile.Comment <> '') and (Info.Comment <> MediaFile.Comment) then
             begin
@@ -516,7 +512,11 @@ begin
       end;
       F(ExifData);
 
-      Attribute := Db_attr_norm;
+      if not FileExistsSafe(FileName) then
+        Attribute := Db_attr_missed
+      else
+        Attribute := Db_attr_norm;
+
       if Res.Count > 1 then
       begin
         for I := 0 to Res.Count - 1 do

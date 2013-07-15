@@ -696,7 +696,7 @@ begin
                     Continue;
 
                   if not IsFileInCollectionDirectories(FOptions.DBContext.CollectionFileName, FO.Destination.Path, False) then
-                    UpdaterStorage.AddFile(FO.Destination.Path);
+                    UpdaterStorage.AddFile(FO.Destination.Path, dtpHigh);
                 end;
               end;
 

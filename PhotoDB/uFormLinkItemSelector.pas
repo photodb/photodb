@@ -831,7 +831,7 @@ begin
   ActionsTop := (ToHeight - ClientHeight) + BtnClose.Top - FActionLinks[0].Height - PaddingTop + 2;
 
   MoveControlTo(BvActionSeparator, PaddingTop, adHor);
-  MoveControlTo(BvActionSeparator, ActionsTop - 3, adVert);
+  MoveControlTo(BvActionSeparator, ActionsTop - 5, adVert);
 
   Left := PaddingTop;
   for WL in FActionLinks do

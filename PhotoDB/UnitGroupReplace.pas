@@ -36,7 +36,6 @@ uses
 type
   GroupReplaceOptions = record
     AllowAdd: Boolean;
-    MaxAuto: Boolean;
   end;
 
 type
@@ -258,10 +257,7 @@ begin
 
   FAction.OutGroup := Group.Clone;
   SetText(Group.GroupName);
-  if Options.MaxAuto then
-    BtnOkClick(Self)
-  else
-    ShowModal;
+  ShowModal;
   Action := Faction;
 end;
 
@@ -301,10 +297,7 @@ begin
 
   SetText(Group.GroupName);
 
-  if Options.MaxAuto then
-    BtnOkClick(Self)
-  else
-    ShowModal;
+  ShowModal;
   Action := Faction;
 end;
 

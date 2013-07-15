@@ -352,7 +352,7 @@ begin
         FileInfo.Include := True;
         FileInfo.Groups := FRelatedGroups;
 
-        UpdaterStorage.AddFile(FileInfo);
+        UpdaterStorage.AddFile(FileInfo, dtpHighAndSkipFilters);
         Exit;
       finally
         F(FileInfo);

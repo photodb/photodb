@@ -2551,7 +2551,7 @@ end;
 
 procedure TViewer.Onlythisfile1Click(Sender: TObject);
 begin
-  UpdaterStorage.AddFile(Item);
+  UpdaterStorage.AddFile(Item, dtpHighAndSkipFilters);
 end;
 
 procedure TViewer.AddHiddenInfo1Click(Sender: TObject);
@@ -3976,7 +3976,7 @@ begin
       FileInfo.Rating := NewRating;
       FileInfo.Include := True;
 
-      UpdaterStorage.AddFile(FileInfo);
+      UpdaterStorage.AddFile(FileInfo, dtpHighAndSkipFilters);
     finally
       F(FileInfo);
     end;

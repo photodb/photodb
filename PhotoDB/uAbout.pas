@@ -101,9 +101,9 @@ begin
   LnkGoToWebSite.LoadImage;
   LnkGoToWebSite.Left := LsUpdates.Left - LnkGoToWebSite.Width - 5;
   DoubleBuffered := True;
-  MemoInfo.Brush.Style := BsClear;
+  MemoInfo.Brush.Style := bsClear;
   SetWindowLong(MemoInfo.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT);
-  MemoRegistrationInfo.Brush.Style := BsClear;
+  MemoRegistrationInfo.Brush.Style := bsClear;
   SetWindowLong(MemoRegistrationInfo.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT);
 
   FBackground := TBitmap.Create;
@@ -226,6 +226,7 @@ begin
   else
     LnkGoToWebSite.Text := Format(L('New version (%s) is available!'), [ReleaseToString(Info.Release)]);
 
+  LnkGoToWebSite.RefreshBuffer(True);
   LnkGoToWebSite.Left := LsUpdates.Left + LsUpdates.Width - LnkGoToWebSite.Width;
   LnkGoToWebSite.Refresh;
 end;
