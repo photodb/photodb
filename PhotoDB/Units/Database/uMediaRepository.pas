@@ -283,6 +283,7 @@ begin
     UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(FileName, True)));
     UC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(FileName)));
     UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(FileName)));
+    UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_norm));
 
     UC.Execute;
   finally

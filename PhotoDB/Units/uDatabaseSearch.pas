@@ -333,9 +333,9 @@ begin
       begin
         SystemQuery := True;
 
-        Result.Query := Format('SELECT %s FROM $DB$ Im '+
-          'inner join (SELECT StrThCrc,StrTh,Max(DateToAdd) as [Date],Max(Rating) as [Rating] FROM ImageTable where Trim(StrTh) <> "" group by StrThCrc,StrTh having Count(Id) > 1) dp on dp.StrTh = Im.StrTh and dp.StrThCrc = Im.StrThCrc ' +
-          'order by dp.[Rating] desc, dp.[Date] desc, Im.StrThCrc', [FIELDS('Im')]);
+        Result.Query := FormatEx('SELECT {0} FROM $DB$ Im ' +
+          'inner join (SELECT StrThCrc,StrTh,Max(DateToAdd) as [Date],Max(Rating) as [Rating] FROM ImageTable where Trim(StrTh) <> "" AND Attr<>{1} group by StrThCrc,StrTh having Count(Id) > 1) dp on dp.StrTh = Im.StrTh and dp.StrThCrc = Im.StrThCrc ' +
+          'order by dp.[Rating] desc, dp.[Date] desc, Im.StrThCrc', [FIELDS('Im'), Db_attr_deleted]);
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 5)) = AnsiLowerCase('Links') then
@@ -386,14 +386,11 @@ begin
 
         Folder := IncludeTrailingBackslash(Folder);
 
-        Result.Query := Format('Select %s From $DB$ WHERE FolderCRC = :CRC', [FIELDS]);
+        Result.Query := FormatEx('Select {0} From $DB$ WHERE FolderCRC = :CRC AND Attr <> {1}', [FIELDS, Db_attr_deleted]);
         Result.AddIntParam('CRC', GetPathCRC(Folder, False));
 
-        //Result.Query := Format('Select %s From $DB$ WHERE FFileName like :Folder', [FIELDS]);
-        //Result.AddStringParam('Folder', ExcludeTrailingBackslash(Folder) + '%');
-
         if not FSearchParams.ShowPrivate then
-          Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
+          Result.Query := Result.Query + ' and (Access<>' + IntToStr(Db_access_private) + ')';
       end;
 
       if AnsiLowerCase(Copy(Sysaction, 1, 7)) = AnsiLowerCase('similar') then
@@ -411,10 +408,10 @@ begin
           FreeDS(FSpecQuery);
         end;
 
-        Result.Query := Format('SELECT %s FROM $DB$ WHERE StrTh = :str', [FIELDS]);
+        Result.Query := FormatEx('SELECT {0} FROM $DB$ WHERE StrTh = :str AND Attr <> {1}', [FIELDS, Db_attr_deleted]);
         Result.AddStringParam('str', TempString);
         if not FSearchParams.ShowPrivate then
-          Result.Query := Result.Query + ' and (Access<>' + Inttostr(Db_access_private) + ')';
+          Result.Query := Result.Query + ' and (Access<>' + IntToStr(Db_access_private) + ')';
       end;
     end;
 

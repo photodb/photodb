@@ -192,7 +192,7 @@ type
     procedure DoMultiProcessorTask; override;
     procedure ShowLoadingSign;
     procedure HideLoadingSign;
-    procedure CheckFileExistance(Info: TExplorerFileInfo);
+    procedure CheckFileExistance(Tag: Integer; Info: TMediaItem);
     procedure SendPacket;
     procedure SendInfoToExplorer(Info: TExplorerFileInfo; var LastPacketTime: Cardinal);
     procedure SendPacketToExplorer;
@@ -759,7 +759,6 @@ begin
             begin
               if (FFiles[I].Tag = 1) then
               begin
-                FFiles[I].Tag := 1;
                 GUIDParam := FFiles[I].SID;
                 begin
                   Inc(InfoPosition);
@@ -1061,8 +1060,6 @@ begin
   //load icon
   GUIDParam := Info.SID;
   CurrentFile := Info.FileName;
-
-  CheckFileExistance(Info);
 
   if Info.FileType = EXPLORER_ITEM_FOLDER then
   begin
@@ -1485,6 +1482,7 @@ begin
       if ExplorerInfo.View = LV_THUMBS then
         FInfo.LoadImageFromDS(FQuery);
 
+      CheckFileExistance(1, FInfo);
     end;
   end else
   begin
@@ -1494,6 +1492,8 @@ begin
 
   FInfo.InfoLoaded := True;
   FInfo.Tag := EXPLORER_ITEM_IMAGE;
+
+
 
   if not ExplorerInfo.View = LV_THUMBS then
   begin
@@ -2702,15 +2702,15 @@ begin
   end;
 end;
 
-procedure TExplorerThread.CheckFileExistance(Info: TExplorerFileInfo);
+procedure TExplorerThread.CheckFileExistance(Tag: Integer; Info: TMediaItem);
 begin
-  if Info.Tag = 1 then
+  if Tag = 1 then
   begin
     if Info.Attr in [Db_attr_missed, Db_attr_deleted] then
       UpdaterStorage.MarkItemAsExisted(Info);
   end;
 
-  if (Info.Tag = -1) and not (Info.Attr in [Db_attr_missed, Db_attr_deleted]) then
+  if (Tag = -1) and not (Info.Attr in [Db_attr_missed, Db_attr_deleted]) then
     UpdaterStorage.MarkItemAsDeleted(Info);
 end;
 

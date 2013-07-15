@@ -372,9 +372,9 @@ begin
     try
       ForwardOnlyQuery(FFoldersDS);
 
-      Query := FormatEx('SELECT First(FFileName) as [FileName], Count(*) from ImageTable Im '+
-        'where FFileName like "{0}%" '+
-        'group by Left(FFileName, Instr ({1},FFileName, "\")) ', [Path, Length(Path) + 1]);
+      Query := FormatEx('SELECT First(FFileName) as [FileName], COUNT(*) FROM ImageTable Im '+
+        'WHERE FFileName LIKE "{0}%" AND ATTR <> {1} '+
+        'GROUP BY Left(FFileName, Instr ({2},FFileName, "\")) ', [Path, Db_attr_deleted, Length(Path) + 1]);
 
       SetSQL(FFoldersDS, Query);
       OpenDS(FFoldersDS);

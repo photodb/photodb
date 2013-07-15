@@ -1817,7 +1817,7 @@ begin
 
       UpdateAttributeTask := UpdaterStorage.TakeOne<TUpdateAttributeTask>();
       try
-        if RemoveDirectoryTask <> nil then
+        if UpdateAttributeTask <> nil then
         begin
           IdleCycle := False;
           UpdateAttributeTask.Execute;

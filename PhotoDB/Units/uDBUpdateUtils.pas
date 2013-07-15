@@ -350,6 +350,7 @@ begin
       UC.AddParameter(TStringParameter.Create('Name', ExtractFileName(InfoToAdd.FileName)));
       UC.AddParameter(TStringParameter.Create('FFileName', AnsiLowerCase(InfoToAdd.FileName)));
       UC.AddParameter(TIntegerParameter.Create('FolderCRC', GetPathCRC(InfoToAdd.FileName, True)));
+      UC.AddParameter(TIntegerParameter.Create('Attr', Db_attr_norm));
     end;
 
     UC.AddWhereParameter(TIntegerParameter.Create('ID', ID));
