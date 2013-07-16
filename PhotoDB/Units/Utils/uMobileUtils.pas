@@ -48,7 +48,6 @@ end;
 procedure UpdateExeResources(ExeFileName: string);
 var
   MS: TMemoryStream;
-  FileName,
   LanguageXMLFileName, LicenseTxtFileName: string;
   Header: TInternalFSHeader;
   Files: TStrings;

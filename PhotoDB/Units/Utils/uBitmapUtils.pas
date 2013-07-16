@@ -832,14 +832,15 @@ begin
     begin
       adrOut := NativeInt(S.ScanLine[y]);
       yi1 := yi2 {+ 1};
+      if yi1 < 0 then yi1 := 0;
       yi2 := ((y+1) * bufh) div outh - 1;
-      if yi2 < 0 then
-        yi2 := 0;
+      if yi2 < 0 then yi2 := 0;
       if yi2 > bufh-1 then yi2 := bufh;
       xi2 := 0;
       for x := 0 to outw-1 do
       begin
         xi1 := xi2 {+ 1};
+        if xi1 < 0 then xi1 := 0;
         xi2 := ((x+1) * bufw) div outw - 1;
         if xi2 > bufw-1 then xi2 := bufw-1; //
         lw1 := xi2-xi1+1;
@@ -878,14 +879,15 @@ begin
     begin
       adrOut := NativeInt(S.ScanLine[y]);
       yi1 := yi2 {+ 1};
+      if yi1 < 0 then yi1 := 0;
       yi2 := ((y+1) * bufh) div outh - 1;
-      if yi2 < 0 then
-        yi2 := 0;
+      if yi2 < 0 then yi2 := 0;
       if yi2 > bufh-1 then yi2 := bufh;
       xi2 := 0;
       for x := 0 to outw-1 do
       begin
         xi1 := xi2 {+ 1};
+        if xi1 < 0 then xi1 := 0;
         xi2 := ((x+1) * bufw) div outw - 1;
         if xi2 > bufw-1 then xi2 := bufw-1; //
         lw1 := xi2-xi1+1;

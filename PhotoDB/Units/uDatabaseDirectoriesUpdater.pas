@@ -982,9 +982,11 @@ begin
   for Info in pInfos do
   begin
 
-    if not IsGraphicFile(Info.NewFileName) and (WatchType = dwtDirectories) then
+    if not IsGraphicFile(Info.NewFileName) then
     begin
-      CheckDirectoryMoveRename(Info);
+      if (WatchType = dwtDirectories) then
+        CheckDirectoryMoveRename(Info);
+
       Continue;
     end;
 
@@ -1199,6 +1201,7 @@ var
   Infos: TMediaItemCollection;
   Info: TMediaItem;
   Res: TMediaInfo;
+  NotifyAboutFile: Boolean;
   MediaRepository: IMediaRepository;
 begin
   MediaRepository := FDBContext.Media;
@@ -1246,6 +1249,7 @@ begin
           end;
 
           try
+            NotifyAboutFile := True;
 
             if Res.Count = 1 then
             begin
@@ -1272,15 +1276,22 @@ begin
             end;
 
             //add file as duplicate
-            TDatabaseUpdateManager.AddFileAsDuplicate(FDBContext, Info, Res);
+            if not TDatabaseUpdateManager.AddFileAsDuplicate(FDBContext, Info, Res) then
+            begin
+              UpdaterStorage.AddFileWithErrors(Info.FileName);
+              NotifyAboutFile := False;
+            end;
 
           finally
-            TThread.Synchronize(nil,
-              procedure
-              begin
-                NotifyAboutFileProcessing(Info, Res);
-              end
-            );
+            if NotifyAboutFile then
+            begin
+              TThread.Synchronize(nil,
+                procedure
+                begin
+                  NotifyAboutFileProcessing(Info, Res);
+                end
+              );
+            end;
           end;
         end;
 

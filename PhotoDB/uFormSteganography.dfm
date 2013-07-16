@@ -48,7 +48,7 @@ object FormSteganography: TFormSteganography
     ExplicitTop = 313
     ExplicitWidth = 520
   end
-  object Image2: TImage
+  object ImStenoLogo: TImage
     Left = 8
     Top = 8
     Width = 97

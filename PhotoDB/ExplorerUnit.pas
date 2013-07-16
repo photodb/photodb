@@ -1439,6 +1439,12 @@ begin
 end;
 
 procedure TExplorerForm.FormCreate(Sender: TObject);
+
+  procedure M(text: string);
+  begin
+    MessageBoxDB(0, text, text, 0, 0);
+  end;
+
 begin
   LoadContext;
   FSearchMode := -1;
@@ -1553,7 +1559,7 @@ begin
   PnSearch.Width := AppSettings.ReadInteger('Explorer', 'SearchPanel', 210);
   VleExif.ColWidths[0] := AppSettings.ReadInteger('Explorer', 'LeftPanelExifSplitter', VleExif.ColWidths[0]);
 
-  TbSearch.Down := AppSettings.ReadBool('Explorer', 'LeftPanelSearchVisible', False);
+  TbSearch.Down := AppSettings.ReadBool('Explorer', 'LeftPanelSearchVisible', True);
   TbSearch.Tag := IIF(TbSearch.Down, -1, 1);
 
   TbImport.Visible := not FolderView;
@@ -1572,37 +1578,13 @@ begin
   TW.I.Start('LoadToolBarGrayedIcons');
   LoadToolBarGrayedIcons;
 
-  MiActivation.Caption := L('Activation');
-  MiAbout.Caption := L('About');
-  MiHomePage.Caption := L('Go to home page');
-  MiAuthorEmail.Caption := L('Email author');
-  MiCheckUpdates.Caption := L('Check for updates');
-
-  MiCDExport.Caption := L('Export images to CD');
-  MiCDMapping.Caption := L('CD mapping');
-
-  PmHelp.Images := Icons.ImageList;
-  PmOptions.Images := Icons.ImageList;
-
-  MiActivation.ImageIndex := DB_IC_NOTES;
-  MiAbout.ImageIndex := DB_IC_HELP;
-  MiHomePage.ImageIndex := DB_IC_NETWORK;
-  MiAuthorEmail.ImageIndex := DB_IC_E_MAIL;
-  MiCheckUpdates.ImageIndex := DB_IC_UPDATING;
-
-  MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
-  MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
-
-  PmShareAdditionalTasks.Images := Icons.ImageList;
-  MiShareImageAndGetUrl.ImageIndex := DB_IC_LINK;
-
-  LoadDBList;
-
   TW.I.Start('LoadLanguage');
   LoadLanguage;
 
   if IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;
+
+  LoadDBList;
 
   TW.I.Start('LoadToolBarGrayedIcons - end');
   ToolBarMain.Images := ToolBarNormalImageList;
@@ -7679,6 +7661,9 @@ begin
       TreeView.SelectPathItem(PePath.PathEx);
 
   PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
+
+  if FActiveLeftTab = eltsEXIF then
+    VleExif.Resize;
 end;
 
 procedure TExplorerForm.ApplyRightTabs;
@@ -8161,6 +8146,15 @@ begin
     MiInfoGroupProperties.Caption := L('Properties');
 
     MiShareImageAndGetUrl.Caption := L('Generate link');
+
+    MiActivation.Caption := L('Activation');
+    MiAbout.Caption := L('About');
+    MiHomePage.Caption := L('Go to home page');
+    MiAuthorEmail.Caption := L('Email author');
+    MiCheckUpdates.Caption := L('Check for updates');
+
+    MiCDExport.Caption := L('Export images to CD');
+    MiCDMapping.Caption := L('CD mapping');
   finally
     EndTranslate;
   end;
@@ -8761,6 +8755,9 @@ begin
       FileName := IIF(Index > -1, ProcessPath(FFilesInfo[Index].FileName), '');
     end;
 
+    if not ValidEnryptFileEx(FileName) then
+      Exit;
+
     Password := SessionPasswords.FindForFile(FileName);
     if (Password = '') then
       Password := RequestPasswordForm.ForImage(FileName);
@@ -8821,6 +8818,9 @@ begin
       Index := ItemIndexToMenuIndex(Item.Index);
       FileName := IIF(Index > -1, ProcessPath(FFilesInfo[Index].FileName), '');
     end;
+
+    if ValidEnryptFileEx(FileName) or not IsGraphicFile(FileName) and not CanBeTransparentEncryptedFile(FileName) then
+      Exit;
 
     Opt := EncryptForm.QueryPasswordForFile(FileName);
     if Opt.Password = '' then
@@ -13961,6 +13961,21 @@ begin
   MiInfoGroupFind.ImageIndex := DB_IC_SEARCH;
   MiInfoGroupRemove.ImageIndex := DB_IC_DELETE_INFO;
   MiInfoGroupProperties.ImageIndex := DB_IC_PROPERTIES;
+
+  PmHelp.Images := Icons.ImageList;
+  PmOptions.Images := Icons.ImageList;
+
+  MiActivation.ImageIndex := DB_IC_NOTES;
+  MiAbout.ImageIndex := DB_IC_HELP;
+  MiHomePage.ImageIndex := DB_IC_NETWORK;
+  MiAuthorEmail.ImageIndex := DB_IC_E_MAIL;
+  MiCheckUpdates.ImageIndex := DB_IC_UPDATING;
+
+  MiCDExport.ImageIndex := DB_IC_CD_EXPORT;
+  MiCDMapping.ImageIndex := DB_IC_CD_MAPPING;
+
+  PmShareAdditionalTasks.Images := Icons.ImageList;
+  MiShareImageAndGetUrl.ImageIndex := DB_IC_LINK;
 
   if not IsWindows8 then
     TLoad.Instance.RequiredDBKernelIcons;

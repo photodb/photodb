@@ -154,6 +154,10 @@ begin
       begin
         C := C + 10;
         Application.ProcessMessages;
+
+        if not DBThreadManager.IsThread(Thread) then
+          Break;
+
         if C > 10000 then
           Break;
       end;

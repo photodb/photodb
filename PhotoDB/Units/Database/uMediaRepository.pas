@@ -7,6 +7,7 @@ uses
   System.SysUtils,
 
   Dmitry.CRC32,
+  Dmitry.Utils.System,
 
   UnitDBDeclare,
 
@@ -186,6 +187,7 @@ begin
   SC := FContext.CreateSelect(ImageTable);
   try
     SC.AddParameter(TCustomFieldParameter.Create('COUNT(*) AS ITEMS_COUNT'));
+    SC.AddWhereParameter(TCustomConditionParameter.Create(FormatEx('Attr <> {0}', [Db_attr_deleted])));
 
     if SC.Execute > 0 then
       Result := SC.DS.FieldByName('ITEMS_COUNT').AsInteger;
