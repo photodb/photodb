@@ -567,6 +567,9 @@ type
     N16: TMenuItem;
     MiHelp: TMenuItem;
     TbbDuplicates: TToolButton;
+    MiShowPrivatePhotos: TMenuItem;
+    N18: TMenuItem;
+    MiViewSettings: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -623,8 +626,6 @@ type
     procedure SetSelected(NewSelected: TEasyItem);
     procedure PropertiesLinkClick(Sender: TObject);
     procedure SlideShowLinkClick(Sender: TObject);
-    procedure ShowOnlyCommon1Click(Sender: TObject);
-    procedure ShowPrivate1Click(Sender: TObject);
     procedure Help1Click(Sender: TObject);
     procedure MiTreeViewOpenInNewWindowClick(Sender: TObject);
     procedure RefreshLinkClick(Sender: TObject);
@@ -852,6 +853,7 @@ type
     procedure WlHistogramImageClick(Sender: TObject);
     procedure MiHelpClick(Sender: TObject);
     procedure TbbDuplicatesClick(Sender: TObject);
+    procedure MiShowPrivatePhotosClick(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -3634,7 +3636,7 @@ begin
   ImParams := [EventID_Param_Crypt, EventID_Param_Image, EventID_Param_Delete, EventID_Param_Critical];
   if ImParams * params <> [] then
   begin
-    if EventID_Param_Delete in ImParams then
+    if EventID_Param_Delete in params then
     begin
       for I := 0 to FFilesInfo.Count - 1 do
       begin
@@ -3805,7 +3807,8 @@ end;
 
 procedure TExplorerForm.Addfolder1Click(Sender: TObject);
 begin
-  UpdaterStorage.AddDirectory(GetCurrentPath)
+  UpdaterStorage.AddDirectory(GetCurrentPath);
+  ElvMain.BackGround.Enabled := True;
 end;
 
 procedure TExplorerForm.Refresh1Click(Sender: TObject);
@@ -5408,10 +5411,13 @@ begin
                   RefreshItem(I, True);
                 if AnsiLowerCase(FSelectedInfo.FileName) = AnsiLowerCase(PInfo[K].OldFileName) then
                   ListView1SelectItem(ElvMain, ListView1Selected, ListView1Selected = nil);
-              end
-              else
-                RenamefileWithDB(FContext, KernelEventCallBack, PInfo[K].OldFileName, PInfo[K].NewFileName, FFilesInfo[Index].ID, True);
-              Continue;
+
+                if not TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
+                  if not TLockFiles.Instance.IsFileLocked(PInfo[K].OldFileName) then
+                    if IsGraphicFile(PInfo[K].NewFileName) then
+                      RenamefileWithDB(FContext, KernelEventCallBack, PInfo[K].OldFileName, PInfo[K].NewFileName, FFilesInfo[Index].ID, True);
+
+              end;
             end;
           end;
         end;
@@ -6239,6 +6245,14 @@ begin
   end;
 end;
 
+procedure TExplorerForm.MiShowPrivatePhotosClick(Sender: TObject);
+begin
+  MiShowPrivatePhotos.Checked := not MiShowPrivatePhotos.Checked;
+  ExplorerManager.ShowPrivate := MiShowPrivatePhotos.Checked;
+
+  Reload;
+end;
+
 procedure TExplorerForm.MiESShowHiddenClick(Sender: TObject);
 begin
   FExtendedSearchParams.ShowHidden := not FExtendedSearchParams.ShowHidden;
@@ -6391,6 +6405,11 @@ begin
     Paste1.Visible := False;
 
   Paste1.Visible := Paste1.Visible and CanCopyFromClipboard;
+
+  if ExplorerManager.ShowPrivate then
+    MiShowPrivatePhotos.ImageIndex := -1
+  else
+    MiShowPrivatePhotos.ImageIndex := DB_IC_PRIVATE;
 end;
 
 procedure TExplorerForm.PmListViewTypePopup(Sender: TObject);
@@ -7967,16 +7986,6 @@ begin
   LsMain.Show;
 end;
 
-procedure TExplorerForm.ShowOnlyCommon1Click(Sender: TObject);
-begin
-  ExplorerManager.ShowPrivate := False;
-end;
-
-procedure TExplorerForm.ShowPrivate1Click(Sender: TObject);
-begin
-  ExplorerManager.ShowPrivate := True;
-end;
-
 procedure TExplorerForm.LoadLanguage;
 begin
   BeginTranslate;
@@ -8060,6 +8069,8 @@ begin
 
     MakeFolderViewer1.Caption := L('Make portable viewer');
     MakeFolderViewer2.Caption := L('Make portable viewer');
+    MiShowPrivatePhotos.Caption := L('Show private photos');
+    MiViewSettings.Caption := L('View settings');
 
     Thumbnails1.Caption := L('Thumbnail');
     Tile2.Caption := L('Tile');
@@ -13940,6 +13951,7 @@ begin
   Modified1.ImageIndex := DB_IC_CLOCK;
   MakeFolderViewer1.ImageIndex := DB_IC_SAVE_AS_TABLE;
   MakeFolderViewer2.ImageIndex := DB_IC_SAVE_AS_TABLE;
+  MiViewSettings.ImageIndex := DB_IC_EXPLORER_PANEL;
   Number1.ImageIndex := DB_IC_RENAME;
   ViewsCount1.ImageIndex := DB_IC_VIEW_COUNT;
 

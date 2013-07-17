@@ -12,6 +12,7 @@ uses
 
   Dmitry.Utils.Files,
 
+  GraphicCrypt,
   UnitPropeccedFilesSupport,
   UnitCrypting,
   UnitDBDeclare,
@@ -133,82 +134,91 @@ var
 begin
   inherited;
   FreeOnTerminate := True;
-  CoInitializeEx(nil, COM_MODE);
   try
-    Count := 0;
-    for I := 0 to Length(FOptions.IDs) - 1 do
-      if FOptions.Selected[I] then
-        Inc(Count);
-    Synchronize(InitializeProgress);
+    CoInitializeEx(nil, COM_MODE);
     try
-      C := 0;
+      Count := 0;
       for I := 0 to Length(FOptions.IDs) - 1 do
-      begin
-        StrParam := FOptions.Files[I];
-        IntParam := FOptions.IDs[I];
-        Position := I;
         if FOptions.Selected[I] then
+          Inc(Count);
+      Synchronize(InitializeProgress);
+      try
+        C := 0;
+        for I := 0 to Length(FOptions.IDs) - 1 do
         begin
-          Synchronize(IfBreakOperation);
-          if BoolParam then
-          begin
-            for J := I to Length(FOptions.IDs) - 1 do
-            begin
-              StrParam := FOptions.Files[J];
-              Synchronize(RemoveFileFromUpdatingList);
-            end;
-            Synchronize(DoDBkernelEventRefreshList);
-            Continue;
-          end;
-          Inc(C);
-          SetProgressPosition(C);
-          if FOptions.Action = ACTION_ENCRYPT_IMAGES then
-          begin
-            // Encrypting images
-            try
-              CryptResult := EncryptImageByFileName(FContext, FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
-                FOptions.EncryptOptions, False, OnFileProgress);
-
-              if CryptResult <> CRYPT_RESULT_OK then
-                ShowError(DBErrorToString(CryptResult));
-            except
-              on e: Exception do
-                EventLog(e);
-            end;
-          end else
-          begin
-            // Decrypting images
-            FE := FileExistsSafe(FOptions.Files[I]);
-            // GetPassword
-            StrParam := FOptions.Files[I];
-            IntParam := FOptions.IDs[I];
-            GetPassword;
-            // Decrypting images
-            CryptResult := ResetPasswordImageByFileName(FContext, Self, FOptions.Files[I], FOptions.IDs[I], FPassword, OnFileProgress);
-
-            if CryptResult <> CRYPT_RESULT_OK then
-              ShowError(DBErrorToString(CryptResult));
-          end;
           StrParam := FOptions.Files[I];
           IntParam := FOptions.IDs[I];
-          Synchronize(RemoveFileFromUpdatingList);
-          Synchronize(DoDBkernelEventRefreshList);
-          Synchronize(DoDBkernelEvent);
-
-          Synchronize(
-            procedure
+          Position := I;
+          if FOptions.Selected[I] then
+          begin
+            Synchronize(IfBreakOperation);
+            if BoolParam then
             begin
-              NotifyFileUpdated(FOptions.Files[I]);
-            end
-          );
+              for J := I to Length(FOptions.IDs) - 1 do
+              begin
+                StrParam := FOptions.Files[J];
+                Synchronize(RemoveFileFromUpdatingList);
+              end;
+              Synchronize(DoDBkernelEventRefreshList);
+              Continue;
+            end;
+            Inc(C);
+            SetProgressPosition(C);
+            if FOptions.Action = ACTION_ENCRYPT_IMAGES then
+            begin
+              // Encrypting images
+              try
+                CryptResult := EncryptImageByFileName(FContext, FSender, FOptions.Files[I], FOptions.IDs[I], FOptions.Password,
+                  FOptions.EncryptOptions, False, OnFileProgress);
+
+                if (CryptResult <> CRYPT_RESULT_OK) and (CryptResult <> CRYPT_RESULT_ALREADY_CRYPT) then
+                  ShowError(DBErrorToString(CryptResult));
+              except
+                on e: Exception do
+                  EventLog(e);
+              end;
+            end else
+            begin
+              // Decrypting images
+              FE := FileExistsSafe(FOptions.Files[I]);
+              // GetPassword
+              StrParam := FOptions.Files[I];
+              IntParam := FOptions.IDs[I];
+
+              if ValidCryptGraphicFile(FOptions.Files[I]) then
+              begin
+                GetPassword;
+                // Decrypting images
+                CryptResult := ResetPasswordImageByFileName(FContext, Self, FOptions.Files[I], FOptions.IDs[I], FPassword, OnFileProgress);
+
+                if (CryptResult <> CRYPT_RESULT_OK) then
+                  ShowError(DBErrorToString(CryptResult));
+              end;
+            end;
+            StrParam := FOptions.Files[I];
+            IntParam := FOptions.IDs[I];
+            Synchronize(RemoveFileFromUpdatingList);
+            Synchronize(DoDBkernelEventRefreshList);
+            Synchronize(DoDBkernelEvent);
+
+            Synchronize(
+              procedure
+              begin
+                NotifyFileUpdated(FOptions.Files[I]);
+              end
+            );
+          end;
         end;
+      finally
+        Synchronize(DestroyProgress);
       end;
+      FreeDS(Table);
     finally
-      Synchronize(DestroyProgress);
+      CoUninitialize;
     end;
-    FreeDS(Table);
-  finally
-    CoUninitialize;
+  except
+    on e: Exception do
+      EventLog(e);
   end;
 end;
 

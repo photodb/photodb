@@ -87,6 +87,7 @@ const
   Animation3DDelay = 100;
   MapImageWidth = 200;
   MapImageHeight = 200;
+  cShadowSize = 4;
 
   cMaxShareFilesLimit = 100;
   cMaxShareFileSize = 100 * 1024 * 1024;

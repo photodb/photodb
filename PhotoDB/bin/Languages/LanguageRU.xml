@@ -505,6 +505,9 @@
 	<translate name="Active collection can't be deleted! Please change active collection and try again." value="Текущая коллекция не может быть удалена! Пожалуйста, измените активную коллекцию и попробуйте снова." />
 	<translate name="Collection &quot;{0}&quot; already exists! Delete this collection file?" value="Коллекция &quot;{0}&quot; уже существует! Удалить этот файл с коллекцией?" />
 	<translate name="Location {0} is already in collection!" value="Путь {0} уже находится в коллекции!" />
+	<translate name="Navigate to collection file" value="Показать файл коллекции" />
+	<translate name="Show private photos" value="Показывать личные фото" />
+	<translate name="View settings" value="Настройки отображения" />
   </scope>
   <scope name="PropertiesForm">
 	<translate name="Properties" value="Свойства" />

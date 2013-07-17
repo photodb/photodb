@@ -67,6 +67,8 @@ begin
 
   if not FolderView and not DBTerminating and GetParamStrDBBool('/install') then
   begin
+    //to force check updates after install
+    AppSettings.ReadDateTime('Updater', 'LastTime', Now - 365);
     RegisterVideoFiles;
     StopApplication;
   end;

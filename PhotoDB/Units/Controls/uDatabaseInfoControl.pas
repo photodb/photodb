@@ -19,6 +19,7 @@ uses
   Vcl.Forms,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.ActnPopup,
+  Vcl.Menus,
 
   Dmitry.Utils.System,
   Dmitry.Graphics.LayeredBitmap,
@@ -28,6 +29,7 @@ uses
 
   UnitDBDeclare,
 
+  uConstants,
   uRuntime,
   uMemory,
   uLogger,
@@ -41,13 +43,17 @@ uses
   uFormInterfaces,
   uDBManager,
   uDBContext,
+  uTranslate,
   uDatabaseDirectoriesUpdater,
   uDBForm,
   uThreadForm,
   uThreadTask,
+  uDBIcons,
   uAssociations,
+  uShellIntegration,
   uCollectionEvents,
-  uLinkListEditorDatabases;
+  uLinkListEditorDatabases,
+  uManagerExplorer;
 
 type
   TDatabaseInfoControl = class(TPanel)
@@ -59,6 +65,8 @@ type
     FSeparator: TBevel;
     FSelectImage: TImage;
     FCheckTimer: TTimer;
+    FOptionsPopupMenu: TPopupActionBar;
+    MiRescan: TMenuItem;
     FMinimized: Boolean;
     FOnSelectClick: TNotifyEvent;
     FInfo: TDatabaseInfo;
@@ -76,6 +84,9 @@ type
     procedure CheckTimerOnTimer(Sender: TObject);
     procedure ImageClick(Sender: TObject);
     procedure DatabaseNameOnClick(Sender: TObject);
+    procedure MiShowFileClick(Sender: TObject);
+    procedure MiRescanClick(Sender: TObject);
+    procedure OnOptionsPopup(Sender: TObject);
     procedure ChangedDBDataByID(Sender: TObject; ID: Integer; Params: TEventFields; Value: TEventValues);
     function GetBigToolBar: Boolean;
   protected
@@ -116,7 +127,7 @@ begin
         AssignJpeg(Bit, Value.JPEGImage);
         ApplyRotate(Bit, Value.Rotation);
 
-        KeepProportions(Bit, FImage.Width - 4, FImage.Height - 4);
+        KeepProportions(Bit, FImage.Width - cShadowSize, FImage.Height - cShadowSize);
 
         Bitmap := TBitmap.Create;
         try
@@ -309,6 +320,7 @@ end;
 procedure TDatabaseInfoControl.LoadControl(Info: TDatabaseInfo);
 var
   PNG: TPngImage;
+  MI: TMenuItem;
 begin
   F(FInfo);
   if Info <> nil then
@@ -364,6 +376,28 @@ begin
       FSelectImage.Center := True;
       FSelectImage.Cursor := crHandPoint;
       FSelectImage.OnClick := SelectDatabaseClick;
+
+      FOptionsPopupMenu := TPopupActionBar.Create(Self);
+      FOptionsPopupMenu.Images := Icons.ImageList;
+      FOptionsPopupMenu.OnPopup := OnOptionsPopup;
+      MI := TMenuItem.Create(FOptionsPopupMenu);
+      MI.Caption := L('Navigate to collection file');
+      MI.OnClick := MiShowFileClick;
+      MI.ImageIndex := DB_IC_EXPLORER;
+      FOptionsPopupMenu.Items.Add(MI);
+
+      MI := TMenuItem.Create(FOptionsPopupMenu);
+      MI.Caption := '-';
+      FOptionsPopupMenu.Items.Add(MI);
+
+      MiRescan := TMenuItem.Create(FOptionsPopupMenu);
+      MiRescan.Caption := TA('Rescan', 'CollectionSettings');
+      MiRescan.OnClick := MiRescanClick;
+      MiRescan.ImageIndex := DB_IC_REFRESH_THUM;
+      FOptionsPopupMenu.Items.Add(MiRescan);
+
+      FImage.PopupMenu := FOptionsPopupMenu;
+      FDatabaseName.PopupMenu := FOptionsPopupMenu;
 
       FCheckTimer := TTimer.Create(Self);
       FCheckTimer.Interval := 1000;
@@ -479,6 +513,27 @@ begin
       end;
     end
   );
+end;
+
+procedure TDatabaseInfoControl.MiRescanClick(Sender: TObject);
+begin
+  ClearUpdaterCache(DBManager.DBContext);
+  RecheckUserDirectories;
+  CheckTimerOnTimer(Sender);
+end;
+
+procedure TDatabaseInfoControl.MiShowFileClick(Sender: TObject);
+begin
+  with ExplorerManager.NewExplorer(False) do
+  begin
+    NavigateToFile(DBManager.DBContext.CollectionFileName);
+    Show;
+  end;
+end;
+
+procedure TDatabaseInfoControl.OnOptionsPopup(Sender: TObject);
+begin
+  MiRescan.Enabled := UserDirectoryUpdaterCount = 0;
 end;
 
 procedure TDatabaseInfoControl.SelectDatabaseClick(Sender: TObject);

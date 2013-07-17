@@ -225,7 +225,7 @@ begin
     SC.AddParameter(TIntegerParameter.Create('ID'));
 
     SC.AddWhereParameter(TIntegerParameter.Create('FolderCRC', Integer(GetPathCRC(FileName, True))));
-    SC.AddWhereParameter(TStringParameter.Create('Name', AnsiLowerCase(ExtractFileName(FileName)), paLike));
+    SC.AddWhereParameter(TStringParameter.Create('FFileName', AnsiLowerCase(FileName), paEquals));
 
     if SC.Execute > 0 then
       Result := SC.DS.FieldByName('ID').AsInteger;

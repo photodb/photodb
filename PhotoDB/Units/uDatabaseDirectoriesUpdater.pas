@@ -197,6 +197,7 @@ type
     function GetActiveItemsCount: Integer;
     procedure SetCurrentUpdaterState(const Value: string);
     function GetCurrentUpdaterState: string;
+    function IsDuplicateTask(Task: TDatabaseTask): Boolean;
   public
     constructor Create(Context: IDBContext);
     destructor Destroy; override;
@@ -1248,8 +1249,8 @@ begin
             Continue;
           end;
 
+          NotifyAboutFile := True;
           try
-            NotifyAboutFile := True;
 
             if Res.Count = 1 then
             begin
@@ -1327,21 +1328,6 @@ begin
 end;
 
 { TUpdaterStorage }
-
-procedure TUpdaterStorage.Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority);
-begin
-  FSync.Enter;
-  try
-    if Priority = dtpNormal then
-      FTasks.Add(Task);
-    if Priority in [dtpHigh, dtpHighAndSkipFilters] then
-      FTasks.Insert(0, Task);
-
-    Inc(FTotalItemsCount);
-  finally
-    FSync.Leave;
-  end;
-end;
 
 procedure TUpdaterStorage.AddDirectory(DirectoryPath: string);
 var
@@ -1443,13 +1429,44 @@ begin
   end;
 end;
 
-procedure TUpdaterStorage.AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority);
+procedure TUpdaterStorage.Add(Task: TDatabaseTask; Priority: TDatabaseTaskPriority);
 begin
   FSync.Enter;
   try
+    if IsDuplicateTask(Task) then
+    begin
+      Task.Free;
+      Exit;
+    end;
+
+    if Priority = dtpNormal then
+      FTasks.Add(Task);
+    if Priority in [dtpHigh, dtpHighAndSkipFilters] then
+      FTasks.Insert(0, Task);
+
+    Inc(FTotalItemsCount);
+  finally
+    FSync.Leave;
+  end;
+end;
+
+procedure TUpdaterStorage.AddRange(Tasks: TList<TDatabaseTask>; Priority: TDatabaseTaskPriority);
+var
+  I: Integer;
+begin
+  FSync.Enter;
+  try
+    for I := Tasks.Count - 1 downto 0 do
+      if IsDuplicateTask(Tasks[I]) then
+      begin
+        Tasks[I].Free;
+        Tasks.Delete(I);
+        Continue;
+      end;
+
     if Priority = dtpNormal then
       FTasks.AddRange(Tasks.ToArray());
-    if Priority = dtpHigh then
+    if Priority in [dtpHigh, dtpHighAndSkipFilters] then
       FTasks.InsertRange(0, Tasks.ToArray());
 
     Inc(FTotalItemsCount, Tasks.Count);
@@ -1471,6 +1488,8 @@ begin
         FTasks.Delete(I);
         Dec(FTotalItemsCount);
       end;
+
+    FErrorFileList.Clear;
   finally
     FSync.Leave;
   end;
@@ -1551,6 +1570,23 @@ begin
       if AnsiLowerCase(FTasks[I].FileName) = FileName then
         Exit(True);
 
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TUpdaterStorage.IsDuplicateTask(Task: TDatabaseTask): Boolean;
+var
+  I: Integer;
+  FileName: string;
+begin
+  Result := False;
+  FileName := AnsiLowerCase(Task.FileName);
+  FSync.Enter;
+  try
+    for I := 0 to FTasks.Count - 1 do
+      if (AnsiLowerCase(FTasks[I].FileName) = FileName) and (Task.ClassName = FTasks[I].ClassName) then
+        Exit(True);
   finally
     FSync.Leave;
   end;

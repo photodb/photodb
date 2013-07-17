@@ -303,11 +303,11 @@ begin
   Colors := TList<TColor>.Create;
   MediaItem := TMediaItem.CreateFromFile(FileName);
   try
-    LoadFlags := [ilfGraphic, ilfThrowError, ilfDontUpdateInfo];
+    LoadFlags := [ilfGraphic, ilfPassword, ilfDontUpdateInfo];
     if iioColors in Options then
       LoadFlags := LoadFlags + [ilfICCProfile];
 
-    if LoadImageFromPath(MediaItem, 1, '', [ilfGraphic, ilfDontUpdateInfo], ImageInfo) then
+    if LoadImageFromPath(MediaItem, 1, '', LoadFlags, ImageInfo) then
     begin
       Result.ImageWidth := ImageInfo.GraphicWidth;
       Result.ImageHeight := ImageInfo.GraphicHeight;
