@@ -312,7 +312,6 @@ type
     procedure TsGroupsResize(Sender: TObject);
     procedure WedGroupsFilterChange(Sender: TObject);
     procedure TmrFilterTimer(Sender: TObject);
-    procedure PcMainChanging(Sender: TObject; var AllowChange: Boolean);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -602,6 +601,7 @@ begin
     ResetBold;
     if ImageID <> Id then
       PcMain.ActivePageIndex := 0;
+
     ImgReloadInfo.Visible := False;
     FShowInfoType := SHOW_INFO_ID;
 
@@ -823,8 +823,6 @@ begin
 
   LinkDropFiles := TStringList.Create;
   PropertyManager.AddProperty(Self);
-  LstCurrentGroups.DoubleBuffered := True;
-  LstAvaliableGroups.DoubleBuffered := True;
   RegGroups := TGroups.Create;
   FShowenRegGroups := TGroups.Create;
   FNowGroups := TGroups.Create;
@@ -1100,7 +1098,7 @@ end;
 
 procedure TPropertiesForm.TmrFilterTimer(Sender: TObject);
 begin
-  //TmrFilter.Enabled := False;
+  TmrFilter.Enabled := False;
   FillGroupList;
 end;
 
@@ -1853,11 +1851,7 @@ procedure TPropertiesForm.PcMainChange(Sender: TObject);
 var
   Options: TPropertyLoadGistogrammThreadOptions;
   NewTab: Integer;
-  I: Integer;
 begin
-  for I := 0 to PcMain.ActivePage.ControlCount - 1 do
-    PcMain.ActivePage.Controls[I].Show;
-
   NewTab := PcMain.ActivePageIndex;
   case NewTab of
     1:
@@ -1890,22 +1884,6 @@ begin
         WlAddLink.Top := LinksScrollBox.Top + LinksScrollBox.Height + 3;
       end;
   end;
-
-
-  InvalidateRect(Handle, nil, TRUE);
-  //TODO: Sometimes tabs doesn't redraw after change
-  //SendMessage(PcMain.Handle, WM_SETREDRAW, 1, 0);
-  //RedrawWindow(PcMain.Handle, nil, 0, RDW_ERASENOW + RDW_FRAME + RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT );
-  //InvalidateRect(PcMain.Handle, nil, True);
-end;
-
-procedure TPropertiesForm.PcMainChanging(Sender: TObject;
-  var AllowChange: Boolean);
-var
-  I: Integer;
-begin
-  for I := 0 to PcMain.ActivePage.ControlCount - 1 do
-    PcMain.ActivePage.Controls[I].Hide;
 end;
 
 procedure TPropertiesForm.ReadExifData;

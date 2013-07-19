@@ -1283,6 +1283,7 @@ begin
   GroupCode := '';
   GroupImage := nil;
   GroupDate := 0;
+  IncludeInQuickList := True;
 end;
 
 destructor TGroup.Destroy;

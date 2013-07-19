@@ -413,6 +413,17 @@ procedure TEditGroupsForm.RecreateGroupsList;
 var
   I, Size: Integer;
   SmallB, B: TBitmap;
+
+  procedure DrawDefaultGroupImage(Image: TBitmap);
+  begin
+    Image.PixelFormat := pf24bit;
+    Image.SetSize(GroupsImageList.Width, GroupsImageList.Height);
+    Image.Canvas.Pen.Color := Theme.ListColor;
+    Image.Canvas.Brush.Color := Theme.ListColor;
+    Image.Canvas.Rectangle(0, 0, Image.Width, Image.Height);
+    DrawIconEx(Image.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], Image.Width div 2 - 8, Image.Height div 2 - 8, 0, 0, DI_NORMAL);
+  end;
+
 begin
   F(FRegGroups);
   FRegGroups := FGroupsRepository.GetAll(True, True);
@@ -420,14 +431,7 @@ begin
   GroupsImageList.Clear;
   SmallB := TBitmap.Create;
   try
-    SmallB.PixelFormat := pf24bit;
-    SmallB.Width := 32;
-    SmallB.Height := 32 + 2;
-    SmallB.Canvas.Pen.Color := Theme.ListColor;
-    SmallB.Canvas.Brush.Color := Theme.ListColor;
-    SmallB.Canvas.Rectangle(0, 0, SmallB.Width, SmallB.Height);
-    DrawIconEx(SmallB.Canvas.Handle, 0, 0, Icons[DB_IC_GROUPS], SmallB.Width div 2 - 8,
-      SmallB.Height div 2 - 8, 0, 0, DI_NORMAL);
+    DrawDefaultGroupImage(SmallB);
     GroupsImageList.Add(SmallB, nil);
   finally
     F(SmallB);
@@ -436,27 +440,26 @@ begin
   begin
     SmallB := TBitmap.Create;
     try
-      SmallB.PixelFormat := pf24bit;
-      SmallB.Canvas.Brush.Color := Theme.ListColor;
-      if FRegGroups[I].GroupImage <> nil then
-        if not FRegGroups[I].GroupImage.Empty then
-        begin
-          B := TBitmap.Create;
-          try
-            B.PixelFormat := pf24bit;
-            B.Canvas.Brush.Color := Theme.ListColor;
-            B.Canvas.Pen.Color := Theme.ListColor;
-            Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
-            B.Width := Size;
-            B.Height := Size;
-            B.Canvas.Rectangle(0, 0, Size, Size);
-            B.Canvas.Draw(B.Width div 2 - FRegGroups[I].GroupImage.Width div 2,
-              B.Height div 2 - FRegGroups[I].GroupImage.Height div 2, FRegGroups[I].GroupImage);
-            DoResize(32, 34, B, SmallB);
-          finally
-            F(B);
-          end;
+      if (FRegGroups[I].GroupImage <> nil) and not FRegGroups[I].GroupImage.Empty then
+      begin
+        B := TBitmap.Create;
+        try
+          B.PixelFormat := pf24bit;
+          B.Canvas.Brush.Color := Theme.ListColor;
+          B.Canvas.Pen.Color := Theme.ListColor;
+          Size := Max(FRegGroups[I].GroupImage.Width, FRegGroups[I].GroupImage.Height);
+          B.Width := Size;
+          B.Height := Size;
+          B.Canvas.Rectangle(0, 0, Size, Size);
+          B.Canvas.Draw(B.Width div 2 - FRegGroups[I].GroupImage.Width div 2,
+            B.Height div 2 - FRegGroups[I].GroupImage.Height div 2, FRegGroups[I].GroupImage);
+          DoResize(GroupsImageList.Width, GroupsImageList.Height, B, SmallB);
+        finally
+          F(B);
         end;
+      end else
+        DrawDefaultGroupImage(SmallB);
+
       GroupsImageList.Add(SmallB, nil);
     finally
       F(SmallB);

@@ -220,7 +220,7 @@ begin
 
   FFilter := 0;
   if (FWatchType = dwtBoth) or (FWatchType = dwtFiles)  then
-    FFilter := FFilter + FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_SIZE;
+    FFilter := FFilter + FILE_NOTIFY_CHANGE_FILE_NAME + FILE_NOTIFY_CHANGE_SIZE + FILE_NOTIFY_CHANGE_CREATION + FILE_NOTIFY_CHANGE_LAST_WRITE;
 
   if (FWatchType = dwtBoth) or (FWatchType = dwtDirectories)  then
     FFilter := FFilter + FILE_NOTIFY_CHANGE_DIR_NAME;

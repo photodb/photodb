@@ -39,14 +39,11 @@ Features ready:
 
 Minor:
 Forward capatibility (recheck);
-check collection move
-- Load groups and persons from exif;
-copy to with device images doesn't work
-- Tabs redraw issue???;
-
-[New]
-- Import set password;
-- resize - raw use preview checkbox;
+Load groups and persons from exif review;
+copy to with device images doesn't work;
+Search in device doesn't work;
+Import set password;
+resize - raw use preview checkbox;
 
 [Maybe]
 - Groups -> Categories
@@ -54,10 +51,6 @@ copy to with device images doesn't work
 - Categories could have sub-categories
 - Explorer preview zoom? (icons could be hidden)
 - Slide show interval control issue;
-- Encrypted images after enter password - add to database from all user directories;
-
-[Site]
- Free activation form on the site
 
 Possible CRs:
 - Preview pane for Video, non-image files;

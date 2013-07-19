@@ -140,6 +140,7 @@ type
     FFacesMenu: TPopupActionBar;
     FIsHightlitingPerson: Boolean;
     FExplorer: TCustomExplorerForm;
+    FCurrentFace: TFaceDetectionResultItem;
 
    {$REGION Face menu}
     MiClearFaceZone: TMenuItem;
@@ -184,6 +185,7 @@ type
 
     procedure RefreshFaces;
     procedure SelectPerson(P: TPerson);
+    function FindFace(Face: TFaceDetectionResultItem): TFaceDetectionResultItem;
     function GetFaceMenu: TPopupActionBar;
     function GetFacesMenu: TPopupActionBar;
 
@@ -322,9 +324,10 @@ begin
   for I := 0 to FFaces.Count - 1 do
     if PtInRect(FFaces[I].Rect, PxMultiply(ImagePoint, FFullImage, FFaces[I].ImageSize)) then
     begin
-      FHoverFace := FFaces[I];
+      F(FCurrentFace);
+      FCurrentFace := FFaces[I].Copy;
+      FHoverFace := FCurrentFace;
       RefreshFaces;
-      PmFace.Tag := NativeInt(FFaces[I]);
       PmFace.DoPopupEx(ScreenRect.X, ScreenRect.Y);
       Exit;
     end;
@@ -414,6 +417,7 @@ begin
   FOnRequestNextImage := nil;
   FOnRequestPreviousImage := nil;
   FOnStopPersonSelection := nil;
+  FCurrentFace := nil;
 
   FFaceMenu := nil;
   FFacesMenu := nil;
@@ -480,6 +484,7 @@ begin
   F(FDrawFace);
   F(FFaces);
   F(FLockEventRotateFileList);
+  F(FCurrentFace);
   inherited;
 end;
 
@@ -642,6 +647,7 @@ begin
 
     FDrawImage.Canvas.Font.Quality := fqAntialiased;
     FDrawImage.Canvas.Font.Size := 10;
+    FDrawImage.Canvas.Font.Color := Theme.PanelFontColor;
     if IsWindowsVista and not FolderView and HasFont(FDrawImage.Canvas, 'MyriadPro-Regular') then
       FDrawImage.Canvas.Font.Name := 'MyriadPro-Regular'
     else
@@ -650,9 +656,8 @@ begin
     DrawTransparentColorGradient(FDrawImage, Theme.ListViewColor, 0, FDrawImage.Height - InfoBarHeight, FDrawImage.Width, InfoBarHeight, 200, 0);
 
     for I := 0 to InfosCountByColumn - 1 do
-    begin
       FDrawImage.Canvas.TextOut(5, FDrawImage.Height - InfoBarHeight + I * InfoHeightMax + PaddingVertical, Infos[I]);
-    end;
+
   finally
     F(Infos);
   end;
@@ -666,6 +671,19 @@ end;
 procedure TImageViewerControl.FImageFrameTimerOnTimer(Sender: TObject);
 begin
   NextFrame;
+end;
+
+function TImageViewerControl.FindFace(Face: TFaceDetectionResultItem): TFaceDetectionResultItem;
+var
+  I: Integer;
+begin
+  Result := nil;
+  if Face = nil then
+    Exit;
+
+  for I := 0 to FFaces.Count - 1 do
+    if FFaces[I].EqualsTo(Face) then
+      Exit(FFaces[I]);
 end;
 
 procedure TImageViewerControl.FinishDetectingFaces;
@@ -737,7 +755,7 @@ begin
   FImageFrameTimer.Enabled := True;
 
   FFaces.Clear;
-  FHoverFace := nil;
+  //FHoverFace := nil;
   FOverlayBuffer.SetSize(0, 0);
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
@@ -749,6 +767,11 @@ end;
 procedure TImageViewerControl.LoadStaticImage(Item: TMediaItem; Image: TBitmap; RealWidth, RealHeight, Rotation: Integer; ImageScale: Double; Exif: IExifInfo);
 begin
   FText := '';
+
+  if (FItem <> nil) and (Item <> nil) then
+    if (Item.FileName) <> (FItem.FileName) then
+      FHoverFace := nil;
+
   F(FItem);
   FItem := Item.Copy;
   FExifInfo := Exif;
@@ -775,8 +798,10 @@ begin
 
   ReAlignScrolls(False);
   FOverlayBuffer.SetSize(0, 0);
+
   FFaces.Clear;
-  FHoverFace := nil;
+  //FHoverFace := nil;
+
   FFaceDetectionComplete := False;
   FIsHightlitingPerson := False;
   UpdateFaceDetectionState;
@@ -841,16 +866,22 @@ procedure TImageViewerControl.MiClearFaceZoneClick(Sender: TObject);
 var
   FR: TFaceDetectionResultItem;
   FA: TPersonArea;
+  I: Integer;
 begin
-  FHoverFace := nil;
+  FR := FindFace(FCurrentFace);
+  if FR = nil then
+    Exit;
 
-  FR := TFaceDetectionResultItem(PmFace.Tag);
   if FR.Data <> nil then
   begin
     FA := TPersonArea(FR.Data);
     FPeopleRepository.RemovePersonFromPhoto(Item.ID, FA);
   end;
-  FFaces.RemoveFaceResult(FR);
+
+  for I := 0 to FFaces.Count - 1 do
+    if FFaces[I].EqualsTo(FR) then
+      FFaces.RemoveFaceResult(FFaces[I]);
+
   FHoverFace := nil;
   UpdateFaceDetectionState;
 
@@ -913,7 +944,9 @@ var
   BmpFace3X: TBitmap;
   P: TPerson;
 begin
-  Face := TFaceDetectionResultItem(PmFace.Tag);
+  Face := FindFace(FCurrentFace);
+  if Face = nil then
+    Exit;
 
   BmpFace3X := TBitmap.Create;
   try
@@ -977,7 +1010,10 @@ var
   FR: TFaceDetectionResultItem;
   PA: TPersonArea;
 begin
-  FR := TFaceDetectionResultItem(PmFace.Tag);
+  FR := FindFace(FCurrentFace);
+  if FR = nil then
+    Exit;
+
   PA := TPersonArea(FR.Data);
   if (PA <> nil) then
     UpdateAvatar(PA.PersonID);
@@ -988,7 +1024,10 @@ var
   FR: TFaceDetectionResultItem;
   PA: TPersonArea;
 begin
-  FR := TFaceDetectionResultItem(PmFace.Tag);
+  FR := FindFace(FCurrentFace);
+  if FR = nil then
+    Exit;
+
   PA := TPersonArea(FR.Data);
   if (PA <> nil) then
   begin
@@ -1018,7 +1057,10 @@ var
   PA: TPersonArea;
   FR: TFaceDetectionResultItem;
 begin
-  FR := TFaceDetectionResultItem(PmFace.Tag);
+  FR := FindFace(FCurrentFace);
+  if FR = nil then
+    Exit;
+
   PA := TPersonArea(FR.Data);
   if PA = nil then
     Exit;
@@ -1134,7 +1176,9 @@ begin
     for I := 0 to FFaces.Count - 1 do
       if PtInRect(NormalizeRect(FFaces[I].Rect), PxMultiply(P, FFullImage, FFaces[I].ImageSize)) then
       begin
-        FHoverFace := FFaces[I];
+        F(FCurrentFace);
+        FCurrentFace := FFaces[I].Copy;
+        FHoverFace := FCurrentFace;
         Break;
       end;
 
@@ -1200,8 +1244,9 @@ begin
   if FDrawFace <> nil then
   begin
     FFaces.Add(FDrawFace);
-    PmFace.Tag := NativeInt(FDrawFace);
-    FHoverFace := FDrawFace;
+    F(FCurrentFace);
+    FCurrentFace := FDrawFace.Copy;
+    FHoverFace := FCurrentFace;
     FDrawFace := nil;
     FFaces.SaveToFile(FFaces.PersistanceFileName);
     UpdateFaceDetectionState;
@@ -1543,7 +1588,10 @@ var
   LatestPersons: Boolean;
   MI: TMenuItem;
 begin
-  RI := TFaceDetectionResultItem(PmFace.Tag);
+  RI := FindFace(FCurrentFace);
+  if RI = nil then
+    Exit;
+
   PA := TPersonArea(RI.Data);
 
   FImFacePopup.Clear;
@@ -2091,7 +2139,7 @@ var
   end;
 
 begin
-  if (FFaces.Count > 0) or FDrawingFace then
+  if (FFaces.Count > 0) or FDrawingFace or (FHoverFace <> nil) then
   begin
     FOverlayBuffer.Assign(FDrawImage);
 
@@ -2134,7 +2182,7 @@ end;
 procedure TImageViewerControl.HightliteReset;
 begin
   FIsHightlitingPerson := False;
-  FHOverFace := nil;
+  FHoverFace := nil;
   RefreshFaces;
 end;
 
@@ -2234,7 +2282,10 @@ var
   PA: TPersonArea;
   RI: TFaceDetectionResultItem;
 begin
-  RI := TFaceDetectionResultItem(PmFace.Tag);
+  RI := FindFace(FCurrentFace);
+  if RI = nil then
+    Exit;
+
   if P <> nil then
   begin
     PA := TPersonArea(RI.Data);
@@ -2253,6 +2304,9 @@ begin
           FPeopleRepository.AddPersonForPhoto(TDBForm(Self.OwnerForm), PA);
           RI.Data := PA.Clone;
 
+          F(FCurrentFace);
+          FCurrentFace := RI.Copy;
+          FHoverFace := FCurrentFace;
         finally
           F(PA);
         end;
@@ -2276,7 +2330,9 @@ begin
     if FFaces[I].Data <> nil then
       if TPersonArea(FFaces[I].Data).PersonID = PersonID then
       begin
-        FHoverFace := FFaces[I];
+        F(FCurrentFace);
+        FCurrentFace := FFaces[I].Copy;
+        FHoverFace := FCurrentFace;
         FIsHightlitingPerson := True;
         RefreshFaces;
         Break;
@@ -2488,16 +2544,38 @@ end;
 
 procedure TImageViewerControl.UpdateFaces(FileName: string;
   Faces: TFaceDetectionResult);
+var
+  I: Integer;
+  RI: TFaceDetectionResultItem;
 begin
   if Faces = FFaces then
     Exit;
 
   if Item.FileName = FileName then
   begin
-    FFaces.Assign(Faces);
-    FFaceDetectionComplete := True;
-    UpdateFaceDetectionState;
-    RecreateImage;
+    RI := FCurrentFace;
+    try
+      FCurrentFace := nil;
+      FHoverFace := nil;
+
+      FFaces.Assign(Faces);
+
+      //restore old selected face if menu is active
+      if RI <> nil then
+        for I := 0 to FFaces.Count - 1 do
+          if FFaces[I].InTheSameArea80(RI) then
+          begin
+            FCurrentFace := FFaces[I].Copy;
+            if PmFace.PopupMenu <> nil then
+              FHoverFace := FCurrentFace;
+          end;
+
+      FFaceDetectionComplete := True;
+      UpdateFaceDetectionState;
+      RecreateImage;
+    finally
+      F(RI);
+    end;
   end;
 end;
 

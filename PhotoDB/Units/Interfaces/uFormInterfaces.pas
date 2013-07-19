@@ -71,6 +71,7 @@ type
   IImageEditor = interface(IFormInterface)
     ['{0C5858BC-AF84-4941-AE8A-B0DF594DA7BF}']
     function EditFile(Image: string; BitmapOut: TBitmap): Boolean;
+    function EditImage(Image: TBitmap): Boolean;
     procedure Close;
   end;
 

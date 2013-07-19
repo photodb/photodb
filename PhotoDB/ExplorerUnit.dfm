@@ -1922,14 +1922,13 @@ object ExplorerForm: TExplorerForm
               348
               35)
             object SbDoSearchLocation: TSpeedButton
-              Left = 329
+              Left = 325
               Top = 5
               Width = 23
               Height = 22
               Anchors = [akTop, akRight]
               Flat = True
               OnClick = SbDoSearchLocationClick
-              ExplicitLeft = 25
             end
             object WedGeoSearch: TWatermarkedEdit
               Left = 5
@@ -2049,7 +2048,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.903695451390000000
+      Date = 41177.913814409720000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -2926,10 +2925,10 @@ object ExplorerForm: TExplorerForm
     Left = 535
     Top = 300
   end
-  object CloseTimer: TTimer
+  object TmrMapStarted: TTimer
     Enabled = False
     Interval = 1
-    OnTimer = CloseTimerTimer
+    OnTimer = TmrMapStartedTimer
     Left = 536
     Top = 392
   end

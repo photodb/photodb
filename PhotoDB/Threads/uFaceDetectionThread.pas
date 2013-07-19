@@ -623,23 +623,6 @@ var
     Result := RectIntersectWithRectPercent(RA, RF) > 80;
   end;
 
-  function FaceEquals(A, B: TFaceDetectionResultItem): Boolean; overload;
-  var
-    RA, RF: TRect;
-  begin
-    RA.Left   := Round(A.X * 1000 / A.ImageWidth);
-    RA.Top    := Round(A.Y * 1000 / A.ImageHeight);
-    RA.Right  := Round((A.X + A.Width)  * 1000 / A.ImageWidth);
-    RA.Bottom := Round((A.Y + A.Height) * 1000 / A.ImageHeight);
-
-    RF.Left   := Round(B.X * 1000 / B.ImageWidth);
-    RF.Top    := Round(B.Y * 1000 / B.ImageHeight);
-    RF.Right  := Round((B.X + B.Width)  * 1000 / B.ImageWidth);
-    RF.Bottom := Round((B.Y + B.Height) * 1000 / B.ImageHeight);
-
-    Result := RectIntersectWithRectPercent(RA, RF) > 80;
-  end;
-
 begin
   //merge info
   for I := DBInfo.Count - 1 downto 0 do
@@ -659,7 +642,7 @@ begin
   //clean-up duplicated
   for I := Count - 1 downto 0 do
     for J := 0 to Count - 1 do
-      if (I <> J) and FaceEquals(Items[I], Items[J]) then
+      if (I <> J) and Items[I].InTheSameArea80(Items[J]) then
       begin
         if (Items[I].Data = nil) then
           DeleteAt(I)

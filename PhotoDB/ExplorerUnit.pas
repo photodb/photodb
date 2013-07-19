@@ -276,7 +276,7 @@ type
     SelectTimer: TTimer;
     N17: TMenuItem;
     MiTreeViewRefresh: TMenuItem;
-    CloseTimer: TTimer;
+    TmrMapStarted: TTimer;
     N19: TMenuItem;
     Sortby1: TMenuItem;
     FileName1: TMenuItem;
@@ -661,8 +661,6 @@ type
     procedure Copywithfolder1Click(Sender: TObject);
     procedure Copy4Click(Sender: TObject);
     procedure SelectTimerTimer(Sender: TObject);
-    procedure CloseWindow(Sender: TObject);
-    procedure CloseTimerTimer(Sender: TObject);
     procedure FileName1Click(Sender: TObject);
     procedure SetFilter1Click(Sender: TObject);
     procedure MakeFolderViewer1Click(Sender: TObject);
@@ -854,6 +852,7 @@ type
     procedure MiHelpClick(Sender: TObject);
     procedure TbbDuplicatesClick(Sender: TObject);
     procedure MiShowPrivatePhotosClick(Sender: TObject);
+    procedure TmrMapStartedTimer(Sender: TObject);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -3533,6 +3532,14 @@ begin
     ElvMain.Repaint;
     Exit;
   end;
+
+  if (EventID_Param_GroupsChanged in params) and (FCurrentTypePath = EXPLORER_ITEM_GROUP_LIST) then
+  begin
+    SetOldPath(TGroupItem(Value.Data).Path);
+    Reload;
+    Exit;
+  end;
+
   if FCurrentTypePath = EXPLORER_ITEM_SHELF then
     if EventID_ShelfItemRemoved in Params then
     begin
@@ -3557,11 +3564,9 @@ begin
       for I := 0 to FFilesInfo.Count - 1 do
         if FFilesInfo[I].ID = Value.ID then
         begin
-          FFilesInfo[I].Name := Value.NewName;
-          Index := MenuIndexToItemIndex(I);
-          ElvMain.Items[Index].Caption := Value.NewName;
-          FFilesInfo[I].FileName := cPersonsPath + '\' + Value.NewName;
-          ListView1SelectItem(nil, ListView1Selected, True);
+          SetOldPath(cPersonsPath + '\' + Value.NewName);
+          Reload;
+          Exit;
         end;
     end;
     if EventID_PersonRemoved in Params then
@@ -5469,6 +5474,7 @@ procedure TExplorerForm.ShowMarker(FileName: string; Lat, Lng: Double; Date: TDa
 begin
   FMapLocationLat := Lat;
   FMapLocationLng := Lng;
+
   WlSaveLocation.Enabled := False;
   WlDeleteLocation.Enabled := True;
 
@@ -5648,7 +5654,7 @@ begin
 
           if UpdatingDone then
           begin
-            WlSaveLocation.Enabled := True;
+            WlSaveLocation.Enabled := SelCount > 1;
             WlDeleteLocation.Enabled := False;
           end;
         except
@@ -5725,54 +5731,7 @@ end;
 
 procedure TExplorerForm.MapStarted;
 begin
-  FIsMapLoaded := True;
-  if FWbGeoLocation.Tag = 1 then
-  begin
-    FWbGeoLocation.Tag := 0;
-    if FSelectedInfo.GeoLocation <> nil then
-    begin
-      ShowMarker(ExtractFileName(FSelectedInfo.FileName),
-        FSelectedInfo.GeoLocation.Latitude,
-        FSelectedInfo.GeoLocation.Longitude,
-        FSelectedInfo.Date + FSelectedInfo.Date);
-    end else
-    begin
-      SaveCurrentImageInfoToMap;
-
-      if AppSettings.ReadInteger('Explorer', 'MapZoom', 1) <= 1 then
-      begin
-        TThreadTask.Create(Self, nil,
-          procedure(Thread: TThreadTask; Data: Pointer)
-          var
-            Url, LocationJson: string;
-          begin
-            Url := ResolveLanguageString(GeoLocationJSON) + '&c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
-            LocationJson := DownloadFile(Url, TEncoding.UTF8);
-
-            Thread.SynchronizeTask(
-              procedure
-              begin
-                if (FGeoHTMLWindow <> nil) and (LocationJson <> '') then
-                begin
-                  LocationJson := StringReplace(LocationJson, '"', '''', [rfReplaceAll]);
-                  FGeoHTMLWindow.execScript
-                    (FormatEx('TryToResolvePosition("{0}"); ', [LocationJson]), 'JavaScript');
-                end;
-              end
-            );
-          end
-        );
-      end;
-    end;
-  end;
-
-  if (FGeoHTMLWindow <> nil) then
-  begin
-    if FIsPanaramio then
-      FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
-    else
-      FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
-  end;
+  TmrMapStarted.Enabled := True;
 end;
 
 procedure TExplorerForm.McDateSelectPopupKeyDown(Sender: TObject; var Key: Word;
@@ -5841,7 +5800,9 @@ end;
 
 procedure TExplorerForm.SaveCurrentImageInfoToMap;
 begin
-  //could throw Could not complete the operation due to error 80020101. at startup when map is active
+  if not FIsMapLoaded then
+    Exit;
+
   if (FGeoHTMLWindow <> nil) then
     FGeoHTMLWindow.execScript
       (FormatEx('SaveImageInfo("{0}", "{1}");',
@@ -10793,17 +10754,6 @@ begin
   Result := ((FileType=EXPLORER_ITEM_DRIVE) or (FileType=EXPLORER_ITEM_FOLDER) or (FileType=EXPLORER_ITEM_SHARE));
 end;
 
-procedure TExplorerForm.CloseTimerTimer(Sender: TObject);
-begin
-  CloseTimer.Enabled := False;
-  Close;
-end;
-
-procedure TExplorerForm.CloseWindow(Sender: TObject);
-begin
-  CloseTimer.Enabled := True;
-end;
-
 procedure TExplorerForm.FileName1Click(Sender: TObject);
 var
   I, L, Index, N: Integer;
@@ -11588,6 +11538,59 @@ begin
   PhotoShelf;
   CollectionEvents.DoIDEvent(Self, 0, [EventID_ShelfChanged], EventInfo);
   TmrDelayedStart.Enabled := False;
+end;
+
+procedure TExplorerForm.TmrMapStartedTimer(Sender: TObject);
+begin
+  TmrMapStarted.Enabled := False;
+  FIsMapLoaded := True;
+  if FWbGeoLocation.Tag = 1 then
+  begin
+    FWbGeoLocation.Tag := 0;
+    if FSelectedInfo.GeoLocation <> nil then
+    begin
+      ShowMarker(ExtractFileName(FSelectedInfo.FileName),
+        FSelectedInfo.GeoLocation.Latitude,
+        FSelectedInfo.GeoLocation.Longitude,
+        FSelectedInfo.Date + FSelectedInfo.Date);
+    end else
+    begin
+      SaveCurrentImageInfoToMap;
+
+      if AppSettings.ReadInteger('Explorer', 'MapZoom', 1) <= 1 then
+      begin
+        TThreadTask.Create(Self, nil,
+          procedure(Thread: TThreadTask; Data: Pointer)
+          var
+            Url, LocationJson: string;
+          begin
+            Url := ResolveLanguageString(GeoLocationJSON) + '&c=' + TActivationManager.Instance.ApplicationCode + '&v=' + ProductVersion;
+            LocationJson := DownloadFile(Url, TEncoding.UTF8);
+
+            Thread.SynchronizeTask(
+              procedure
+              begin
+                if (FGeoHTMLWindow <> nil) and (LocationJson <> '') then
+                begin
+                  LocationJson := StringReplace(LocationJson, '"', '''', [rfReplaceAll]);
+                  FGeoHTMLWindow.execScript
+                    (FormatEx('TryToResolvePosition("{0}"); ', [LocationJson]), 'JavaScript');
+                end;
+              end
+            );
+          end
+        );
+      end;
+    end;
+  end;
+
+  if (FGeoHTMLWindow <> nil) then
+  begin
+    if FIsPanaramio then
+      FGeoHTMLWindow.execScript(FormatEx('showPanaramio();', []), 'JavaScript')
+    else
+      FGeoHTMLWindow.execScript(FormatEx('hidePanaramio();', []), 'JavaScript');
+  end;
 end;
 
 procedure TExplorerForm.TmrSearchResultsCountTimer(Sender: TObject);

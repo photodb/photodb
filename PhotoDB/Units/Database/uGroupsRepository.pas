@@ -57,7 +57,7 @@ begin
     IC.AddParameter(TBooleanParameter.Create('IncludeInQuickList', Group.IncludeInQuickList)); 
     IC.AddParameter(TIntegerParameter.Create('GroupAccess', Group.GroupAccess));   
 
-    if Group.GroupImage <> nil then
+    if (Group.GroupImage <> nil) and not Group.GroupImage.Empty then
       IC.AddParameter(TJpegParameter.Create('GroupImage', Group.GroupImage));
   
     Result := IC.Execute > 0;

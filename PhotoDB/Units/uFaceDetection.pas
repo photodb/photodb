@@ -236,6 +236,8 @@ type
     destructor Destroy; override;
     procedure RotateLeft;
     procedure RotateRight;
+    function EqualsTo(Item: TFaceDetectionResultItem): Boolean;
+    function InTheSameArea80(RI: TFaceDetectionResultItem): Boolean;
     property Data: TClonableObject read FData write SetData;
     property ImageSize: TSize read GetImageSize;
     property Rect: TRect read GetRect write SetRect;
@@ -745,6 +747,11 @@ begin
   inherited;
 end;
 
+function TFaceDetectionResultItem.EqualsTo(Item: TFaceDetectionResultItem): Boolean;
+begin
+  Result := (X = Item.X) and (Y = Item.Y) and (Width = Item.Height) and (ImageWidth = Item.ImageWidth) and (ImageHeight = Item.ImageHeight) and (Page = Item.Page);
+end;
+
 function TFaceDetectionResultItem.GetImageSize: TSize;
 begin
   Result.cx := ImageWidth;
@@ -801,6 +808,24 @@ function TFaceDetectionResultItem.GetRect: TRect;
 begin
   Result := System.Classes.Rect(X, Y, X + Width, Y + Height);
 end;
+
+function TFaceDetectionResultItem.InTheSameArea80(
+  RI: TFaceDetectionResultItem): Boolean;
+  var
+    RA, RF: TRect;
+  begin
+    RA.Left   := Round(Self.X * 1000 / Self.ImageWidth);
+    RA.Top    := Round(Self.Y * 1000 / Self.ImageHeight);
+    RA.Right  := Round((Self.X + Self.Width)  * 1000 / Self.ImageWidth);
+    RA.Bottom := Round((Self.Y + Self.Height) * 1000 / Self.ImageHeight);
+
+    RF.Left   := Round(RI.X * 1000 / RI.ImageWidth);
+    RF.Top    := Round(RI.Y * 1000 / RI.ImageHeight);
+    RF.Right  := Round((RI.X + RI.Width)  * 1000 / RI.ImageWidth);
+    RF.Bottom := Round((RI.Y + RI.Height) * 1000 / RI.ImageHeight);
+
+    Result := RectIntersectWithRectPercent(RA, RF) > 80;
+  end;
 
 procedure TFaceDetectionResultItem.SetData(const Value: TClonableObject);
 begin

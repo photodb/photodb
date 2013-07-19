@@ -409,18 +409,14 @@ end;
 
 procedure TFormCreatePerson.MiEditImageClick(Sender: TObject);
 var
-  Editor: TImageEditorForm;
+  Editor: IImageEditor;
 begin
   Editor := TImageEditor.Create(nil);
-  try
-    if Editor.EditImage(FPicture) then
-    begin
-      FIsImageChanged := True;
-      RecreateImage;
-      Invalidate;
-    end;
-  finally
-    R(Editor);
+  if Editor.EditImage(FPicture) then
+  begin
+    FIsImageChanged := True;
+    RecreateImage;
+    Invalidate;
   end;
 end;
 
