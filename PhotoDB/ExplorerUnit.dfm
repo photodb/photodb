@@ -1742,6 +1742,7 @@ object ExplorerForm: TExplorerForm
         Align = alClient
         TabOrder = 0
         OnChange = PcRightPreviewChange
+        ExplicitHeight = 603
         object TsMediaPreview: TTabSheet
           Caption = 'TsMediaPreview'
           ImageIndex = 1
@@ -1923,7 +1924,7 @@ object ExplorerForm: TExplorerForm
               35)
             object SbDoSearchLocation: TSpeedButton
               Left = 325
-              Top = 5
+              Top = 7
               Width = 23
               Height = 22
               Anchors = [akTop, akRight]
@@ -2048,7 +2049,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.913814409720000000
+      Date = 41177.515885925920000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

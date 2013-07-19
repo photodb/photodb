@@ -749,7 +749,7 @@ end;
 
 function TFaceDetectionResultItem.EqualsTo(Item: TFaceDetectionResultItem): Boolean;
 begin
-  Result := (X = Item.X) and (Y = Item.Y) and (Width = Item.Height) and (ImageWidth = Item.ImageWidth) and (ImageHeight = Item.ImageHeight) and (Page = Item.Page);
+  Result := (X = Item.X) and (Y = Item.Y) and (Width = Item.Width) and (Height = Item.Height) and (ImageWidth = Item.ImageWidth) and (ImageHeight = Item.ImageHeight) and (Page = Item.Page);
 end;
 
 function TFaceDetectionResultItem.GetImageSize: TSize;

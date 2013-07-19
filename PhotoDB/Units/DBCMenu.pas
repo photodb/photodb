@@ -672,6 +672,7 @@ var
   I,
   SortOrder: Integer;
   Reg: TBDRegistry;
+  Title,
   FileName,
   Params,
   Icon: string;
@@ -692,11 +693,15 @@ begin
         Reg.CloseKey;
         Reg.OpenKey(GetRegRootKey + '\Menu\' + S[I], True);
 
+        Title := '';
         FileName := '';
         Params := '';
         Icon := '';
         UseSubMenu := False;
         SortOrder := 0;
+
+        if Reg.ValueExists('Title') then
+          Title := Reg.ReadString('Title');
 
         if Reg.ValueExists('FileName') then
           FileName := Reg.ReadString('FileName');
@@ -713,9 +718,9 @@ begin
         if Reg.ValueExists('SortOrder') then
           SortOrder := Reg.ReadInteger('SortOrder');
 
-        if (S[I] <> '') and (FileName <> '') then
+        if (Title <> '') and (FileName <> '') then
         begin
-          EI := TExecutableInfo.Create(S[I], FileName, Icon, Params, UseSubMenu, SortOrder);
+          EI := TExecutableInfo.Create(Title, FileName, Icon, Params, UseSubMenu, SortOrder);
           Data.Add(EI);
         end;
       end;
@@ -761,7 +766,8 @@ begin
 
     for I := 0 to Data.Count - 1 do
     begin
-      Reg.OpenKey(GetRegRootKey + '\Menu\' + Data[I].Title, True);
+      Reg.OpenKey(GetRegRootKey + '\Menu\' + IntToStr(I), True);
+      Reg.WriteString('Title', Data[I].Title);
       Reg.WriteString('FileName', Data[I].Path);
       Reg.WriteString('Params', Data[I].Parameters);
       Reg.WriteString('Icon', Data[I].Icon);

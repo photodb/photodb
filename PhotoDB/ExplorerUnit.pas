@@ -5574,10 +5574,7 @@ begin
 
                   if not UpdateFileGeoInfo(EI.FileName, GeoLocation, True) then
                     UpdatingDone := False
-                  else if FCurrentTypePath in [EXPLORER_ITEM_SHELF, EXPLORER_ITEM_SEARCH, EXPLORER_ITEM_PERSON, EXPLORER_ITEM_GROUP,
-                                               EXPLORER_ITEM_CALENDAR_YEAR, EXPLORER_ITEM_CALENDAR_MONTH, EXPLORER_ITEM_CALENDAR_DAY,
-                                               EXPLORER_ITEM_COLLECTION, EXPLORER_ITEM_COLLECTION_DIRECTORY, EXPLORER_ITEM_COLLECTION_DELETED,
-                                               EXPLORER_ITEM_COLLECTION_DUPLICATES] then
+                  else if IsVirtualDirectoryType(FCurrentTypePath) then
                     RefreshItemByID(EI.ID);
 
                   Progress.Position := Progress.Position + 1;
@@ -5644,7 +5641,9 @@ begin
                 ProgramStatistics.GeoInfoSaveUsed;
 
                 if not DeleteFileGeoInfo(EI.FileName, True) then
-                  UpdatingDone := False;
+                  UpdatingDone := False
+                else if IsVirtualDirectoryType(FCurrentTypePath) then
+                  RefreshItemByID(EI.ID);
 
                 Progress.Position := Progress.Position + 1;
                 if Progress.Closed then
@@ -9367,7 +9366,7 @@ var
   Reg: TBDRegistry;
   S: TStrings;
   Place: TLinkInfo;
-  Path, Icon, ParentKey: string;
+  Title, Path, Icon, ParentKey: string;
   I, SortOrder: Integer;
 
 const
@@ -9392,9 +9391,12 @@ begin
         Reg.CloseKey;
         Reg.OpenKey(ParentKey + '\' + S[I], True);
 
+        Title := '';
         Path := '';
         Icon := '';
         SortOrder := 0;
+        if Reg.ValueExists('Title') then
+          Title := Reg.ReadString('Title');
         if Reg.ValueExists('Path') then
           Path := Reg.ReadString('Path');
         if Reg.ValueExists('Icon') then
@@ -9402,9 +9404,9 @@ begin
         if Reg.ValueExists('SortOrder') then
           SortOrder := Reg.ReadInteger('SortOrder');
 
-        if Path <> '' then
+        if (Title <> '') and (Path <> '') then
         begin
-          Place := TLinkInfo.Create(S[I], Path, Icon, SortOrder);
+          Place := TLinkInfo.Create(Title, Path, Icon, SortOrder);
           Places.Add(Place);
         end;
       end;
@@ -9470,7 +9472,8 @@ begin
 
     for I := 0 to Places.Count - 1 do
     begin
-      Reg.OpenKey(ParentKey + '\' + Places[I].Title, True);
+      Reg.OpenKey(ParentKey + '\' + IntToStr(I), True);
+      Reg.WriteString('Title', Places[I].Title);
       Reg.WriteString('Path', Places[I].Path);
       Reg.WriteString('Icon', Places[I].Icon);
       Reg.WriteInteger('SortOrder', I);
