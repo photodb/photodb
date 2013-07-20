@@ -1476,7 +1476,6 @@ begin
   begin
     if FindInQuery(FileName) then
     begin
-
       FInfo.ReadFromDS(FQuery);
       FInfo.FileName := FileName;
       if ExplorerInfo.View = LV_THUMBS then
@@ -2100,7 +2099,7 @@ var
   AddPathStr: string;
 begin
   Result := False;
-  if (not FQuery.IsEmpty) then
+  if (FQuery <> nil) and not FQuery.IsEmpty then
   begin
     UnProcessPath(FileName);
     FileName := AnsiLowerCase(FileName);

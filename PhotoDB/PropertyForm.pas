@@ -26,6 +26,7 @@ uses
   Vcl.Grids,
   Vcl.ValEdit,
   Vcl.ActnPopup,
+  Vcl.Themes,
   Vcl.PlatformDefaultStyleActnCtrls,
   Vcl.Imaging.JPEG,
   Vcl.Imaging.pngimage,
@@ -117,65 +118,6 @@ const
 
 type
   TPropertiesForm = class(TDBForm, ICurrentImageSource)
-    ImMain: TImage;
-    CommentMemo: TMemo;
-    LabelComment: TLabel;
-    PmItem: TPopupActionBar;
-    Shell1: TMenuItem;
-    Show1: TMenuItem;
-    Copy1: TMenuItem;
-    N1: TMenuItem;
-    Searchforit1: TMenuItem;
-    DBItem1: TMenuItem;
-    ApplicationEvents1: TApplicationEvents;
-    SaveWindowPos1: TSaveWindowPos;
-    PmRatingNotAvaliable: TPopupActionBar;
-    Ratingnotsets1: TMenuItem;
-    PmComment: TPopupActionBar;
-    SetComent1: TMenuItem;
-    Comentnotsets1: TMenuItem;
-    N2: TMenuItem;
-    Copy2: TMenuItem;
-    Cut1: TMenuItem;
-    Paste1: TMenuItem;
-    N3: TMenuItem;
-    Undo1: TMenuItem;
-    N4: TMenuItem;
-    SelectAll1: TMenuItem;
-    ImgReloadInfo: TImage;
-    DropFileSource1: TDropFileSource;
-    DropFileTarget1: TDropFileTarget;
-    DragImageList: TImageList;
-    BtDone: TButton;
-    BtSave: TButton;
-    BtnFind: TButton;
-    CopyEXIFPopupMenu: TPopupActionBar;
-    CopyCurrent1: TMenuItem;
-    CopyAll1: TMenuItem;
-    PmLinks: TPopupActionBar;
-    PmAddLink: TPopupActionBar;
-    Open1: TMenuItem;
-    OpenFolder1: TMenuItem;
-    Change1: TMenuItem;
-    Delete1: TMenuItem;
-    Addnewlink1: TMenuItem;
-    IDMenu1: TMenuItem;
-    N5: TMenuItem;
-    N6: TMenuItem;
-    Up1: TMenuItem;
-    Down1: TMenuItem;
-    RegGroupsImageList: TImageList;
-    PopupMenuGroups: TPopupActionBar;
-    MenuItem1: TMenuItem;
-    MenuItem2: TMenuItem;
-    CreateGroup1: TMenuItem;
-    ChangeGroup1: TMenuItem;
-    SearchForGroup1: TMenuItem;
-    QuickInfo1: TMenuItem;
-    PmClear: TPopupActionBar;
-    Clear1: TMenuItem;
-    MoveToGroup1: TMenuItem;
-    DropFileTarget2: TDropFileTarget;
     PmImageConnect: TPopupActionBar;
     AddImThLink1: TMenuItem;
     N7: TMenuItem;
@@ -184,59 +126,121 @@ type
     N8: TMenuItem;
     AddOriginalImTh1: TMenuItem;
     AddOriginalImThAndAddProcessngToOriginalImTh1: TMenuItem;
+    PnMain: TPanel;
+    ImMain: TImage;
+    LabelComment: TLabel;
+    ImgReloadInfo: TImage;
+    CommentMemo: TMemo;
+    BtDone: TButton;
+    BtSave: TButton;
+    BtnFind: TButton;
     ImageLoadingFile: TDBLoading;
     PcMain: TPageControl;
     TsGeneral: TTabSheet;
     TsGroups: TTabSheet;
-    TsEXIF: TTabSheet;
-    TsGistogramm: TTabSheet;
-    TsAdditional: TTabSheet;
-    LabelKeywords: TLabel;
-    KeyWordsMemo: TMemo;
-    IDLabel1: TLabel;
-    WidthLabel: TLabel;
-    IDLabel: TMemo;
-    heightmemo: TMemo;
-    widthmemo: TMemo;
-    Heightlabel: TLabel;
-    SizeLabel1: TLabel;
-    SizeLabel: TMemo;
-    TimeEdit: TDateTimePicker;
-    DateEdit: TDateTimePicker;
-    DateLabel1: TLabel;
-    TimeLabel: TLabel;
-    RatingLabel1: TLabel;
-    RatingEdit: TRating;
-    LabelPath: TMemo;
-    Label4: TLabel;
-    LabelName1: TLabel;
-    LabelName: TMemo;
     Image3: TImage;
     LbGroupsEditInfo: TLabel;
     LbAvaliableGroups: TLabel;
+    LbCurrentGroups: TLabel;
+    ImSearch: TImage;
     LstAvaliableGroups: TListBox;
     BtnRemoveGroup: TButton;
     BtnAddGroup: TButton;
     lstCurrentGroups: TListBox;
-    LbCurrentGroups: TLabel;
     CbShowAllGroups: TCheckBox;
     CbRemoveKeywordsForGroups: TCheckBox;
     BtnNewGroup: TButton;
-    RgGistogrammChannel: TRadioGroup;
+    WedGroupsFilter: TWatermarkedEdit;
+    TsEXIF: TTabSheet;
+    VleExif: TValueListEditor;
+    TsGistogramm: TTabSheet;
     DgGistogramm: TDmGradient;
     GistogrammImage: TImage;
     Label2: TLabel;
+    RgGistogrammChannel: TRadioGroup;
+    LbEffectiveRange: TStaticText;
+    TsAdditional: TTabSheet;
+    PmItem: TPopupActionBar;
+    Shell1: TMenuItem;
+    Show1: TMenuItem;
+    Copy1: TMenuItem;
+    DBItem1: TMenuItem;
+    N1: TMenuItem;
+    Searchforit1: TMenuItem;
+    ApplicationEvents1: TApplicationEvents;
+    SaveWindowPos1: TSaveWindowPos;
+    PmRatingNotAvaliable: TPopupActionBar;
+    Ratingnotsets1: TMenuItem;
+    PmComment: TPopupActionBar;
+    SetComent1: TMenuItem;
+    Comentnotsets1: TMenuItem;
+    N2: TMenuItem;
+    SelectAll1: TMenuItem;
+    N4: TMenuItem;
+    Cut1: TMenuItem;
+    Copy2: TMenuItem;
+    Paste1: TMenuItem;
+    N3: TMenuItem;
+    Undo1: TMenuItem;
+    DropFileSource1: TDropFileSource;
+    DropFileTarget1: TDropFileTarget;
+    DragImageList: TImageList;
+    CopyEXIFPopupMenu: TPopupActionBar;
+    CopyCurrent1: TMenuItem;
+    CopyAll1: TMenuItem;
+    PmLinks: TPopupActionBar;
+    Open1: TMenuItem;
+    OpenFolder1: TMenuItem;
+    IDMenu1: TMenuItem;
+    N5: TMenuItem;
+    Up1: TMenuItem;
+    Down1: TMenuItem;
+    N6: TMenuItem;
+    Change1: TMenuItem;
+    Delete1: TMenuItem;
+    PmAddLink: TPopupActionBar;
+    Addnewlink1: TMenuItem;
+    RegGroupsImageList: TImageList;
+    PopupMenuGroups: TPopupActionBar;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    CreateGroup1: TMenuItem;
+    MoveToGroup1: TMenuItem;
+    ChangeGroup1: TMenuItem;
+    SearchForGroup1: TMenuItem;
+    QuickInfo1: TMenuItem;
+    PmClear: TPopupActionBar;
+    Clear1: TMenuItem;
+    DropFileTarget2: TDropFileTarget;
+    TmrFilter: TTimer;
+    PnGeneral: TPanel;
+    LabelName1: TLabel;
+    LabelName: TMemo;
+    Label4: TLabel;
+    LabelPath: TMemo;
+    RatingEdit: TRating;
+    RatingLabel1: TLabel;
+    DateLabel1: TLabel;
+    DateEdit: TDateTimePicker;
+    TimeEdit: TDateTimePicker;
+    TimeLabel: TLabel;
+    SizeLabel1: TLabel;
+    SizeLabel: TMemo;
+    widthmemo: TMemo;
+    WidthLabel: TLabel;
+    Heightlabel: TLabel;
+    heightmemo: TMemo;
+    IDLabel: TMemo;
+    IDLabel1: TLabel;
+    LbColors: TLabel;
+    LbViewCount: TLabel;
+    LabelKeywords: TLabel;
+    KeyWordsMemo: TMemo;
+    PnAdditional: TPanel;
     CbInclude: TCheckBox;
     LbLinks: TLabel;
     LinksScrollBox: TScrollBox;
-    VleExif: TValueListEditor;
-    LbEffectiveRange: TStaticText;
     WlAddLink: TWebLink;
-    ImSearch: TImage;
-    WedGroupsFilter: TWatermarkedEdit;
-    TmrFilter: TTimer;
-    LbColors: TLabel;
-    LbViewCount: TLabel;
     procedure BtDoneClick(Sender: TObject);
     procedure BtnFindClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -820,6 +824,9 @@ begin
   DestroyCounter := 0;
   GistogrammData.Loaded := False;
   GistogrammData.Loading := False;
+
+  PnGeneral.ParentBackground := StyleServices.IsSystemStyle;
+  PnAdditional.ParentBackground := StyleServices.IsSystemStyle;
 
   LinkDropFiles := TStringList.Create;
   PropertyManager.AddProperty(Self);
@@ -1438,7 +1445,7 @@ end;
 
 procedure TPropertiesForm.ExecuteEx(IDs: TArInteger);
 const
-  AllocBy = 300;
+  AllocBy = 1000;
 var
   SQL: string;
   FirstID: Boolean;
@@ -1469,7 +1476,7 @@ begin
         M := Min(ALeft, Min(ALeft, AllocBy));
 
         FirstID := True;
-        SQL := 'Select ID, Name, FFileName, Comment, Owner, Collection, Rotated, Access, Rating, DateToAdd, aTime, IsDate, IsTime, Groups, FileSize, KeyWords, Width, Height, Thum, Include, Links, Attr, StrTh FROM $DB$ Where ID in (';
+        SQL := 'Select * FROM $DB$ Where ID in (';
         for I := 1 to M do
         begin
           Dec(ALeft);
@@ -1477,10 +1484,10 @@ begin
 
           if FirstID then
           begin
-            SQL := SQL + ' ' + Inttostr(IDs[Num]) + ' ';
+            SQL := SQL + ' ' + IntToStr(IDs[Num]) + ' ';
             FirstID := False;
           end else
-            SQL := SQL + ' , ' + Inttostr(IDs[Num]) + ' ';
+            SQL := SQL + ' , ' + IntToStr(IDs[Num]) + ' ';
         end;
         SQL := SQL + ')';
 
@@ -1884,6 +1891,7 @@ begin
         WlAddLink.Top := LinksScrollBox.Top + LinksScrollBox.Height + 3;
       end;
   end;
+
 end;
 
 procedure TPropertiesForm.ReadExifData;

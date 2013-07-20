@@ -422,7 +422,7 @@ object FormMenuDateEdit: TFormMenuDateEdit
     Top = 0
     Width = 162
     Height = 154
-    Date = 38187.997470370370000000
+    Date = 38187.932136643520000000
     PopupMenu = PmDate
     TabOrder = 0
     OnDblClick = BtOKClick
