@@ -530,6 +530,7 @@
 	<translate name="ID" value="ID" />
 	<translate name="All in %s" value="Все в %s" />
 	<translate name="Keywords" value="Ключевые слова" />
+	<translate name="Total views: {0}" value="Всего просмотров: {0}" />
 	<translate name="Find" value="Найти" />
 	<translate name="Save" value="Сохранить" />
 	<translate name="Cancel" value="Отмена" />

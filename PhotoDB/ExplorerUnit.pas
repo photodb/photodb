@@ -1036,6 +1036,7 @@ type
     procedure PathTreeViewKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 
     procedure CreatePreview;
+    procedure UpdatePreviewPanel;
     procedure OnPersonsFoundOnPreview(Sender: TObject; FileName: string; Items: TFaceDetectionResult);
     procedure OnPreviewPersonMouseEnter(Sender: TObject);
     procedure OnPreviewPersonMouseLeave(Sender: TObject);
@@ -2791,6 +2792,9 @@ var
   MenuInfo: TMediaItem;
 begin
   if BlockClosingOfWindows then
+    Exit;
+
+  if PnRight.Visible and (FActiveRightTab = ertsPreview) then
     Exit;
 
   GetCursorPos(P);
@@ -4857,7 +4861,7 @@ begin
     EasyListview1DblClick(ElvMain, cmbLeft, Point(0, 0), [], Handled);
 
   if Key = Chr(VK_SPACE) then
-    if not ElvMain.EditManager.Editing and (FActiveRightTab = ertsPreview) then
+    if not ElvMain.EditManager.Editing and PnRight.Visible and (FActiveRightTab = ertsPreview) then
       TbPreviewNextClick(Self);
 end;
 
@@ -5306,8 +5310,13 @@ begin
     case PInfo[K].Action of
       FILE_ACTION_ADDED,
       FILE_ACTION_REMOVED:
-       if TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
-         PInfo[K].Action := 0;
+        begin
+          //ignore locks because tree view displays directories
+          if IsExplorerTreeViewVisible then
+            TreeView.DeletePath(PInfo[K].NewFileName);
+          if TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
+            PInfo[K].Action := 0;
+        end;
       FILE_ACTION_RENAMED_NEW_NAME:
        if TLockFiles.Instance.IsFileLocked(PInfo[K].NewFileName) then
        begin
@@ -5349,9 +5358,6 @@ begin
             Exit;
           if ElvMain.Items = nil then
             Exit;
-
-          if IsExplorerTreeViewVisible then
-            TreeView.DeletePath(PInfo[K].NewFileName);
 
           for I := 0 to ElvMain.Items.Count - 1 do
           begin
@@ -7662,6 +7668,8 @@ begin
   PcRightPreview.ActivePageIndex := Integer(FActiveRightTab);
   if FActiveRightTab = ertsMap then
     StartMap(False);
+  if FActiveRightTab = ertsPreview then
+    UpdatePreviewPanel;
 end;
 
 procedure TExplorerForm.ShowFilter(PerformFilter: Boolean);
@@ -10113,35 +10121,7 @@ begin
   ApplyLeftTabs;
 
   if FActiveRightTab = ertsPreview then
-  begin
-    if TsMediaPreview.Visible then
-      CreatePreview;
-
-    if (FImageViewer <> nil) and not SelfDraging then
-    begin
-      if (SelCount = 0) or not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
-      begin
-        BeginScreenUpdate(TsMediaPreview.Handle);
-        try
-          if SelCount = 1 then
-            FImageViewer.SetText(FormatEx(L('Preview for object "{0}" is unavailable'), [ExtractFileName(FSelectedInfo.FileName)]))
-          else
-            FImageViewer.SetText(L('Select a file to preview'));
-          TbPreviewRating.Visible := False;
-          TbPreviewRatingSeparator.Visible := False;
-          OnPersonsFoundOnPreview(Self, '', nil);
-        finally
-          EndScreenUpdate(TsMediaPreview.Handle, False);
-        end;
-      end else
-      begin
-        if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Selected) then
-          FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem))
-        else
-          FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
-      end;
-    end;
-  end;
+    UpdatePreviewPanel;
 
   if (TsGeoLocation.Visible) then
   begin
@@ -10245,6 +10225,37 @@ begin
         ThSizeExplorerPreview div 2 - Icon.Height div 2, Icon);
     finally
       F(Icon);
+    end;
+  end;
+end;
+
+procedure TExplorerForm.UpdatePreviewPanel;
+begin
+  if TsMediaPreview.Visible then
+    CreatePreview;
+
+  if (FImageViewer <> nil) and not SelfDraging then
+  begin
+    if (SelCount = 0) or not (FSelectedInfo.FileType in [EXPLORER_ITEM_IMAGE, EXPLORER_ITEM_DEVICE_IMAGE]) then
+    begin
+      BeginScreenUpdate(TsMediaPreview.Handle);
+      try
+        if SelCount = 1 then
+          FImageViewer.SetText(FormatEx(L('Preview for object "{0}" is unavailable'), [ExtractFileName(FSelectedInfo.FileName)]))
+        else
+          FImageViewer.SetText(L('Select a file to preview'));
+        TbPreviewRating.Visible := False;
+        TbPreviewRatingSeparator.Visible := False;
+        OnPersonsFoundOnPreview(Self, '', nil);
+      finally
+        EndScreenUpdate(TsMediaPreview.Handle, False);
+      end;
+    end else
+    begin
+      if (ElvMain.Selection.FocusedItem <> nil) and (ElvMain.Selection.FocusedItem.Selected) then
+        FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ElvMain.Selection.FocusedItem))
+      else
+        FImageViewer.LoadFiles(GetCurrentPopUpMenuInfo(ListView1Selected));
     end;
   end;
 end;
