@@ -1571,6 +1571,9 @@ begin
   else
     SetResizeListViewMode;
 
+  if AppSettings.ReadBool('Explorer', 'HistogramVisible', True) then
+    WlHistogramImage.Tag := 1;
+
   Lock := False;
 
   SlashHandled := False;
@@ -5468,7 +5471,7 @@ procedure TExplorerForm.WlHistogramImageClick(Sender: TObject);
 begin
   BeginScreenUpdate(PnInfoContainer.Handle);
   try
-    ImHistogramm.Visible := not ImHistogramm.Visible;
+    WlHistogramImage.Tag := IIF(WlHistogramImage.Tag = 1, 0, 1);
     UpdateHistogrammLabel;
     ReallignEditBoxes;
   finally
@@ -5850,6 +5853,8 @@ end;
 
 procedure TExplorerForm.UpdateHistogrammLabel;
 begin
+  ImHistogramm.Visible := WlHistogramImage.Tag = 1;
+  AppSettings.WriteBool('Explorer', 'HistogramVisible', ImHistogramm.Visible);
   WlHistogramImage.Text := IIF(ImHistogramm.Visible, '(-) ', '(+) ') + L('Histogram');
 end;
 
