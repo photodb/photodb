@@ -755,7 +755,7 @@ begin
   FImageFrameTimer.Enabled := True;
 
   FFaces.Clear;
-  //FHoverFace := nil;
+
   FOverlayBuffer.SetSize(0, 0);
   FFaceDetectionComplete := True;
   UpdateFaceDetectionState;
@@ -800,7 +800,6 @@ begin
   FOverlayBuffer.SetSize(0, 0);
 
   FFaces.Clear;
-  //FHoverFace := nil;
 
   FFaceDetectionComplete := False;
   FIsHightlitingPerson := False;
@@ -1170,20 +1169,28 @@ begin
   if not FPersonMouseMoveLock and not IsPopupMenuActive then
   begin
     P := BufferPointToImagePoint(StartPoint);
-    OldHoverFace := FHoverFace;
-    FHoverFace := nil;
+    OldHoverFace := nil;
+    if FHoverFace <> nil then
+      OldHoverFace := FHoverFace.Copy;
 
-    for I := 0 to FFaces.Count - 1 do
-      if PtInRect(NormalizeRect(FFaces[I].Rect), PxMultiply(P, FFullImage, FFaces[I].ImageSize)) then
-      begin
-        F(FCurrentFace);
-        FCurrentFace := FFaces[I].Copy;
-        FHoverFace := FCurrentFace;
-        Break;
-      end;
+    try
+      FHoverFace := nil;
 
-    if OldHoverFace <> FHoverFace then
-      RefreshFaces;
+      for I := 0 to FFaces.Count - 1 do
+        if PtInRect(NormalizeRect(FFaces[I].Rect), PxMultiply(P, FFullImage, FFaces[I].ImageSize)) then
+        begin
+          F(FCurrentFace);
+          FCurrentFace := FFaces[I].Copy;
+          FHoverFace := FCurrentFace;
+          Break;
+        end;
+
+      if OldHoverFace <>  FHoverFace then
+        RefreshFaces;
+
+    finally
+      F(OldHoverFace);
+    end;
 
     if FDrawingFace then
     begin
