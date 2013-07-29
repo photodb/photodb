@@ -570,6 +570,8 @@ type
     MiShowPrivatePhotos: TMenuItem;
     N18: TMenuItem;
     MiViewSettings: TMenuItem;
+    MiCopyWithFolder: TMenuItem;
+    N20: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure ListView1ContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure SlideShow1Click(Sender: TObject);
@@ -9343,33 +9345,48 @@ procedure TExplorerForm.CopyWithFolder1Click(Sender: TObject);
 var
   I, Index: Integer;
   Files: TStrings;
-  UpDir, Dir, NewDir, Temp: string;
-  L1, L2: Integer;
+  FileName, FinalDirectory, PhotosDirectory: string;
+  FileOperations: TDictionary<string, TList<string>>;
+  OperationItem: TPair<string, TList<string>>;
+  FileList: TList<string>;
 begin
-  Dir := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to copy files'));
-  if Dir <> '' then
+  FinalDirectory := UnitDBFileDialogs.DBSelectDir(Handle, L('Select directory to copy files'));
+  if FinalDirectory <> '' then
   begin
-    Files := TStringList.Create;
+    FileOperations := TDictionary<string, TList<string>>.Create;
     try
       for I := 0 to ElvMain.Items.Count - 1 do
         if ElvMain.Items[I].Selected then
         begin
           Index := ItemIndexToMenuIndex(I);
-          Files.Add(ProcessPath(FFilesInfo[Index].FileName));
+          FileName := ProcessPath(FFilesInfo[Index].FileName);
+
+          PhotosDirectory := ExtractFileName(ExtractFileDir(FileName));
+          PhotosDirectory := IncludeTrailingBackslash(TPath.Combine(FinalDirectory, PhotosDirectory));
+          CreateDirA(PhotosDirectory);
+
+          if not FileOperations.ContainsKey(PhotosDirectory) then
+            FileOperations.Add(PhotosDirectory, TList<string>.Create);
+
+          FileList := FileOperations[PhotosDirectory];
+          FileList.Add(FileName);
         end;
-      if Files.Count > 0 then
+
+      for OperationItem in FileOperations do
       begin
-        Temp := ExtractFileDir(Files[0]);
-        L1 := Length(Temp);
-        Temp := ExtractFilePath(Temp);
-        L2 := Length(Temp);
-        UpDir := Copy(Files[0], L2 + 1, L1 - L2);
-        NewDir := IncludeTrailingBackslash(TPath.Combine(Dir, UpDir));
-        CreateDirA(NewDir);
-        CopyFiles(FContext, Handle, Files, NewDir, False, False, Self);
+        Files := TStringList.Create;
+        try
+          for I := 0 to OperationItem.Value.Count - 1 do
+            Files.Add(OperationItem.Value[I]);
+
+          CopyFiles(FContext, Handle, Files, OperationItem.Key, False, False, Self);
+          OperationItem.Value.Free;
+        finally
+          F(Files);
+        end;
       end;
     finally
-      F(Files);
+      F(FileOperations);
     end;
   end;
 end;
@@ -13248,6 +13265,9 @@ begin
   PmCopy.Images := Icons.ImageList;
   MiCopyTo.Caption := L('Copy to');
   MiCopyTo.ImageIndex := DB_IC_COPY;
+
+  MiCopyWithFolder.Caption := L('Copy with folder');
+  MiCopyWithFolder.ImageIndex := DB_IC_COPY;
 end;
 
 procedure TExplorerForm.PmCutPopup(Sender: TObject);
@@ -13894,13 +13914,16 @@ begin
   ImageList_AddIcon(ImlPreview.Handle, Icons[DB_IC_INFO_PANEL]);
 
   ToolBarPreview.DisableToolBarForButtons;
-  TbPreviewPrevious.ImageIndex := 11 + 1;
-  TbPreviewNext.ImageIndex := 11 + 2;
-  TbPreviewRotateCW.ImageIndex := 11 + 3;
-  TbPreviewRotateCCW.ImageIndex := 11 + 4;
-  TbPreviewOpen.ImageIndex := 11 + 5;
-  TbPreviewInfo.ImageIndex := 11 + 6;
-  ToolBarPreview.EnableToolBarForButtons;
+  try
+    TbPreviewPrevious.ImageIndex := 11 + 1;
+    TbPreviewNext.ImageIndex := 11 + 2;
+    TbPreviewRotateCW.ImageIndex := 11 + 3;
+    TbPreviewRotateCCW.ImageIndex := 11 + 4;
+    TbPreviewOpen.ImageIndex := 11 + 5;
+    TbPreviewInfo.ImageIndex := 11 + 6;
+  finally
+    ToolBarPreview.EnableToolBarForButtons;
+  end;
 
   Shell1.ImageIndex := DB_IC_SHELL;
   SlideShow1.ImageIndex := DB_IC_SLIDE_SHOW;

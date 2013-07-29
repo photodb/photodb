@@ -2049,7 +2049,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.515885925920000000
+      Date = 41177.713786574070000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end
@@ -3408,6 +3408,13 @@ object ExplorerForm: TExplorerForm
     object MiCopyTo: TMenuItem
       Caption = 'MiCopyTo'
       OnClick = CopyToLinkClick
+    end
+    object N20: TMenuItem
+      Caption = '-'
+    end
+    object MiCopyWithFolder: TMenuItem
+      Caption = 'MiCopyWithFolder'
+      OnClick = Copywithfolder1Click
     end
   end
   object PmCut: TPopupActionBar

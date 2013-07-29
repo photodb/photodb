@@ -3,6 +3,7 @@ unit UnitDBCommonGraphics;
 interface
 
 uses
+  System.Types,
   System.UITypes,
   System.Classes,
   System.SysUtils,
@@ -79,8 +80,13 @@ begin
     RightWidth := 100 - P2.X;
     BottomHeight := 100 - P2.Y;
 
-    StartX := Round(100 * P1.X / (RightWidth + P1.X));
-    StartY := Round(100 * P1.Y / (BottomHeight + P1.Y));
+    StartX := 0;
+    if P1.X > 0 then
+      StartX := Round(100 * P1.X / (RightWidth + P1.X));
+
+    StartY := 0;
+    if P1.Y > 0 then
+      StartY := Round(100 * P1.Y / (BottomHeight + P1.Y));
 
     P1.X := Round(Image.Width * P1.X / 100);
     P1.Y := Round(Image.Height * P1.Y / 100);

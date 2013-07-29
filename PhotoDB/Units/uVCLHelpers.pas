@@ -653,7 +653,10 @@ var
   I: Integer;
 begin
   for I := 0 to Self.ButtonCount - 1 do
+  begin
     TToolBarButtonEx(Self.Buttons[I]).FToolBar := Self;
+    Perform(TB_CHANGEBITMAP, Buttons[I].Index, LPARAM(Buttons[I].ImageIndex));
+  end;
 end;
 
 { TStatusBarHelper }

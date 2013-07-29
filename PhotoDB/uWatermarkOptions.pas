@@ -801,6 +801,8 @@ begin
   AppSettings.WriteString(Settings_Watermark, 'WatermarkImage', FWatermarkedFile);
 
   AppSettings.WriteInteger(Settings_Watermark, 'Mode', PcWatermarkType.ActivePageIndex);
+
+  AppSettings.ClearCache;
 end;
 
 procedure TFrmWatermarkOptions.SeImageTransparencyChange(Sender: TObject);
