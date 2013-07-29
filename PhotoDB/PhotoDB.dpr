@@ -468,15 +468,15 @@ begin
       FindRunningVersion;
 
     TLoad.Instance.StartDBKernelIconsThread;
+    // This is main form of application
+    Application.CreateForm(TFormManager, FormManager);
+    Application.ShowMainForm := False;
+
     if not DBTerminating and not GetParamStrDBBool('/install') and not GetParamStrDBBool('/uninstall') then
     begin
       if not DBManager.LoadDefaultCollection then
         DBManager.CreateSampleDefaultCollection;
     end;
-
-    // This is main form of application
-    Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
