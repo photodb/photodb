@@ -211,7 +211,7 @@ var
 
   function PersonsJoin: string;
   begin
-    Result := FormatEx(' INNER JOIN {1} PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.ObjectID = PM.ObjectID', [ObjectTableName, ObjectMappingTableName]);
+    Result := FormatEx(' INNER JOIN (SELECT DISTINCT ObjectId, ImageId FROM {1}) PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.ObjectID = PM.ObjectID', [ObjectTableName, ObjectMappingTableName]);
   end;
 
   function FromTable(ForPersons: Boolean): string;

@@ -369,7 +369,7 @@ begin
       begin
         SystemQuery := True;
         Stemp := Copy(Sysaction, 8, Length(Sysaction) - 8);
-        PersonsJoin := FormatEx(' INNER JOIN {1} PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.ObjectID = PM.ObjectID', [ObjectTableName, ObjectMappingTableName]);
+        PersonsJoin := FormatEx(' INNER JOIN (SELECT DISTINCT ObjectId, ImageId FROM {1}) PM on PM.ImageID = IM.ID) INNER JOIN {0} P on P.ObjectID = PM.ObjectID', [ObjectTableName, ObjectMappingTableName]);
 
         Result.Query := Format('SELECT %s FROM ($DB$ IM %s', [FIELDS, PersonsJoin]);
         Result.Query := Result.Query + ' WHERE (trim(P.ObjectName) like ' + NormalizeDBString(NormalizeDBStringLike(Stemp)) + ')';

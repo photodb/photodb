@@ -35,6 +35,7 @@ var
   StyleFileName: string;
   StyleHandle: TStyleManager.TStyleServicesHandle;
   SI: TStyleInfo;
+  CSS: TCustomStyleServices;
 begin
   inherited;
   FreeOnTerminate := True;
@@ -47,17 +48,32 @@ begin
       begin
         if Pos(':', StyleFileName) = 0 then
           StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
+
         if TStyleManager.IsValidStyle(StyleFileName, SI) then
         begin
-          TStyleManager.LoadFromFile(StyleFileName);
-          TStyleManager.SetStyle(si.Name);
+          StyleHandle := TStyleManager.LoadFromFile(StyleFileName);
+          CSS := TCustomStyle.LoadFromStream(StyleHandle);
+          Synchronize(
+            procedure
+            begin
+              TStyleManager.SetStyle(CSS);
+            end
+          );
         end;
       end;
     end else
     begin
       TStyleManager.Initialize;
       if TStyleManager.TryLoadFromResource(HInstance, 'MOBILE_STYLE', PWideChar(StyleResourceSection), StyleHandle) then
-        TStyleManager.SetStyle(StyleHandle);
+      begin
+        CSS := TCustomStyle.LoadFromStream(StyleHandle);
+        Synchronize(
+          procedure
+          begin
+            TStyleManager.SetStyle(CSS);
+          end
+        );
+      end;
     end;
     TW.I.Start('TLoadStyleThread - END');
   except
