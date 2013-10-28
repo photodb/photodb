@@ -877,7 +877,7 @@ begin
     FPeopleRepository.RemovePersonFromPhoto(Item.ID, FA);
   end;
 
-  for I := 0 to FFaces.Count - 1 do
+  for I := FFaces.Count - 1 downto 0 do
     if FFaces[I].EqualsTo(FR) then
       FFaces.RemoveFaceResult(FFaces[I]);
 

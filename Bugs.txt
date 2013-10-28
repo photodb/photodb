@@ -1,41 +1,6 @@
 Read forums of concurents
 
 Features ready:
-- Explorer tasks panel review;
-- Folder list in bottom menu;
-- Application list in menu review;
-- DB -> Collection in RU;
-- Crash in weblink reading from memory;
-- Hint color;
-- ShowMessageBox wait for style!
-- Save list view for each folder;
-- DB indexes and nullable fields review, Review;
-- MapViewOfFileEx implement -> decode block using this pointer;
-- Dll could be attached to some process (install update);
-- InternetUpdate window position of cursor, size;
-- Person edit -> change logo links in bottom;
-- Search for image colors;
-- Update in background if thumbnail size was changed;
-- Update database info notification support;
-- Viewcounter for images;
-- Update info in top/bottom => remove update form;
-- png watermarks;
-- Fast Share with link;
-- Person image - use current image option;
-- Portable persons;
-- Persons to EXIF (using XML string);
-- Import remember skips;
-- show deleted/duplicate pictures;
-- most viewed: sort by view count;
-- Scrollbars on loafding fix size;
-- en free activation;
-- new activation code;
-- collection pack review;
-- Import list view;
-- slide show full screen av;
-- Import total size negative
-- Use png/jpg for collection icons;
-- Warn of removing duplicates with originals;
 
 Minor:
 Forward capatibility (recheck);
@@ -44,6 +9,7 @@ copy to with device images doesn't work;
 Search in device doesn't work;
 Import set password;
 resize - raw use preview checkbox;
+- create directory with the same name error message;
 
 [Maybe]
 - Groups -> Categories

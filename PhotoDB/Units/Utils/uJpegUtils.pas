@@ -79,6 +79,7 @@ begin
   end;
   if TJPEGX(JPEG).InnerBitmap <> nil then
     SetLastError(0);
+
   AssignBitmap(Bitmap, TJPEGX(JPEG).InnerBitmap);
 end;
 
