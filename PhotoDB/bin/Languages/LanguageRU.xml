@@ -1868,6 +1868,7 @@
   <scope name="Image">
 	<translate name="Can't decrypt image &quot;{0}&quot;" value="Не удаётся расшифровать изображение &quot;{0}&quot;"/>
 	<translate name="Can't load image &quot;{0}&quot;" value="Не удаётся загрузить изображение &quot;{0}&quot;"/>
+	<translate name="Image &quot;{0}&quot; is empty!" value="Изображение &quot;{0}&quot; пустое!"/>
   </scope>
   <scope name="EXIF">
 	<translate name="top, left side" value="Нормальная"/>

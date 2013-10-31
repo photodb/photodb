@@ -86,8 +86,12 @@ begin
           if not FileExistsSafe(FileName) then
             FileName := MediaRepository.GetFileNameById(Info.ID);
 
-          TLockFiles.Instance.AddLockedFile(FileName, 1000);
-          UpdateFileExif(FileName, Info);
+          TLockFiles.Instance.AddLockedFile(FileName, 10000);
+          try
+            UpdateFileExif(FileName, Info);
+          finally
+            TLockFiles.Instance.AddLockedFile(FileName, 1000);
+          end;
           F(Info);
         end;
 
