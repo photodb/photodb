@@ -2038,14 +2038,11 @@ begin
   if AppSettings.ReadBool('Options', 'UseUserMenuForExplorer', True) then
     if Info.FileType = EXPLORER_ITEM_IMAGE then
     begin
-      if Info.ID = 0 then
-      begin
-        Infos := GetCurrentPopUpMenuInfo(Item);
-        try
-          TDBPopupMenu.Instance.SetInfo(Self, Infos);
-        finally
-          F(Infos);
-        end;
+      Infos := GetCurrentPopUpMenuInfo(Item);
+      try
+        TDBPopupMenu.Instance.SetInfo(Self, Infos);
+      finally
+        F(Infos);
       end;
       TDBPopupMenu.Instance.AddUserMenu(PmItemPopup.Items, True, DBitem1.MenuIndex + 1);
     end;

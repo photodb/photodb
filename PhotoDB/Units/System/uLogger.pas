@@ -10,7 +10,7 @@ uses
   uConfiguration,
   uMemory;
 
-{$DEFINE _EVENTLOG}
+{$DEFINE EVENTLOG}
 
 type
   TLogger = class(TObject)

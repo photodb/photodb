@@ -235,7 +235,7 @@ begin
 
         LoadOnlyExif := (ilfEXIF in Flags) and not (ilfGraphic in Flags);
 
-        if ((S <> nil) and (S.Size > 0)) or LoadOnlyExif then
+        if (S <> nil) or LoadOnlyExif then
         begin
           if Flags * [ilfICCProfile, ilfEXIF, ilfGraphic] <> [] then
           begin
@@ -351,6 +351,9 @@ begin
                   begin
                     if (Graphic = nil) and (ilfThrowError in Flags) then
                       raise Exception.Create(FormatEx(TA('Can''t load image "{0}"', 'Image'), [Info.FileName]));
+
+                    if (Graphic.Empty) and (ilfThrowError in Flags) then
+                      raise Exception.Create(FormatEx(TA('Image "{0}" is empty!', 'Image'), [Info.FileName]));
                   end;
                 finally
                   F(Graphic);

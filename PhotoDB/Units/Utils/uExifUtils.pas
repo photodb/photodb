@@ -590,7 +590,11 @@ begin
       end;
       Result := True;
     except
-      Result := False;
+      on e: Exception do
+      begin
+        EventLog(e);
+        Result := False;
+      end;
     end;
   finally
     SetErrorMode(OldMode);

@@ -75,7 +75,7 @@ begin
   try
     JPEG.DIBNeeded;
   except
-    //incorrect file will throw an error, but bitmap will be available so we can display partically decompressed image
+    //incorrect file will throw an error, but bitmap will be available so we can display partially decompressed image
   end;
   if TJPEGX(JPEG).InnerBitmap <> nil then
     SetLastError(0);
