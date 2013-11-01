@@ -424,6 +424,9 @@ begin
     if Info.Comment = '' then
       Info.Comment := ExifData.Comments;
 
+    if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
+      Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
+
     if LoadGroups then
       Info.Groups := ExifData.XMPPacket.Groups;
 
@@ -440,9 +443,6 @@ begin
 
     if Info.Include then
       Info.Include := ExifData.XMPPacket.Include;
-
-    if (ExifData.GPSLatitude <> nil) and (ExifData.GPSLongitude <> nil) and not ExifData.GPSLatitude.MissingOrInvalid and not ExifData.GPSLongitude.MissingOrInvalid then
-      Info.LoadGeoInfo(GeoLocationToDouble(ExifData.GPSLatitude), GeoLocationToDouble(ExifData.GPSLongitude));
   end;
 end;
 
@@ -835,10 +835,22 @@ begin
 end;
 
 function GetExifRating(ExifData: TExifData): Integer;
+var
+  Rating: TWindowsStarRating;
 begin
   Result := 0;
+  Rating := urUndefined;
   if not ExifData.Empty then
-    case ExifData.UserRating of
+  begin
+
+    try
+      Rating := ExifData.UserRating;
+    except
+      on e: Exception do
+        EventLog(e);
+    end;
+
+    case Rating of
       urOneStar:
         Result := 1;
       urTwoStars:
@@ -850,6 +862,7 @@ begin
       urFiveStars:
         Result := 5;
     end;
+  end;
 end;
 
 function GetExifRating(FileName: string): Integer;

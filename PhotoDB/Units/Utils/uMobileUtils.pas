@@ -175,7 +175,7 @@ begin
     if Pos(':', StyleFileName) = 0 then
       StyleFileName := ExtractFilePath(ParamStr(0)) + StylesFolder + StyleFileName;
     try
-      FS := TFileStream.Create(StyleFileName, fmOpenRead, fmShareDenyNone);
+      FS := TFileStream.Create(StyleFileName, fmOpenRead, fmShareDenyWrite);
       try
         MS := TMemoryStream.Create;
         try
