@@ -12,13 +12,11 @@ uses
   Vcl.Forms,
   Vcl.Controls,
   Vcl.Graphics,
-
   Vcl.ExtCtrls,
   Vcl.ComCtrls,
   Vcl.Themes,
 
-
-
+  MPCommonUtilities,
 
   Dmitry.Controls.WebLink,
 
@@ -28,16 +26,14 @@ uses
   ExEffects,
   ExEffectsUnitW,
   OptimizeImageUnit,
-
-  MPCommonUtilities,
-  EasyListView,
   UnitBitmapImageList,
+  EasyListView,
 
+  uMemory,
   uBitmapUtils,
   uSettings,
   uListViewUtils,
   uEditorTypes,
-  uMemory,
   uTranslate,
   uMemoryEx;
 
@@ -66,7 +62,7 @@ type
     CloseLink: TWebLink;
     MakeItLink: TWebLink;
     EffectsChooser: TEasyListView;
-  //  ImageList: TImageList;
+    FSelectTimer: TTimer;
     FImageList: TBitmapImageList;
     EM: TEffectsManager;
     BaseEffects: TBaseEffectProcedures;
@@ -75,9 +71,10 @@ type
     FOnDone: TNotifyEvent;
     ApplyOnDone: Boolean;
     procedure FreeNewImage;
-    procedure ListViewItemThumbnailDraw(
-      Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
+    procedure ListViewItemThumbnailDraw(Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas;
       ARect: TRect; AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
+    procedure ListViewMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure SelectTimerOnTimer(Sender: TObject);
   protected
     function LangID: string; override;
   public
@@ -95,13 +92,12 @@ type
     procedure MakeTransform; override;
     procedure ClosePanelEvent(Sender: TObject);
     procedure DoMakeImage(Sender: TObject);
-    procedure SelectEffect(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState; var Handled: Boolean);
+    procedure SelectEffect(Sender: TCustomEasyListview; Item: TEasyItem);
     procedure SetBaseImage(Image: TBitmap);
     procedure FillEffects(OneEffectID: string = '');
     procedure SetThreadImage(Image: TBitmap; SID: string);
     procedure SetProgress(Progress: Integer; SID: string);
     procedure SetNewImage(Image: TBitmap);
-    procedure EffectChooserPress(Sender: TCustomEasyListview; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure ExecuteProperties(Properties: string; OnDone: TNotifyEvent); override;
     procedure SetProperties(Properties: string); override;
   end;
@@ -140,6 +136,11 @@ begin
   BaseImage := TBitmap.Create;
   BaseImage.PixelFormat := pf24bit;
 
+  FSelectTimer := TTimer.Create(nil);
+  FSelectTimer.Interval := 1;
+  FSelectTimer.Enabled := False;
+  FSelectTimer.OnTimer := SelectTimerOnTimer;
+
   EffectsChooser := TEasyListview.Create(nil);
   EffectsChooser.Parent := AOwner as TWinControl;
   EffectsChooser.Left := 5;
@@ -147,10 +148,10 @@ begin
   EffectsChooser.Width := 180;
   EffectsChooser.Height := EffectsChooser.Parent.Height - 75;
   EffectsChooser.Anchors := [akLeft, akTop, akRight, akBottom];
-  EffectsChooser.OnDblClick := SelectEffect;
+  EffectsChooser.OnItemSelectionChanged := SelectEffect;
+  EffectsChooser.OnMouseMove := ListViewMouseMove;
   EffectsChooser.DoubleBuffered := True;
   EffectsChooser.EditManager.Enabled := False;
-  EffectsChooser.OnKeyAction := EffectChooserPress;
   EffectsChooser.Scrollbars.SmoothScrolling := AppSettings.Readbool('Options', 'SmoothScrolling', True);
   if StyleServices.Enabled and TStyleManager.IsCustomStyleActive then
     EffectsChooser.ShowThemedBorder := False;
@@ -162,11 +163,6 @@ begin
   EffectsChooser.Selection.FullRowSelect := True;
 
   FImageList := TBitmapImageList.Create;
-{  ImageList := TImageList.Create(nil);
-  ImageList.Width := 130;
-  ImageList.Height := 130;
-  ImageList.ColorDepth := cd32Bit;
-  EffectsChooser.ImagesLarge := ImageList; }
   EffectsChooser.View := elsThumbnail;
 
   MakeItLink := TWebLink.Create(nil);
@@ -196,6 +192,7 @@ destructor TEffectsToolPanelClass.Destroy;
 begin
   F(CloseLink);
   F(EffectsChooser);
+  F(FSelectTimer);
   F(MakeItLink);
   F(EM);
   F(FImageList);
@@ -209,19 +206,11 @@ begin
   MakeTransform;
 end;
 
-procedure TEffectsToolPanelClass.EffectChooserPress(Sender: TCustomEasyListview; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
-begin
-  if CharCode = VK_RETURN then
-    SelectEffect(Sender, cmbNone, Point(0, 0), [], DoDefault);
-end;
-
 procedure TEffectsToolPanelClass.ExecuteProperties(Properties: string; OnDone: TNotifyEvent);
-var
-  Handled: Boolean;
 begin
   FOnDone := OnDone;
   ApplyOnDone := True;
-  SelectEffect(nil, cmbNone, Point(0, 0), [], Handled);
+  SelectEffect(EffectsChooser, nil);
 end;
 
 procedure TEffectsToolPanelClass.FillEffects(OneEffectID: string = '');
@@ -262,7 +251,6 @@ begin
         F(Bitmap32);
       end;
 
-      //ImageList.Add(Bitmap, nil);
       Item := EffectsChooser.Items.Add;
       Item.ImageIndex := FImageList.Count - 1;
       Item.Data := Pointer(I);
@@ -324,6 +312,24 @@ begin
   Result := 'EffectsTool';
 end;
 
+procedure TEffectsToolPanelClass.ListViewMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+  Item: TEasyItem;
+  R: TRect;
+  ViewportPoint: TPoint;
+begin
+  ViewportPoint := Point(X, Y);
+  R := EffectsChooser.Scrollbars.ViewableViewportRect;
+  ViewportPoint.X := ViewportPoint.X + R.Left;
+  ViewportPoint.Y := ViewportPoint.Y + R.Top;
+
+  Item := EffectsChooser.Groups.Groups[0].ItemByPoint(ViewportPoint);
+
+  if (Item <> nil) and Item.SelectionHitPt(ViewportPoint, eshtClickSelect) then
+    EffectsChooser.Cursor := crHandPoint;
+end;
+
 procedure TEffectsToolPanelClass.ListViewItemThumbnailDraw(
   Sender: TCustomEasyListview; Item: TEasyItem; ACanvas: TCanvas; ARect: TRect;
   AlphaBlender: TEasyAlphaBlender; var DoDefault: Boolean);
@@ -359,13 +365,20 @@ begin
   ClosePanel;
 end;
 
-procedure TEffectsToolPanelClass.SelectEffect(Sender: TCustomEasyListview; Button: TCommonMouseButton; MousePos: TPoint; ShiftState: TShiftState; var Handled: Boolean);
+procedure TEffectsToolPanelClass.SelectEffect(Sender: TCustomEasyListview; Item: TEasyItem);
+begin
+  FSelectTimer.Enabled := False;
+  FSelectTimer.Enabled := True;
+end;
+
+procedure TEffectsToolPanelClass.SelectTimerOnTimer(Sender: TObject);
 var
-  Item: TEasyItem;
   ExEffectForm: TExEffectForm;
   ExEffect: TExEffect;
-
+  Item : TEasyItem;
 begin
+  FSelectTimer.Enabled := False;
+
   FreeNewImage;
   NewImage := TBitmap.Create;
   NewImage.PixelFormat := pf24bit;
@@ -385,7 +398,7 @@ begin
   Item := EffectsChooser.Selection.First;
   if Item = nil then
     Exit;
-  FSID := IntToStr(Random(100000));
+  FSID := IntToStr(Random(MaxInt));
   if Integer(Item.Data) <= Length(BaseEffects) - 1 then
   begin
     NewImage.Assign(Image);

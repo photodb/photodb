@@ -660,8 +660,7 @@ var
 begin
   CStart := GetTickCount;
   TmrAnimation.Enabled := False;
-  Self.DisableAlign;
-  BeginScreenUpdate(Handle);
+  DisableAlign;
   try
     for I := FAnimations.Count - 1 downto 0 do
     begin
@@ -697,8 +696,6 @@ begin
     end;
   finally
     EnableAlign;
-    SendMessage(Handle, WM_SETREDRAW, 1, 0);
-    RedrawWindow(Handle, nil, 0, RDW_INVALIDATE + RDW_ALLCHILDREN + RDW_INTERNALPAINT + RDW_FRAME);
   end;
   if FAnimations.Count = 0 then
     Exit;

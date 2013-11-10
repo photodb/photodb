@@ -1114,14 +1114,14 @@
 	<translate name="Height" value="Высота" />
 	<translate name="Proportions" value="Пропорции" />
 	<translate name="Keep proportions" value="Сохранять пропорции" />
-	<translate name="Save settings" value="Сохранить" />
+	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="SelectionTool">
 	<translate name="Width" value="Ширина" />
 	<translate name="Height" value="Высота" />
-	<translate name="Save settings" value="Сохранить" />
+	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
@@ -1141,7 +1141,7 @@
 	<translate name="Transparency" value="Прозрачность" />
 	<translate name="Transparency [%d]" value="Прозрачность [%d]" />
 	<translate name="Apply" value="Применить" />
-	<translate name="Save settings" value="Сохранить" />
+	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
   <scope name="RedEyeTool">
@@ -1156,7 +1156,7 @@
 	<translate name="Gray" value="Серый" />
 	<translate name="Custom" value="Произвольный" />
 	<translate name="Value [%d]" value="Значение [%d]" />
-	<translate name="Save settings" value="Сохранить" />
+	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
@@ -1174,7 +1174,7 @@
 	<translate name="Smooth resizing" value="Улучшенное сглаживание" />
 	<translate name="Base resizing" value="Базовое сглаживание" />
 	<translate name="Resizing with sharpness" value="Сглаживание с обострением" />
-	<translate name="Save settings" value="Сохранить" />
+	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
@@ -1209,7 +1209,7 @@
 	<translate name="Use outline color" value="Подсветка текста" />
 	<translate name="Size" value="Размер" />
 	<translate name="Color" value="Цвет" />
-	<translate name="Save settings" value="Сохранить" />
+	<translate name="Save settings" value="Сохранить настройки" />
 	<translate name="Apply" value="Применить" />
 	<translate name="Close tool" value="Закрыть инструмент" />
   </scope>
@@ -1868,6 +1868,7 @@
   <scope name="Image">
 	<translate name="Can't decrypt image &quot;{0}&quot;" value="Не удаётся расшифровать изображение &quot;{0}&quot;"/>
 	<translate name="Can't load image &quot;{0}&quot;" value="Не удаётся загрузить изображение &quot;{0}&quot;"/>
+	<translate name="Image &quot;{0}&quot; is empty!" value="Изображение &quot;{0}&quot; пустое!"/>
   </scope>
   <scope name="EXIF">
 	<translate name="top, left side" value="Нормальная"/>

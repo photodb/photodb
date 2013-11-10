@@ -477,7 +477,7 @@ begin
   D := TBitmap.Create;
   D.Assign(FS);
   FTrackBarlabel.Caption := Format(L('Сила эффекта: [%2.1f]'), [FTrackBar.Position / 10]);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TGaussBlurThread.Create(Self, D, FTrackBar.Position / 10, FSID, ExitThread);
 end;
 
@@ -702,7 +702,7 @@ begin
   D := TBitmap.Create;
   D.Assign(FS);
   FTrackBarlabel.Caption := Format(L('Effect size: [%2.1f]'), [FTrackBar.Position / 10]);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TSharpenThread.Create(Self, D, FTrackBar.Position + 20, FSID, ExitThread);
 end;
 
@@ -819,7 +819,7 @@ begin
   D.Assign(FS);
   FTrackBarWidthlabel.Caption := Format(L('Width [%d]'), [FTrackBarWidth.Position]);
   FTrackBarHeightlabel.Caption := Format(L('Height [%d]'), [FTrackBarHeight.Position]);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TPixelsEffectThread.Create(Self, False, D, FTrackBarWidth.Position, FTrackBarHeight.Position, FSID, ExitThread);
 end;
 
@@ -1040,7 +1040,7 @@ begin
   D.Assign(FS);
   FTrackBarFrequencylabel.Caption := Format(L('Frequency [%d]'), [FTrackBarFrequency.Position]);
   FTrackBarLengthlabel.Caption := Format(L('Length [%d]'), [FTrackBarLength.Position]);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TWaveEffectThread.Create(Self, False, D, FTrackBarLength.Position, FTrackBarFrequency.Position, FHorizontal.Checked,
     ColorChooser.Brush.Color, FSID, ExitThread);
 end;
@@ -1250,7 +1250,7 @@ begin
   D.Assign(FS);
   FDisorderLengthWLabel.Caption := Format(L('Horizontal Disorder [%d]'), [FDisorderLengthW.Position]);
   FDisorderLengthHLabel.Caption := Format(L('Vertical Disorder [%d]'), [FDisorderLengthH.Position]);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TDisorderEffectThread.Create(Self, D, FDisorderLengthW.Position, FDisorderLengthH.Position, ColorChooser.Brush.Color,
     FSID, ExitThread);
 end;
@@ -1523,7 +1523,7 @@ begin
   D.Assign(FS);
   FReplaceColorSizeLabel.Caption := Format(L('Value [%d]'), [FReplaceColorSize.Position]);
   FReplaceColorValueLabel.Caption := Format(L('Disorder [%d]'), [FReplaceColorValue.Position]);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TReplaceColorEffectThread.Create(Self, D, ColorBaseChooser.Brush.Color, ColorToChooser.Brush.Color,
     FReplaceColorValue.Position, FReplaceColorSize.Position, FSID, ExitThread);
 end;
@@ -1870,7 +1870,7 @@ begin
   Lock := False;
   D := TBitmap.Create;
   D.Assign(FS);
-  FSID := IntToStr(Random(10000));
+  FSID := IntToStr(Random(MaxInt));
   TCustomMatrixEffectThread.Create(Self, False, D, MX, FSID, ExitThread);
 end;
 

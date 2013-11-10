@@ -190,7 +190,7 @@ begin
         begin
           if not IsDevicePath(Info.FileName) then
           begin
-            FS := TFileStream.Create(Info.FileName, fmOpenRead or fmShareDenyNone);
+            FS := TFileStream.Create(Info.FileName, fmOpenRead or fmShareDenyWrite);
             try
               IsImageEncrypted := ValidCryptGraphicStream(FS);
               Info.Encrypted := IsImageEncrypted;
@@ -235,7 +235,7 @@ begin
 
         LoadOnlyExif := (ilfEXIF in Flags) and not (ilfGraphic in Flags);
 
-        if ((S <> nil) and (S.Size > 0)) or LoadOnlyExif then
+        if (S <> nil) or LoadOnlyExif then
         begin
           if Flags * [ilfICCProfile, ilfEXIF, ilfGraphic] <> [] then
           begin
@@ -247,57 +247,65 @@ begin
               RawExif := TRAWExif.Create;
 
             try
-              if Flags * [ilfEXIF] <> [] then
-              begin
-                if LoadOnlyExif then
-                begin
-                  ExifData.LoadFromFileEx(Info.FileName, False);
-                  if RawExif <> nil then
-                    RawExif.LoadFromFile(Info.FileName);
-                end else
-                begin
-                  ExifData.LoadFromGraphic(S);
-                  if RawExif <> nil then
-                  begin
-                    S.Seek(0, soFromBeginning);
-                    RawExif.LoadFromStream(S);
-                  end;
-                end;
 
-                if not ExifData.Empty then
+              try
+                if Flags * [ilfEXIF] <> [] then
                 begin
-                  if not (ilfDontUpdateInfo in Flags) then
+                  if LoadOnlyExif then
                   begin
-                    Info.HasExifHeader := True;
-                    if (ExifData.ImageDateTime > 0) and (YearOf(ExifData.ImageDateTime) >= cMinEXIFYear) then
+                    ExifData.LoadFromFileEx(Info.FileName, False);
+                    if RawExif <> nil then
+                      RawExif.LoadFromFile(Info.FileName);
+                  end else
+                  begin
+                    ExifData.LoadFromGraphic(S);
+                    if RawExif <> nil then
                     begin
-                      Info.Date := DateOf(ExifData.ImageDateTime);
-                      Info.Time := TimeOf(ExifData.ImageDateTime);
+                      S.Seek(0, soFromBeginning);
+                      RawExif.LoadFromStream(S);
                     end;
                   end;
 
-                  if (ilfEXIF in Flags) then
-                    EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
-
-                  if (ilfICCProfile in Flags) then
+                  if not ExifData.Empty then
                   begin
-                    if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
-                      or (ExifData.ColorSpace = csICCProfile) then
+                    if not (ilfDontUpdateInfo in Flags) then
                     begin
-                      if ExifData.HasICCProfile then
+                      Info.HasExifHeader := True;
+                      if (ExifData.ImageDateTime > 0) and (YearOf(ExifData.ImageDateTime) >= cMinEXIFYear) then
                       begin
-                        MSICC := TMemoryStream.Create;
-                        ExifData.ExtractICCProfile(MSICC);
+                        Info.Date := DateOf(ExifData.ImageDateTime);
+                        Info.Time := TimeOf(ExifData.ImageDateTime);
                       end;
-                      if MSICC = nil then
+                    end;
+
+                    if (ilfEXIF in Flags) then
+                      EXIFRotation := ExifOrientationToRatation(Ord(ExifData.Orientation));
+
+                    if (ilfICCProfile in Flags) then
+                    begin
+                      if (ExifData.ColorSpace = csTagMissing) or (ExifData.ColorSpace = csUncalibrated)
+                        or (ExifData.ColorSpace = csICCProfile) then
                       begin
-                        XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
-                        if XMPICCProperty <> nil then
-                          XMPICCPrifile := XMPICCProperty.ReadValue();
+                        if ExifData.HasICCProfile then
+                        begin
+                          MSICC := TMemoryStream.Create;
+                          ExifData.ExtractICCProfile(MSICC);
+                        end;
+                        if MSICC = nil then
+                        begin
+                          XMPICCProperty := ExifData.XMPPacket.Schemas[xsPhotoshop].Properties['ICCProfile'];
+                          if XMPICCProperty <> nil then
+                            XMPICCPrifile := XMPICCProperty.ReadValue();
+                        end;
                       end;
                     end;
                   end;
                 end;
+
+              except
+                //EXIF loading errors should't affect image loading, ignore possible errors
+                on e: Exception do
+                  EventLog(e);
               end;
 
               if (ilfGraphic in Flags) then
@@ -351,6 +359,9 @@ begin
                   begin
                     if (Graphic = nil) and (ilfThrowError in Flags) then
                       raise Exception.Create(FormatEx(TA('Can''t load image "{0}"', 'Image'), [Info.FileName]));
+
+                    if (Graphic.Empty) and (ilfThrowError in Flags) then
+                      raise Exception.Create(FormatEx(TA('Image "{0}" is empty!', 'Image'), [Info.FileName]));
                   end;
                 finally
                   F(Graphic);

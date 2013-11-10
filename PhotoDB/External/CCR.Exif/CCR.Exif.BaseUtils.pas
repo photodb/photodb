@@ -472,8 +472,8 @@ const
   jmAppSpecificFirst   = TJPEGMarker($E0);
   jmAppSpecificLast    = TJPEGMarker($EF);
   jmJFIF               = TJPEGMarker($E0);
+  jmICCProfile         = TJPEGMarker($E2);
   jmApp1               = TJPEGMarker($E1);
-  jmApp2               = TJPEGMarker($E2);
   jmApp13              = TJPEGMarker($ED);
   jmStartOfScan        = TJPEGMarker($DA);
 
@@ -1323,8 +1323,11 @@ end;
 
 class function TAdobeBlock.GetValidSignature(const S: AnsiString): AnsiString;
 begin
-  Result := StringOfChar(AnsiChar(' '), 4);
-  StrPLCopy(PAnsiChar(Result), S, 4);
+  case Length(S) of
+    0..3: Result := S + StringOfChar(AnsiChar(' '), 4 - Length(S));
+    4: Result := S;
+  else Result := Copy(S, 1, 4);
+  end;
 end;
 
 constructor TAdobeBlock.Create;
@@ -1448,10 +1451,10 @@ end;
 
 procedure TAdobeBlock.SaveToStream(Stream: TStream);
 var
-  Buffer: array[0..4] of AnsiChar;
   Len: Integer;
 begin
-  Stream.WriteBuffer(StrPLCopy(Buffer, FSignature, 4)^, 4);
+  Assert(Length(FSignature) = 4);
+  Stream.WriteBuffer(Pointer(FSignature)^, 4);
   Stream.WriteWord(FTypeID, BigEndian);
   Len := Length(FName);
   if Len > High(Byte) then Len := High(Byte);

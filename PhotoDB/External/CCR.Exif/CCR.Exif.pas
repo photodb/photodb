@@ -934,9 +934,9 @@ type
   strict protected
     FMetadataInSource: TJPEGMetadataKinds;
     FXMPSegmentPosition, FXMPPacketSizeInSource: Int64;
-    FApp2SegmentPosition, FApp2PacketSizeInSource: Int64;
+    FICCSegmentPosition, FICCPacketSizeInSource: Int64;
     FIsPSDICCFormat: Boolean;
-    FApp2Data: IMetadataBlock;
+    FICCData: IMetadataBlock;
     property MetadataInSource: TJPEGMetadataKinds read FMetadataInSource; //set in LoadFromGraphic
   protected
     const MaxThumbnailSize = $F000;
@@ -968,8 +968,8 @@ type
 
     //MPO SUPPOR BEGIN
     function HasMPOExtension: Boolean;
-    property MPOData: IMetadataBlock read FApp2Data;
-    property MPOBlockOffset: Int64 read FApp2SegmentPosition;
+    property MPOData: IMetadataBlock read FICCData;
+    property MPOBlockOffset: Int64 read FICCSegmentPosition;
     //MPO SUPPORT END
 
     procedure Clear(XMPPacketToo: Boolean = True);
@@ -979,7 +979,7 @@ type
     procedure SetKeywords(const NewWords: array of UnicodeString); overload;
     procedure SetKeywords(NewWords: TStrings); overload;
     function HasMakerNote: Boolean;
-    function HasThumbnail: Boolean; inline;
+    function HasThumbnail: Boolean;
     procedure Rewrite;
     procedure SetAllDateTimeValues(const NewValue: TDateTimeTagValue);
     function ShutterSpeedInMSecs: Extended;
@@ -2686,7 +2686,11 @@ begin
   if Result then
   begin
     Len := Tag.ElementCount - 1;
-    if PAnsiChar(Tag.Data)[Len] > ' ' then Inc(Len);
+    if PAnsiChar(Tag.Data)[Len] > ' ' then
+      Inc(Len)
+    else
+      while (Len > 0) and (PAnsiChar(Tag.Data)[Len - 1] = #0) do
+        Dec(Len);
     SetString(S, PAnsiChar(Tag.Data), Len);
     Value := string(S); //for D2009+ compatibility
   end
@@ -3770,10 +3774,10 @@ function TCustomExifData.HasICCProfile: Boolean;
 var
   Words: PWordArray;
 begin
-  Result := (FApp2Data <> nil) and (FApp2PacketSizeInSource > 14);
+  Result := (FICCData <> nil) and (FICCPacketSizeInSource > 14);
   if Result and not FIsPSDICCFormat then
   begin
-    Words := FApp2Data.Data.Memory;
+    Words := FICCData.Data.Memory;
     Result := CompareMem(Words, @TJPEGSegment.ICCHeader, SizeOf(TJPEGSegment.ICCHeader));
   end;
 end;
@@ -3785,12 +3789,12 @@ begin
   begin
     if not FIsPSDICCFormat then
     begin
-      FApp2Data.Data.Seek(14, soFromBeginning);
-      Stream.CopyFrom(FApp2Data.Data, FApp2Data.Data.Size - 14);
+      FICCData.Data.Seek(14, soFromBeginning);
+      Stream.CopyFrom(FICCData.Data, FICCData.Data.Size - 14);
     end else
     begin
-      FApp2Data.Data.Seek(0, soFromBeginning);
-      Stream.CopyFrom(FApp2Data.Data, FApp2Data.Data.Size);
+      FICCData.Data.Seek(0, soFromBeginning);
+      Stream.CopyFrom(FICCData.Data, FICCData.Data.Size);
     end;
   end;
 end;
@@ -3944,8 +3948,8 @@ function TCustomExifData.HasMPOExtension: Boolean;
 begin
   Result := False;
   //MP Format Identifier (4 bytes: MPF#0)
-  if (FApp2Data <> nil) and (FApp2Data.Data <> nil) then
-    Result := PAnsiChar(FApp2Data.Data.Memory) = 'MPF';
+  if (FICCData <> nil) and (FICCData.Data <> nil) then
+    Result := PAnsiChar(FICCData.Data.Memory) = 'MPF';
 end;
 
 function TCustomExifData.HasThumbnail: Boolean;
@@ -3964,10 +3968,10 @@ begin
   FMetadataInSource := [];
   FXMPSegmentPosition := 0;
   FXMPPacketSizeInSource := 0;
-  FApp2SegmentPosition := 0;
-  FApp2PacketSizeInSource := 0;
+  FICCSegmentPosition := 0;
+  FICCPacketSizeInSource := 0;
   FIsPSDICCFormat := False;
-  FApp2Data := nil;
+  FICCData := nil;
   Result := False;
   BeginUpdate;
   try
@@ -3975,13 +3979,13 @@ begin
     if HasJPEGHeader(Stream) then
     begin
       Result := True;
-      for Segment in JPEGHeader(Stream, [jmApp1, jmApp2]) do
+      for Segment in JPEGHeader(Stream, [jmApp1, jmICCProfile]) do
       begin
-        if Segment.MarkerNum = jmApp2 then
+        if Segment.MarkerNum = jmICCProfile then
         begin
-          FApp2SegmentPosition := Segment.Offset;
-          FApp2PacketSizeInSource := Segment.Data.Size;
-          FApp2Data := Segment;
+          FICCSegmentPosition := Segment.Offset;
+          FICCPacketSizeInSource := Segment.Data.Size;
+          FICCData := Segment;
         end
         else if not (mkExif in MetadataInSource) and Segment.IsExifBlock then
         begin
@@ -4015,8 +4019,8 @@ begin
           XMPPacket.DataToLazyLoad := ResBlock;
         end else if ResBlock.HasICCData then
         begin
-          FApp2Data := ResBlock;
-          FApp2PacketSizeInSource := ResBlock.Data.Size;
+          FICCData := ResBlock;
+          FICCPacketSizeInSource := ResBlock.Data.Size;
           FIsPSDICCFormat := True;
         end else if ResBlock.HasICCUntaggedProfileMarker then
         begin
@@ -4025,7 +4029,7 @@ begin
         end;
 
       if IsIccProfileShouldBeIgnored then
-        FApp2Data := nil;
+        FICCData := nil;
     end
     else if HasTiffHeader(Stream) then
     begin
@@ -6271,10 +6275,12 @@ end;
 
 class function TKodakMakerNote.FormatIsOK(SourceTag: TExifTag;
   out HeaderSize: Integer): Boolean;
+const
+  MinHeader: array[0..2] of AnsiChar = 'KDK';
 begin
-  HeaderSize := HeaderSize;
+  HeaderSize := TKodakMakerNote.HeaderSize;
   Result := (SourceTag.ElementCount > HeaderSize) and
-    (StrLComp(PAnsiChar(SourceTag.Data), 'KDK', 3) = 0);
+    CompareMem(SourceTag.Data, @MinHeader, SizeOf(MinHeader));
 end;
 
 procedure TKodakMakerNote.GetIFDInfo(SourceTag: TExifTag;
