@@ -211,7 +211,7 @@ var
   SQ : array[0..255, 0..255] of Byte;
 begin
   W := Round(255 * Transparency / 100);
-  W1 := 1 - W;
+  W1 := 255 - W;
   IH := Min(S.Height, D.Height);
   IW := Min(S.Width, D.Width);
 

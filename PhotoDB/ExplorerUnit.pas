@@ -2860,8 +2860,7 @@ begin
       (Item = nil) or (FFilesInfo[Index].FileName <> Info.FileName));
 end;
 
-procedure TExplorerForm.ListView1MouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
+procedure TExplorerForm.ListView1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
   Pos, MousePos: TPoint;
   I : Integer;
@@ -5121,7 +5120,7 @@ begin
     if CtrlKeyDown and (Msg.Wparam = Ord('P')) then
       PrintLinkClick(Self);
 
-    if CtrlKeyDown and (Msg.Wparam = Ord('R')) then
+    if CtrlKeyDown and (Msg.Wparam = Ord('W')) then
       Resize1Click(Self);
 
     if CtrlKeyDown and (Msg.Wparam = Ord('S')) then
@@ -7710,7 +7709,7 @@ procedure TExplorerForm.TmrStartDatabasesTimer(Sender: TObject);
 begin
   TmrStartDatabases.Enabled := False;
 
-  if not FolderView then
+  if not FolderView and (FDatabaseInfo = nil) then
   begin
     FDatabaseInfo := TDatabaseInfoControl.Create(Self);
     FDatabaseInfo.Parent := PnTopMenu;

@@ -762,7 +762,7 @@ begin
   ListView.Selection.UseFocusRect := False;
 
   ListView.PaintInfoItem.ShowBorder := False;
-  ListView.HotTrack.Cursor := CrArrow;
+  ListView.HotTrack.Cursor := crArrow;
   ListView.HotTrack.Enabled := AppSettings.Readbool('Options', 'UseHotSelect', True);
 end;
 

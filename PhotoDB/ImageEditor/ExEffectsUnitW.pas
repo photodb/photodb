@@ -232,7 +232,7 @@ begin
   D := TBitmap.Create;
   D.Assign(FS);
   FTrackBarlabel.Caption := Format(FText, [FTrackBar.Position]);
-  FSID := IntToStr(Random(100000));
+  FSID := IntToStr(Random(MaxInt));
   TExEffectOneParamCustomThread.Create(Self, FEffect, False, D, FTrackBar.Position, FSID, ExitThread);
 end;
 

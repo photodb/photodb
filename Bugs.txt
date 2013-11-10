@@ -10,6 +10,10 @@ Search in device doesn't work;
 Import set password;
 resize - raw use preview checkbox;
 - create directory with the same name error message;
+- New directory -> wait -> update to scan every 0.1s for 4 images;
+- encrypted raw read speed;
+- refresh doesn't work for search directory;
+- Face recognition;
 
 [Maybe]
 - Groups -> Categories

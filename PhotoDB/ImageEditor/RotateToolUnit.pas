@@ -322,7 +322,7 @@ begin
         Proc := nil;
       end;
   end;
-  FSID := IntToStr(Random(100000));
+  FSID := IntToStr(Random(MaxInt));
   begin
     NewImage := TBitmap.Create;
     NewImage.Assign(Image);

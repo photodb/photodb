@@ -147,7 +147,7 @@ begin
     Exit;
   NewImage := TBitmap.Create;
   NewImage.Assign(Image);
-  FSID := IntToStr(Random(10000000));
+  FSID := IntToStr(Random(MaxInt));
   case ComboBoxMethod.ItemIndex of
     0:
       Method := SmoothResize;
