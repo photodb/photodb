@@ -457,7 +457,7 @@ begin
       CreateMenuItem('Image editor', DB_IC_IMEDITOR).OnClick := ImageEditorItemPopUpMenu;
 
     if IsCurrentFile then
-      CreateMenuItem('Convert image', DB_IC_RESIZE).OnClick := ConvertItemPopUpMenu_;
+      CreateMenuItem('Resize image', DB_IC_RESIZE).OnClick := ConvertItemPopUpMenu_;
 
     if not NoDBInfoNeeded and IsCurrentFile and IsRecord then
       CreateMenuItem('Update info', DB_IC_REFRESH_ID).OnClick := RefreshIDItemPopUpMenu;

@@ -687,18 +687,9 @@
 	<translate name="Hide explorer panel" value="Скрыть панель проводника" />
 	<translate name="Show explorer panel" value="Показать панель проводника" />
 	<translate name="Show/Hide Filter" value="Показать/скрыть фильтр" />
-	<translate name="Tools" value="Инструменты" />
 	<translate name="Image editor" value="Редактор изображений" />
-	<translate name="New panel" value="Новая панель" />
 	<translate name="New search" value="Новое окно поиска" />
 	<translate name="Explorer" value="Проводник" />
-	<translate name="Options" value="Настройка" />
-	<translate name="Get photos" value="Получить фотографии" />
-	<translate name="Removable drives" value="Внешние диски" />
-	<translate name="CD,DVD drives" value="CD,DVD диски" />
-	<translate name="No removable drives" value="Нет внешних дисков" />
-	<translate name="No CD,DVD drives" value="Нет CD,DVD дисков" />
-	<translate name="Select folder to import" value="Выберите папку для импорта" />
 	<translate name="Select location" value="Выберите расположение" />
 	<translate name="Find file manually" value="Найти файл вручную" />
 	<translate name="Slide Show" value="Просмотр" />
@@ -732,7 +723,7 @@
 	<translate name="Delete" value="Удалить" />
 	<translate name="Delete info from collection" value="Удалить информацию из коллекции" />
 	<translate name="Delete file" value="Удалить файл" />
-	<translate name="Convert image" value="Преобразовать" />
+	<translate name="Resize image" value="Изменить размер" />
 	<translate name="Copy" value="Копировать" />
 	<translate name="Cut" value="Вырезать" />
 	<translate name="Paste" value="Вставить" />
