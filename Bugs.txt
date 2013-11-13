@@ -14,6 +14,7 @@ resize - raw use preview checkbox;
 - encrypted raw read speed;
 - refresh doesn't work for search directory;
 - Face recognition;
+- Links for shared pictures after share;
 
 [Maybe]
 - Groups -> Categories

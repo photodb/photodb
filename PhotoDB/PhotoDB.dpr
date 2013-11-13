@@ -261,6 +261,7 @@ uses
   uMachMask in 'Units\uMachMask.pas',
   ExplorerUnit in 'ExplorerUnit.pas' {ExplorerForm},
   uDatabaseSearch in 'Units\uDatabaseSearch.pas',
+  uFaceRecognizer in 'Units\uFaceRecognizer.pas',
   uFaceDetection in 'Units\uFaceDetection.pas',
   uFaceDetectionThread in 'Threads\uFaceDetectionThread.pas',
   uFormCreatePerson in 'uFormCreatePerson.pas' {FormCreatePerson},
@@ -410,7 +411,14 @@ uses
   uSecondCopy in 'Units\uSecondCopy.pas',
   uIDBForm in 'Units\Interfaces\uIDBForm.pas',
   uExplorerCollectionProvider in 'Units\Providers\uExplorerCollectionProvider.pas',
-  uFormSelectDuplicateDirectories in 'uFormSelectDuplicateDirectories.pas' {FormSelectDuplicateDirectories};
+  uFormSelectDuplicateDirectories in 'uFormSelectDuplicateDirectories.pas' {FormSelectDuplicateDirectories},
+  ulibname in 'External\OpenCV\include\ulibname.pas',
+  Core_c in 'External\OpenCV\include\core\Core_c.pas',
+  Core.types_c in 'External\OpenCV\include\core\Core.types_c.pas',
+  haar in 'External\OpenCV\include\objdetect\haar.pas',
+  objdetect in 'External\OpenCV\include\objdetect\objdetect.pas',
+  imgproc.types_c in 'External\OpenCV\include\imgproc\imgproc.types_c.pas',
+  legacy in 'External\OpenCV\include\legacy\legacy.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -470,7 +478,7 @@ begin
     TLoad.Instance.StartDBKernelIconsThread;
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     if not DBTerminating and not GetParamStrDBBool('/install') and not GetParamStrDBBool('/uninstall') then
     begin

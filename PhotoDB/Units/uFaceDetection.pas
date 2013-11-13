@@ -15,9 +15,13 @@ uses
   uRuntime,
   uMemory,
   u2DUtils,
-  uSettings;
+  uSettings,
+  Core_c,
+  Core.types_c,
+  haar,
+  objdetect;
 
-type
+{type
   CvSize = record
     Width: longint;
     Height: longint;
@@ -210,7 +214,7 @@ type
 
   PPChar = ^PChar;
   CvArr = Pointer;
-  PCvArr = ^CvArr;
+  PCvArr = ^CvArr;   }
 
 const
   CascadesDirectoryMask = 'Cascades';
@@ -293,7 +297,7 @@ type
     property Cascades[FileName: string]: PCvHaarClassifierCascade read GetCascadeByFileName;
   end;
 
-type
+{type
   TCvLoad = function(Filename: PAnsiChar; Memstorage: PCvMemStorage; name: PChar; Real_name: PAnsiChar): Pointer; cdecl;
   TCvCreateImage = function(Size: CvSize; Depth: Longint; Channels: Longint): PIplImage; cdecl;
   TCvRectangle = procedure(Img: Pointer; Pt1: CvPoint; Pt2: CvPoint; Color: CvScalar; Thickness: Longint; Line_type: Longint; Shift: Longint); cdecl;
@@ -307,10 +311,10 @@ type
   TCvClearMemStorage = procedure(Storage: PCvMemStorage); cdecl;
   TCvSetImageROI = procedure(Image: PIplImage; Rect: CvRect); cdecl;
   TCvResetImageROI = procedure(Image: PIplImage); cdecl;
-  TCvCopy = procedure(Src: PCvArr; Dst: PCvArr; Mask: PCvArr); cdecl;
+  TCvCopy = procedure(Src: PCvArr; Dst: PCvArr; Mask: PCvArr); cdecl;      }
 
 var
-  CvLoad: TCvLoad;
+{  CvLoad: TCvLoad;
   CvCreateImage: TCvCreateImage;
   CvRectangle: TCvRectangle;
   CvCreateMemStorage: TCvCreateMemStorage;
@@ -322,8 +326,8 @@ var
   CvClearMemStorage: TCvClearMemStorage;
   CvSetImageROI: TCvSetImageROI;
   CvResetImageROI: TCvResetImageROI;
-  CvCopy: TCvCopy;
-  FCVDLLHandle: THandle = 0;
+  CvCopy: TCvCopy;              }
+  FCVDLLHandle: THandle = 1;
 
 function FaceDetectionManager: TFaceDetectionManager;
 
@@ -351,7 +355,7 @@ end;
 
 procedure InitCVLib;
 begin
-  FCVDLLHandle := LoadLibrary('VCOpenCV.dll');
+{  FCVDLLHandle := LoadLibrary('VCOpenCV.dll');
   if FCVDLLHandle <> 0 then
   begin
     CvLoad := GetProcAddress(FCVDLLHandle, 'cvLoad');
@@ -367,7 +371,7 @@ begin
     CvSetImageROI := GetProcAddress(FCVDLLHandle, 'cvSetImageROI');
     CvResetImageROI := GetProcAddress(FCVDLLHandle, 'cvResetImageROI');
     CvCopy := GetProcAddress(FCVDLLHandle, 'cvCopy');
-  end;
+  end;  }
 end;
 
 {-----------------------------------------------------------------------------
@@ -389,7 +393,7 @@ var
   DataByte: PByteArray;
   RowIn: PByteArray;
 
-  function ToString(A: T4ByteArray): string;
+  function ToString(A: TA4CVChar): string;
   var
     I: Integer;
   begin
@@ -459,7 +463,7 @@ var
   DataByte: PByteArray;
   RowIn: PByteArray;
 
-  function ToString(A: T4ByteArray): string;
+  function ToString(A: TA4CVChar): string;
   var
     I: Integer;
   begin
@@ -621,7 +625,7 @@ var
   Img: PIplImage;
   Storage: PCvMemStorage;
 	I, J: LongInt;
-  ImSize: CvSize;
+  ImSize, MaxSize: TCvSize;
   R: PCvRect;
   FacesSeq: PCvSeq;
   RctIn, RctOut: TRect;
@@ -645,8 +649,10 @@ begin
 
       //* detect faces */
       ImSize := FCascadeFaces.Orig_window_size;
+      MaxSize.width := Bitmap.Width;
+      MaxSize.height := Bitmap.Height;
 
-      FacesSeq := cvHaarDetectObjects(PCvArr(img), FCascadeFaces, Storage, 1.2, 2, 1, ImSize);
+      FacesSeq := cvHaarDetectObjects(img, FCascadeFaces, Storage, 1.2, 2, 1, ImSize, MaxSize);
 
       if (FacesSeq = nil) or (FacesSeq.total = 0) then
         Exit;

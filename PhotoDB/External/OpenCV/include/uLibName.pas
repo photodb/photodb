@@ -50,7 +50,7 @@ const
 
   CV_VERSION_DLL = CV_VERSION_EPOCH + CV_VERSION_MAJOR + CV_VERSION_MINOR;
 
-{$IFDEF DEBUG}
+{$IFDEF D_EBUG}
   Core_Dll           = 'opencv_core' + CV_VERSION_DLL + 'd.dll';
   highgui_Dll        = 'opencv_highgui' + CV_VERSION_DLL + 'd.dll';
   imgproc_Dll        = 'opencv_imgproc' + CV_VERSION_DLL + 'd.dll';
