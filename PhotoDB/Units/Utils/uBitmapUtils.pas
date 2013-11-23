@@ -76,6 +76,7 @@ procedure ProportionalSize(aWidth, aHeight: Integer; var aWidthToSize, aHeightTo
 procedure ProportionalSizeA(aWidth, aHeight: Integer; var aWidthToSize, aHeightToSize: Integer);
 
 procedure KeepProportions(var Bitmap: TBitmap; MaxWidth, MaxHeight: Integer);
+procedure ResizeTo(var Bitmap: TBitmap; Width, Height: Integer);
 procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 
 function Gistogramma(W, H: Integer; S: PARGBArray): THistogrammData;
@@ -2457,6 +2458,23 @@ begin
     end;
   end;
 end;
+
+procedure ResizeTo(var Bitmap: TBitmap; Width, Height: Integer);
+var
+  B: TBitmap;
+begin
+  B := TBitmap.Create;
+  try
+    if Bitmap.PixelFormat = pf32bit then
+      B.PixelFormat := pf32bit;
+
+    DoResize(Width, Height, Bitmap, B);
+    Exchange(Bitmap, B);
+  finally
+    F(B);
+  end;
+end;
+
 
 procedure CenterBitmap24To32ImageList(var Bitmap: TBitmap; ImageSize: Integer);
 var

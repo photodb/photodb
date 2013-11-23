@@ -777,8 +777,8 @@
 	<translate name="Start timer" value="Запустить таймер" />
 	<translate name="View" value="Просмотр" />
 	<translate name="Viewer" value="Просмотр фотографий" />
-	<translate name="File %s is encrypted!" value="Файл {0} зашифрован!" />
-	<translate name="File %s not found!" value="Файл {0} не найден!" />
+	<translate name="File {0} is encrypted!" value="Файл {0} зашифрован!" />
+	<translate name="File {0} not found!" value="Файл {0} не найден!" />
 	<translate name="Can't display file" value="Невозможно отобразить файл" />
 	<translate name="Can't display file ({0})" value="Невозможно отобразить файл ({0})" />
 	<translate name="Loading image..." value="Загрузка изображения..." />

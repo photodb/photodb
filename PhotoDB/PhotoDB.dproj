@@ -116,14 +116,14 @@
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <Debugger_RunParams>/x</Debugger_RunParams>
+        <Debugger_RunParams>/nologo</Debugger_RunParams>
         <DCC_Optimize>false</DCC_Optimize>
         <VerInfo_MinorVer>5</VerInfo_MinorVer>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
         <VerInfo_Build>704</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Studio &quot;Illusion Dolphin&quot; © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.704;InternalName=PhotoDB;LegalCopyright=Studio &quot;Illusion Dolphin&quot; © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Studio Illusion Dolphin © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.704;InternalName=PhotoDB;LegalCopyright=Studio Illusion Dolphin © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
@@ -138,8 +138,15 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="External\scalemm\ScaleMM2.pas"/>
+        <DCCReference Include="External\scalemm\smmFunctions.pas"/>
+        <DCCReference Include="External\scalemm\smmGlobal.pas"/>
+        <DCCReference Include="External\scalemm\smmLargeMemory.pas"/>
+        <DCCReference Include="External\scalemm\smmLogging.pas"/>
+        <DCCReference Include="External\scalemm\smmMediumMemory.pas"/>
+        <DCCReference Include="External\scalemm\smmSmallMemory.pas"/>
+        <DCCReference Include="External\scalemm\smmStatistics.pas"/>
+        <DCCReference Include="External\scalemm\smmTypes.pas"/>
         <DCCReference Include="External\FastMM\FastMM4.pas"/>
-        <DCCReference Include="External\FastMM\FastMM4Messages.pas"/>
         <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
         <DCCReference Include="Units\System\uTime.pas"/>
@@ -663,13 +670,17 @@
         <DCCReference Include="uFormSelectDuplicateDirectories.pas">
             <Form>FormSelectDuplicateDirectories</Form>
         </DCCReference>
+        <DCCReference Include="Units\uFaceRecornizerTrainer.pas"/>
         <DCCReference Include="External\OpenCV\include\ulibname.pas"/>
         <DCCReference Include="External\OpenCV\include\core\Core_c.pas"/>
         <DCCReference Include="External\OpenCV\include\core\Core.types_c.pas"/>
         <DCCReference Include="External\OpenCV\include\objdetect\haar.pas"/>
         <DCCReference Include="External\OpenCV\include\objdetect\objdetect.pas"/>
+        <DCCReference Include="External\OpenCV\include\imgproc\imgproc_c.pas"/>
         <DCCReference Include="External\OpenCV\include\imgproc\imgproc.types_c.pas"/>
         <DCCReference Include="External\OpenCV\include\legacy\legacy.pas"/>
+        <DCCReference Include="External\OpenCV\include\highgui\highgui_c.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.Utils.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
@@ -812,9 +823,9 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
             </Deployment>
             <ActiveXProjectInfo>
                 <version>1</version>

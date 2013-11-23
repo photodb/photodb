@@ -10,6 +10,8 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
 
+  OpenCV.Utils,
+
   UnitDBDeclare,
 
   uRuntime,
@@ -18,203 +20,10 @@ uses
   uSettings,
   Core_c,
   Core.types_c,
+  imgproc.types_c,
+  imgproc_c,
   haar,
   objdetect;
-
-{type
-  CvSize = record
-    Width: longint;
-    Height: longint;
-  end;
-
-  CvRect = record
-    X: Longint;
-    Y: Longint;
-    Width: Longint;
-    Height: Longint;
-  end;
-
-  PCvRect = ^CvRect;
-
-  HaarFutureStruct = record
-    R: CvRect;
-    Weight: Single;
-  end;
-
-  CvHaarFeature = record
-    Tilted: Longint;
-    Rect1: HaarFutureStruct;
-    Rect2: HaarFutureStruct;
-    Rect3: HaarFutureStruct;
-  end;
-
-  PCvHaarFeature = ^CvHaarFeature;
-
-  CvHaarClassifier = record
-    Count: Longint;
-    Haar_feature: PCvHaarFeature;
-    Threshold: PSingle;
-    Left: Plongint;
-    Right: PLongint;
-    Alpha: PSingle;
-  end;
-
-  PCvHaarClassifier = ^CvHaarClassifier;
-
-  CvHaarStageClassifier = record
-    Count: Longint;
-    Threshold: Single;
-    Classifier: PCvHaarClassifier;
-    Next: Longint;
-    Child: Longint;
-    Parent: Longint;
-  end;
-
-  PCvHaarStageClassifier = ^CvHaarStageClassifier;
-
-  /// //////////////////////////////////////
-  // Здесь обратить внимание, непонятен тип
-  CvHidHaarClassifierCascade = record
-
-  end;
-
-  PCvHidHaarClassifierCascade = ^CvHidHaarClassifierCascade;
-  /// //////////////////////////////////////
-
-  CvHaarClassifierCascade = record
-    Flags: Longint;
-    Count: Longint;
-    Orig_window_size: CvSize;
-    Real_window_size: CvSize;
-    Scale: Double;
-    Stage_classifier: PCvHaarStageClassifier;
-    Hid_cascade: PCvHidHaarClassifierCascade;
-  end;
-
-  PCvHaarClassifierCascade = ^CvHaarClassifierCascade;
-
-  PCvMemBlock = ^CvMemBlock;
-
-  CvMemBlock = record
-    Prev: PCvMemBlock;
-    Next: PCvMemBlock;
-  end;
-
-  PCvMemStorage = ^CvMemStorage;
-
-  CvMemStorage = record
-    Signature: Longint;
-    Bottom: PCvMemBlock; // * First allocated block.                   */
-    Top: PCvMemBlock; // * Current memory block - top of the stack. */
-    Parent: PCvMemStorage; // * We get new blocks from parent as needed. */
-    Block_size: Longint; // * Block size.                              */
-    Free_space: Longint; // * Remaining free space in current block.   */
-  end;
-
-  PIplROI = ^IplROI;
-
-  IplROI = record
-    Coi: Longint; // * 0 - no COI (all channels are selected), 1 - 0th channel is selected ...*/
-    XOffset: Longint;
-    YOffset: Longint;
-    Width: Longint;
-    Height: Longint;
-  end;
-
-  PIplTileInfo = ^IplTileInfo;
-
-  IplTileInfo = record
-
-  end;
-
-  PIplImage = ^IplImage;
-
-  T4ByteArray = array [0 .. 3] of Byte;
-
-  IplImage = record
-    NSize: Longint; // * sizeof(IplImage) */
-    ID: Longint; // * version (=0)*/
-    NChannels: Longint; // * Most of OpenCV functions support 1,2,3 or 4 channels */
-    AlphaChannel: Longint; // * Ignored by OpenCV */
-    Depth: Longint; // * Pixel depth in bits: IPL_DEPTH_8U, IPL_DEPTH_8S, IPL_DEPTH_16S,
-    // IPL_DEPTH_32S, IPL_DEPTH_32F and IPL_DEPTH_64F are supported.  */
-    ColorModel: T4ByteArray; // * Ignored by OpenCV */
-    ChannelSeq: T4ByteArray; // * ditto */
-    DataOrder: Longint; // * 0 - interleaved color channels, 1 - separate color channels.
-    // cvCreateImage can only create interleaved images */
-    Origin: Longint; // * 0 - top-left origin,
-    // 1 - bottom-left origin (Windows bitmaps style).  */
-    Align: Longint; // * Alignment of image rows (4 or 8).
-    // OpenCV ignores it and uses widthStep instead.    */
-    Width: Longint; // * Image width in pixels.                           */
-    Height: Longint; // * Image height in pixels.                          */
-    Roi: PIplROI; // * Image ROI. If NULL, the whole image is selected. */
-    MaskROI: PIplImage; // * Must be NULL. */
-    ImageId: Pointer; // * "           " */
-    TileInfo: PIplTileInfo; // * "           " */
-    ImageSize: Longint; // * Image data size in bytes
-    // (==image->height*image->widthStep
-    // in case of interleaved data)*/
-    ImageData: PChar; // * Pointer to aligned image data.         */
-    WidthStep: Longint; // * Size of aligned image row in bytes.    */
-    BorderMode: array [0 .. 3] of Longint; // * Ignored by OpenCV.                     */
-    BorderConst: array [0 .. 3] of Longint; // * Ditto.                                 */
-    ImageDataOrigin: PChar; // * Pointer to very origin of image data
-    // (not necessarily aligned) -
-    // needed for correct deallocation */
-  end;
-
-  Schar = -128 .. 127;
-  Pschar = ^Schar;
-
-  PNode_type = ^CvSeq;
-
-  PCvSeqBlock = ^CvSeqBlock;
-
-  CvSeqBlock = record
-    Prev: PCvSeqBlock; // * Previous sequence block.                   */
-    Next: PCvSeqBlock; // * Next sequence block.                       */
-    Start_index: Longint; // * Index of the first element in the block +  */
-    // * sequence->first->start_index.              */
-    Count: Longint; // * Number of elements in the block.           */
-    Data: Pschar; // * Pointer to the first element of the block. */
-  end;
-
-  PCvSeq = ^CvSeq;
-
-  CvSeq = record
-    Flags: Longint; // * Miscellaneous flags.     */      \
-    Header_size: Longint; // * Size of sequence header. */      \
-    H_prev: Pnode_type; // * Previous sequence.       */      \
-    H_next: Pnode_type; // * Next sequence.           */      \
-    V_prev: Pnode_type; // * 2nd previous sequence.   */      \
-    V_next: Pnode_type; // * 2nd next sequence.       */
-    Total: Longint; // * Total number of elements.            */  \
-    Elem_size: Longint; // * Size of sequence element in bytes.   */  \
-    Block_max: Pschar; // * Maximal bound of the last block.     */  \
-    Ptr: Pschar; // * Current write pointer.               */  \
-    Delta_elems: Longint; // * Grow seq this many at a time.        */  \
-    Storage: PCvMemStorage; // * Where the seq is stored.             */  \
-    Free_blocks: PCvSeqBlock; // * Free blocks list.                    */  \
-    First: PCvSeqBlock; // * Pointer to the first sequence block. */
-
-  end;
-
-  CvPoint = record
-    X: Longint;
-    Y: Longint;
-  end;
-
-  CvScalar = record
-    B: Double;
-    G: Double;
-    R: Double;
-    Depth: Double;
-  end;
-
-  PPChar = ^PChar;
-  CvArr = Pointer;
-  PCvArr = ^CvArr;   }
 
 const
   CascadesDirectoryMask = 'Cascades';
@@ -290,7 +99,8 @@ type
     function GetIsActive: Boolean;
     function GetCascadeByFileName(FileName: string): PCvHaarClassifierCascade;
   public
-    procedure FacesDetection(Bitmap: TBitmap; Page: Integer; var Faces: TFaceDetectionResult; Method: string);
+    procedure FacesDetection(Bitmap: TBitmap; Page: Integer; var Faces: TFaceDetectionResult; Method: string); overload;
+    procedure FacesDetection(Image: pIplImage; Page: Integer; var Faces: TFaceDetectionResult; Method: string); overload;
     constructor Create;
     destructor Destroy; override;
     property IsActive: Boolean read GetIsActive;
@@ -331,8 +141,9 @@ var
 
 function FaceDetectionManager: TFaceDetectionManager;
 
-function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
-function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
+function PxMultiply(P: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
+function PxMultiply(P: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
+function PxMultiply(P: TPoint; FromSize, ToSize: TSize): TPoint; overload;
 
 implementation
 
@@ -373,142 +184,6 @@ begin
     CvCopy := GetProcAddress(FCVDLLHandle, 'cvCopy');
   end;  }
 end;
-
-{-----------------------------------------------------------------------------
-  Procedure:  IplImage2Bitmap
-  Author:     De Sanctis
-  Date:       23-set-2005
-  Arguments:  iplImg: PIplImage; bitmap: TBitmap
-  Description: convert a IplImage to a Windows bitmap
-  ----------------------------------------------------------------------------- }
-procedure IplImage2Bitmap(IplImg: PIplImage; Bitmap: TBitmap);
-const
- IPL_ORIGIN_TL = 0;
- IPL_ORIGIN_BL = 1;
-
-var
-  I: INTEGER;
-  J: INTEGER;
-  Offset: Longint;
-  DataByte: PByteArray;
-  RowIn: PByteArray;
-
-  function ToString(A: TA4CVChar): string;
-  var
-    I: Integer;
-  begin
-    SetLength(Result, 4);
-    for I := 0 to 3 do
-      Result[I + 1] := Char(A[I]);
-
-    Result := Trim(Result);
-  end;
-
-begin
-  Assert((iplImg.Depth = 8) and (iplImg.NChannels = 3), 'IplImage2Bitmap: Not a 24 bit color iplImage!');
-
-  Bitmap.Height := IplImg.Height;
-  Bitmap.Width := IplImg.Width;
-  for J := 0 to Bitmap.Height - 1 do
-  begin
-    // origin BL = Bottom-Left
-    if (Iplimg.Origin = IPL_ORIGIN_BL) then
-      RowIn := Bitmap.Scanline[Bitmap.Height - 1 - J]
-    else
-      RowIn := Bitmap.Scanline[J];
-
-    Offset := Longint(Iplimg.ImageData) + IplImg.WidthStep * J;
-    DataByte := Pbytearray(Offset);
-
-    if (ToString(IplImg.ChannelSeq) = 'BGR') then
-    begin
-      { direct copy of the iplImage row bytes to bitmap row }
-      CopyMemory(Rowin, DataByte, IplImg.WidthStep);
-    end else if (ToString(IplImg.ChannelSeq) = 'GRAY') then
-    begin
-      for I := 0 to Bitmap.Width - 1 do
-      begin
-        RowIn[3 * I] := Databyte[I];
-        RowIn[3 * I + 1] := Databyte[I];
-        RowIn[3 * I + 2] := Databyte[I];
-      end
-    end else
-    begin
-      for I := 0 to 3 * Bitmap.Width - 1 do
-      begin
-        RowIn[I] := Databyte[I + 2];
-        RowIn[I + 1] := Databyte[I + 1];
-        RowIn[I + 2] := Databyte[I];
-      end;
-    end;
-  end;
-end; { IplImage2Bitmap }
-
-{-----------------------------------------------------------------------------
-  Procedure:  IplImage2Bitmap
-  Author:     De Sanctis
-  Date:       23-set-2005
-  Arguments:  iplImg: PIplImage; bitmap: TBitmap
-  Description: convert a IplImage to a Windows bitmap
-  ----------------------------------------------------------------------------- }
-procedure Bitmap2IplImage(IplImg: PIplImage; Bitmap: TBitmap);
-const
- IPL_ORIGIN_TL = 0;
- IPL_ORIGIN_BL = 1;
-
-var
-  I: INTEGER;
-  J: INTEGER;
-  Offset: Longint;
-  DataByte: PByteArray;
-  RowIn: PByteArray;
-
-  function ToString(A: TA4CVChar): string;
-  var
-    I: Integer;
-  begin
-    SetLength(Result, 4);
-    for I := 0 to 3 do
-      Result[I + 1] := Char(A[I]);
-
-    Result := Trim(Result);
-  end;
-
-begin
-  Assert((iplImg.Depth = 8) and (iplImg.NChannels = 3), 'IplImage2Bitmap: Not a 24 bit color iplImage!');
-
-  Bitmap.Height := IplImg.Height;
-  Bitmap.Width := IplImg.Width;
-  for J := 0 to Bitmap.Height - 1 do
-  begin
-    // origin BL = Bottom-Left
-    if (Iplimg.Origin = IPL_ORIGIN_BL) then
-      RowIn := Bitmap.Scanline[Bitmap.Height - 1 - J]
-    else
-      RowIn := Bitmap.Scanline[J];
-
-    Offset := Longint(Iplimg.ImageData) + IplImg.WidthStep * J;
-    DataByte := Pbytearray(Offset);
-
-    if (ToString(IplImg.ChannelSeq) = 'BGR') then
-    begin
-      { direct copy of the iplImage row bytes to bitmap row }
-      CopyMemory(DataByte, Rowin, IplImg.WidthStep);
-    end else if (ToString(IplImg.ChannelSeq) = 'GRAY') then
-    begin
-      for I := 0 to Bitmap.Width - 1 do
-        Databyte[I] := (RowIn[3 * I] * 77  + RowIn[3 * I + 1] * 151 + RowIn[3 * I + 2] * 28) shr 8;
-    end else
-    begin
-      for I := 0 to 3 * Bitmap.Width - 1 do
-      begin
-        Databyte[I + 2] := RowIn[I];
-        Databyte[I + 1] := RowIn[I + 1];
-        Databyte[I] := RowIn[I + 2];
-      end;
-    end;
-  end;
-end; { IplImage2Bitmap }
 
 { TFaceDetectionResult }
 
@@ -614,15 +289,15 @@ begin
   inherited;
 end;
 
+
 procedure TFaceDetectionManager.Init;
 begin
   InitCVLib;
 end;
 
-procedure TFaceDetectionManager.FacesDetection(Bitmap: TBitmap; Page: Integer; var Faces: TFaceDetectionResult; Method: string);
+procedure TFaceDetectionManager.FacesDetection(Image: pIplImage; Page: Integer; var Faces: TFaceDetectionResult; Method: string);
 var
   StorageType: Integer;
-  Img: PIplImage;
   Storage: PCvMemStorage;
 	I, J: LongInt;
   ImSize, MaxSize: TCvSize;
@@ -630,61 +305,77 @@ var
   FacesSeq: PCvSeq;
   RctIn, RctOut: TRect;
   FCascadeFaces: PCvHaarClassifierCascade;
+  GrayImage: pIplImage;
 begin
-  FCascadeFaces := Cascades[Method];
-
-  if FCascadeFaces = nil then
-    Exit;
-
-  FSync.Enter;
+  GrayImage := cvCreateImage(CvSize(Image.width, Image.height), image.depth, 1);
   try
-    StorageType := 0;
-    Storage := CvCreateMemStorage(StorageType);
+    cvCvtColor(Image, GrayImage, CV_BGR2GRAY);
 
-    ImSize.Width := Bitmap.Width;
-    ImSize.Height := Bitmap.Height;
-    Img := CvCreateImage(ImSize, 8, 3);
+    FCascadeFaces := Cascades[Method];
+
+    if FCascadeFaces = nil then
+      Exit;
+
+    FSync.Enter;
     try
-      Bitmap2IplImage(Img, Bitmap);
+      StorageType := 0;
+      Storage := CvCreateMemStorage(StorageType);
 
-      //* detect faces */
-      ImSize := FCascadeFaces.Orig_window_size;
-      MaxSize.width := Bitmap.Width;
-      MaxSize.height := Bitmap.Height;
+        //* detect faces */
+        ImSize := FCascadeFaces.Orig_window_size;
+        MaxSize.width := Image.Width;
+        MaxSize.height := Image.Height;
 
-      FacesSeq := cvHaarDetectObjects(img, FCascadeFaces, Storage, 1.2, 2, 1, ImSize, MaxSize);
+        FacesSeq := cvHaarDetectObjects(GrayImage, FCascadeFaces, Storage, 1.2, 2, CV_HAAR_DO_CANNY_PRUNING, ImSize, MaxSize);
 
-      if (FacesSeq = nil) or (FacesSeq.total = 0) then
-        Exit;
+        if (FacesSeq = nil) or (FacesSeq.total = 0) then
+          Exit;
 
-      for I := 0 to FacesSeq.total - 1 do
-      begin
-        R := PCvRect(CvGetSeqElem(FacesSeq, I));
+        for I := 0 to FacesSeq.total - 1 do
+        begin
+          R := PCvRect(CvGetSeqElem(FacesSeq, I));
 
-        Faces.AddFace(R.X, R.Y, R.Width, R.Height, Bitmap.Width, Bitmap.Height, Page);
-      end;
+          Faces.AddFace(R.X, R.Y, R.Width, R.Height, Image.Width, Image.Height, Page);
+        end;
 
-      for I := Faces.Count - 1 downto 0 do
-      begin
-        for J := Faces.Count - 1 downto 0 do
-        if I <> J then
-          begin
-            RctIn := Rect(Faces[I].X, Faces[I].Y, Faces[I].X + Faces[I].Width, Faces[I].Y + Faces[I].Height);
-            RctOut := Rect(Faces[J].X, Faces[J].Y, Faces[J].X + Faces[J].Width, Faces[J].Y + Faces[J].Height);
-            if RectInRectPercent(RctOut, RctIn) > 25 then
+        for I := Faces.Count - 1 downto 0 do
+        begin
+          for J := Faces.Count - 1 downto 0 do
+          if I <> J then
             begin
-              Faces.DeleteAt(I);
-              Break;
+              RctIn := Rect(Faces[I].X, Faces[I].Y, Faces[I].X + Faces[I].Width, Faces[I].Y + Faces[I].Height);
+              RctOut := Rect(Faces[J].X, Faces[J].Y, Faces[J].X + Faces[J].Width, Faces[J].Y + Faces[J].Height);
+              if RectInRectPercent(RctOut, RctIn) > 25 then
+              begin
+                Faces.DeleteAt(I);
+                Break;
+              end;
             end;
-          end;
-      end;
+        end;
 
-      Faces.FPage := Page;
+        Faces.FPage := Page;
     finally
-      cvResetImageROI(img);
+      FSync.Leave;
     end;
   finally
-    FSync.Leave;
+    cvReleaseImage(GrayImage);
+  end;
+end;
+
+procedure TFaceDetectionManager.FacesDetection(Bitmap: TBitmap; Page: Integer; var Faces: TFaceDetectionResult; Method: string);
+var
+  Img: PIplImage;
+  ImSize: TCvSize;
+begin
+  ImSize.Width := Bitmap.Width;
+  ImSize.Height := Bitmap.Height;
+  Img := CvCreateImage(ImSize, 8, 3);
+  try
+    Bitmap2IplImage(Img, Bitmap);
+	
+    FacesDetection(Img, Page, Faces, Method);
+  finally
+    cvResetImageROI(img);
   end;
 end;
 
@@ -849,23 +540,33 @@ end;
 
 //functions
 
-function PxMultiply(R: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
+function PxMultiply(P: TPoint; FromSize, ToSize: TSize): TPoint; overload;
 begin
-  Result := R;
-  if (OriginalSize.cx <> 0) and (OriginalSize.cy <> 0) then
+  Result := P;
+  if (FromSize.cx <> 0) and (FromSize.cy <> 0) then
   begin
-    Result.X := Round(R.X * Image.Width / OriginalSize.cx);
-    Result.Y := Round(R.Y * Image.Height / OriginalSize.cy);
+    Result.X := Round(P.X * ToSize.Width / FromSize.cx);
+    Result.Y := Round(P.Y * ToSize.Height / FromSize.cy);
   end;
 end;
 
-function PxMultiply(R: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
+function PxMultiply(P: TPoint; OriginalSize: TSize; Image: TBitmap): TPoint; overload;
 begin
-  Result := R;
+  Result := P;
+  if (OriginalSize.cx <> 0) and (OriginalSize.cy <> 0) then
+  begin
+    Result.X := Round(P.X * Image.Width / OriginalSize.cx);
+    Result.Y := Round(P.Y * Image.Height / OriginalSize.cy);
+  end;
+end;
+
+function PxMultiply(P: TPoint; Image: TBitmap; OriginalSize: TSize): TPoint; overload;
+begin
+  Result := P;
   if (Image.Width <> 0) and (Image.Height <> 0) then
   begin
-    Result.X := Round(R.X * OriginalSize.cx / Image.Width);
-    Result.Y := Round(R.Y * OriginalSize.cy / Image.Height);
+    Result.X := Round(P.X * OriginalSize.cx / Image.Width);
+    Result.Y := Round(P.Y * OriginalSize.cy / Image.Height);
   end;
 end;
 

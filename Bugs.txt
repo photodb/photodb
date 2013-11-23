@@ -15,6 +15,7 @@ resize - raw use preview checkbox;
 - refresh doesn't work for search directory;
 - Face recognition;
 - Links for shared pictures after share;
+- Тэги созданные в программе не видны в Picasa;
 
 [Maybe]
 - Groups -> Categories

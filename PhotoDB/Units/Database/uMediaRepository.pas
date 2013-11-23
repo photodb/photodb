@@ -43,6 +43,7 @@ type
     function GetMenuInfosByUniqId(UniqId: string): TMediaItemCollection;
     procedure UpdateMediaInfosFromDB(Info: TMediaItemCollection);
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
+    function GetTopImagesWithPersons(MinDate: TDateTime; MaxItems: Integer): TMediaItemCollection;
     procedure IncMediaCounter(ID: Integer);
     procedure UpdateLinks(ID: Integer; NewLinks: string);
     procedure RefreshImagesCache;
@@ -358,6 +359,47 @@ begin
   MediaItem := GetMenuItemByID(ID);
   if MediaItem <> nil then
     Result.Add(MediaItem);
+end;
+
+function TMediaRepository.GetTopImagesWithPersons(MinDate: TDateTime;
+  MaxItems: Integer): TMediaItemCollection;
+var
+  SQL: string;
+  MediaItem: TMediaItem;
+  SC: TSelectCommand;
+  DFormatSettings: TFormatSettings;
+begin
+  Result := TMediaItemCollection.Create;
+  SC := FContext.CreateSelect(ImageTable);
+  try
+
+    SQL := 'SELECT TOP {3} * FROM                                                     ' +
+           '  (SELECT IM1.* from {0} AS IM1                                           ' +
+           '   LEFT JOIN                                                              ' +
+           '     (SELECT DISTINCT Im.ID, Im.Rating FROM {0} im                        ' +
+           '      INNER JOIN {1} OM on Im.Id = OM.ImageId) AS IR on IR.ID = IM1.ID    ' +
+           '   WHERE DateToAdd > #{2}#                                                ' +
+           '   ORDER BY [IM1].[Rating] ASC) AS Result                                 ';
+
+    DFormatSettings := FormatSettings;
+    DFormatSettings.DateSeparator := '/';
+
+    SQL := FormatEx(SQL, [ImageTable, ObjectMappingTableName, FormatDateTime('dd/mm/yyyy', MinDate, DFormatSettings), MaxItems]);
+
+    if SC.ExecuteSQL(SQL, True) > 0 then
+    begin
+      while not SC.DS.Eof do
+      begin
+        MediaItem := TMediaItem.Create;
+        MediaItem.ReadFromDS(SC.DS);
+        Result.Add(MediaItem);
+
+        SC.DS.Next;
+      end;
+    end;
+  finally
+    F(SC);
+  end;
 end;
 
 procedure TMediaRepository.IncMediaCounter(ID: Integer);

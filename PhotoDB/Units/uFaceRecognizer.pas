@@ -4,12 +4,19 @@ interface
 
 uses
   Winapi.Windows,
+  Generics.Defaults,
   Generics.Collections,
+  System.Math,
   System.SysUtils,
   System.SyncObjs,
   Vcl.Graphics,
 
+  OpenCV.Utils,
+
+  highgui_c,
   Core.types_c,
+  imgproc.types_c,
+  imgproc_c,
   core_c,
   legacy,
 
@@ -21,43 +28,56 @@ type
     function SaveState(Path: string): Boolean;
     function LoadState(Path: string): Boolean;
 
-    procedure Train;
+    function Train: Boolean;
     //simple add face to detection collection
-    function AddNewFace(Face: TBitmap; PersonId: Integer): Boolean; overload;
-    function AddNewFace(Face: pIplImage; PersonId: Integer): Boolean; overload;
+    function HasPerson(PersonId: Integer): Boolean;
+    function TrainFace(Face: TBitmap; PersonId: Integer; Quality: Byte): Boolean; overload;
+    function TrainFace(Face: pIplImage; PersonId: Integer; Quality: Byte): Boolean; overload;
     //resolve person by image
-    function DetectFace(Face: TBitmap): Integer; overload;
-    function DetectFace(Face: pIplImage): Integer; overload;
-
-    //call-back from user
-    //User updated face person, so we could train our system to match user's decision
-    function ChangePerson(Face: TBitmap; DetectedPersonId: Integer; RealPersonId: Integer): Boolean;
+    function DetectFace(Face: TBitmap; Quality: Byte): Integer; overload;
+    function DetectFace(Face: pIplImage; Quality: Byte): Integer; overload;
   end;
+
+  TPersonFaces = class;
 
   TPersonFace = class
   private
     FFaceImage: pIplImage;
     FSuccessCount: Integer;
     FFailedCound: Integer;
+    FFaces: TPersonFaces;
+    FQuality: Byte;
+    function GetScore: Double;
   public
     destructor Destroy; override;
-    constructor Create(FaceImage: pIplImage);
+    constructor Create(FaceImage: pIplImage; Quality: Byte; Faces: TPersonFaces);
+    procedure IncSuccess;
+    procedure IncFail;
     property Face: pIplImage read FFaceImage;
+    property Person: TPersonFaces read FFaces;
+    property Quality: Byte read FQuality;
+    property Score: Double read GetScore;
   end;
 
   TPersonFaces = class
   private
     FPersonId: Integer;
     FFaces: TList<TPersonFace>;
+    FCapacity: Integer;
     function GetFacesCount: Integer;
     function GetFace(Index: Integer): TPersonFace;
+    function GetMinQuality: Byte;
   public
-    constructor Create(PersonId: Integer);
+    constructor Create(PersonId: Integer; Capacity: Integer);
     destructor Destroy; override;
-    function AddFace(Image: pIplImage): TPersonFace;
+    function AddFace(Image: pIplImage; Quality: Byte): TPersonFace;
+    function AddNotFoundFace(Image: pIplImage; Quality: Byte): TPersonFace;
+    procedure CleanUp;
+    procedure IncFail;
     property Id: Integer read FPersonId;
     property FacesCount: Integer read GetFacesCount;
     property Faces[Index: Integer]: TPersonFace read GetFace;
+    property MinQuality: Byte read GetMinQuality;
   end;
 
   TFaceEigenRecognizer = class(TInterfacedObject, IFaceRecognizer)
@@ -68,16 +88,16 @@ type
     FPersons: TList<TPersonFaces>;
 
     FTrainedFacesCount: Integer;
-    FTrainedFaces: array of Integer;
+    FTrainedFaces: array of TPersonFace;
     FIsTrained: Boolean;
     FEigImg: array of pIplImage;
     FMeanImg: pIplImage; // Average face (float point)
     FCoeffs: array of array of Float;
     FEigenVals: pCvMat;
     procedure ClearTrainingMemory;
-    function FindFace(FaceImage: pIplImage): TPersonFaces;
+    function FindFace(FaceImage: pIplImage): TPersonFace;
     function FindPerson(PersonId: Integer): TPersonFaces;
-    function AddPerson(FaceImage: pIplImage; PersonId: Integer): TPersonFaces;
+    function AddPerson(FaceImage: pIplImage; Quality: Byte; PersonId: Integer): TPersonFaces;
   public
     constructor Create(Width, Height: Integer; MaxFacesPerPerson: Integer);
     destructor Destroy; override;
@@ -85,91 +105,29 @@ type
     function SaveState(Path: string): Boolean;
     function LoadState(Path: string): Boolean;
 
-    procedure Train;
+    function Train: Boolean;
 
-    function AddNewFace(Face: TBitmap; PersonId: Integer): Boolean; overload;
-    function AddNewFace(Face: pIplImage; PersonId: Integer): Boolean; overload;
-    function DetectFace(Face: TBitmap): Integer; overload;
-    function DetectFace(Face: pIplImage): Integer; overload;
+    function HasPerson(PersonId: Integer): Boolean;
+    function TrainFace(Face: TBitmap; PersonId: Integer; Quality: Byte): Boolean; overload;
+    function TrainFace(Face: pIplImage; PersonId: Integer; Quality: Byte): Boolean; overload;
+    function DetectFace(Face: TBitmap; Quality: Byte): Integer; overload;
+    function DetectFace(Face: pIplImage; Quality: Byte): Integer; overload;
 
-    function ChangePerson(Face: TBitmap; DetectedPersonId: Integer; RealPersonId: Integer): Boolean;
   end;
 
 implementation
 
-{-----------------------------------------------------------------------------
-  Procedure:  IplImage2Bitmap
-  Author:     De Sanctis
-  Date:       23-set-2005
-  Arguments:  iplImg: PIplImage; bitmap: TBitmap
-  Description: convert a IplImage to a Windows bitmap
-  ----------------------------------------------------------------------------- }
-procedure Bitmap2IplImage(IplImg: PIplImage; Bitmap: TBitmap);
-const
- IPL_ORIGIN_TL = 0;
- IPL_ORIGIN_BL = 1;
-
-var
-  I: INTEGER;
-  J: INTEGER;
-  Offset: Longint;
-  DataByte: PByteArray;
-  RowIn: PByteArray;
-
-  function ToString(A: TA4CVChar): string;
-  var
-    I: Integer;
-  begin
-    SetLength(Result, 4);
-    for I := 0 to 3 do
-      Result[I + 1] := Char(A[I]);
-
-    Result := Trim(Result);
-  end;
-
-begin
-  Assert((iplImg.Depth = 8) and (iplImg.NChannels = 3), 'IplImage2Bitmap: Not a 24 bit color iplImage!');
-
-  Bitmap.Height := IplImg.Height;
-  Bitmap.Width := IplImg.Width;
-  for J := 0 to Bitmap.Height - 1 do
-  begin
-    // origin BL = Bottom-Left
-    if (Iplimg.Origin = IPL_ORIGIN_BL) then
-      RowIn := Bitmap.Scanline[Bitmap.Height - 1 - J]
-    else
-      RowIn := Bitmap.Scanline[J];
-
-    Offset := Longint(Iplimg.ImageData) + IplImg.WidthStep * J;
-    DataByte := Pbytearray(Offset);
-
-    if (ToString(IplImg.ChannelSeq) = 'BGR') then
-    begin
-      { direct copy of the iplImage row bytes to bitmap row }
-      CopyMemory(DataByte, Rowin, IplImg.WidthStep);
-    end else if (ToString(IplImg.ChannelSeq) = 'GRAY') then
-    begin
-      for I := 0 to Bitmap.Width - 1 do
-        Databyte[I] := (RowIn[3 * I] * 77  + RowIn[3 * I + 1] * 151 + RowIn[3 * I + 2] * 28) shr 8;
-    end else
-    begin
-      for I := 0 to 3 * Bitmap.Width - 1 do
-      begin
-        Databyte[I + 2] := RowIn[I];
-        Databyte[I + 1] := RowIn[I + 1];
-        Databyte[I] := RowIn[I + 2];
-      end;
-    end;
-  end;
-end; { IplImage2Bitmap }
-
 { TPersonFace }
 
-constructor TPersonFace.Create(FaceImage: pIplImage);
+constructor TPersonFace.Create(FaceImage: pIplImage; Quality: Byte; Faces: TPersonFaces);
 begin
-  FFaceImage := FaceImage;
+  FFaceImage := cvCreateImage(CvSize(FaceImage.width, FaceImage.height), FaceImage.depth, FaceImage.nChannels);
+  cvSplit(FaceImage, FFaceImage, nil, nil, nil);
+
+  FQuality := Quality;
   FSuccessCount := 0;
   FFailedCound := 0;
+  FFaces := Faces;
 end;
 
 destructor TPersonFace.Destroy;
@@ -178,17 +136,86 @@ begin
   inherited;
 end;
 
-{ TPersonFaces }
-
-function TPersonFaces.AddFace(Image: pIplImage): TPersonFace;
+function TPersonFace.GetScore: Double;
 begin
-  Result := TPersonFace.Create(Image);
-  FFaces.Add(Result);
+  if FFailedCound > 0 then
+    Result := (FSuccessCount / (1.1 - (Quality / 100)) - FFailedCound) / FFailedCound
+  else
+    Result := FSuccessCount / (1.1 - (Quality / 100));
 end;
 
-constructor TPersonFaces.Create(PersonId: Integer);
+procedure TPersonFace.IncFail;
+begin
+  Inc(FFailedCound);
+end;
+
+procedure TPersonFace.IncSuccess;
+begin
+  Inc(FSuccessCount);
+end;
+
+{ TPersonFaces }
+
+function TPersonFaces.AddFace(Image: pIplImage; Quality: Byte): TPersonFace;
+begin
+  Result := TPersonFace.Create(Image, Quality, Self);
+  Result.IncSuccess;
+  FFaces.Add(Result);
+
+  CleanUp();
+end;
+
+function TPersonFaces.AddNotFoundFace(Image: pIplImage; Quality: Byte): TPersonFace;
+begin
+  IncFail;
+
+  Result := TPersonFace.Create(Image, Quality, Self);
+  Result.IncSuccess;
+  FFaces.Add(Result);
+
+  CleanUp();
+end;
+
+procedure TPersonFaces.IncFail;
+var
+  I: Integer;
+begin
+  for I := 0 to FacesCount - 1 do
+    Faces[I].IncFail;
+end;
+
+procedure TPersonFaces.CleanUp;
+var
+  I: Integer;
+  MinScore, Score: Double;
+  FaceToRemove: TPersonFace;
+begin
+  if FacesCount <= FCapacity then
+    Exit;
+
+  MinScore := MaxDouble;
+  FaceToRemove := nil;
+  for I := 0 to FacesCount - 1 do
+  begin
+    Score := Faces[I].Score;
+    if Score < MinScore then
+    begin
+      FaceToRemove := Faces[I];
+      MinScore := Score;
+    end;
+  end;
+
+  if FaceToRemove <> nil then
+  begin
+    FFaces.Remove(FaceToRemove);
+    F(FaceToRemove);
+  end;
+end;
+
+constructor TPersonFaces.Create(PersonId: Integer; Capacity: Integer);
 begin
   FPersonId := PersonId;
+  FCapacity := Capacity;
   FFaces := TList<TPersonFace>.Create;
 end;
 
@@ -206,6 +233,16 @@ end;
 function TPersonFaces.GetFacesCount: Integer;
 begin
   Result := FFaces.Count;
+end;
+
+function TPersonFaces.GetMinQuality: Byte;
+var
+  I: Integer;
+begin
+  Result := 255;
+  for I := 0 to FacesCount - 1 do
+    if Faces[I].Quality < Result then
+      Result := Faces[I].Quality;
 end;
 
 { TFaceDetector }
@@ -233,50 +270,29 @@ begin
   inherited;
 end;
 
-function TFaceEigenRecognizer.AddNewFace(Face: TBitmap; PersonId: Integer): Boolean;
+function TFaceEigenRecognizer.TrainFace(Face: TBitmap; PersonId: Integer; Quality: Byte): Boolean;
 var
   CvFace, CvSampleFace: pIplImage;
 begin
   CvFace :=  cvCreateImage(FSize, IPL_DEPTH_8U, 3);
+  Bitmap2IplImage(CvFace, Face);
 
   CvSampleFace := cvCreateImage(FSize, IPL_DEPTH_8U, 1);
 
-  cvSplit(
-    CvFace,
-    CvSampleFace,
-    nil,
-    nil,
-    nil);
+  cvCvtColor(CvFace, CvSampleFace, CV_BGR2GRAY );
+  cvEqualizeHist(CvSampleFace, CvSampleFace);
 
-  Result := AddNewFace(CvSampleFace, PersonId);
+  Result := TrainFace(CvSampleFace, PersonId, Quality);
 
   cvReleaseImage(CvFace);
+  cvReleaseImage(CvSampleFace);
 end;
 
-function TFaceEigenRecognizer.AddNewFace(Face: pIplImage; PersonId: Integer): Boolean;
-var
-  Person: TPersonFaces;
+function TFaceEigenRecognizer.AddPerson(FaceImage: pIplImage; Quality: Byte; PersonId: Integer): TPersonFaces;
 begin
-  FSync.Enter;
-  try
-    FIsTrained := False;
-
-    Person := FindPerson(PersonId);
-    if Person = nil then
-      Person := AddPerson(Face, PersonId)
-    else
-      Person.AddFace(Face);
-
-    Result := True;
-  finally
-    FSync.Leave;
-  end;
-end;
-
-function TFaceEigenRecognizer.AddPerson(FaceImage: pIplImage; PersonId: Integer): TPersonFaces;
-begin
-  Result := TPersonFaces.Create(PersonId);
-  Result.AddFace(FaceImage);
+  FIsTrained := False;
+  Result := TPersonFaces.Create(PersonId, FMaxFacesPerPerson);
+  Result.AddFace(FaceImage, Quality);
   FPersons.Add(Result);
 end;
 
@@ -290,25 +306,29 @@ begin
       Exit(FPersons[I]);
 end;
 
+function TFaceEigenRecognizer.HasPerson(PersonId: Integer): Boolean;
+begin
+  Result := FindPerson(PersonId) <> nil;
+end;
 
-function TFaceEigenRecognizer.DetectFace(Face: pIplImage): Integer;
+function TFaceEigenRecognizer.DetectFace(Face: pIplImage; Quality: Byte): Integer;
 var
-  Person: TPersonFaces;
+  FaceItem: TPersonFace;
 begin
   Result := 0;
 
   FSync.Enter;
   try
-    Person := FindFace(Face);
+    FaceItem := FindFace(Face);
 
-    if Person <> nil then
-      Exit(Person.Id);
+    if FaceItem <> nil then
+      Exit(FaceItem.Person.Id);
   finally
     FSync.Leave;
   end;
 end;
 
-function TFaceEigenRecognizer.DetectFace(Face: TBitmap): Integer;
+function TFaceEigenRecognizer.DetectFace(Face: TBitmap; Quality: Byte): Integer;
 var
   CvFaceImage, CvTestImage: pIplImage;
 begin
@@ -316,19 +336,13 @@ begin
   Bitmap2IplImage(CvFaceImage, Face);
 
   CvTestImage := cvCreateImage(FSize, IPL_DEPTH_8U, 1);
-  cvSplit(CvFaceImage, CvTestImage, nil, nil, nil);
+  cvCvtColor(CvFaceImage, CvTestImage, CV_BGR2GRAY );
+  cvEqualizeHist(CvTestImage, CvTestImage);
 
-  Result := DetectFace(CvTestImage);
-end;
+  Result := DetectFace(CvTestImage, Quality);
 
-function TFaceEigenRecognizer.ChangePerson(Face: TBitmap; DetectedPersonId, RealPersonId: Integer): Boolean;
-begin
-  FSync.Enter;
-  try
-    Result := False;
-  finally
-    FSync.Leave;
-  end;
+  cvReleaseImage(CvFaceImage);
+  cvReleaseImage(CvTestImage);
 end;
 
 procedure TFaceEigenRecognizer.ClearTrainingMemory;
@@ -336,6 +350,9 @@ var
   I: Integer;
   Image: pIplImage;
 begin
+  if Assigned(FEigenVals) then
+    cvReleaseMat(FEigenVals);
+
   if Assigned(FMeanImg) then
     cvReleaseImage(FMeanImg);
 
@@ -368,7 +385,7 @@ begin
   end;
 end;
 
-procedure TFaceEigenRecognizer.Train;
+function TFaceEigenRecognizer.Train: Boolean;
 var
   I, J: Integer;
   Tc: TCvTermCriteria;
@@ -380,6 +397,9 @@ begin
   ClearTrainingMemory;
 
   SetLength(SamplesArray, 0);
+  if FPersons.Count < 2 then
+    Exit(False);
+
   for I := 0 to FPersons.Count - 1 do
   begin
     Person := FPersons[I];
@@ -389,7 +409,12 @@ begin
       SamplesArray[Length(SamplesArray) - 1] := Person.Faces[J].Face;
 
       SetLength(FTrainedFaces, Length(FTrainedFaces) + 1);
-      FTrainedFaces[Length(FTrainedFaces) - 1] := Person.Id;
+      FTrainedFaces[Length(FTrainedFaces) - 1] := Person.Faces[J];
+
+      try
+      SavePIplImageAsBitmap(FTrainedFaces[Length(FTrainedFaces) - 1].Face, 'D:\trainset\' + IntToStr(Length(FTrainedFaces) - 1) + '.bmp');
+      except
+      end;
     end;
   end;
   SamplesCount := Length(SamplesArray);
@@ -401,7 +426,7 @@ begin
   // -----------------------------------
   Tc.cType := CV_TERMCRIT_NUMBER or CV_TERMCRIT_EPS;
 
-  // TODO: chekc different parameters
+  // TODO: check different parameters
   Tc.max_iter := 100;
   Tc.epsilon  := 0.001;
 
@@ -452,18 +477,86 @@ begin
 
   FTrainedFacesCount := SamplesCount;
   FIsTrained := True;
+  Result := True;
 end;
 
-function TFaceEigenRecognizer.FindFace(FaceImage: pIplImage): TPersonFaces;
+function TFaceEigenRecognizer.TrainFace(Face: pIplImage; PersonId: Integer; Quality: Byte): Boolean;
 var
-  ProjectedTestFace: array Of Float;
-  I, NEigens, ITrain, INearest, PersonId: Integer;
-  DI, DistSq, LeastDistSq: Double;
+  Person: TPersonFaces;
+  FaceItem: TPersonFace;
+begin
+  Result := FTrainedFacesCount > 2;
+
+  FSync.Enter;
+  try
+    FaceItem := FindFace(Face);
+    if FaceItem = nil then
+    begin
+      Person := FindPerson(PersonId);
+      if Person = nil then
+        AddPerson(Face, Quality, PersonId)
+      else
+      begin
+        Person.AddNotFoundFace(Face, Quality);
+        FIsTrained := False;
+      end;
+
+      Exit;
+    end;
+
+    Person := FaceItem.Person;
+    if FaceItem.Person.Id = PersonId then
+    begin
+      FaceItem.IncSuccess;
+      if Quality > Person.MinQuality then
+      begin
+        FIsTrained := False;
+        Person.AddFace(Face, Quality);
+      end;
+
+      Exit;
+    end;
+
+    FaceItem.IncFail;
+    Person := FindPerson(PersonId);
+    if Person = nil then
+    begin
+      FIsTrained := False;
+      AddPerson(Face, Quality, PersonId);
+      Exit;
+    end;
+
+    if Quality > Person.MinQuality then
+    begin
+      FIsTrained := False;
+      Person.AddNotFoundFace(Face, Quality);
+    end;
+  finally
+    FSync.Leave;
+  end;
+end;
+
+function TFaceEigenRecognizer.FindFace(FaceImage: pIplImage): TPersonFace;
+type
+  TFaceDistance = record
+    Face: TPersonFace;
+    Distance: Double;
+    Index: Integer;
+  end;
+var
+  ProjectedTestFace: array of Float;
+  FL: Float;
+  I, NEigens, ITrain, INearest, Id: Integer;
+  S, DI, DistSq, LeastDistSq: Double;
+  FD: TFaceDistance;
+  FaceDistances: TList<TFaceDistance>;
+  Scores: TDictionary<Integer, Double>;
+  ScorePair: TPair<Integer, Double>;
 begin
   Result := nil;
 
-  if not FIsTrained then
-    Train;
+  if not FIsTrained and not Train then
+    Exit;
 
   // -----------------------------------------------------------
   // Load test image
@@ -483,32 +576,59 @@ begin
 
   // -----------------------------------------------------------
   LeastDistSq := DBL_MAX;
-  ITrain      := 0;
   INearest    := -1;
 
-  NEigens := FTrainedFacesCount - 1;
-  for ITrain := 0 to FTrainedFacesCount - 1 do
-  begin
-    DistSq := 0;
-    for I  := 0 to NEigens - 1 do
+  FaceDistances := TList<TFaceDistance>.Create;
+  try
+    NEigens := FTrainedFacesCount - 1;
+    for ITrain := 0 to FTrainedFacesCount - 1 do
     begin
-      DI    := ProjectedTestFace[I] - FCoeffs[ITrain][I];
-      DistSq := DistSq + DI * DI / pFloat(FEigenVals.Data)[I];
+      DistSq := 0;
+      for I := 0 to NEigens - 1 do
+      begin
+        DI := ProjectedTestFace[I] - FCoeffs[ITrain][I];
+        FL := pFloat(FEigenVals.Data)[I];
+        if IsNan(FL) or (FL = 0) then
+          DistSq := DBL_MAX
+        else
+          DistSq := DistSq + DI * DI / FL;
+      end;
+      if DistSq < LeastDistSq then
+      begin
+        leastDistSq := DistSq;
+        INearest    := ITrain;
+      end;
+      FD.Face := FTrainedFaces[ITrain];
+      FD.Distance := DistSq;
+      FD.Index := ITrain;
+      FaceDistances.Add(FD);
     end;
-    if DistSq < LeastDistSq then
+
+    FaceDistances.Sort(TComparer<TFaceDistance>.Construct(
+       function (const L, R: TFaceDistance): Integer
+       begin
+         if L.Distance = R.Distance then
+           Exit(0);
+
+         Result := IIF(Abs(L.Distance) - Abs(R.Distance) < 0, -1, 1);
+       end
+    ));
+
+    if (FaceDistances.Count > 0) then
     begin
-      leastDistSq := DistSq;
-      INearest    := ITrain;
+      Result := FaceDistances[0].Face;
+
+      cvNamedWindow('SearchFor', 0);
+      cvNamedWindow('Found', 0);
+      cvShowImage('SearchFor', FaceImage);
+      cvShowImage('Found', Result.FFaceImage);
+      cvWaitKey(10);;
     end;
+
+  finally
+    F(FaceDistances);
   end;
 
-  if INearest > 0 then
-  begin
-    PersonId := FTrainedFaces[INearest];
-    for I := 0 to FPersons.Count - 1 do
-      if FPersons[I].Id = PersonId then
-        Exit(FPersons[I]);
-  end;
 end;
 
 end.

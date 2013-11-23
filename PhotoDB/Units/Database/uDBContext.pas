@@ -43,6 +43,7 @@ type
     function UpdateMediaFromDB(Media: TMediaItem; LoadThumbnail: Boolean): Boolean;
     procedure IncMediaCounter(ID: Integer);
     procedure UpdateLinks(ID: Integer; NewLinks: string);
+    function GetTopImagesWithPersons(MinDate: TDateTime; MaxItems: Integer): TMediaItemCollection;
     procedure RefreshImagesCache;
   end;
 

@@ -8,7 +8,7 @@ program PhotoDB;
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
-{$IFDEF DEBUG}
+{$IFDEF D_EBUG}
   //fast at multithreading
   {$DEFINE FAST_MM}
 {$ELSE}
@@ -412,13 +412,17 @@ uses
   uIDBForm in 'Units\Interfaces\uIDBForm.pas',
   uExplorerCollectionProvider in 'Units\Providers\uExplorerCollectionProvider.pas',
   uFormSelectDuplicateDirectories in 'uFormSelectDuplicateDirectories.pas' {FormSelectDuplicateDirectories},
+  uFaceRecornizerTrainer in 'Units\uFaceRecornizerTrainer.pas',
   ulibname in 'External\OpenCV\include\ulibname.pas',
   Core_c in 'External\OpenCV\include\core\Core_c.pas',
   Core.types_c in 'External\OpenCV\include\core\Core.types_c.pas',
   haar in 'External\OpenCV\include\objdetect\haar.pas',
   objdetect in 'External\OpenCV\include\objdetect\objdetect.pas',
+  imgproc_c in 'External\OpenCV\include\imgproc\imgproc_c.pas',
   imgproc.types_c in 'External\OpenCV\include\imgproc\imgproc.types_c.pas',
-  legacy in 'External\OpenCV\include\legacy\legacy.pas';
+  legacy in 'External\OpenCV\include\legacy\legacy.pas',
+  highgui_c in 'External\OpenCV\include\highgui\highgui_c.pas',
+  OpenCV.Utils in 'Units\OpenCV\OpenCV.Utils.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
@@ -437,7 +441,7 @@ end;
 
 begin
   CoInitFlags := COM_MODE;
-  try
+  //try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
 
@@ -486,6 +490,8 @@ begin
         DBManager.CreateSampleDefaultCollection;
     end;
 
+    TrainIt;
+
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
     try
@@ -522,12 +528,12 @@ begin
     end;
 
     UnLoadTranslateModule;
-  except
+  {except
     on e: Exception do
     begin
       CloseSplashWindow;
       EventLog(e);
       MessageBox(0, PChar(e.ToString + sLineBreak + e.StackTrace), 'Fatal error', MB_OK or MB_ICONERROR);
     end;
-  end;
+  end;  }
 end.

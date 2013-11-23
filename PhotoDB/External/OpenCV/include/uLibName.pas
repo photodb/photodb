@@ -38,7 +38,7 @@ const
 
   CV_VERSION_EPOCH    = '2';
   CV_VERSION_MAJOR    = '4';
-  CV_VERSION_MINOR    = '6';
+  CV_VERSION_MINOR    = '7';
   CV_VERSION_REVISION = '0';
 
   CV_VERSION = CV_VERSION_EPOCH + '.' + CV_VERSION_MAJOR + '.' + CV_VERSION_MINOR + '.' + CV_VERSION_REVISION;
@@ -50,7 +50,7 @@ const
 
   CV_VERSION_DLL = CV_VERSION_EPOCH + CV_VERSION_MAJOR + CV_VERSION_MINOR;
 
-{$IFDEF D_EBUG}
+{$IFDEF DE_BUG}
   Core_Dll           = 'opencv_core' + CV_VERSION_DLL + 'd.dll';
   highgui_Dll        = 'opencv_highgui' + CV_VERSION_DLL + 'd.dll';
   imgproc_Dll        = 'opencv_imgproc' + CV_VERSION_DLL + 'd.dll';
