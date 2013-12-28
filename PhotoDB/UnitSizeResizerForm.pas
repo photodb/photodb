@@ -311,7 +311,7 @@ begin
   end else
   begin
     FProcessingParams.PercentResize := 100;
-    case DdResizeAction.ItemIndex - 5 of
+    case DdResizeAction.ItemIndex - 7 of
       0:
         FProcessingParams.PercentResize := 25;
       1:

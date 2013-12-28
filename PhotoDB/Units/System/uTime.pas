@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.SyncObjs,
   Winapi.Windows,
+  Dmitry.Utils.System,
   uMemory;
 
 {$DEFINE _STARTUP}
@@ -35,7 +36,8 @@ type
   public
     constructor Create(ThreadID: THandle);
     destructor Destroy; override;
-    procedure Start(Name: string);
+    procedure Start(Name: string); overload;
+    procedure Start(Name: string; Args: array of const); overload;
     procedure Check(Name: string);
     class function I: TW;
     property ThreadID: THandle read FThreadID;
@@ -144,6 +146,11 @@ begin
     FSync.leave;
   end
 {$ENDIF}
+end;
+
+procedure TW.Start(Name: string; Args: array of const);
+begin
+  Start(FormatEx(Name, Args));
 end;
 
 procedure TW.Stop;

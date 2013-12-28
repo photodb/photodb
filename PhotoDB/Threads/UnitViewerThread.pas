@@ -133,14 +133,14 @@ begin
   try
     if not IsDevicePath(FInfo.FileName) and not FileExistsEx(FInfo.FileName) then
     begin
-      SetNOImageAsynch(FormatEx(L('File %s not found!'), [FInfo.FileName]));
+      SetNOImageAsynch(FormatEx(L('File {0} not found!'), [FInfo.FileName]));
       Exit;
     end;
 
     GetPassword;
     if FIsEncrypted and (PassWord = '') then
     begin
-      SetNOImageAsynch(FormatEx(L('File %s is encrypted'), [FInfo.FileName]));
+      SetNOImageAsynch(FormatEx(L('File {0} is encrypted!'), [FInfo.FileName]));
       Exit;
     end;
 
