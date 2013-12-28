@@ -441,7 +441,7 @@ end;
 
 begin
   CoInitFlags := COM_MODE;
-  //try
+  try
     //FullDebugModeScanMemoryPoolBeforeEveryOperation := True;
     //ReportMemoryLeaksOnShutdown := True;
 
@@ -490,7 +490,7 @@ begin
         DBManager.CreateSampleDefaultCollection;
     end;
 
-    TrainIt;
+    //TrainIt;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;
@@ -528,12 +528,12 @@ begin
     end;
 
     UnLoadTranslateModule;
-  {except
+  except
     on e: Exception do
     begin
       CloseSplashWindow;
       EventLog(e);
       MessageBox(0, PChar(e.ToString + sLineBreak + e.StackTrace), 'Fatal error', MB_OK or MB_ICONERROR);
     end;
-  end;  }
+  end;
 end.
