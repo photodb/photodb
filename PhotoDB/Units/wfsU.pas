@@ -262,6 +262,7 @@ begin
   Result := CreateFile(PChar(Dir),
               FILE_LIST_DIRECTORY, FILE_SHARE_READ + FILE_SHARE_DELETE + FILE_SHARE_WRITE,
               nil, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS or FILE_FLAG_OVERLAPPED, 0);
+  TW.I.Start('FWatchHandle = {0}, Error = {1}', [IntToStr(Result), GetLastError()]);
 end;
 
 procedure TWFS.Execute;

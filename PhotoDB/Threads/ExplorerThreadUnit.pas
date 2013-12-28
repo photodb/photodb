@@ -371,6 +371,7 @@ var
           ExplorerInfo := NotifyInfo.FExplorerViewInfo;
           UpdaterInfo.Assign(NotifyInfo.FUpdaterInfo);
           FFolder := FUpdaterInfo.FileName;
+          UpdateThreadState(NotifyInfo.FState);
         end;
       until NotifyInfo = nil;
     finally

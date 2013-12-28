@@ -44,6 +44,7 @@ type
     procedure WaitForSubThreads;
     procedure CheckThreadPriority; virtual;
     function CheckThread: Boolean;
+    function UpdateThreadState(State: TGUID): Boolean;
   public
     FEvent: THandle;
     constructor Create(AOwnerForm: TThreadForm; AState: TGUID);
@@ -231,6 +232,12 @@ begin
   finally
     FSync.Leave;
   end;
+end;
+
+function TThreadEx.UpdateThreadState(State: TGUID): Boolean;
+begin
+  Result := FState <> State;
+  FState := State;
 end;
 
 procedure TThreadEx.WaitForSubThreads;
