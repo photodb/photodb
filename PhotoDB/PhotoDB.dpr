@@ -8,7 +8,7 @@ program PhotoDB;
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
 
-{$IFDEF D_EBUG}
+{$IFDEF DEBUG}
   //fast at multithreading
   {$DEFINE FAST_MM}
 {$ELSE}

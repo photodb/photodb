@@ -7648,6 +7648,9 @@ begin
     if (GetCurrentPathW.PType <> EXPLORER_ITEM_SEARCH) and (PePath.PathEx <> nil) then
       TreeView.SelectPathItem(PePath.PathEx);
 
+  if (FActiveLeftTab = eltsExplorer) and (FShellTreeView = nil) then
+    TreeView.SelectPathItem(THomeItem.Create);
+
   PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
 
   if FActiveLeftTab = eltsEXIF then
@@ -7872,6 +7875,8 @@ begin
     SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COLLECTION_DELETED), False)
   else if PI is TCollectionDuplicateItemsFolder then
     SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_COLLECTION_DUPLICATES), False)
+  else if PI is TDBSearchItem then
+    SetNewPathW(ExplorerPath(PI.Path, EXPLORER_ITEM_SEARCH), False)
 end;
                                       
 procedure TExplorerForm.PePathChange(Sender: TObject);
