@@ -1444,15 +1444,15 @@ begin
     MAPI32 := SafeLoadLibrary(MAPI32DLL);
     if (MAPI32 <= HINSTANCE_ERROR) then
       raise Exception.CreateFmt('%s: %s', [SysErrorMessage(GetLastError), MAPI32DLL]);
-    GetProc('MAPIGetDefaultMalloc@0', @MAPIGetDefaultMalloc);
-    GetProc('MAPIInitialize', @MAPIInitialize);
-    GetProc('MAPIUninitialize', @MAPIUninitialize);
-    GetProc('MAPIAllocateBuffer', @MAPIAllocateBuffer);
-    GetProc('MAPIAllocateMore', @MAPIAllocateMore);
-    GetProc('MAPIFreeBuffer', @MAPIFreeBuffer);
-    GetProc('OpenIMsgOnIStg@44', @OpenIMsgOnIStg);
-    GetProc('OpenIMsgSession@12', @OpenIMsgSession);
-    GetProc('CloseIMsgSession@4', @CloseIMsgSession);
+    GetProc('MAPIGetDefaultMalloc@0', Pointer(@MAPIGetDefaultMalloc));
+    GetProc('MAPIInitialize', Pointer(@MAPIInitialize));
+    GetProc('MAPIUninitialize', Pointer(@MAPIUninitialize));
+    GetProc('MAPIAllocateBuffer', Pointer(@MAPIAllocateBuffer));
+    GetProc('MAPIAllocateMore', Pointer(@MAPIAllocateMore));
+    GetProc('MAPIFreeBuffer', Pointer(@MAPIFreeBuffer));
+    GetProc('OpenIMsgOnIStg@44', Pointer(@OpenIMsgOnIStg));
+    GetProc('OpenIMsgSession@12', Pointer(@OpenIMsgSession));
+    GetProc('CloseIMsgSession@4', Pointer(@CloseIMsgSession));
   end;
 end;
 
@@ -1550,9 +1550,9 @@ begin
 
     // Get IMessage from IStorage
     OleCheck(OpenIMsgOnIStg(FSession,
-      @MAPIAllocateBuffer,
-      @MAPIAllocateMore,
-      @MAPIFreeBuffer,
+      Pointer(@MAPIAllocateBuffer),
+      Pointer(@MAPIAllocateMore),
+      Pointer(@MAPIFreeBuffer),
       IMalloc(MapiGetDefaultMalloc),
       nil,
       FStorages[Index],

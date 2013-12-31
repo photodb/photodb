@@ -147,8 +147,8 @@ begin
     Result := False;
     if (RegOpenKey(HKEY_CLASSES_ROOT, PChar(Key), SubKey) = ERROR_SUCCESS) then
       try
-        Result := (RegQueryInfoKey(SubKey, nil, nil, nil, @NumSubKeys, nil, nil,
-          @NumValues, nil, nil, nil, nil) = ERROR_SUCCESS);
+        Result := (RegQueryInfoKey(SubKey, nil, nil, nil, PDWORD(@NumSubKeys), nil, nil,
+          PDWORD(@NumValues), nil, nil, nil, nil) = ERROR_SUCCESS);
         // Only delete key if it doesn't contain values or sub keys.
         Result := Result and (NumSubKeys = 0) and (NumValues = 0);
       finally

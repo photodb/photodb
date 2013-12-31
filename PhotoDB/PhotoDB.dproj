@@ -4,7 +4,7 @@
         <MainSource>PhotoDB.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>14.4</ProjectVersion>
+        <ProjectVersion>15.1</ProjectVersion>
         <Base>True</Base>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>
@@ -103,7 +103,7 @@
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-        <DCC_DebugInformation>false</DCC_DebugInformation>
+        <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -122,8 +122,8 @@
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Build>729</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Studio Illusion Dolphin © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.704;InternalName=PhotoDB;LegalCopyright=Studio Illusion Dolphin © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+        <VerInfo_Build>733</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Studio Illusion Dolphin © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.733;InternalName=PhotoDB;LegalCopyright=Studio Illusion Dolphin © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
@@ -138,16 +138,8 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="External\scalemm\ScaleMM2.pas"/>
-        <DCCReference Include="External\scalemm\smmFunctions.pas"/>
-        <DCCReference Include="External\scalemm\smmGlobal.pas"/>
-        <DCCReference Include="External\scalemm\smmLargeMemory.pas"/>
-        <DCCReference Include="External\scalemm\smmLogging.pas"/>
-        <DCCReference Include="External\scalemm\smmMediumMemory.pas"/>
-        <DCCReference Include="External\scalemm\smmSmallMemory.pas"/>
-        <DCCReference Include="External\scalemm\smmStatistics.pas"/>
-        <DCCReference Include="External\scalemm\smmTypes.pas"/>
         <DCCReference Include="External\FastMM\FastMM4.pas"/>
-        <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
+        <DCCReference Include="External\FastMM\FastMM4Messages.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
         <DCCReference Include="Units\System\uTime.pas"/>
         <DCCReference Include="Threads\uSplashThread.pas"/>
@@ -737,8 +729,8 @@
                     <VersionInfoKeys Name="Home Page">http://photodb.illusdolphin.net</VersionInfoKeys>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k190.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp190.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <ModelSupport>False</ModelSupport>

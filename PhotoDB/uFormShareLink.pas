@@ -186,7 +186,7 @@ begin
       MS := TMemoryStream.Create;
       try
         ActionUrl := 'https://www.googleapis.com/urlshortener/v1/url';
-        WriteStringToStream(MS, '{"longUrl": "' + LongUrl + '"}', TIdTextEncoding.UTF8);
+        WriteStringToStream(MS, '{"longUrl": "' + LongUrl + '"}', IndyTextEncoding_UTF8);
         MS.Position := 0;
 
         IdHTTP.Request.ContentType := 'application/json';

@@ -16,6 +16,10 @@ resize - raw use preview checkbox;
 - Face recognition;
 - Links for shared pictures after share;
 - Тэги созданные в программе не видны в Picasa;
+- New path - filter hidden. but applied for tree;
+- Search directory;
+- Search person;
+- Global search for elements?
 
 [Maybe]
 - Groups -> Categories

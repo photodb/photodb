@@ -145,6 +145,18 @@
   {$DEFINE VER_OK}
 {$ENDIF}
 
+// Delphi XE4
+{$IFDEF VER250}
+  {$DEFINE VER25_PLUS}
+  {$DEFINE VER_OK}
+{$ENDIF}
+
+// Delphi XE5
+{$IFDEF VER260}
+  {$DEFINE VER26_PLUS}
+  {$DEFINE VER_OK}
+{$ENDIF}
+
 // Unknown compiler version - assume D2009 compatible for Unicode or D2007 for Ansi
 {$IFNDEF VER_OK}
   {$ifdef UNICODE}
@@ -156,6 +168,12 @@
   {$UNDEF VER_OK}
 {$ENDIF}
 
+{$IFDEF VER26_PLUS}
+  {$DEFINE VER25_PLUS}
+{$ENDIF}
+{$IFDEF VER25_PLUS}
+  {$DEFINE VER24_PLUS}
+{$ENDIF}
 {$IFDEF VER24_PLUS}
   {$DEFINE VER23_PLUS}
 {$ENDIF}

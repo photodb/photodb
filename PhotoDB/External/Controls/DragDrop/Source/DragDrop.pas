@@ -2464,7 +2464,7 @@ begin
       @_CopyStgMedium := GetProcAddress(URLMONDLL, 'CopyStgMedium');
   end;
 
-  if (@_CopyStgMedium = nil) then
+  if (not Assigned(_CopyStgMedium)) then
     raise Exception.Create(sNoCopyStgMedium);
 
   Result := (Succeeded(_CopyStgMedium(SrcMedium, DstMedium)));
