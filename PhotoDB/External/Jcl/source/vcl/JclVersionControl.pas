@@ -22,9 +22,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-03-04 22:21:40 +0100 (Sun, 04 Mar 2012)                            $ }
-{ Revision:      $Rev:: 3761                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -203,9 +203,9 @@ function VersionControlActionInfo(ActionType : TJclVersionControlActionType): TJ
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/vcl/JclVersionControl.pas $';
-    Revision: '$Revision: 3761 $';
-    Date: '$Date: 2012-03-04 22:21:40 +0100 (Sun, 04 Mar 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\vcl';
     Extra: '';
     Data: nil

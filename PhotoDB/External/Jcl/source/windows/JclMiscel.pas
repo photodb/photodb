@@ -30,9 +30,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2011-09-03 00:07:50 +0200 (Sat, 03 Sep 2011)                            $ }
-{ Revision:      $Rev:: 3599                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -108,9 +108,9 @@ procedure CreateProcAsUserEx(const UserDomain, UserName, Password, CommandLine: 
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/windows/JclMiscel.pas $';
-    Revision: '$Revision: 3599 $';
-    Date: '$Date: 2011-09-03 00:07:50 +0200 (Sat, 03 Sep 2011) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\windows';
     Extra: '';
     Data: nil
@@ -240,11 +240,11 @@ begin
   Result := 0;
   case KillLevel of
     klNoSignal:
-      if not (GetWindowsVersion in [wvUnknown, wvWin95, wvWin95OSR2, wvWin98,
+      if not (GetWindowsVersion in [wvWin95, wvWin95OSR2, wvWin98,
         wvWin98SE, wvWinME]) then
         Result := EWX_FORCE;
     klTimeOut:
-      if not (GetWindowsVersion in [wvUnknown, wvWin95, wvWin95OSR2, wvWin98,
+      if not (GetWindowsVersion in [wvWin95, wvWin95OSR2, wvWin98,
         wvWin98SE, wvWinME, wvWinNT31, wvWinNT35, wvWinNT351, wvWinNT4]) then
         Result := EWX_FORCEIFHUNG;
   end;

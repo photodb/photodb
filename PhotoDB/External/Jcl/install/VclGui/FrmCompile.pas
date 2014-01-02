@@ -23,7 +23,7 @@ home page, located at http://jvcl.sourceforge.net
 
 Known Issues:
 -----------------------------------------------------------------------------}
-// $Id: FrmCompile.pas 3640 2011-11-30 10:06:34Z obones $
+// $Id$
 
 unit FrmCompile;
 

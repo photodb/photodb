@@ -28,9 +28,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-06-05 14:22:52 +0200 (Tue, 05 Jun 2012)                            $ }
-{ Revision:      $Rev:: 3802                                                                     $ }
-{ Author:        $Author:: ahuser                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -289,9 +289,9 @@ function MapiErrorMessage(const ErrorCode: DWORD): string;
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/windows/JclMapi.pas $';
-    Revision: '$Revision: 3802 $';
-    Date: '$Date: 2012-06-05 14:22:52 +0200 (Tue, 05 Jun 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\windows';
     Extra: '';
     Data: nil
@@ -1124,7 +1124,7 @@ begin
       Flags := LogonOptionsToFlags(ShowDialog);
       if Save then
       begin
-        StrPLCopy(MsgID, SeedMessageID, Length(MsgID) - 1);
+        StrPLCopyA(MsgID, SeedMessageID, Length(MsgID) - 1);
         Res := MapiSaveMail(FSessionHandle, ParentWND, MapiMessage, Flags, MAPI_LONG_MSGID, @MsgID[0]);
         if Res = SUCCESS_SUCCESS then
           SeedMessageID := MsgID;

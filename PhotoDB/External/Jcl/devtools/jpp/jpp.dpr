@@ -38,7 +38,7 @@
 {                                                                              }
 { **************************************************************************** }
 
-// Last modified: $Date: 2010-12-30 18:34:45 +0100 (Thu, 30 Dec 2010) $
+// Last modified: $Date$
 
 {$APPTYPE CONSOLE}
 program jpp;

@@ -36,7 +36,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 
-// $Id: jcl.template.inc 3855 2012-09-02 22:25:26Z outchy $
+// $Id$
 
 // Math precision selection, mutually exclusive
 // FPC does not support EXTENDED when targetting x86_64, MATH_DOUBLE_PRECISION is the default in this situation

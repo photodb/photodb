@@ -32,9 +32,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-01-31 20:02:26 +0100 (Tue, 31 Jan 2012)                            $ }
-{ Revision:      $Rev:: 3709                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -197,9 +197,9 @@ function DPSetDefaultPrinter(const PrinterName: string): Boolean;
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/vcl/JclPrint.pas $';
-    Revision: '$Revision: 3709 $';
-    Date: '$Date: 2012-01-31 20:02:26 +0100 (Tue, 31 Jan 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\vcl';
     Extra: '';
     Data: nil

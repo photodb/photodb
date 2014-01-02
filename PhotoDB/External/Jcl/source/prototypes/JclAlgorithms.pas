@@ -25,9 +25,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-08-14 12:52:04 +0200 (Tue, 14 Aug 2012)                            $ }
-{ Revision:      $Rev:: 3822                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -216,9 +216,9 @@ const
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/prototypes/JclAlgorithms.pas $';
-    Revision: '$Revision: 3822 $';
-    Date: '$Date: 2012-08-14 12:52:04 +0200 (Tue, 14 Aug 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -327,7 +327,7 @@ begin
       {$IFDEF SUPPORTS_UNICODE}
       Result := CompareText(Obj1, Obj2);
       {$ELSE ~SUPPORTS_UNICODE}
-      Result := WideCompareText(Obj1, Obj2);
+      {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}SysUtils.WideCompareText(Obj1, Obj2);
       {$ENDIF ~SUPPORTS_UNICODE}
   else
     raise EJclOperationNotSupportedError.Create;

@@ -21,9 +21,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-03-11 18:00:37 +0100 (Sun, 11 Mar 2012)                            $ }
-{ Revision:      $Rev:: 3769                                                                     $ }
-{ Author:        $Author:: obones                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -73,9 +73,9 @@ type
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/experts/common/JclOtaConfigurationForm.pas $';
-    Revision: '$Revision: 3769 $';
-    Date: '$Date: 2012-03-11 18:00:37 +0100 (Sun, 11 Mar 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\experts\common';
     Extra: '';
     Data: nil

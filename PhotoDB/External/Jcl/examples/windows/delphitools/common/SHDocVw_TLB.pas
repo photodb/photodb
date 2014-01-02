@@ -11,7 +11,7 @@ unit SHDocVw_TLB;
 // manual modifications will be lost.
 // ************************************************************************ //
 
-// PASTLWTR : $Revision: 3646 $
+// PASTLWTR : $Revision$
 // File generated on 12.3.2002 14:05:12 from Type Library described below.
 
 // ************************************************************************  //

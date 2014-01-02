@@ -11,7 +11,7 @@ unit PeViewer_TLB;
 // manual modifications will be lost.                                         
 // ************************************************************************ //
 
-// PASTLWTR : $Revision: 1658 $
+// PASTLWTR : $Revision$
 // File generated on 4.6.2000 18:23:08 from Type Library described below.
 
 // ************************************************************************ //

@@ -34,9 +34,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -236,6 +236,8 @@ type
     FNewUnitFileName: PJclMapString;
     FProcNamesCnt: Integer;
     FSegmentCnt: Integer;
+    FLastAccessedSegementIndex: Integer;
+    function IndexOfSegment(Addr: DWORD): Integer;
   protected
     function MAPAddrToVA(const Addr: DWORD): DWORD;
     procedure ClassTableItem(const Address: TJclMapAddress; Len: Integer; SectionName, GroupName: PJclMapString); override;
@@ -1024,9 +1026,9 @@ procedure AddModule(const ModuleName: string);
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/windows/JclDebug.pas $';
-    Revision: '$Revision: 3861 $';
-    Date: '$Date: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\windows';
     Extra: '';
     Data: nil
@@ -1057,7 +1059,7 @@ uses
   {$IFDEF MSWINDOWS}
   JclRegistry,
   {$ENDIF MSWINDOWS}
-  JclHookExcept, JclStrings, JclSysInfo, JclSysUtils, JclWin32,
+  JclHookExcept, JclAnsiStrings, JclStrings, JclSysInfo, JclSysUtils, JclWin32,
   JclStringConversions, JclResources;
 
 //=== Helper assembler routines ==============================================
@@ -1087,17 +1089,13 @@ asm
         {$ENDIF CPU64}
 end;
 
+{$IFDEF CPU32}
 function GetExceptionPointer: Pointer;
 asm
-        {$IFDEF CPU32}
         XOR     EAX, EAX
         MOV     EAX, FS:[EAX]
-        {$ENDIF CPU32}
-        {$IFDEF CPU64}
-        XOR     RAX, RAX
-        MOV     RAX, FS:[RAX]
-        {$ENDIF CPU64}
 end;
+{$ENDIF CPU32}
 
 // Reference: Matt Pietrek, MSJ, Under the hood, on TIBs:
 // http://www.microsoft.com/MSJ/archive/S2CE.HTM
@@ -1350,8 +1348,8 @@ begin
   PExtension := PEnd;
   while (PExtension >= MapString) and (PExtension^ <> '.') and (PExtension^ <> '|') do
     Dec(PExtension);
-  if (StrLIComp(PExtension, '.pas ', 5) = 0) or
-     (StrLIComp(PExtension, '.obj ', 5) = 0) then
+  if (StrLICompA(PExtension, '.pas ', 5) = 0) or
+     (StrLICompA(PExtension, '.obj ', 5) = 0) then
     PEnd := PExtension;
   PExtension := PEnd;
   while (PExtension >= MapString) and (PExtension^ <> '|') and (PExtension^ <> '\') do
@@ -1411,13 +1409,18 @@ var
 
   function Eof: Boolean;
   begin
-    Result := (CurrPos >= EndPos);
+    Result := CurrPos >= EndPos;
   end;
 
   procedure SkipWhiteSpace;
+  var
+    LCurrPos, LEndPos: PJclMapString;
   begin
-    while (CurrPos < EndPos) and (CurrPos^ <= ' ') do
-      Inc(CurrPos);
+    LCurrPos := CurrPos;
+    LEndPos := EndPos;
+    while (LCurrPos < LEndPos) and (LCurrPos^ <= ' ') do
+      Inc(LCurrPos);
+    CurrPos := LCurrPos;
   end;
 
   procedure SkipEndLine;
@@ -1437,20 +1440,25 @@ var
     P: PJclMapString;
   begin
     P := CurrPos;
-    while (CurrPos^ <> #0) and not (CurrPos^ in [#10, #13]) do
-      Inc(CurrPos);
-    SetString(Result, P, CurrPos - P);
+    while (P^ <> #0) and not (P^ in [#10, #13]) do
+      Inc(P);
+    SetString(Result, CurrPos, P - CurrPos);
+    CurrPos := P;
   end;
 
 
   function ReadDecValue: Integer;
+  var
+    P: PJclMapString;
   begin
+    P := CurrPos;
     Result := 0;
-    while CurrPos^ in ['0'..'9'] do
+    while P^ in ['0'..'9'] do
     begin
-      Result := Result * 10 + (Ord(CurrPos^) - Ord('0'));
-      Inc(CurrPos);
+      Result := Result * 10 + (Ord(P^) - Ord('0'));
+      Inc(P);
     end;
+    CurrPos := P;
   end;
 
   function ReadHexValue: DWORD;
@@ -1755,7 +1763,7 @@ begin
   FSegmentClasses[C].Start := Address.Offset;
   FSegmentClasses[C].Addr := Address.Offset; // will be fixed below while considering module mapped address
   // test GroupName because SectionName = '.tls' in Delphi and '_tls' in BCB
-  if StrLIComp(GroupName, 'TLS', 3) = 0 then
+  if StrLICompA(GroupName, 'TLS', 3) = 0 then
     FSegmentClasses[C].VA := FSegmentClasses[C].Start
   else
     FSegmentClasses[C].VA := MAPAddrToVA(FSegmentClasses[C].Start);
@@ -1818,7 +1826,7 @@ begin
     if (FSegmentClasses[SegIndex].Segment = Address.Segment)
       and (DWORD(Address.Offset) < FSegmentClasses[SegIndex].Len) then
   begin
-    if StrLIComp(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
+    if StrLICompA(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
       Va := Address.Offset
     else
       VA := MAPAddrToVA(Address.Offset + FSegmentClasses[SegIndex].Start);
@@ -1861,30 +1869,60 @@ begin
   FNewUnitFileName := UnitFileName;
 end;
 
+function TJclMapScanner.IndexOfSegment(Addr: DWORD): Integer;
+var
+  L, R: Integer;
+  S: PJclMapSegment;
+begin
+  R := Length(FSegments) - 1;
+  Result := FLastAccessedSegementIndex;
+  if Result <= R then
+  begin
+    S := @FSegments[Result];
+    if (S.StartVA <= Addr) and (Addr < S.EndVA) then
+      Exit;
+  end;
+
+  // binary search
+  L := 0;
+  while L <= R do
+  begin
+    Result := L + (R - L) div 2;
+    S := @FSegments[Result];
+    if Addr >= S.EndVA then
+      L := Result + 1
+    else
+    begin
+      R := Result - 1;
+      if (S.StartVA <= Addr) and (Addr < S.EndVA) then
+      begin
+        FLastAccessedSegementIndex := Result;
+        Exit;
+      end;
+    end;
+  end;
+  Result := -1;
+end;
+
 function TJclMapScanner.ModuleNameFromAddr(Addr: DWORD): string;
 var
   I: Integer;
 begin
-  Result := '';
-  for I := Length(FSegments) - 1 downto 0 do
-    if (FSegments[I].StartVA <= Addr) and (Addr < FSegments[I].EndVA) then
-    begin
-      Result := MapStringCacheToModuleName(FSegments[I].UnitName);
-      Break;
-    end;
+  I := IndexOfSegment(Addr);
+  if I <> -1 then
+    Result := MapStringCacheToModuleName(FSegments[I].UnitName)
+  else
+    Result := '';
 end;
 
 function TJclMapScanner.ModuleStartFromAddr(Addr: DWORD): DWORD;
 var
   I: Integer;
 begin
+  I := IndexOfSegment(Addr);
   Result := DWORD(-1);
-  for I := Length(FSegments) - 1 downto 0 do
-    if (FSegments[I].StartVA <= Addr) and (Addr < FSegments[I].EndVA) then
-    begin
-      Result := FSegments[I].StartVA;
-      Break;
-    end;
+  if I <> -1 then
+    Result := FSegments[I].StartVA;
 end;
 
 function TJclMapScanner.ProcNameFromAddr(Addr: DWORD): string;
@@ -1936,7 +1974,7 @@ begin
         SetLength(FProcNames, FProcNamesCnt * 2);
     end;
     FProcNames[FProcNamesCnt].Segment := FSegmentClasses[SegIndex].Segment;
-    if StrLIComp(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
+    if StrLICompA(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
       FProcNames[FProcNamesCnt].VA := Address.Offset
     else
       FProcNames[FProcNamesCnt].VA := MAPAddrToVA(Address.Offset + FSegmentClasses[SegIndex].Start);
@@ -1966,6 +2004,7 @@ begin
   FLineNumberErrors := 0;
   FSegmentCnt := 0;
   FProcNamesCnt := 0;
+  FLastAccessedSegementIndex := 0;
   Parse;
   SetLength(FLineNumbers, FLineNumbersCnt);
   SetLength(FProcNames, FProcNamesCnt);
@@ -1986,7 +2025,7 @@ begin
     if (FSegmentClasses[SegIndex].Segment = Address.Segment)
       and (DWORD(Address.Offset) < FSegmentClasses[SegIndex].Len) then
   begin
-    if StrLIComp(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
+    if StrLICompA(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
       VA := Address.Offset
     else
       VA := MAPAddrToVA(Address.Offset + FSegmentClasses[SegIndex].Start);
@@ -2015,12 +2054,9 @@ begin
   if Result = '' then
   begin
     // try with module names (C++Builder compliance)
-    for I := Length(FSegments) - 1 downto 0 do
-      if (FSegments[I].StartVA <= Addr) and (Addr < FSegments[I].EndVA) then
-    begin
+    I := IndexOfSegment(Addr);
+    if I <> -1 then
       Result := MapStringCacheToFileName(FSegments[I].UnitName);
-      Break;
-    end;
   end;
 end;
 
@@ -2338,7 +2374,7 @@ begin
         JclDebugSection.PointerToRawData := LastSection^.PointerToRawData + LastSection^.SizeOfRawData;
         RoundUpToAlignment(JclDebugSection.PointerToRawData, NtHeaders32.OptionalHeader.FileAlignment);
         // JCLDEBUG Section name
-        StrPLCopy(PAnsiChar(@JclDebugSection.Name), JclDbgDataResName, IMAGE_SIZEOF_SHORT_NAME);
+        StrPLCopyA(PAnsiChar(@JclDebugSection.Name), JclDbgDataResName, IMAGE_SIZEOF_SHORT_NAME);
         // JCLDEBUG Characteristics flags
         JclDebugSection.Characteristics := IMAGE_SCN_MEM_READ or IMAGE_SCN_CNT_INITIALIZED_DATA;
 
@@ -2370,7 +2406,7 @@ begin
         // Note: Delphi linker seems to generate incorrect (unaligned) size of
         // the executable when adding TD32 debug data so the position could be
         // behind the size of the file then.
-        ImageStream.Seek({0 +} JclDebugSection.PointerToRawData, soFromBeginning);
+        ImageStream.Seek({0 +} JclDebugSection.PointerToRawData, soBeginning);
         ImageStream.CopyFrom(BinDebug.DataStream, 0);
         X := 0;
         for I := 1 to NeedFill do
@@ -4688,7 +4724,8 @@ procedure TJclGlobalModulesList.FreeModulesList(var ModulesList: TJclModuleInfoL
 var
   IsMultiThreaded: Boolean;
 begin
-  if FModulesList <> ModulesList then
+  if (Self <> nil) and // happens when finalization already ran but a TJclStackInfoList is still alive
+     (FModulesList <> ModulesList) then
   begin
     IsMultiThreaded := IsMultiThread;
     if IsMultiThreaded then
@@ -5640,6 +5677,7 @@ begin
 end;
 
 procedure TJclExceptFrameList.TraceExceptionFrames;
+{$IFDEF CPU32}
 var
   ExceptionPointer: PExcFrame;
   Level: Integer;
@@ -5661,6 +5699,12 @@ begin
     GlobalModulesList.FreeModulesList(ModulesList);
   end;
 end;
+{$ENDIF CPU32}
+{$IFDEF CPU64}
+begin
+  // TODO: 64-bit version
+end;
+{$ENDIF CPU64}
 
 //=== Exception hooking ======================================================
 
@@ -5867,11 +5911,19 @@ var
 
 function HookedCreateThread(SecurityAttributes: Pointer; StackSize: LongWord;
   ThreadFunc: TThreadFunc; Parameter: Pointer;
-  CreationFlags: LongWord; var ThreadId: LongWord): Integer; stdcall;
+  CreationFlags: LongWord; ThreadId: PLongWord): Integer; stdcall;
+var
+  LocalThreadId: LongWord;
 begin
-  Result := Kernel32_CreateThread(SecurityAttributes, StackSize, ThreadFunc, Parameter, CreationFlags, ThreadId);
+  Result := Kernel32_CreateThread(SecurityAttributes, StackSize, ThreadFunc, Parameter, CreationFlags, LocalThreadId);
   if Result <> 0 then
-    JclDebugThreadList.RegisterThreadID(ThreadId);
+  begin
+    JclDebugThreadList.RegisterThreadID(LocalThreadId);
+    if ThreadId <> nil then
+    begin
+      ThreadId^ := LocalThreadId;
+    end;
+  end;
 end;
 
 procedure HookedExitThread(ExitCode: Integer); stdcall;

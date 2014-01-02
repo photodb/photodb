@@ -164,6 +164,44 @@ RESFILES = c6\Jcl.res                               \
            d17\JclVcl.res                           \
            d17\JclVersionControlExpert.res          \
            d17\JclVersionControlExpertDLL.res       \
+           d18\Jcl.res                              \
+           d18\JclBaseExpert.res                    \
+           d18\JclContainers.res                    \
+           d18\JclDebugExpert.res                   \
+           d18\JclDebugExpertDLL.res                \
+           d18\JclFavoriteFoldersExpert.res         \
+           d18\JclFavoriteFoldersExpertDLL.res      \
+           d18\JclProjectAnalysisExpert.res         \
+           d18\JclProjectAnalysisExpertDLL.res      \
+           d18\JclRepositoryExpert.res              \
+           d18\JclRepositoryExpertDLL.res           \
+           d18\JclSIMDViewExpert.res                \
+           d18\JclSIMDViewExpertDLL.res             \
+           d18\JclDeveloperTools.res                \
+           d18\JclStackTraceViewerExpert.res        \
+           d18\JclStackTraceViewerExpertDLL.res     \
+           d18\JclVcl.res                           \
+           d18\JclVersionControlExpert.res          \
+           d18\JclVersionControlExpertDLL.res       \
+           d19\Jcl.res                              \
+           d19\JclBaseExpert.res                    \
+           d19\JclContainers.res                    \
+           d19\JclDebugExpert.res                   \
+           d19\JclDebugExpertDLL.res                \
+           d19\JclFavoriteFoldersExpert.res         \
+           d19\JclFavoriteFoldersExpertDLL.res      \
+           d19\JclProjectAnalysisExpert.res         \
+           d19\JclProjectAnalysisExpertDLL.res      \
+           d19\JclRepositoryExpert.res              \
+           d19\JclRepositoryExpertDLL.res           \
+           d19\JclSIMDViewExpert.res                \
+           d19\JclSIMDViewExpertDLL.res             \
+           d19\JclDeveloperTools.res                \
+           d19\JclStackTraceViewerExpert.res        \
+           d19\JclStackTraceViewerExpertDLL.res     \
+           d19\JclVcl.res                           \
+           d19\JclVersionControlExpert.res          \
+           d19\JclVersionControlExpertDLL.res       \
            d6\Jcl.res                               \
            d6\JclBaseExpert.res                     \
            d6\JclContainers.res                     \

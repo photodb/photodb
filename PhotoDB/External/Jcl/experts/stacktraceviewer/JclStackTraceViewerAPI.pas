@@ -20,9 +20,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2009-08-10 17:00:08 +0200 (Mon, 10 Aug 2009)                            $ }
-{ Revision:      $Rev:: 2936                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -237,9 +237,9 @@ procedure UnregisterRevisionProvider(AIndex: Integer);
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/experts/stacktraceviewer/JclStackTraceViewerAPI.pas $';
-    Revision: '$Revision: 2936 $';
-    Date: '$Date: 2009-08-10 17:00:08 +0200 (Mon, 10 Aug 2009) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\experts\stacktraceviewer';
     Extra: '';
     Data: nil

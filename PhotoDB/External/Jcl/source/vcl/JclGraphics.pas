@@ -40,9 +40,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-08-13 12:38:28 +0200 (Mon, 13 Aug 2012)                            $ }
-{ Revision:      $Rev:: 3814                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -548,9 +548,9 @@ procedure SetGamma(Gamma: Single = 0.7);
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/vcl/JclGraphics.pas $';
-    Revision: '$Revision: 3814 $';
-    Date: '$Date: 2012-08-13 12:38:28 +0200 (Mon, 13 Aug 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\vcl';
     Extra: '';
     Data: nil
@@ -2525,9 +2525,16 @@ end;
 
 procedure TJclRegion.FillGradient(Canvas: TCanvas; ColorCount: Integer;
   StartColor, EndColor: TColor; ADirection: TGradientDirection);
+var
+  DC: integer;
 begin
-  SelectClipRgn(Canvas.Handle,FHandle);
-  JclGraphics.FillGradient(Canvas.Handle, Box, ColorCount, StartColor, EndColor, ADirection);
+  DC := SaveDC(Canvas.Handle);
+  try
+    SelectClipRgn(Canvas.Handle,FHandle);
+    JclGraphics.FillGradient(Canvas.Handle, Box, ColorCount, StartColor, EndColor, ADirection);
+  finally
+    RestoreDC(Canvas.Handle, DC);
+  end;
 end;
 
 procedure TJclRegion.Frame(Canvas: TCanvas; FrameWidth, FrameHeight: Integer);

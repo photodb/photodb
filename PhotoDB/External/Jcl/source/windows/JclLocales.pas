@@ -30,9 +30,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2011-12-30 00:12:19 +0100 (Fri, 30 Dec 2011)                            $ }
-{ Revision:      $Rev:: 3662                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -314,9 +314,9 @@ procedure JclLocalesInfoList(const Strings: TStrings; InfoType: Integer = LOCALE
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/windows/JclLocales.pas $';
-    Revision: '$Revision: 3662 $';
-    Date: '$Date: 2011-12-30 00:12:19 +0100 (Fri, 30 Dec 2011) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\windows';
     Extra: '';
     Data: nil
@@ -345,7 +345,7 @@ begin
     Inc(Result, KLF_REORDER);
   if (klUnloadPrevious in ActivateFlags) and IsWinNT then
     Inc(Result, KLF_UNLOADPREVIOUS);
-  if (klSetForProcess in ActivateFlags) and (GetWindowsVersion >= wvWin2000) then
+  if (klSetForProcess in ActivateFlags) and JclCheckWinVersion(5, 0) then // Win2k or newer
     Inc(Result, KLF_SETFORPROCESS);
   if LoadMode then
   begin

@@ -27,9 +27,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-02-19 22:43:22 +0100 (Sun, 19 Feb 2012)                            $ }
-{ Revision:      $Rev:: 3735                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -768,9 +768,9 @@ const
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclAbstractContainers.pas $';
-    Revision: '$Revision: 3735 $';
-    Date: '$Date: 2012-02-19 22:43:22 +0100 (Sun, 19 Feb 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -2647,10 +2647,10 @@ var
 begin
   PString := PAnsiChar(AString);
   PSep := PAnsiChar(Separator);
-  PPos := StrPos(PString, PSep);
+  PPos := StrPosA(PString, PSep);
   if PPos <> nil then
   begin
-    SepLen := StrLen(PSep);
+    SepLen := StrLenA(PSep);
     repeat
       //SetLength(Item, PPos - PString + 1);
       SetLength(Item, PPos - PString);
@@ -2658,9 +2658,9 @@ begin
       //Item[PPos - PString + 1] := #0;
       Add(Item);
       PString := PPos + SepLen;
-      PPos := StrPos(PString, PSep);
+      PPos := StrPosA(PString, PSep);
     until PPos = nil;
-    if StrLen(PString) > 0 then //ex. hello#world
+    if StrLenA(PString) > 0 then //ex. hello#world
       Add(PString);
   end
   else //There isnt a Separator in AString

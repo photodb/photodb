@@ -38,9 +38,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-08-28 16:44:17 +0200 (Tue, 28 Aug 2012)                            $ }
-{ Revision:      $Rev:: 3850                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -1649,7 +1649,8 @@ resourcestring
 
 //=== JclRTTI ================================================================
 resourcestring
-  RsRTTIValueOutOfRange   = 'Value out of range (%s).';
+  RsRTTISetValueOutOfRange  = 'Set value over %s does not fit into a 32-bit integer.';
+  RsRTTIValueOutOfRange   = 'Value %s out of range %s..%s.';
   RsRTTIUnknownIdentifier = 'Unknown identifier ''%s''.';
   RsRTTIInvalidBaseType   = 'Invalid base type (%s is of type %s).';
   RsRTTINoStringValue     = 'The property %s of type %s has no string value'; 
@@ -1772,6 +1773,7 @@ resourcestring
   RsDotNetFormatNullFormat  = 'Format string is null';
   RsArgumentIsNull          = 'Argument %d is null';
   RsDotNetFormatArgumentNotSupported = 'Argument type of %d is not supported';
+  RsDotNetFormatObjectArgumentNotSupported = 'Argument type (%s) of %d is not supported';
   RsArgumentOutOfRange      = 'Argument out of range';
   RsTabs_DuplicatesNotAllowed = 'Duplicate tab stops are not allowed.';
   RsTabs_StopExpected = 'A tab stop was expected but not found.';
@@ -1931,7 +1933,11 @@ resourcestring
   RsOSVersionWin7               = 'Windows 7';
   RsOSVersionWinServer2008R2    = 'Windows Server 2008 R2';
   RsOSVersionWin8               = 'Windows 8';
+  RsOSVersionWin8RT             = 'Windows RT';
   RsOSVersionWinServer2012      = 'Windows Server 2012';
+  RsOSVersionWin81              = 'Windows 8.1';
+  RsOSVersionWin81RT            = 'Windows RT 8.1';
+  RsOSVersionWinServer2012R2    = 'Windows Server 2012 R2';
 
   RsEditionWinXPHome            = 'Home Edition';
   RsEditionWinXPPro             = 'Professional';
@@ -1958,6 +1964,12 @@ resourcestring
   RsEditionWin7Professional     = 'Professional';
   RsEditionWin7Enterprise       = 'Enterprise';
   RsEditionWin7Ultimate         = 'Ultimate';
+  RsEditionWin8Pro              = 'Pro';
+  RsEditionWin8Enterprise       = 'Enterprise';
+  RsEditionWin8RT               = 'RT';
+  RsEditionWin81Pro             = 'Pro';
+  RsEditionWin81Enterprise      = 'Enterprise';
+  RsEditionWin81RT              = 'RT';
 
   RsProductTypeWorkStation      = 'Workstation';
   RsProductTypeServer           = 'Server';
@@ -2044,9 +2056,9 @@ resourcestring
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclResources.pas $';
-    Revision: '$Revision: 3850 $';
-    Date: '$Date: 2012-08-28 16:44:17 +0200 (Tue, 28 Aug 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil

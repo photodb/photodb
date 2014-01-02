@@ -47,9 +47,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -86,9 +86,9 @@ type
   TJclBorRADToolPath = string;
 
 const
-  SupportedDelphiVersions = [5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17];
-  SupportedBCBVersions    = [5, 6, 10, 11, 12, 14, 15, 16, 17];
-  SupportedBDSVersions    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  SupportedDelphiVersions = [5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19];
+  SupportedBCBVersions    = [5, 6, 10, 11, 12, 14, 15, 16, 17, 18, 19];
+  SupportedBDSVersions    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   // Object Repository
   BorRADToolRepositoryPagesSection    = 'Repository Pages';
@@ -732,9 +732,9 @@ type
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclIDEUtils.pas $';
-    Revision: '$Revision: 3861 $';
-    Date: '$Date: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -789,7 +789,7 @@ const
 
   RADStudioDirName = 'RAD Studio';
 
-  BDSVersions: array [1..10] of TBDSVersionInfo = (
+  BDSVersions: array [1..12] of TBDSVersionInfo = (
     (
       Name: @RsCSharpName;
       VersionStr: '1.0';
@@ -849,6 +849,18 @@ const
       VersionStr: 'XE3';
       Version: 17;
       CoreIdeVersion: '170';
+      Supported: True),
+    (
+      Name: @RsRSName;
+      VersionStr: 'XE4';
+      Version: 18;
+      CoreIdeVersion: '180';
+      Supported: True),
+    (
+      Name: @RsRSName;
+      VersionStr: 'XE5';
+      Version: 19;
+      CoreIdeVersion: '190';
       Supported: True)
   );
   {$ENDIF MSWINDOWS}
@@ -3506,6 +3518,10 @@ class function TJclBDSInstallation.GetCommonProjectsDirectory(const RootDir: str
   IDEVersionNumber: Integer): string;
 var
   Variables: TStrings;
+  I: Integer;
+  S, StartS: string;
+  ps: Integer;
+  LowerEnvVariableBDSCOMDIRValueName: string;
 begin
   if IDEVersionNumber >= 5 then
   begin
@@ -3513,8 +3529,42 @@ begin
 
     Variables := TStringList.Create;
     try
-      GetRADStudioVars(RootDir, IDEVersionNumber, Variables);
-      Result := Variables.Values[EnvVariableBDSCOMDIRValueName];
+      // Try to parse the rsvars.bat what is much faster than creating a cmd.exe process.
+      try
+        Variables.LoadFromFile(GetRADStudioVarsFileName(RootDir, IDEVersionNumber));
+        LowerEnvVariableBDSCOMDIRValueName := LowerCase(EnvVariableBDSCOMDIRValueName);
+        // Find "[@]SET BDSCOMMONDIR=..."
+        for I := Variables.Count - 1 downto 0 do // the last occurrence overwrites the others
+        begin
+          S := LowerCase(Variables[I]);
+          ps := Pos(LowerEnvVariableBDSCOMDIRValueName, S);
+          if ps > 0 then
+          begin
+            StartS := Trim(Copy(S, 1, ps - 1));
+            if (StartS <> '') and (StartS[1] = '@') then
+              StartS := Trim(Copy(StartS, 2, Length(StartS)));
+            if StartS = 'set' then
+            begin
+              S := Trim(Copy(Variables[I], ps + Length(EnvVariableBDSCOMDIRValueName), Length(Variables[I])));
+              if (S <> '') and (S[1] = '=') then
+              begin
+                S := Copy(S, 2, Length(S));
+                if Pos('%', S) = 0 then // if there is a macro in the string we fall back to using cmd.exe
+                  Result := S;
+                Break;
+              end;
+            end;
+          end;
+        end;
+      except
+        Result := '';
+      end;
+
+      if Result = '' then
+      begin
+        GetRADStudioVars(RootDir, IDEVersionNumber, Variables);
+        Result := Variables.Values[EnvVariableBDSCOMDIRValueName];
+      end;
     finally
       Variables.Free;
     end;

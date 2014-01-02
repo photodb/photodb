@@ -27,9 +27,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -37,6 +37,9 @@
 {$LONGSTRINGS ON}     // Long strings
 {$WRITEABLECONST OFF} // Read-only typed constants
 {$TYPEDADDRESS OFF}   // Type checked pointers off
+{$LOCALSYMBOLS ON}    // Local symbol information
+{$DEFINITIONINFO ON}  // Symbol definition information
+{$REFERENCEINFO ON}   // Symbol reference information
 
 {$I jedi\jedi.inc} // Pull in the JCL/J-VCL shared directives
 
@@ -223,6 +226,42 @@ ALERT_jedi_inc_incompatible
       {$DEFINE JCL_CONFIGURED}
       {$ENDIF MSWINDOWS}
     {$ENDIF BDS10}
+    {----------------------------}
+    {$IFDEF BDS11}
+      {$IFDEF MSWINDOWS}
+      {$IFDEF CPUX86}
+      // This file should be located in directory jcl/source/include
+      // It is automatically created by the JCL installer
+      // For manual installations, copy and adjust jcl/source/include/jcl.template.inc
+      {$I jcld18win32.inc}
+      {$ENDIF CPUX86}
+      {$IFDEF CPUX64}
+      // This file should be located in directory jcl/source/include
+      // It is automatically created by the JCL installer
+      // For manual installations, copy and adjust jcl/source/include/jcl.template.inc
+      {$I jcld18win64.inc}
+      {$ENDIF CPUX64}
+      {$DEFINE JCL_CONFIGURED}
+      {$ENDIF MSWINDOWS}
+    {$ENDIF BDS11}
+    {----------------------------}
+    {$IFDEF BDS12}
+      {$IFDEF MSWINDOWS}
+      {$IFDEF CPUX86}
+      // This file should be located in directory jcl/source/include
+      // It is automatically created by the JCL installer
+      // For manual installations, copy and adjust jcl/source/include/jcl.template.inc
+      {$I jcld19win32.inc}
+      {$ENDIF CPUX86}
+      {$IFDEF CPUX64}
+      // This file should be located in directory jcl/source/include
+      // It is automatically created by the JCL installer
+      // For manual installations, copy and adjust jcl/source/include/jcl.template.inc
+      {$I jcld19win64.inc}
+      {$ENDIF CPUX64}
+      {$DEFINE JCL_CONFIGURED}
+      {$ENDIF MSWINDOWS}
+    {$ENDIF BDS12}
     {----------------------------}
     {$IFDEF FPC}
       // This file should be located in directory jcl/source/include

@@ -41,9 +41,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-03 16:52:06 +0200 (Mon, 03 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3860                                                                     $ }
-{ Author:        $Author:: obones                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -786,9 +786,9 @@ function VarIsNullEmptyBlank(const V: Variant): Boolean;
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclSysUtils.pas $';
-    Revision: '$Revision: 3860 $';
-    Date: '$Date: 2012-09-03 16:52:06 +0200 (Mon, 03 Sep 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -1213,7 +1213,7 @@ begin
   Result := 0;
   Pointer(P) := nil;
 
-  if not CheckWin32Version(5, 0) and ((Name = '') or (Pos('\', Name) > 0)) then
+  if not JclCheckWinVersion(5, 0) and ((Name = '') or (Pos('\', Name) > 0)) then
     raise ESharedMemError.CreateResFmt(@RsInvalidMMFName, [Name]);
 
   {$IFDEF THREADSAFE}
@@ -2756,7 +2756,7 @@ end;
 
 procedure InternalExecuteReadPipe(var PipeInfo: TPipeInfo; var Overlapped: TOverlapped);
 var
-  NullDWORD: PDWORD;
+  NullDWORD: ^DWORD; // XE4 broke PDWORD
   Res: DWORD;
 begin
   NullDWORD := nil;
@@ -3562,7 +3562,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     NewItems := TStringList.Create;
     try
@@ -3589,7 +3589,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     NewItems := TStringList.Create;
     try
@@ -3620,11 +3620,11 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     RemItems := TStringList.Create;
     try
-      StrToStrings(Items, Separator, RemItems);
+      StrToStrings(Items, Separator, RemItems, False);
 
       for Index := 0 to RemItems.Count - 1 do
       begin
@@ -3652,7 +3652,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     StrList.Delete(Index);
 
@@ -3669,7 +3669,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     Result := StrList.Count;
   finally
@@ -3684,7 +3684,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     Result := StrList.Strings[Index];
   finally
@@ -3700,7 +3700,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     StrList.Strings[Index] := Value;
 
@@ -3717,7 +3717,7 @@ var
 begin
   StrList := TStringList.Create;
   try
-    StrToStrings(List, Separator, StrList);
+    StrToStrings(List, Separator, StrList, False);
 
     Result := StrList.IndexOf(Item);
   finally

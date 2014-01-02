@@ -27,9 +27,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -94,6 +94,7 @@ type
     constructor Create(ACaseSensitive: Boolean);
     destructor Destroy; override;
     function Add(Item: TJclSimpleItem): Integer;
+    function Extract(Item: TJclSimpleItem): TJclSimpleItem;
     procedure Clear; override;
     function IndexOfSimpleItem(Item: TJclSimpleItem): Integer;
     function IndexOfName(const Name: string): Integer;
@@ -225,6 +226,7 @@ type
   public
     constructor Create(AParent: TJclSimpleXMLElem);
     destructor Destroy; override;
+    procedure SortProperties(const Order: array of string);
     function Add(const Name, Value: string): TJclSimpleXMLProp; overload;
     {$IFDEF SUPPORTS_UNICODE}
     function Add(const Name: string; const Value: AnsiString): TJclSimpleXMLProp; overload;
@@ -271,10 +273,10 @@ type
     function GetCount: Integer;
     function GetItem(const Index: Integer): TJclSimpleXMLElem;
     function GetEncoding: string;
-    function GetStandAlone: Boolean;
+    function GetStandalone: Boolean;
     function GetVersion: string;
     procedure SetEncoding(const Value: string);
-    procedure SetStandAlone(const Value: Boolean);
+    procedure SetStandalone(const Value: Boolean);
     procedure SetVersion(const Value: string);
   protected
     FSimpleXML: TJclSimpleXML;
@@ -298,7 +300,7 @@ type
     property Count: Integer read GetCount;
     property Encoding: string read GetEncoding write SetEncoding;
     property SimpleXML: TJclSimpleXML read FSimpleXML;
-    property StandAlone: Boolean read GetStandAlone write SetStandAlone;
+    property Standalone: Boolean read GetStandalone write SetStandalone;
     property Version: string read GetVersion write SetVersion;
   end;
 
@@ -527,7 +529,7 @@ type
     procedure LoadFromStringStream(StringStream: TJclStringStream); override;
     procedure SaveToStringStream(StringStream: TJclStringStream; const Level: string = ''); override;
     property Version: string read GetVersion write SetVersion;
-    property StandAlone: Boolean read GetStandalone write SetStandalone;
+    property Standalone: Boolean read GetStandalone write SetStandalone;
     property Encoding: string read GetEncoding write SetEncoding;
   end;
 
@@ -659,9 +661,9 @@ function EntityDecode(const S: string): string;
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclSimpleXml.pas $';
-    Revision: '$Revision: 3861 $';
-    Date: '$Date: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -1047,6 +1049,12 @@ begin
   end;
 end;
 
+function TJclSimpleItemHashedList.Extract(Item: TJclSimpleItem): TJclSimpleItem;
+begin
+  Result := TJclSimpleItem(inherited Extract(Item));
+  InvalidateHash;
+end;
+
 function TJclSimpleItemHashedList.GetSimpleItem(Index: Integer): TJclSimpleItem;
 begin
   Result := TJclSimpleItem(GetItem(Index));
@@ -1115,10 +1123,12 @@ procedure TJclSimpleItemHashedList.Notify(Ptr: Pointer; Action: TListNotificatio
 begin
   if (Action = lnDeleted) and (FNameHash <> nil) then
   begin
-    if FCaseSensitive then
-      FNameHash.Remove(TJclSimpleItem(Ptr).Name)
-    else
-      FNameHash.Remove(UpperCase(TJclSimpleItem(Ptr).Name));
+//    Mantis 0006062 Hotfix
+//    if FCaseSensitive then
+//      FNameHash.Remove(TJclSimpleItem(Ptr).Name)
+//    else
+//      FNameHash.Remove(UpperCase(TJclSimpleItem(Ptr).Name));
+    InvalidateHash;
   end;
   inherited Notify(Ptr, Action);
 end;
@@ -1254,7 +1264,7 @@ procedure TJclSimpleXML.DoSaveProgress;
 begin
   if Assigned(FOnSaveProg) then
   begin
-    Inc(FSaveCount);
+    Inc(FSaveCurrent);
     FOnSaveProg(Self, FSaveCurrent, FSaveCount);
   end;
 end;
@@ -2224,7 +2234,6 @@ begin
         TJclSimpleXMLNamedElems(FNamedElems.SimpleItems[NamedIndex]).FItems.Remove(Elem);
     end;
     FElems.Delete(Index);
-    FreeAndNil(Elem);
   end;
 end;
 
@@ -2508,8 +2517,12 @@ end;
 
 function TJclSimpleXMLElems.Remove(Value: TJclSimpleXMLElem): Integer;
 begin
-  Result := FElems.IndexOfSimpleItem(Value);
-  Notify(Value, opRemove);
+  if FElems = nil
+     then Result := -1 // like TList.IndexOf(alien)
+     else begin
+        Result := FElems.IndexOfSimpleItem(Value);
+        Notify(Value, opRemove);
+     end;
 end;
 
 procedure TJclSimpleXMLElems.SaveToStringStream(StringStream: TJclStringStream;
@@ -2568,8 +2581,22 @@ begin
   CreateElems;
 
   // If there already is a container, notify it to remove the element
-  if Assigned(Value.Parent) then
-    Value.Parent.Items.Notify(Value, opRemove);
+  if Assigned(Value.Parent) then begin
+    if (value.parent<>FParent) then begin
+      if FNamedElems <> nil then begin
+        NamedIndex := FNamedElems.IndexOfName(Value.Name);
+        if NamedIndex >= 0 then
+           TJclSimpleXMLNamedElems(FNamedElems.SimpleItems[NamedIndex]).FItems.Remove(Value);
+      end;
+      Value.FParent.items.FElems.Extract(Value); //EW here is the real difference
+      Value.FParent := nil;
+      Value.FSimpleXML := nil;
+    end
+    else
+    begin
+      Value.Parent.Items.Notify(Value, opRemove);
+    end;
+  end;
 
   FElems.Insert(Index, Value);
 
@@ -2602,7 +2629,6 @@ procedure QuickSort(Elems: TJclSimpleXMLElems; List: TList; L, R: Integer;
   AFunction: TJclSimpleXMLElemCompare);
 var
   I, J, M: Integer;
-  T: Pointer;
 begin
   repeat
     I := L;
@@ -2613,11 +2639,15 @@ begin
         Inc(I);
       while AFunction(Elems, J, M) > 0 do
         Dec(J);
-      if I <= J then
+      if I < J then
       begin
-        T := List[I];
-        List[I] := List[J];
-        List[J] := T;
+        List.Exchange(I, J);
+        Inc(I);
+        Dec(J);
+      end
+      else
+      if I = J then
+      begin
         Inc(I);
         Dec(J);
       end;
@@ -2997,6 +3027,22 @@ var
 begin
   for I := 0 to Count - 1 do
     Item[I].SaveToStringStream(StringStream);
+end;
+
+procedure TJclSimpleXMLProps.SortProperties(const Order: array of string);
+var
+  I, Index, InsertIndex: Integer;
+begin
+  InsertIndex := 0;
+  for I := 0 to High(Order) do
+  begin
+    Index := FProperties.IndexOf(Order[I]);
+    if Index <> -1 then
+    begin
+      FProperties.Move(Index, InsertIndex);
+      Inc(InsertIndex);
+    end;
+  end;
 end;
 
 function TJclSimpleXMLProps.Value(const Name, Default: string): string;
@@ -3720,6 +3766,7 @@ begin
   SetVersion(GetVersion);
   SetEncoding(GetEncoding);
   SetStandalone(GetStandalone);
+  Properties.SortProperties(['version', 'encoding', 'standalone']);
 
   inherited SaveToStringStream(StringStream, Level);
 end;
@@ -4275,13 +4322,13 @@ begin
 end;
 {$ENDIF SUPPORTS_FOR_IN}
 
-function TJclSimpleXMLElemsProlog.GetStandAlone: Boolean;
+function TJclSimpleXMLElemsProlog.GetStandalone: Boolean;
 var
   Elem: TJclSimpleXMLElemHeader;
 begin
   Elem := TJclSimpleXMLElemHeader(FindHeader);
   if Elem <> nil then
-    Result := Elem.StandAlone
+    Result := Elem.Standalone
   else
     Result := False;
 end;
@@ -4306,13 +4353,13 @@ begin
     Elem.Encoding := Value;
 end;
 
-procedure TJclSimpleXMLElemsProlog.SetStandAlone(const Value: Boolean);
+procedure TJclSimpleXMLElemsProlog.SetStandalone(const Value: Boolean);
 var
   Elem: TJclSimpleXMLElemHeader;
 begin
   Elem := TJclSimpleXMLElemHeader(FindHeader);
   if Elem <> nil then
-    Elem.StandAlone := Value;
+    Elem.Standalone := Value;
 end;
 
 procedure TJclSimpleXMLElemsProlog.SetVersion(const Value: string);

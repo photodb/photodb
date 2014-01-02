@@ -50,9 +50,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-03-11 18:27:44 +0100 (Sun, 11 Mar 2012)                            $ }
-{ Revision:      $Rev:: 3770                                                                     $ }
-{ Author:        $Author:: obones                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -278,25 +278,25 @@ function StrSearch(const Substr, S: string; const Index: SizeInt = 1): SizeInt;
 function StrSuffixIndex(const S: string; const Suffixes: array of string): SizeInt;
 
 // String Extraction
-// Returns the String before SubStr
-function StrAfter(const SubStr, S: string): string;
 /// Returns the string after SubStr
+function StrAfter(const SubStr, S: string): string;
+/// Returns the String before SubStr
 function StrBefore(const SubStr, S: string): string;
 /// Splits a string at SubStr, returns true when SubStr is found, Left contains the
-/// string before the SubStr and Rigth the string behind SubStr
+/// string before the SubStr and Right the string behind SubStr
 function StrSplit(const SubStr, S: string;var Left, Right : string): boolean;
 /// Returns the string between Start and Stop
 function StrBetween(const S: string; const Start, Stop: Char): string;
-/// Returns the left N characters of the string
-function StrChopRight(const S: string; N: SizeInt): string;
+/// Returns all but rightmost N characters of the string
+function StrChopRight(const S: string; N: SizeInt): string;{$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
 /// Returns the left Count characters of the string
-function StrLeft(const S: string; Count: SizeInt): string;
+function StrLeft(const S: string; Count: SizeInt): string; {$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
 /// Returns the string starting from position Start for the Count Characters
-function StrMid(const S: string; Start, Count: SizeInt): string;
+function StrMid(const S: string; Start, Count: SizeInt): string; {$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
 /// Returns the string starting from position N to the end
-function StrRestOf(const S: string; N: SizeInt): string;
+function StrRestOf(const S: string; N: SizeInt): string;{$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
 /// Returns the right Count characters of the string
-function StrRight(const S: string; Count: SizeInt): string;
+function StrRight(const S: string; Count: SizeInt): string;{$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
 
 // Character Test Routines
 function CharEqualNoCase(const C1, C2: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
@@ -424,7 +424,7 @@ type
   // The TStringBuilder class is a Delphi implementation of the .NET
   // System.Text.StringBuilder.
   // It is zero based and the method that allow an TObject (Append, Insert,
-  // AppendFormat) are limited to IToString implementors.
+  // AppendFormat) are limited to IToString implementors or Delphi 2009+ RTL.
   // This class is not threadsafe. Any instance of TStringBuilder should not
   // be used in different threads at the same time.
   TJclStringBuilder = class(TInterfacedObject, IToString)
@@ -480,6 +480,7 @@ type
 
     function Remove(StartIndex, Length: SizeInt): TJclStringBuilder;
     function EnsureCapacity(Capacity: SizeInt): SizeInt;
+    procedure Clear;
 
     { IToString }
     function ToString: string; {$IFDEF RTL200_UP} override; {$ENDIF RTL200_UP}
@@ -624,9 +625,9 @@ var
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclStrings.pas $';
-    Revision: '$Revision: 3770 $';
-    Date: '$Date: 2012-03-11 18:27:44 +0100 (Sun, 11 Mar 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -3327,8 +3328,8 @@ begin
       Delete(S, 1, I + L - 1);
       I := Pos(Sep, S);
     end;
-    if S <> '' then
-      List.Add(S);  // Ignore empty strings at the end.
+    if (S <> '') or AllowEmptyString then
+      List.Add(S);  // Ignore empty strings at the end (only if AllowEmptyString = False).
   finally
     List.EndUpdate;
   end;
@@ -3357,8 +3358,8 @@ begin
       Delete(LowerCaseStr, 1, I + L - 1);
       I := Pos(Sep, LowerCaseStr);
     end;
-    if S <> '' then
-      List.Add(S);  // Ignore empty strings at the end.
+    if (S <> '') or AllowEmptyString then
+      List.Add(S);  // Ignore empty strings at the end (only if AllowEmptyString = False).
   finally
     List.EndUpdate;
   end;
@@ -3982,10 +3983,15 @@ var
           Dec(TInterfacedObjectAccess(V.VObject).FRefCount);
         end
         else
-        if InheritsFrom(V.VObject.ClassType, 'TComponent') and V.VObject.GetInterface(IToString, Intf) then
+        if ((V.VObject is TComponent) or (V.VObject is TInterfacedPersistent)) and V.VObject.GetInterface(IToString, Intf) then
           Result := Intf.ToString
+        {$IFDEF RTL200_UP}
         else
-          raise ArgumentNullException.CreateResFmt(@RsDotNetFormatArgumentNotSupported, [Index]);
+          Result := V.VObject.ToString;
+        {$ELSE}
+        else
+          raise ArgumentNullException.CreateResFmt(@RsDotNetFormatObjectArgumentNotSupported, [V.VObject.ClassName, Index]);
+        {$ENDIF RTL200_UP}
       vtClass:
         Result := V.VClass.ClassName;
       vtWideChar:
@@ -4107,8 +4113,7 @@ begin
   Append(Value);
 end;
 
-constructor TJclStringBuilder.Create(const Value: string; StartIndex,
-  Length, Capacity: SizeInt);
+constructor TJclStringBuilder.Create(const Value: string; StartIndex, Length, Capacity: SizeInt);
 begin
   Create(Capacity);
   Append(Value, StartIndex + 1, Length);
@@ -4127,6 +4132,11 @@ begin
   if System.Length(FChars) < Capacity then
     SetCapacity(Capacity);
   Result := System.Length(FChars);
+end;
+
+procedure TJclStringBuilder.Clear;
+begin
+  Length := 0;
 end;
 
 procedure TJclStringBuilder.SetCapacity(const Value: SizeInt);
@@ -4381,7 +4391,7 @@ end;
 
 function TJclStringBuilder.Insert(Index: SizeInt; Obj: TObject): TJclStringBuilder;
 begin
-  Result := Insert(Index, Format('{0}', [Obj]));
+  Result := Insert(Index, DotNetFormat('{0}', [Obj]));
 end;
 
 function TJclStringBuilder.Remove(StartIndex, Length: SizeInt): TJclStringBuilder;

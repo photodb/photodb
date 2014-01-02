@@ -116,6 +116,7 @@
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_UnitSearchPath>D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Debugger_RunParams>/nologo</Debugger_RunParams>
         <DCC_Optimize>false</DCC_Optimize>
         <VerInfo_MinorVer>5</VerInfo_MinorVer>
@@ -140,6 +141,7 @@
         <DCCReference Include="External\scalemm\ScaleMM2.pas"/>
         <DCCReference Include="External\FastMM\FastMM4.pas"/>
         <DCCReference Include="External\FastMM\FastMM4Messages.pas"/>
+        <DCCReference Include="Units\ExceptionJCLSupport.pas"/>
         <DCCReference Include="Units\uInit.pas"/>
         <DCCReference Include="Units\System\uTime.pas"/>
         <DCCReference Include="Threads\uSplashThread.pas"/>

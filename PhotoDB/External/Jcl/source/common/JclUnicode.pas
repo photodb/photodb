@@ -35,9 +35,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -1588,9 +1588,9 @@ function UCS4ArrayEquals(const Left: TUCS4Array; Right: AnsiChar): Boolean; over
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclUnicode.pas $';
-    Revision: '$Revision: 3861 $';
-    Date: '$Date: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -7740,8 +7740,7 @@ var
   CP: Word;
   CSI: TCharsetInfo;
 begin
-  if GetWindowsVersion in [wvUnknown, wvWin95, wvWin95OSR2, wvWin98, wvWin98SE,
-                           wvWinME, wvWinNT31, wvWinNT35, wvWinNT351, wvWinNT4] then
+  if not JclCheckWinVersion(5, 0) then // Win2k required
   begin
     // these versions of Windows don't support TCI_SRCLOCALE
     CP := CodePageFromLocale(Language);

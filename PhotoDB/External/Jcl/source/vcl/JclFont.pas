@@ -22,9 +22,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-03-04 22:21:40 +0100 (Sun, 04 Mar 2012)                            $ }
-{ Revision:      $Rev:: 3761                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -43,28 +43,26 @@ implementation
 
 uses
   {$IFDEF HAS_UNITSCOPE}
-  Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Graphics, System.TypInfo,
+  WinApi.Windows, System.SysUtils, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Graphics, System.TypInfo,
   {$ELSE ~HAS_UNITSCOPE}
-  StdCtrls, ComCtrls, Graphics, TypInfo,
+  Windows, SysUtils, StdCtrls, ComCtrls, Graphics, TypInfo,
   {$ENDIF ~HAS_UNITSCOPE}
   JclSysUtils, JclSysInfo;
 
 procedure SetCaptionFont(const AObjectFont: TFont);
 begin
-  if IsWinVista or IsWinServer2008 or IsWin7 or IsWinServer2008R2 then
+  if JclCheckWinVersion(6, 0) then // WinVista or newer
   begin
     AObjectFont.Name := 'Segoe UI';
     AObjectFont.Size := 9;
   end
-  else if IsWinXP or IsWin2k or IsWin2003 then
+  else if JclCheckWinVersion(5, 0) then // Win2k or newer
   begin
-    // MS Shell Dlg 2
-    AObjectFont.Name := 'Tahoma';
-    AObjectFont.Size := 8;
+     AObjectFont.Name := 'Tahoma';
+     AObjectFont.Size := 8;
   end
-  else
+  else // Win95..WinME/NT4
   begin
-    // MS Shell Dlg
     AObjectFont.Name := 'MS Sans Serif';
     AObjectFont.Size := 8;
   end;
@@ -72,20 +70,18 @@ end;
 
 procedure SetContentFont(const AObjectFont: TFont);
 begin
-  if IsWinVista or IsWinServer2008 or IsWin7 or IsWinServer2008R2 then
+  if JclCheckWinVersion(6, 0) then // WinVista or newer
   begin
     AObjectFont.Name := 'Calibri';
     AObjectFont.Size := 9;
   end
-  else if IsWinXP or IsWin2k or IsWin2003 then
+  else if JclCheckWinVersion(5, 0) then // Win2k or newer
   begin
-    // MS Shell Dlg 2
     AObjectFont.Name := 'Verdana';
     AObjectFont.Size := 8;
   end
-  else
+  else // Win95..WinME/NT4
   begin
-    // MS Shell Dlg
     AObjectFont.Name := 'MS Sans Serif';
     AObjectFont.Size := 8;
   end;
@@ -96,12 +92,12 @@ var
   AObjectFont: TFont;
   AFontType:   TFontType;
 begin
-  if (AObject.ClassType = TFont) then
+  if AObject.ClassType = TFont then
     AObjectFont := TFont(AObject)
   else
     AObjectFont := TFont(GetObjectProp(AObject, 'Font', TFont));
 
-  if (FontType = ftAuto) then
+  if FontType = ftAuto then
   begin
     if (AObject.ClassType = TMemo) {$IFDEF BORLAND}or (AObject.ClassType = TRichEdit){$ENDIF} then
       AFontType := ftContent
@@ -111,14 +107,10 @@ begin
   else
     AFontType := FontType;
 
-  if (AFontType = ftCaption) then
-  begin
-    SetCaptionFont(AObjectFont);
-  end
-  else if (AFontType = ftContent) then
-  begin
+  if AFontType = ftCaption then
+    SetCaptionFont(AObjectFont)
+  else if AFontType = ftContent then
     SetContentFont(AObjectFont);
-  end;
 end;
 
 end.

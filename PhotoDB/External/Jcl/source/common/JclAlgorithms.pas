@@ -29,9 +29,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-08-14 23:30:14 +0200 (Tue, 14 Aug 2012)                            $ }
-{ Revision:      $Rev:: 3830                                                                     $ }
-{ Author:        $Author:: jfudickar                                                             $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -576,9 +576,9 @@ const
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclAlgorithms.pas $';
-    Revision: '$Revision: 3830 $';
-    Date: '$Date: 2012-08-14 23:30:14 +0200 (Tue, 14 Aug 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -3610,9 +3610,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetObject(I);
-        AList.SetObject(I, AList.GetObject(J));
-        AList.SetObject(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetObject(I);
+          AList.SetObject(I, AList.GetObject(J));
+          AList.SetObject(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3646,9 +3649,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetString(I);
-        AList.SetString(I, AList.GetString(J));
-        AList.SetString(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetString(I);
+          AList.SetString(I, AList.GetString(J));
+          AList.SetString(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3682,9 +3688,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetString(I);
-        AList.SetString(I, AList.GetString(J));
-        AList.SetString(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetString(I);
+          AList.SetString(I, AList.GetString(J));
+          AList.SetString(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3719,9 +3728,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetString(I);
-        AList.SetString(I, AList.GetString(J));
-        AList.SetString(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetString(I);
+          AList.SetString(I, AList.GetString(J));
+          AList.SetString(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3756,9 +3768,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetValue(I);
-        AList.SetValue(I, AList.GetValue(J));
-        AList.SetValue(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetValue(I);
+          AList.SetValue(I, AList.GetValue(J));
+          AList.SetValue(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3792,9 +3807,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetValue(I);
-        AList.SetValue(I, AList.GetValue(J));
-        AList.SetValue(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetValue(I);
+          AList.SetValue(I, AList.GetValue(J));
+          AList.SetValue(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3828,9 +3846,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetValue(I);
-        AList.SetValue(I, AList.GetValue(J));
-        AList.SetValue(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetValue(I);
+          AList.SetValue(I, AList.GetValue(J));
+          AList.SetValue(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3864,9 +3885,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetValue(I);
-        AList.SetValue(I, AList.GetValue(J));
-        AList.SetValue(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetValue(I);
+          AList.SetValue(I, AList.GetValue(J));
+          AList.SetValue(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3900,9 +3924,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetValue(I);
-        AList.SetValue(I, AList.GetValue(J));
-        AList.SetValue(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetValue(I);
+          AList.SetValue(I, AList.GetValue(J));
+          AList.SetValue(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3936,9 +3963,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetValue(I);
-        AList.SetValue(I, AList.GetValue(J));
-        AList.SetValue(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetValue(I);
+          AList.SetValue(I, AList.GetValue(J));
+          AList.SetValue(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -3972,9 +4002,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetPointer(I);
-        AList.SetPointer(I, AList.GetPointer(J));
-        AList.SetPointer(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetPointer(I);
+          AList.SetPointer(I, AList.GetPointer(J));
+          AList.SetPointer(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -4008,9 +4041,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetObject(I);
-        AList.SetObject(I, AList.GetObject(J));
-        AList.SetObject(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetObject(I);
+          AList.SetObject(I, AList.GetObject(J));
+          AList.SetObject(J, Obj);
+        end;
         if P = I then
           P := J
         else
@@ -4253,9 +4289,12 @@ begin
         Dec(J);
       if I <= J then
       begin
-        Obj := AList.GetItem(I);
-        AList.SetItem(I, AList.GetItem(J));
-        AList.SetItem(J, Obj);
+        if I <> J then
+        begin
+          Obj := AList.GetItem(I);
+          AList.SetItem(I, AList.GetItem(J));
+          AList.SetItem(J, Obj);
+        end;
         if P = I then
           P := J
         else

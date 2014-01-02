@@ -29,9 +29,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2011-09-03 00:07:50 +0200 (Sat, 03 Sep 2011)                            $ }
-{ Revision:      $Rev:: 3599                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -129,9 +129,9 @@ procedure VariantArrayToStream(VarArray: OleVariant; var Stream: IStream); overl
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/windows/JclCOM.pas $';
-    Revision: '$Revision: 3599 $';
-    Date: '$Date: 2011-09-03 00:07:50 +0200 (Sat, 03 Sep 2011) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\windows';
     Extra: '';
     Data: nil
@@ -175,7 +175,7 @@ var
   OLE32: HMODULE;
 begin
   { DCOM is installed by default on all but Windows 95 }
-  Result := not (GetWindowsVersion in [wvUnknown, wvWin95, wvWin95OSR2]);
+  Result := not (GetWindowsVersion in [wvWin95, wvWin95OSR2]);
   if not Result then
   begin
     OLE32 := SafeLoadLibrary(pcOLE32);

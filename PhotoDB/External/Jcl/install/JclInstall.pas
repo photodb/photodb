@@ -16,15 +16,15 @@
 { Copyright (C) of Petr Vones. All Rights Reserved.                                                }
 {                                                                                                  }
 { Contributor(s):                                                                                  }
-{   - Robert Rossmair - crossplatform & BCB support, refactoring                                   }
-{   - Florent Ouchet (outchy) - New installer core                                                 }
-{                             - Resource refactorings                                              }
+{   Robert Rossmair - crossplatform & BCB support, refactoring                                     }
+{   Florent Ouchet (outchy) - New installer core, resource refactorings                            }
+{   Jean-Fabien Connault (cycocrew)                                                                }
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -2736,6 +2736,8 @@ begin
     Compiler.Options.Add('-$V+'); // strict var strings
     Compiler.Options.Add('-$J+'); // writeable constants
     Compiler.Options.Add('-$Z1'); // minimum enum size
+    Compiler.Options.Add('-$L+'); // local symbols
+    Compiler.Options.Add('-$Y+'); // symbol reference info
 
     Compiler.Options.Add('-$J+'); // writable constants
     if Debug then
@@ -2743,24 +2745,20 @@ begin
       Compiler.Options.Add('-$C+'); // assertions
       Compiler.Options.Add('-$D+'); // debug informations
       Compiler.Options.Add('-$I+'); // I/O checking
-      Compiler.Options.Add('-$L+'); // local debugging symbols
       Compiler.Options.Add('-$O-'); // optimizations
       Compiler.Options.Add('-$Q+'); // overflow checking
       Compiler.Options.Add('-$R+'); // range checking
       Compiler.Options.Add('-$W+'); // stack frames
-      Compiler.Options.Add('-$Y+'); // symbol reference info
     end
     else
     begin
       Compiler.Options.Add('-$C-'); // assertions
       Compiler.Options.Add('-$D-'); // debug informations
       Compiler.Options.Add('-$I-'); // I/O checking
-      Compiler.Options.Add('-$L-'); // local debugging symbols
       Compiler.Options.Add('-$O+'); // optimizations
       Compiler.Options.Add('-$Q-'); // overflow checking
       Compiler.Options.Add('-$R-'); // range checking
       Compiler.Options.Add('-$W-'); // stack frames
-      Compiler.Options.Add('-$Y-'); // symbol reference info
     end;
 
     if Debug then
@@ -3263,7 +3261,7 @@ function TJclDistribution.CreateInstall(Target: TJclBorRADToolInstallation): Boo
         Result := Target.VersionNumber in [6];
       brBorlandDevStudio :
         Result := ((Target.VersionNumber in [1, 2]) and (bpDelphi32 in Target.Personalities))
-          or (Target.VersionNumber in [3, 4, 5, 6, 7, 8, 9, 10]);
+          or (Target.VersionNumber in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
       else
         Result := False;
     end;
@@ -3718,8 +3716,9 @@ begin
   if Assigned(GUI) and not IsElevated then
     GUI.Dialog(LoadResString(@RsHTMLHelp2Credentials), dtInformation, [drOK]);
 
-  // RegHelper.exe manifest requires elevation on Vista
-  if IsAdministrator or IsWinVista or IsWinServer2008 or IsWin7 or IsWinServer2008R2 then
+  // RegHelper.exe manifest requires elevation on Windows Vista/7/8/8.1 and Windows Server 2008/2008R2/2012/2012R2
+  if IsAdministrator or IsWinVista or IsWinServer2008 or IsWin7 or IsWinServer2008R2 or
+    IsWin8 or IsWinServer2012 or IsWin81 or IsWinServer2012R2 then
     Verb := 'open'
   else
     Verb := 'runas';

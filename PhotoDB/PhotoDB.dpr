@@ -33,7 +33,7 @@ uses
   FastMM4Messages in 'External\FastMM\FastMM4Messages.pas',
   {$ENDIF}
   {$IFDEF DEBUG}
-//  ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
+  ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
   {$ENDIF}
   uInit in 'Units\uInit.pas',
   uTime in 'Units\System\uTime.pas',

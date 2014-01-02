@@ -31,9 +31,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-03-04 19:39:47 +0100 (Sun, 04 Mar 2012)                            $ }
-{ Revision:      $Rev:: 3759                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -709,9 +709,9 @@ function GetObjectProperties(AnObj: TObject; Recurse: Boolean = False): IJclObjP
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclRTTI.pas $';
-    Revision: '$Revision: 3759 $';
-    Date: '$Date: 2012-03-04 19:39:47 +0100 (Sun, 04 Mar 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil
@@ -2476,7 +2476,8 @@ begin
   // Check range...
   if (EnumVal < MinEnum) or (EnumVal > MaxEnum) then
     Result := Format(LoadResString(@RsRTTIValueOutOfRange),
-      [LoadResString(@RsRTTIOrdinal) + IntToStr(EnumVal)])
+      [LoadResString(@RsRTTIOrdinal) + IntToStr(EnumVal),
+       GetEnumName(TypeInfo, MinEnum), GetEnumName(TypeInfo, MaxEnum)])
   else
     Result := GetEnumName(TypeInfo, EnumVal);
 end;
@@ -2639,7 +2640,8 @@ begin
       TmpVal := StrToInt64(Value);
       if (RangeInfo <> nil) and ((TmpVal < RangeInfo.MinValue) or
           (TmpVal > RangeInfo.MaxValue)) then
-        raise EConvertError.CreateResFmt(@SInvalidInteger, [Value]);
+        raise EConvertError.CreateResFmt(@RsRTTIValueOutOfRange,
+          [Value, IntToStr(RangeInfo.MinValue), IntToStr(RangeInfo.MaxValue)]);
       Result := Integer(TmpVal);
     end
     else
@@ -2759,7 +2761,7 @@ begin
   ResBytes := (EnumMax div 8) - (EnumMin div 8) + 1;
   BitShift := EnumMin mod 8;
   if (EnumMax - EnumMin) > 32 then
-    raise EJclRTTIError.CreateResFmt(@RsRTTIValueOutOfRange,
+    raise EJclRTTIError.CreateResFmt(@RsRTTISetValueOutOfRange,
       [IntToStr(EnumMax - EnumMin) + ' ' + LoadResString(@RsRTTIBits)]);
   Result := 0;
   TmpInt64 := 0;

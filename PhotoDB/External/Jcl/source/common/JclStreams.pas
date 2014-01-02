@@ -27,9 +27,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012)                            $ }
-{ Revision:      $Rev:: 3861                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -342,7 +342,7 @@ type
   end;
 
   // ancestor classes for streams with checksums and encrypted streams
-  // data are stored in sectors: each BufferSize-d buffer is followed by FBlockOverHeader bytes
+  // data are stored in sectors: each BufferSize-d buffer is followed by FSectorOverHead bytes
   // containing the checksum. In case of an encrypted stream, there is no byte
   // but sector is encrypted
 
@@ -586,9 +586,9 @@ function CompareFiles(const FileA, FileB: TFileName; BufferSize: Longint = Strea
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/common/JclStreams.pas $';
-    Revision: '$Revision: 3861 $';
-    Date: '$Date: 2012-09-04 16:08:04 +0200 (Tue, 04 Sep 2012) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\common';
     Extra: '';
     Data: nil

@@ -32,9 +32,9 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date:: 2011-09-03 00:07:50 +0200 (Sat, 03 Sep 2011)                            $ }
-{ Revision:      $Rev:: 3599                                                                     $ }
-{ Author:        $Author:: outchy                                                                $ }
+{ Last modified: $Date::                                                                         $ }
+{ Revision:      $Rev::                                                                          $ }
+{ Author:        $Author::                                                                       $ }
 {                                                                                                  }
 {**************************************************************************************************}
 
@@ -115,9 +115,9 @@ function IsElevated: Boolean;
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
-    RCSfile: '$URL: https://jcl.svn.sourceforge.net/svnroot/jcl/tags/JCL-2.4-Build4571/jcl/source/windows/JclSecurity.pas $';
-    Revision: '$Revision: 3599 $';
-    Date: '$Date: 2011-09-03 00:07:50 +0200 (Sat, 03 Sep 2011) $';
+    RCSfile: '$URL$';
+    Revision: '$Revision$';
+    Date: '$Date$';
     LogPath: 'JCL\source\windows';
     Extra: '';
     Data: nil
@@ -794,7 +794,7 @@ end;
 
 function IsUACEnabled: Boolean;
 begin
-  Result := (IsWinVista or IsWinServer2008 or IsWin7 or IsWinServer2008R2) and
+  Result := JclCheckWinVersion(6, 0) and
     RegReadBoolDef(HKLM, '\Software\Microsoft\Windows\CurrentVersion\Policies\System', 'EnableLUA', False);
 end;
 
@@ -811,7 +811,7 @@ var
   ResultLength: Cardinal;
   ATokenElevation: TOKEN_ELEVATION;
 begin
-  if (IsWinVista or IsWinServer2008 or IsWin7 or IsWinServer2008R2) then
+  if JclCheckWinVersion(6, 0) then
   begin
     TokenHandle := 0;
     if OpenProcessToken(GetCurrentProcess, TOKEN_QUERY, TokenHandle) then
