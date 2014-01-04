@@ -7630,6 +7630,7 @@ end;
 procedure TExplorerForm.ApplyLeftTabs;
 var
   Tab: TExplorerLeftTab;
+  PI: TPathItem;
 begin
   PcTasks.DisableTabChanging;
   try
@@ -7649,7 +7650,14 @@ begin
       TreeView.SelectPathItem(PePath.PathEx);
 
   if (FActiveLeftTab = eltsExplorer) and (FShellTreeView = nil) then
-    TreeView.SelectPathItem(THomeItem.Create);
+  begin
+    PI := THomeItem.Create;
+    try
+      TreeView.SelectPathItem(PI);
+    finally
+      F(PI);
+    end;
+  end;
 
   PcTasks.ActivePageIndex := Integer(FActiveLeftTab);
 

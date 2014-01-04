@@ -6,7 +6,7 @@ program PhotoDB;
 {$IF CompilerVersion >= 21.0}
   {$WEAKLINKRTTI ON}
   {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
-{$IFEND}
+{$ENDIF}
 
 {$IFDEF DEBUG}
   //fast at multithreading
@@ -490,7 +490,7 @@ begin
         DBManager.CreateSampleDefaultCollection;
     end;
 
-    //TrainIt;
+    TrainIt;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

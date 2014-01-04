@@ -379,7 +379,7 @@ begin
            '     (SELECT DISTINCT Im.ID, Im.Rating FROM {0} im                        ' +
            '      INNER JOIN {1} OM on Im.Id = OM.ImageId) AS IR on IR.ID = IM1.ID    ' +
            '   WHERE DateToAdd > #{2}#                                                ' +
-           '   ORDER BY [IM1].[Rating] ASC) AS Result                                 ';
+           '   ORDER BY [IM1].[ID] ASC) AS Result                                 ';
 
     DFormatSettings := FormatSettings;
     DFormatSettings.DateSeparator := '/';

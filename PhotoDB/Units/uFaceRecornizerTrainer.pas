@@ -98,7 +98,7 @@ const
   FaceHeight = 64;
 
 var
-  Success, Fail, TotalFail, FailQuaility, SuccessQuality, TotalFaces: Integer;
+  TotalSuccess, TotalFail, PartialSuccess, Fail, Success, FailQuaility, SuccessQuality, TotalFaces: Integer;
 
 procedure TrainIt;
 var
@@ -407,9 +407,13 @@ begin
         begin
           W := PM[J].B;
           W1 := 255 - W;
-          PO[J].R := (PO[J].R * W1 + {PG[J].R}255 * W + $7F) div $FF;
-          PO[J].G := (PO[J].G * W1 + {PG[J].G}255 * W + $7F) div $FF;
-          PO[J].B := (PO[J].B * W1 + {PG[J].B}255 * W + $7F) div $FF;
+          PO[J].R := (PO[J].R * W1 + 255 * W + $7F) div $FF;
+          PO[J].G := (PO[J].G * W1 + 255 * W + $7F) div $FF;
+          PO[J].B := (PO[J].B * W1 + 255 * W + $7F) div $FF;
+
+         { PO[J].R := (PO[J].R * W1 + PG[J].R * W + $7F) div $FF;
+          PO[J].G := (PO[J].G * W1 + PG[J].G * W + $7F) div $FF;
+          PO[J].B := (PO[J].B * W1 + PG[J].B * W + $7F) div $FF;  }
         end;
       end;
     finally
@@ -422,7 +426,7 @@ begin
   end;
 end;
 
-function ProcessFaceAreaOnImage(MI: TMediaItem; Bitmap: TBitmap; Area: TPersonArea; Detector: TFaceDetectionManager): TFaceScoreResults;
+function ProcessFaceAreaOnImage(MI: TMediaItem; Bitmap: TBitmap; Area: TPersonArea; Detector: TFaceDetectionManager; MinScore: Byte): TFaceScoreResults;
 const
   LoadFaceCf = 1.5;
 var
@@ -437,7 +441,7 @@ var
   RotCenter: TcvPoint2D32f;
   Scale: Double;
   RotatedImage: pIplImage;
-  FileName : string;
+  FileName: string;
 
   procedure DrawDetectionDebugInfo(Bitmap: TBitmap; DetectionInfo: TFaceScoreResults);
   begin
@@ -475,9 +479,7 @@ begin
         if DetectionResult = nil then
           Exit;
 
-        Inc(TotalFaces);
-
-        if DetectionResult.TotalScore < 80 then
+        if DetectionResult.TotalScore < MinScore then
           Exit;
 
         //try to rotate
@@ -491,7 +493,7 @@ begin
           RotCenter.x := FaceImage.width div 2;
           RotCenter.y := FaceImage.height div 2;
           Scale := 1;
-          cv2DRotationMatrix(RotCenter, Angle * 180/PI, Scale, RotMat);
+          cv2DRotationMatrix(RotCenter, Angle * 180 / PI, Scale, RotMat);
 
           RotatedImage := cvCreateImage(cvSize(FaceImage.width, FaceImage.height), FaceImage.depth, FaceImage.nChannels);
           try
@@ -534,21 +536,34 @@ begin
   end;
 end;
 
-procedure ProcessFacesOnImage(MI: TMediaItem; Bitmap: TBitmap; ImageAreas: TPersonAreaCollection; Detector: TFaceDetectionManager; Recognizer: IFaceRecognizer);
+procedure ProcessFacesOnImage(MI: TMediaItem; Bitmap: TBitmap; ImageAreas: TPersonAreaCollection; Detector: TFaceDetectionManager; Recognizer: IFaceRecognizer; MinFaceScore: Byte; Logger: TStrings);
 var
-  I, PersonId: Integer;
+  I, J, PersonId: Integer;
   Area: TPersonArea;
   DR: TFaceScoreResults;
   FaceSample: TBitmap;
   FileName: string;
+  PersonResults: TFaceRecognitionResults;
+  DistanceLimit: Double;
+  PersonFound, HasPartialSuccess, IsFail, IsSuccess: Boolean;
+  PartialPosition: Integer;
 begin
   for I := 0 to ImageAreas.Count - 1 do
   begin
     Area := ImageAreas[I];
-    DR := ProcessFaceAreaOnImage(MI, Bitmap, Area, Detector);
+
+    DR := ProcessFaceAreaOnImage(MI, Bitmap, Area, Detector, MinFaceScore);
     try
       if DR = nil then
         Continue;
+
+      Inc(TotalFaces);
+
+      PersonFound := False;
+      IsFail := False;
+      IsSuccess := False;
+      HasPartialSuccess := False;
+      PartialPosition := 0;
 
       FaceSample := TBitmap.Create;
       try
@@ -559,23 +574,80 @@ begin
         FileName := FileName + FormatEx('\Face_{0}_{1}_{2}.bmp', [DR.TotalScore, Area.ID, Area.ImageID]);
         FaceSample.SaveToFile(FileName);
 
-        PersonId := Recognizer.DetectFace(FaceSample, DR.TotalScore);
-        if PersonId = Area.PersonID then
+        PersonId := 0;
+        PersonResults := Recognizer.DetectFace(FaceSample, DR.TotalScore, 5);
+        if Length(PersonResults) > 0 then
         begin
-          Inc(Success);
-          Inc(SuccessQuality, DR.TotalScore);
-        end
-        else if (PersonId > 0) and Recognizer.HasPerson(Area.PersonID) then
-        begin
-          Inc(Fail);
-          Inc(FailQuaility, DR.TotalScore);
+          PersonId := PersonResults[0].PersonId;
+
+          DistanceLimit := Log10(Recognizer.GetFacesCount - 1) / 2.3;
+          PersonFound := PersonId = Area.PersonID;
+
+          if PersonFound then
+          begin
+            Inc(TotalSuccess);
+            Inc(SuccessQuality, DR.TotalScore);
+          end
+          else
+          begin
+            Inc(TotalFail);
+            Inc(FailQuaility, DR.TotalScore);
+          end;
+
+          if (PersonResults[0].Distance <= DistanceLimit) then
+          begin
+            if PersonFound then
+              IsSuccess := True
+            else
+              IsFail := True;
+          end;
+
+          if not PersonFound then
+          begin
+            for J := 0 to Length(PersonResults) - 1 do
+              if PersonResults[J].PersonId = Area.PersonID then
+              begin
+                HasPartialSuccess := True;
+                PartialPosition := J + 1;
+              end;
+          end;
+
+          if IsSuccess then
+            Inc(Success);
+          if IsFail then
+            Inc(Fail);
+          if HasPartialSuccess then
+            Inc(PartialSuccess);
+
+          //1: Faces: XXX
+          //2: MinDistance: XXX
+          //3: Threshold: XXX
+          //4: IsFailed: 1/0
+          //5: IsSuccess: 1/0
+          //6: Position: 0-5
+
+          Logger.Add(FormatEx('{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}', [#9,
+            Recognizer.GetFacesCount,
+            PersonResults[0].Distance,
+            DistanceLimit,
+            not PersonFound,
+            PersonFound,
+            HasPartialSuccess,
+            PartialPosition,
+            PersonResults[0].HasNegative
+          ]));
+          Logger.SaveToFile('D:\train.txt');
         end;
 
-        if Recognizer.TrainFace(FaceSample, Area.PersonID, DR.TotalScore) then
+        //TODO do not train always?
+        if not IsSuccess then
         begin
-          //PersonId := Recognizer.DetectFace(FaceSample, DR.TotalScore);
-          //if (PersonId <> Area.PersonID) and (PersonId > 0) then
-          //  Inc(TotalFail);
+          if Recognizer.TrainFace(FaceSample, Area.PersonID, DR.TotalScore) then
+          begin
+            //PersonId := Recognizer.DetectFace(FaceSample, DR.TotalScore);
+            //if (PersonId <> Area.PersonID) and (PersonId > 0) then
+            //  Inc(TotalFail);
+          end;
         end;
       finally
         F(FaceSample);
@@ -606,83 +678,110 @@ var
   B: TBitmap;
   Detector: TFaceDetectionManager;
   Recognizer: IFaceRecognizer;
+
+  MaxFaces: Integer;
+  FacesPerPerson: Integer;
+  PicturesToProcess: Integer;
+  FaceScore: Integer;
+
+  Infos: TStrings;
 begin
-  Detector := TFaceDetectionManager.Create;
-  Recognizer := TFaceEigenRecognizer.Create(FaceWidth, FaceHeight, 20);
+  Infos := TStringList.Create;
   try
-    for N := 1 to 2 do
+
+    MaxFaces := 70;
+    FacesPerPerson := 20;
+    PicturesToProcess := 10000;
+    FaceScore := 60;
+
+    for N in [1] do
     begin
-      Success := 0;
-      Fail:= 0;
-      TotalFail:= 0;
-      FailQuaility:= 0;
-      SuccessQuality:= 0;
-      TotalFaces := 0;
-      DBContext := DBManager.DBContext;
-      Media := DBContext.Media;
-      People := DBContext.People;
-      TopImages := Media.GetTopImagesWithPersons(Now - 1000, 1000);
+      Infos.Add(FormatEx('SEPARATOR:{0}', [#9]));
+      Infos.Add(FormatEx('MaxFaces = {0}, FacesPerPerson = {1}, PicturesToProcess = {2}, FaceScore = {3}', [MaxFaces, FacesPerPerson, PicturesToProcess, FaceScore]));
+
+      Detector := TFaceDetectionManager.Create;
+      Recognizer := TFaceEigenRecognizer.Create(FaceWidth, FaceHeight, FacesPerPerson, MaxFaces);
       try
-        for I := 0 to TopImages.Count - 1 do
-        begin
-          MI := TopImages[I];
-          if FileExists(MI.FileName) and not ValidCryptGraphicFile(MI.FileName) then
+        TotalSuccess := 0;
+        TotalFail := 0;
+        FailQuaility := 0;
+        SuccessQuality := 0;
+        Success := 0;
+        Fail := 0;
+        PartialSuccess := 0;
+        TotalFaces := 0;
+        DBContext := DBManager.DBContext;
+        Media := DBContext.Media;
+        People := DBContext.People;
+        TopImages := Media.GetTopImagesWithPersons(Now - 2000, PicturesToProcess);
+        try
+          for I := 0 to TopImages.Count - 1 do
           begin
-            ImageAreas := People.GetAreasOnImage(MI.ID);
-            try
+            MI := TopImages[I];
+            if FileExists(MI.FileName) and not ValidCryptGraphicFile(MI.FileName) then
+            begin
+              ImageAreas := People.GetAreasOnImage(MI.ID);
+              try
 
-              if (ImageAreas.Count > 0) then
-              begin
-                ImageSize.Width := MI.Width;
-                ImageSize.Height := MI.Height;
-                FaceMinSize := ImageSize;
-
-                MinArea := ImageAreas[0];
-                //if MinArea.PersonID = 135 then
-                //  Continue;
-
-                //search for minimum face
-                for J := 0 to ImageAreas.Count - 1 do
+                if (ImageAreas.Count > 0) then
                 begin
-                  Area := ImageAreas[J];
-                  if ((Area.Width < FaceMinSize.Width) or (Area.Height < FaceMinSize.Height)) and (FaceMinSize.Height > 0) and (FaceMinSize.Height > 0) then
-                    MinArea := Area;
-                end;
+                  ImageSize.Width := MI.Width;
+                  ImageSize.Height := MI.Height;
+                  FaceMinSize := ImageSize;
 
-                FaceRect := CalculateRectOnImage(MinArea, ImageSize);
+                  MinArea := ImageAreas[0];
 
-                if (FaceRect.Width > 0) and (FaceRect.Height > 0) then
-                begin
-                  //calculate proportions to load image to reach min image size with required size of person image
-                  Proportions := Min(FaceRect.Width / FaceWidthToLoad, FaceRect.Height / FaceHeightToLoad);
-                  RequiredImageSize.Width := Floor(ImageSize.Width / Proportions);
-                  RequiredImageSize.Height := Floor(ImageSize.Height / Proportions);
-
-                  if LoadImageFromPath(MI, 1, '', [ilfGraphic, ilfDontUpdateInfo, ilfUseCache], ImageInfo, RequiredImageSize.Width, RequiredImageSize.Height) then
+                  //search for minimum face
+                  for J := 0 to ImageAreas.Count - 1 do
                   begin
-                    B := ImageInfo.GenerateBitmap(MI, RequiredImageSize.Width, RequiredImageSize.Height, pf24Bit, clBlack, [ilboFreeGraphic, ilboRotate]);
-                    try
-                      ProcessFacesOnImage(MI, B, ImageAreas, Detector, Recognizer);
-                    finally
-                      F(B);
+                    Area := ImageAreas[J];
+                    if ((Area.Width < FaceMinSize.Width) or (Area.Height < FaceMinSize.Height)) and (FaceMinSize.Height > 0) and (FaceMinSize.Height > 0) then
+                      MinArea := Area;
+                  end;
+
+                  FaceRect := CalculateRectOnImage(MinArea, ImageSize);
+
+                  if (FaceRect.Width > 0) and (FaceRect.Height > 0) then
+                  begin
+                    //calculate proportions to load image to reach min image size with required size of person image
+                    Proportions := Min(FaceRect.Width / FaceWidthToLoad, FaceRect.Height / FaceHeightToLoad);
+                    RequiredImageSize.Width := Floor(ImageSize.Width / Proportions);
+                    RequiredImageSize.Height := Floor(ImageSize.Height / Proportions);
+
+                    if LoadImageFromPath(MI, 1, '', [ilfGraphic, ilfDontUpdateInfo, ilfUseCache], ImageInfo, RequiredImageSize.Width, RequiredImageSize.Height) then
+                    begin
+                      B := ImageInfo.GenerateBitmap(MI, RequiredImageSize.Width, RequiredImageSize.Height, pf24Bit, clBlack, [ilboFreeGraphic, ilboRotate]);
+                      try
+                        ProcessFacesOnImage(MI, B, ImageAreas, Detector, Recognizer, FaceScore, Infos);
+                      finally
+                        F(B);
+                      end;
                     end;
                   end;
                 end;
+
+              finally
+                F(ImageAreas);
               end;
 
-            finally
-              F(ImageAreas);
             end;
-
           end;
+        finally
+          F(TopImages);
         end;
+          //Recognizer.SaveState('D:\TrainSaved');
       finally
-        F(TopImages);
+        F(Detector);
+        Recognizer := nil;
       end;
+
+      Infos.Add(FormatEx('DONE', []));
+      Infos.Add(FormatEx('TotalSuccess{0}TotalFail{0}Success{0}Fail{0}PartialSuccess{0}TotalFaces', [#9]));
+      Infos.Add(FormatEx('{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}', [#9, TotalSuccess, TotalFail, Success, Fail, PartialSuccess, TotalFaces]));
+      Infos.SaveToFile('D:\train.txt');
     end;
   finally
-    F(Detector);
-    Recognizer := nil;
+    F(Infos);
   end;
 end;
 
@@ -743,17 +842,17 @@ end;
 procedure TFaceScoreResults.GenerateSample(Bitmap: TBitmap; Width, Height: Integer);
 var
   FaceMask: TBitmap;
-  Face: TBitmap;
+{  Face: TBitmap;
   R: TRect;
   Dx, Dy: Integer;
-  Proportions: Double;
+  Proportions: Double;  }
 
   procedure UpdateBitmap(Source: TBitmap);
   begin
     DoResize(Width, Height, Source, Bitmap);
     FaceMask := TBitmap.Create;
     try
-      FaceMask.LoadFromFile('d:\mask.bmp');
+      FaceMask.LoadFromFile('D:\Dmitry\Delphi exe\mask.bmp');
       FaceMask.PixelFormat := pf24bit;
 
       ApplyMask(Bitmap, FaceMask);

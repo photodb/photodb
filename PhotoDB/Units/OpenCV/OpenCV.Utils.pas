@@ -137,8 +137,8 @@ var
 begin
   Assert((iplImg.Depth = 8) and (iplImg.NChannels in [1,3]), 'IplImage2Bitmap: Not a 24 bit color iplImage!');
 
-  Bitmap.Height := IplImg.Height;
-  Bitmap.Width := IplImg.Width;
+  Bitmap.SetSize(IplImg.Width, IplImg.Height);
+
   IsBGR := ToString(IplImg.ChannelSeq) = 'BGR';
   IsGray := ToString(IplImg.ChannelSeq) = 'GRAY';
   for J := 0 to Bitmap.Height - 1 do

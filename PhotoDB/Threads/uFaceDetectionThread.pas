@@ -555,7 +555,7 @@ var
   DocumentElement: IDOMElement;
   FaceNode: IDOMNode;
 
-  procedure AddProperty(Name: string; Value: string);
+  procedure AddXmlProperty(Name: string; Value: string);
   var
     Attr: IDOMAttr;
   begin
@@ -572,19 +572,19 @@ begin
     Doc.documentElement := DocumentElement;
 
     FaceNode := DocumentElement;
-    AddProperty('Size', IntToStr(Size));
-    AddProperty('DateModified', FormatDateTime('yyyy.MM.dd mm:ss', DateModified));
+    AddXmlProperty('Size', IntToStr(Size));
+    AddXmlProperty('DateModified', FormatDateTime('yyyy.MM.dd mm:ss', DateModified));
 
     for I := 0 to Count - 1 do
     begin
       FaceNode := Doc.createElement('face');
 
-      AddProperty('X', IntToStr(Items[I].X));
-      AddProperty('Y', IntToStr(Items[I].Y));
-      AddProperty('Width', IntToStr(Items[I].Width));
-      AddProperty('Height', IntToStr(Items[I].Height));
-      AddProperty('ImageWidth', IntToStr(Items[I].ImageWidth));
-      AddProperty('ImageHeight', IntToStr(Items[I].ImageHeight));
+      AddXmlProperty('X', IntToStr(Items[I].X));
+      AddXmlProperty('Y', IntToStr(Items[I].Y));
+      AddXmlProperty('Width', IntToStr(Items[I].Width));
+      AddXmlProperty('Height', IntToStr(Items[I].Height));
+      AddXmlProperty('ImageWidth', IntToStr(Items[I].ImageWidth));
+      AddXmlProperty('ImageHeight', IntToStr(Items[I].ImageHeight));
 
       Doc.documentElement.appendChild(FaceNode);
     end;
