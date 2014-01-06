@@ -35,6 +35,7 @@ REM JNG FILES - END
 "%BRCC32%" Import.rc
 "%BRCC32%" CollectionSync.rc
 "%BRCC32%" ExplorerItems.rc
+"%BRCC32%" FaceMask.rc
 
 cd ..
 cd ..

@@ -69,6 +69,7 @@ uses
   uFastLoad,
   uW7TaskBar,
   uFaceDetection,
+  uFaceRecognizerService,
   uListViewUtils,
   uGraphicUtils,
   uShellIntegration,
@@ -2306,15 +2307,16 @@ end;
 procedure TViewer.MiClearFaceZoneClick(Sender: TObject);
 var
   FR: TFaceDetectionResultItem;
-  FA: TPersonArea;
+  PA: TPersonArea;
 begin
   FHoverFace := nil;
 
   FR := TFaceDetectionResultItem(PmFace.Tag);
   if FR.Data <> nil then
   begin
-    FA := TPersonArea(FR.Data);
-    FPeopleRepository.RemovePersonFromPhoto(Item.ID, FA);
+    PA := TPersonArea(FR.Data);
+    UIFaceRecognizerService.UserRemovedPerson(Item, FFullImage, PA);
+    FPeopleRepository.RemovePersonFromPhoto(Item.ID, PA);
   end;
   FFaces.RemoveFaceResult(FR);
   FHoverFace := nil;
@@ -2468,13 +2470,17 @@ begin
         PA := TPersonArea.Create(Item.ID, P.ID, RI);
         try
           FPeopleRepository.AddPersonForPhoto(Self, PA);
+          UIFaceRecognizerService.UserSelectedPerson(Item, FFullImage, PA);
           RI.Data := PA.Clone;
 
         finally
           F(PA);
         end;
       end else
+      begin
+        UIFaceRecognizerService.UserChangedPerson(Item, FFullImage, PA);
         FPeopleRepository.ChangePerson(PA, P.ID);
+      end;
 
       RefreshFaces;
     end;

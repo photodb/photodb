@@ -23,6 +23,7 @@ const
   ActionsFolder: string = 'Actions\';
   ImagesFolder: string = 'Images\';
   FaceCacheDirectory: string = '\CVCache\Face\';
+  FaceTrainCacheDirectory: string = '\CVCache\FaceTrain\';
   TmpDirectory: string = '\Temp\';
   FolderCacheDirectory: string = '\FolderCache\';
   UpdaterDirectory: string = '\Updater\';

@@ -32,6 +32,7 @@ function GetPathSeparatorImage: TBitmap;
 function GetNoHistogramImage: TPNGImage;
 function GetCollectionSyncImage: TPngImage;
 function GetNavigateDownImage: TPngImage;
+function GetFaceMaskImage: TPngImage;
 
 {$R MAIN.res}
 {$R Logo.res}
@@ -49,6 +50,7 @@ function GetNavigateDownImage: TPngImage;
 {$R Import.res}
 {$R CollectionSync.res}
 {$R ExplorerItems.res}
+{$R FaceMask.res}
 
 //Icons
 {$R db_icons.res}
@@ -169,6 +171,11 @@ end;
 function GetNavigateDownImage: TPngImage;
 begin
   Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('NAVIGATEDOWN');
+end;
+
+function GetFaceMaskImage: TPngImage;
+begin
+  Result := TResourceUtils.LoadGraphicFromRES<TPngImage>('FACEMASK');
 end;
 
 end.

@@ -88,8 +88,12 @@ begin
       CopyMemory(DataByte, Rowin, IplImg.WidthStep);
     end else if IsGray then
     begin
-      for I := 0 to Bitmap.Width - 1 do
-        Databyte[I] := (RowIn[3 * I] * 77  + RowIn[3 * I + 1] * 151 + RowIn[3 * I + 2] * 28) shr 8;
+      if Bitmap.PixelFormat = pf24Bit then
+        for I := 0 to Bitmap.Width - 1 do
+          Databyte[I] := (RowIn[3 * I] * 77  + RowIn[3 * I + 1] * 151 + RowIn[3 * I + 2] * 28) shr 8;
+      if Bitmap.PixelFormat = pf8Bit then
+        for I := 0 to Bitmap.Width - 1 do
+          Databyte[I] := RowIn[I];
     end else
     begin
       for I := 0 to 3 * Bitmap.Width - 1 do
@@ -158,12 +162,16 @@ begin
       CopyMemory(Rowin, DataByte, IplImg.WidthStep);
     end else if IsGray then
     begin
-      for I := 0 to Bitmap.Width - 1 do
-      begin
-        RowIn[3 * I] := Databyte[I];
-        RowIn[3 * I + 1] := Databyte[I];
-        RowIn[3 * I + 2] := Databyte[I];
-      end
+      if Bitmap.PixelFormat = pf24Bit then
+        for I := 0 to Bitmap.Width - 1 do
+        begin
+          RowIn[3 * I] := Databyte[I];
+          RowIn[3 * I + 1] := Databyte[I];
+          RowIn[3 * I + 2] := Databyte[I];
+        end;
+      if Bitmap.PixelFormat = pf8Bit then
+        for I := 0 to Bitmap.Width - 1 do
+          RowIn[I] := Databyte[I];
     end else
     begin
       for I := 0 to 3 * Bitmap.Width - 1 do

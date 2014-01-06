@@ -19,22 +19,14 @@ program PhotoDB;
 uses
   {$IFDEF SCALE_MM}
   ScaleMM2 in 'External\scalemm\ScaleMM2.pas',
-  smmFunctions in 'External\scalemm\smmFunctions.pas',
-  smmGlobal in 'External\scalemm\smmGlobal.pas',
-  smmLargeMemory in 'External\scalemm\smmLargeMemory.pas',
-  smmLogging in 'External\scalemm\smmLogging.pas',
-  smmMediumMemory in 'External\scalemm\smmMediumMemory.pas',
-  smmSmallMemory in 'External\scalemm\smmSmallMemory.pas',
-  smmStatistics in 'External\scalemm\smmStatistics.pas',
-  smmTypes in 'External\scalemm\smmTypes.pas',
-  {$ENDIF}
+  {$ENDIF }
   {$IFDEF FAST_MM}
   FastMM4 in 'External\FastMM\FastMM4.pas',
   FastMM4Messages in 'External\FastMM\FastMM4Messages.pas',
-  {$ENDIF}
+  {$ENDIF }
   {$IFDEF DEBUG}
   ExceptionJCLSupport in 'Units\ExceptionJCLSupport.pas',
-  {$ENDIF}
+  {$ENDIF }
   uInit in 'Units\uInit.pas',
   uTime in 'Units\System\uTime.pas',
   uSplashThread in 'Threads\uSplashThread.pas',
@@ -422,12 +414,13 @@ uses
   imgproc.types_c in 'External\OpenCV\include\imgproc\imgproc.types_c.pas',
   legacy in 'External\OpenCV\include\legacy\legacy.pas',
   highgui_c in 'External\OpenCV\include\highgui\highgui_c.pas',
-  OpenCV.Utils in 'Units\OpenCV\OpenCV.Utils.pas';
+  OpenCV.Utils in 'Units\OpenCV\OpenCV.Utils.pas',
+  uFaceRecognizerService in 'Units\uFaceRecognizerService.pas',
+  uFaceAnalyzer in 'Units\uFaceAnalyzer.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}
 {$R *.res}
-
 
 procedure LogApplicationParameters;
 var
@@ -482,7 +475,7 @@ begin
     TLoad.Instance.StartDBKernelIconsThread;
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-  Application.ShowMainForm := False;
+    Application.ShowMainForm := False;
 
     if not DBTerminating and not GetParamStrDBBool('/install') and not GetParamStrDBBool('/uninstall') then
     begin
@@ -490,7 +483,7 @@ begin
         DBManager.CreateSampleDefaultCollection;
     end;
 
-    TrainIt;
+    //TrainIt;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

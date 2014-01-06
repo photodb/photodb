@@ -2337,6 +2337,7 @@ END
 /* Resources\Import.res */
 /* Resources\CollectionSync.res */
 /* Resources\ExplorerItems.res */
+/* Resources\FaceMask.res */
 /* ..\DBIcons\db_icons.res */
 /* ..\DBIcons\ZoomRc.res */
 /* ..\DBIcons\editor.res */

@@ -675,6 +675,8 @@
         <DCCReference Include="External\OpenCV\include\legacy\legacy.pas"/>
         <DCCReference Include="External\OpenCV\include\highgui\highgui_c.pas"/>
         <DCCReference Include="Units\OpenCV\OpenCV.Utils.pas"/>
+        <DCCReference Include="Units\uFaceRecognizerService.pas"/>
+        <DCCReference Include="Units\uFaceAnalyzer.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

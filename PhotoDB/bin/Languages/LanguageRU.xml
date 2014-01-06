@@ -854,6 +854,7 @@
 	<translate name="Enable face detection" value="Включить определение лиц" />
 	<translate name="Detection method" value="Метод определения" />
 	<translate name="Refresh faces" value="Обновить лица" />
+	<translate name="Similar faces" value="Похожие лица" />
 	<translate name="Previous selections" value="Предыдущие выборы" />
 	<translate name="Face detection disabled" value="Определение лиц отключено" />
 	<translate name="Select person" value="Указать персону" />

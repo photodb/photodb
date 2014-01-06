@@ -44,6 +44,7 @@ uses
   uDBForm,
   uIImageViewer,
   uFaceDetection,
+  uFaceRecognizerService,
   uFaceDetectionThread,
   uPeopleRepository,
   uGraphicUtils,
@@ -148,8 +149,13 @@ type
     MiCurrentPerson: TMenuItem;
     MiCurrentPersonAvatar: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
+
+    MiSimilarPersons: TMenuItem;
+    MiSimilarPersonsSeparator: TMenuItem;
+
     MiPreviousSelections: TMenuItem;
     MiPreviousSelectionsSeparator: TMenuItem;
+
     MiCreatePerson: TMenuItem;
     MiOtherPersons: TMenuItem;
     MiFindPhotosSeparator: TMenuItem;
@@ -864,7 +870,7 @@ end;
 procedure TImageViewerControl.MiClearFaceZoneClick(Sender: TObject);
 var
   FR: TFaceDetectionResultItem;
-  FA: TPersonArea;
+  PA: TPersonArea;
   I: Integer;
 begin
   FR := FindFace(FCurrentFace);
@@ -873,8 +879,10 @@ begin
 
   if FR.Data <> nil then
   begin
-    FA := TPersonArea(FR.Data);
-    FPeopleRepository.RemovePersonFromPhoto(Item.ID, FA);
+    PA := TPersonArea(FR.Data);
+
+    UIFaceRecognizerService.UserRemovedPerson(Item, FFullImage, PA);
+    FPeopleRepository.RemovePersonFromPhoto(Item.ID, PA);
   end;
 
   for I := FFaces.Count - 1 downto 0 do
@@ -1327,6 +1335,13 @@ begin
   MiCurrentPersonSeparator := TMenuItem.Create(FFaceMenu);
   MiCurrentPersonSeparator.Caption := '-';
 
+  MiSimilarPersons := TMenuItem.Create(FFaceMenu);
+  MiSimilarPersons.Caption := L('Similar faces') + ':';
+  MiSimilarPersons.Enabled := False;
+
+  MiSimilarPersonsSeparator := TMenuItem.Create(FFaceMenu);
+  MiSimilarPersonsSeparator.Caption := '-';
+
   MiPreviousSelections := TMenuItem.Create(FFaceMenu);
   MiPreviousSelections.Caption := L('Previous selections') + ':';
   MiPreviousSelections.Enabled := False;
@@ -1357,6 +1372,8 @@ begin
   FFaceMenu.Items.Add(MiCurrentPerson);
   FFaceMenu.Items.Add(MiCurrentPersonAvatar);
   FFaceMenu.Items.Add(MiCurrentPersonSeparator);
+  FFaceMenu.Items.Add(MiSimilarPersons);
+  FFaceMenu.Items.Add(MiSimilarPersonsSeparator);
   FFaceMenu.Items.Add(MiPreviousSelections);
   FFaceMenu.Items.Add(MiPreviousSelectionsSeparator);
   FFaceMenu.Items.Add(MiCreatePerson);
@@ -1587,13 +1604,16 @@ end;
 
 procedure TImageViewerControl.PmFacePopup(Sender: TObject);
 var
-  I, LatestPersonsIndex: Integer;
+  I, SimilarFacesIndex, LatestPersonsIndex: Integer;
   RI: TFaceDetectionResultItem;
-  PA: TPersonArea;
-  P: TPerson;
+  PA, AreaToSearch: TPersonArea;
+  P, PS: TPerson;
   SelectedPersons: TPersonCollection;
-  LatestPersons: Boolean;
+  HasLatestPersons, HasSimilarFaces: Boolean;
   MI: TMenuItem;
+  SimilarFaces: IRelatedPersonsCollection;
+  SimilarPerson: IFoundPerson;
+  B: TBitmap;
 begin
   RI := FindFace(FCurrentFace);
   if RI = nil then
@@ -1631,24 +1651,100 @@ begin
       MiFindPhotos.Visible := False;
     end;
 
+    //START LOADING SIMILAR FACES
+
+    //remove last persons
+    HasSimilarFaces := False;
+    SimilarFacesIndex := 0;
+    for I := PmFace.Items.Count - 1 downto 0 do
+    begin
+      if PmFace.Items[I] = MiSimilarPersons then
+      begin
+        HasSimilarFaces := False;
+        SimilarFacesIndex := I;
+      end;
+
+      if HasSimilarFaces then
+        PmFace.Items.Remove(PmFace.Items[I]);
+
+      if PmFace.Items[I] = MiSimilarPersonsSeparator then
+        HasSimilarFaces := True;
+    end;
+
+    if (PA <> nil) and (PA.ID > 0) then
+    begin
+      SimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, PA);
+    end else
+    begin
+      AreaToSearch := TPersonArea.Create(0, 0, RI);
+      try
+        SimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, AreaToSearch);
+      finally
+        F(AreaToSearch);
+      end;
+    end;
+    if SimilarFaces <> nil then
+    begin
+      for I := 0 to SimilarFaces.Count - 1 do
+      begin
+        SimilarPerson := SimilarFaces.GetPerson(I);
+        PS := TPerson.Create;
+        try
+          FPeopleRepository.FindPerson(SimilarPerson.GetPersonId, PS);
+          if not PS.Empty then
+          begin
+            MI := TMenuItem.Create(PmFace);
+            MI.Tag := PS.ID;
+            MI.Caption := FormatEx('{0} - {1}%', [PS.Name, SimilarPerson.GetPercents]);
+            MI.OnClick := SelectPreviousPerson;
+            B := SimilarPerson.ExtractBitmap;
+            try
+              CenterBitmap24To32ImageList(B, 16);
+              MI.ImageIndex := FImFacePopup.Add(B, nil);
+              PmFace.Items.Insert(SimilarFacesIndex + 1, MI);
+              Inc(SimilarFacesIndex);
+            finally
+              F(B);
+            end;
+          end;
+        finally
+          F(PS);
+        end;
+      end;
+    end;
+
+    if (SimilarFaces = nil) or (SimilarFaces.Count = 0) then
+    begin
+      MiSimilarPersons.Visible := False;
+      MiSimilarPersonsSeparator.Visible := False;
+    end else
+    begin
+      MiSimilarPersons.Visible := True;
+      MiSimilarPersonsSeparator.Visible := True;
+    end;
+
+    //FINISH LOADING SIMILAR FACES
+
+    //START LOADING LAST SELECTS
+
     SelectedPersons := TPersonCollection.Create;
     try
       //remove last persons
-      LatestPersons := False;
+      HasLatestPersons := False;
       LatestPersonsIndex := 0;
       for I := PmFace.Items.Count - 1 downto 0 do
       begin
         if PmFace.Items[I] = MiPreviousSelections then
         begin
-          LatestPersons := False;
+          HasLatestPersons := False;
           LatestPersonsIndex := I;
         end;
 
-        if LatestPersons then
+        if HasLatestPersons then
           PmFace.Items.Remove(PmFace.Items[I]);
 
         if PmFace.Items[I] = MiPreviousSelectionsSeparator then
-          LatestPersons := True;
+          HasLatestPersons := True;
       end;
 
       //add current persons
@@ -1684,6 +1780,9 @@ begin
         MiPreviousSelections.Visible := True;
         MiPreviousSelectionsSeparator.Visible := True;
       end;
+
+      //FINISH LOADING LAST SELECTS
+
       FPersonMouseMoveLock := True;
     finally
       F(SelectedPersons);
@@ -2309,6 +2408,7 @@ begin
         PA := TPersonArea.Create(Item.ID, P.ID, RI);
         try
           FPeopleRepository.AddPersonForPhoto(TDBForm(Self.OwnerForm), PA);
+          UIFaceRecognizerService.UserSelectedPerson(Item, FFullImage, PA);
           RI.Data := PA.Clone;
 
           F(FCurrentFace);
@@ -2318,7 +2418,10 @@ begin
           F(PA);
         end;
       end else
+      begin
+        UIFaceRecognizerService.UserChangedPerson(Item, FFullImage, PA);
         FPeopleRepository.ChangePerson(PA, P.ID);
+      end;
 
       if FImageViewer <> nil then
         FImageViewer.UpdateFaces(FItem.FileName, FFaces);
