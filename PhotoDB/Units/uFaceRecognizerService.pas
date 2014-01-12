@@ -169,7 +169,7 @@ end;
 function TFaceRecognizerService.UserChangedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
   if not HasOpenCV then
-    Exit;
+    Exit(False);
 
   Result := FRecognizer.MoveFaceToAnotherPerson(Area.ID, Area.PersonID);
 end;
@@ -177,7 +177,7 @@ end;
 function TFaceRecognizerService.UserRemovedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
   if not HasOpenCV then
-    Exit;
+    Exit(False);
 
   Result := FRecognizer.RemoveFaceById(Area.ID);
 end;

@@ -132,23 +132,7 @@ end;
 
 procedure InitCVLib;
 begin
-{  FCVDLLHandle := LoadLibrary('VCOpenCV.dll');
-  if FCVDLLHandle <> 0 then
-  begin
-    CvLoad := GetProcAddress(FCVDLLHandle, 'cvLoad');
-    CvCreateImage := GetProcAddress(FCVDLLHandle, 'cvCreateImage');
-    CvRectangle := GetProcAddress(FCVDLLHandle, 'cvRectangle');
-    CvCreateMemStorage := GetProcAddress(FCVDLLHandle, 'cvCreateMemStorage');
-    CvLoadImage := GetProcAddress(FCVDLLHandle, 'cvLoadImage');
-    CvShowImage := GetProcAddress(FCVDLLHandle, 'cvShowImage');
-    CvNamedWindow := GetProcAddress(FCVDLLHandle, 'cvNamedWindow');
-    CvHaarDetectObjects := GetProcAddress(FCVDLLHandle, 'cvHaarDetectObjects');
-    CvGetSeqElem := GetProcAddress(FCVDLLHandle, 'cvGetSeqElem');
-    CvClearMemStorage := GetProcAddress(FCVDLLHandle, 'cvClearMemStorage');
-    CvSetImageROI := GetProcAddress(FCVDLLHandle, 'cvSetImageROI');
-    CvResetImageROI := GetProcAddress(FCVDLLHandle, 'cvResetImageROI');
-    CvCopy := GetProcAddress(FCVDLLHandle, 'cvCopy');
-  end;  }
+
 end;
 
 { TFaceDetectionResult }

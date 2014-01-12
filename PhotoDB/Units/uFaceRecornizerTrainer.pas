@@ -224,7 +224,7 @@ begin
 
     MaxFaces := 80;
     FacesPerPerson := 10;
-    PicturesToProcess := 10000;
+    PicturesToProcess := 100;
     FaceScore := 0;
 
     for N in [1] do
