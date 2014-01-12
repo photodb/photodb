@@ -1653,7 +1653,7 @@ begin
 
     //START LOADING SIMILAR FACES
 
-    //remove last persons
+    //remove similar persons
     HasSimilarFaces := False;
     SimilarFacesIndex := 0;
     for I := PmFace.Items.Count - 1 downto 0 do

@@ -7,10 +7,9 @@ uses
   System.SysUtils,
   Vcl.Graphics,
 
-  uMemory,
+  OpenCV.Core,
 
-  Core.types_c,
-  core_c;
+  uMemory;
 
 procedure Bitmap2IplImage(IplImg: PIplImage; Bitmap: TBitmap);
 procedure IplImage2Bitmap(IplImg: PIplImage; Bitmap: TBitmap);

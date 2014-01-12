@@ -1,27 +1,22 @@
-// fast scaling memory manager for Delphi
+﻿// fast scaling memory manager for Delphi
 // licensed under a MPL/GPL/LGPL tri-license; version 0.1
 unit ScaleMM2;
 
 {$Include smmOptions.inc}
 
 {
-Fast Scaling Memory Manager 1.1 for Delphi
+Fast Scaling Memory Manager 2.4 for Delphi
 
 Description:
-  Simple, small and compact MM, built on top of the main Memory Manager
-  (FastMM4 is a good candidate, standard since Delphi 2007), architectured
-  in order to scale on multi core CPU's (which is what FastMM4 is lacking).
+  Simple, small and compact Memory Manager. Architectured in order to scale on
+  multi core CPU's (which is what FastMM4 is lacking).
 
 Homepage:
   http://code.google.com/p/scalemm
-  by Andr� Mussche (andre.mussche@gmail.com)
+  by André Mussche (andre.mussche@gmail.com)
 
 Usage:
- - Delphi 6 up to Delphi 2005 with FastMM4:
-   Place FastMM4 as the very first unit under the "uses" clause of your
-   project's .dpr file THEN add SynScaleMM to the "uses" clause
- - Delphi 6 up to Delphi 2005 with no FastMM4 or Delphi 2006 up to Delphi XE:
-   Place SynScaleMM as the very first unit under the "uses" clause of your
+ - Place ScaleMM2 as the very first unit under the "uses" clause of your
    project's .dpr file.
 
 License:
@@ -45,10 +40,6 @@ License:
   Software distributed under the License is distributed on an "AS IS" basis,
   WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
   for the specific language governing rights and limitations under the License.
-
-  The Original Code is ScaleMM - Fast scaling memory manager for Delphi.
-
-  The Initial Developer of the Original Code is Andr� Mussche.
 
   Portions created by the Initial Developer are Copyright (C) 2010
   the Initial Developer. All Rights Reserved.
@@ -78,42 +69,54 @@ Change log:
  Version 1.1 (6 December 2010):
   - Some optimizations for better "Fast Code MM Challenge Benchmark" results
     (lower memory overhead, more memory reuse, less locking)
- Version 2.02a (25 Januari 2011):
+ Version 2.0.2a (25 Januari 2011):
   - added medium memory handling (<1Mb), large memory is direct done via VirtualAlloc etc
   - splitted in seperate units to make developing/testing easier
   - empty units for stats and logging (will be implemented later)
- Version 2.04b (23 Februari 2011):
+ Version 2.0.4b (23 Februari 2011):
   - realloc optimizations
   - lots of internal CheckMem's (for validation)
   - interthread memory is now handled (alloc in thread 1, free in thread 2)
   - small (difficult to find) bugs fixed and other optimalizations
   - check for 8byte alignment (needed for OmniThreadLibrary etc)
- Version 2.05 (19 March 2011):
+ Version 2.0.5 (19 March 2011):
   - small size realloc bug fixed, now passes FastCode validations (D2007 and D2010)
- Version 2.10 (06 March 2012):
+ Version 2.1 (06 March 2012):
   - small bugs fixed
   - many additional checks added
   - interthread memory finally stable
   Note: can leak memory (or have increased mem usage) over time
- Version 2.11 (08 March 2012):
-  - 64bit version (Delphi XE2) 
- Version 2.12 (13 March 2012):
+ Version 2.1.1 (08 March 2012):
+  - 64bit version (Delphi XE2)
+ Version 2.1.2 (13 March 2012):
   - Initial code for releasing (and checking) all mem at shutdown
   - fixed big mem leak in small memory manager (interthread mem was never freed)
   - optimization for interthread memory in small mem manager (lock-free with CAS)
- Version 2.13 (28 March 2012):
+ Version 2.1.3 (28 March 2012):
   - shared memory implementation (thanks to FastMM for the code, Maxx xxaM for testing)
   - Realloc bug fix with "large mem" (thanks to Maxx xxaM)
- Version 2.14 (21 May 2012):
+ Version 2.1.4 (21 May 2012):
  - fixed issue 6: AV when using SetLocaleOverride (bug in DXE2?) (thanks to Maxx xxaM)
- Version 2.15 (27 July till 27 Sept 2012), thanks to Maxx xxaM:
+ Version 2.1.5 (27 July till 27 Sept 2012), thanks to Maxx xxaM:
  - 64bit issues fixed
  - inplace expanded virtualmem (realloc) was not properly freed
  - realloc of large memory, size was increased twice with 25% (=50%)
  - memleak + CAS hang (due to integer overflow)
  - large interthread memory was not correctly freed
- Version 2.16 (9-3-2013), thanks to Maxx xxaM and Thiago:
+ Version 2.1.6 (9-3-2013), thanks to Maxx xxaM and Thiago:
  - 64bit wrong alignment can give AV's (issue 11)
+ Version 2.2 (6-8-2013)
+ - make it possible to use more than 2gb in 32bit (thanks to Maxx xxaM)
+ 	{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE
+ - rare AV with interthread (small) memory and heavy load (Павел Пикулин)
+ Version 2.3 (22-10-2013)
+ - interthread memory was not always released to Windows, giving out of memory (thanks to Maxx xxaM)
+ - AV when doing realloc or free on nil pointer (thanks to qiu.songlin)
+ - fixed issue 16: alloc of large 2 dimensional array was getting slower and slower (thanks to tf.rangel)
+ Version 2.4 (12-12-2013)
+ - interthread memory fixes (stability)
+ Version 2.4.1 (16-12-2013)
+ - optimize.move included (much faster Move() function due to SSE3)
 }
 
 interface
@@ -131,7 +134,8 @@ type
   public
     /// link to the list of mem freed in other thread
     FOtherThreadFreedMemory: PBaseFreeMemHeader;
-    FOtherThreadFreeLock: Boolean;
+    FOtherThreadFreeLock: NativeUInt;
+    FOtherThreadFreeLockRecursion: NativeUInt;
 
     function  TryLock: boolean;
     procedure Lock;
@@ -145,18 +149,20 @@ type
 
     //procedure AddFreeMemToOwnerThread(aFirstMem, aLastMem: PBaseFreeMemHeader);
   public
+  (*
     {$IFDEF Align8Bytes}
       {$ifndef CPUX64}
       Filer1: Int32;
       {$endif}
     {$ENDIF}
+  *)
     {$IFDEF Align16Bytes}
       {$ifndef CPUX64}
       Filer1: Pointer;
       Filer2: Pointer;
-      Filer3: Pointer;
       {$else CPUX64}
       Filer1: Pointer;
+      Filer2: Pointer;
       {$endif}
     {$ENDIF}
 
@@ -183,7 +189,7 @@ type
     procedure CheckMem(aMemory: Pointer);
 
     function  IsMemoryFromOtherThreadsPresent: Boolean;
-    procedure ProcessFreedMemFromOtherThreads;
+    procedure ProcessFreedMemFromOtherThreads(aSkipSmall: boolean);
 
     function GetMem(aSize: NativeInt) : Pointer;                       {$ifdef HASINLINE}inline;{$ENDIF}
     function FreeMem(aMemory: Pointer): NativeInt;                     {$ifdef HASINLINE}inline;{$ENDIF}
@@ -218,6 +224,9 @@ implementation
 
 // Windows.pas unit dependency should be not used -> seperate file
 uses
+  {$IFDEF CPUX86}
+  Optimize.Move,
+  {$ENDIF}
   smmFunctions, smmGlobal;
 
 {$IFDEF PURE_PASCAL}
@@ -230,10 +239,15 @@ begin
     Assert(not Result.FThreadTerminated);
     Assert(not Result.FSmallMemManager.OwnerThread.FThreadTerminated);
   end;
-  Assert(Result.FThreadId = GetCurrentThreadId);
+  if Result.FThreadTerminated then
+    //Assert(Result.FThreadId = 1);
+  else
+  begin
+    Assert(Result.FThreadId = GetCurrentThreadId);
+    Assert(Result.FSmallMemManager.OwnerThread.FThreadId = GetCurrentThreadId);
+  end;
   Assert(Result.FSmallMemManager.OwnerThread = PBaseThreadManager(Result));
   Assert(Result.FMediumMemManager.OwnerThread = PBaseThreadManager(Result));
-  Assert(Result.FSmallMemManager.OwnerThread.FThreadId = GetCurrentThreadId);
 end;
 {$ELSE}
 var
@@ -298,15 +312,18 @@ end;
 
 { TThreadMemManager }
 
-procedure TThreadMemManager.ProcessFreedMemFromOtherThreads;
+procedure TThreadMemManager.ProcessFreedMemFromOtherThreads(aSkipSmall: boolean);
 var
   pcurrentmem, ptempmem: PBaseFreeMemHeader;
 begin
   if FOtherThreadFreedMemory = nil then Exit;
-  //Assert(Self.FThreadId > 1);
 
+  //Assert(Self.FThreadId > 1);
   //LOCK
-  Lock;
+  if not TryLock then Exit;
+
+  if not aSkipSmall and FSmallMemManager.IsMemoryFromOtherThreadsPresent then
+    FSmallMemManager.FreeThreadFreedMem;
 
   pcurrentmem := FOtherThreadFreedMemory;
   FOtherThreadFreedMemory := nil;
@@ -332,7 +349,7 @@ var
   ot: PBaseSizeManager;
 begin
   if FOtherThreadFreedMemory <> nil then
-    ProcessFreedMemFromOtherThreads;
+    ProcessFreedMemFromOtherThreads(True);
 
   pm := PBaseMemHeader(NativeUInt(aMemory) - SizeOf(TBaseMemHeader));
   //check realloc of freed mem
@@ -394,7 +411,7 @@ end;
 
 procedure TThreadMemManager.ReleaseAllFreeMem;
 begin
-  ProcessFreedMemFromOtherThreads;
+  ProcessFreedMemFromOtherThreads(False);
 
   FSmallMemManager.ReleaseAllFreeMem;
   FMediumMemManager.ReleaseAllFreeMem;
@@ -412,19 +429,66 @@ begin
 end;
 
 function TThreadMemManager.TryLock: boolean;
+var
+  iCurrentThreadId: NativeUInt;
 begin
-  Result := CAS32(0, 1, @FOtherThreadFreeLock);
+  iCurrentThreadId := GetCurrentThreadId;
+  if (FOtherThreadFreeLock = iCurrentThreadId) and
+     (FOtherThreadFreeLockRecursion > 0) then
+  begin
+    Assert( CAS32(iCurrentThreadId, iCurrentThreadId, @FOtherThreadFreeLock) );
+    inc(FOtherThreadFreeLockRecursion);
+    Result := True;
+    Exit;
+  end;
+
+  //LOCK: no threads may be removed/freed now
+  Result := CAS32(0, iCurrentThreadId, @FOtherThreadFreeLock);
+  if Result then
+    inc(FOtherThreadFreeLockRecursion);
+  //Result := CAS32(0, 1, @FOtherThreadFreeLock);
 end;
 
 procedure TThreadMemManager.UnLock;
 begin
   //if not CAS32(1, 0, @FOtherThreadFreeLock) then
   //  Assert(False);
-  FOtherThreadFreeLock := False;
+  //FOtherThreadFreeLock := False;
+
+  dec(FOtherThreadFreeLockRecursion);
+  if FOtherThreadFreeLockRecursion = 0 then
+    FOtherThreadFreeLock := 0;
 end;
 
 procedure TThreadMemManager.Lock;
+var
+  iCurrentThreadId: NativeUInt;
 begin
+  iCurrentThreadId := GetCurrentThreadId;
+  if (FOtherThreadFreeLock = iCurrentThreadId) and
+     (FOtherThreadFreeLockRecursion > 0) then
+  begin
+    Assert( CAS32(iCurrentThreadId, iCurrentThreadId, @FOtherThreadFreeLock) );
+    inc(FOtherThreadFreeLockRecursion);
+    Exit;
+  end;
+
+  //LOCK: no threads may be removed/freed now
+  while not CAS32(0, iCurrentThreadId, @FOtherThreadFreeLock) do
+  begin
+    //small wait: try to swith to other pending thread (if any) else direct continue
+    if not SwitchToThread then
+      sleep(0);
+    //try again
+    if CAS32(0, iCurrentThreadId, @FOtherThreadFreeLock) then
+      Break;
+    //wait some longer: force swith to any other thread
+    sleep(1);
+  end;
+
+  inc(FOtherThreadFreeLockRecursion);
+
+  {
   //unlock
   repeat
     if CAS32(0, 1, @FOtherThreadFreeLock) then
@@ -439,6 +503,7 @@ begin
     //wait some longer: force swith to any other thread
     sleep(1);
   until False;
+  }
 end;
 
 procedure TThreadMemManager.FreeMemOfOtherThread(aMemory: PBaseMemHeader);
@@ -454,10 +519,9 @@ begin
     p  := Pointer(NativeUInt(aMemory) + SizeOf(TBaseMemHeader));
     FLargeMemManager.FreeMemWithHeader(p);
     Exit;
-  end;
-
+  end
   //medium mem
-  if NativeUInt(aMemory.OwnerBlock) and 3 <> 0 then
+  else if NativeUInt(aMemory.OwnerBlock) and 3 <> 0 then
   begin
     pm := PMediumHeader( NativeUInt(aMemory) + SizeOf(TBaseMemHeader) - SizeOf(TMediumHeader));
     pm.ThreadFree;
@@ -513,8 +577,15 @@ var
   ot: PBaseSizeManager;
   pt: PThreadMemManager;
 begin
+  //AV when doing realloc or free on nil pointer, thanks to qiu.songlin
+  if aMemory = nil then
+  begin
+    Result := 0;
+    Exit;
+  end;
+
   if FOtherThreadFreedMemory <> nil then
-    ProcessFreedMemFromOtherThreads;
+    ProcessFreedMemFromOtherThreads(True);
 
   pm := PBaseMemHeader(NativeUInt(aMemory) - SizeOf(TBaseMemHeader));
   //check double free
@@ -593,6 +664,7 @@ begin
   else
   begin
     ot := aMemory.OwnerBlock.OwnerManager;
+    //check owner (can be changed in the meantime!)
     if ot = @FSmallMemManager then
       Result := FSmallMemManager.FreeMem(p)
     else
@@ -627,7 +699,7 @@ end;
 function TThreadMemManager.GetMem(aSize: NativeInt): Pointer;
 begin
   if FOtherThreadFreedMemory <> nil then
-    ProcessFreedMemFromOtherThreads;
+    ProcessFreedMemFromOtherThreads(True);
 
   if aSize <= C_MAX_SMALLMEM_SIZE then   //-1 till 2048
   begin
@@ -646,6 +718,7 @@ begin
     Result := FLargeMemManager.GetMemWithHeader(aSize);
   end;
 
+  Assert( NativeUInt(Result) AND 3 = 0);
   {$IFDEF Align8Bytes}
   Assert( NativeUInt(Result) AND 7 = 0);
   {$ENDIF}
@@ -678,7 +751,8 @@ end;
 
 function TThreadMemManager.IsMemoryFromOtherThreadsPresent: Boolean;
 begin
-  Result := FOtherThreadFreedMemory <> nil;
+  Result := (FOtherThreadFreedMemory <> nil) or
+            FSmallMemManager.IsMemoryFromOtherThreadsPresent;
 end;
 
 {$if CompilerVersion >= 23}  //Delphi XE2
@@ -1054,6 +1128,16 @@ end;
 procedure ScaleMMInstall;
 begin
   if ScaleMMIsInstalled then Exit;
+
+  if IsMemoryManagerSet then
+    Error(reAssertionFailed);  //ScaleMM2 is NOT the FIRST unit in dpr!?
+  {$WARN SYMBOL_DEPRECATED OFF}
+  {$WARN SYMBOL_PLATFORM OFF}
+  //todo: GetMemoryManagerState(state);
+  if GetHeapStatus.TotalAllocated <> 0 then
+    Error(reAssertionFailed);  //Memory has been already been allocated with the RTL MM
+  {$WARN SYMBOL_PLATFORM ON}
+  {$WARN SYMBOL_DEPRECATED ON}
 
   NewMM := ScaleMM_Ex;
   NewEndThreadProc := @NewEndThread;

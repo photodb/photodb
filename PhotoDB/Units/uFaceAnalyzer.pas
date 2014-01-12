@@ -14,6 +14,8 @@ uses
   Dmitry.Utils.System,
   Dmitry.Graphics.Types,
 
+  OpenCV.Core,
+  OpenCV.ImgProc,
   OpenCV.Utils,
 
   uMemory,
@@ -21,12 +23,15 @@ uses
   u2DUtils,
   uBitmapUtils,
   uResources,
-  uFaceDetection,
+  uFaceDetection;
+
+{
 
   Core_c,
   Core.types_c,
   imgproc_c,
-  imgproc.types_c;
+  imgproc.types_c
+}
 
 type
   TFaceScoreResults = class

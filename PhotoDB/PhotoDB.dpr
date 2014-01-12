@@ -405,16 +405,13 @@ uses
   uExplorerCollectionProvider in 'Units\Providers\uExplorerCollectionProvider.pas',
   uFormSelectDuplicateDirectories in 'uFormSelectDuplicateDirectories.pas' {FormSelectDuplicateDirectories},
   uFaceRecornizerTrainer in 'Units\uFaceRecornizerTrainer.pas',
-  ulibname in 'External\OpenCV\include\ulibname.pas',
-  Core_c in 'External\OpenCV\include\core\Core_c.pas',
-  Core.types_c in 'External\OpenCV\include\core\Core.types_c.pas',
-  haar in 'External\OpenCV\include\objdetect\haar.pas',
-  objdetect in 'External\OpenCV\include\objdetect\objdetect.pas',
-  imgproc_c in 'External\OpenCV\include\imgproc\imgproc_c.pas',
-  imgproc.types_c in 'External\OpenCV\include\imgproc\imgproc.types_c.pas',
-  legacy in 'External\OpenCV\include\legacy\legacy.pas',
-  highgui_c in 'External\OpenCV\include\highgui\highgui_c.pas',
   OpenCV.Utils in 'Units\OpenCV\OpenCV.Utils.pas',
+  OpenCV.Core in 'Units\OpenCV\OpenCV.Core.pas',
+  OpenCV.Lib in 'Units\OpenCV\OpenCV.Lib.pas',
+  OpenCV.ImgProc in 'Units\OpenCV\OpenCV.ImgProc.pas',
+  OpenCV.ObjDetect in 'Units\OpenCV\OpenCV.ObjDetect.pas',
+  OpenCV.Legacy in 'Units\OpenCV\OpenCV.Legacy.pas',
+  OpenCV.HighGUI in 'Units\OpenCV\OpenCV.HighGUI.pas',
   uFaceRecognizerService in 'Units\uFaceRecognizerService.pas',
   uFaceAnalyzer in 'Units\uFaceAnalyzer.pas';
 
@@ -475,7 +472,7 @@ begin
     TLoad.Instance.StartDBKernelIconsThread;
     // This is main form of application
     Application.CreateForm(TFormManager, FormManager);
-    Application.ShowMainForm := False;
+  Application.ShowMainForm := False;
 
     if not DBTerminating and not GetParamStrDBBool('/install') and not GetParamStrDBBool('/uninstall') then
     begin

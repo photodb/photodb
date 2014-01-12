@@ -11,6 +11,7 @@ type
   NativeUInt = Cardinal;
   NativeInt  = Integer;
   Int16      = Smallint;
+  Int32      = Integer;
   {$ifend}
 
   PBaseMemHeader     = ^TBaseMemHeader;
@@ -82,6 +83,7 @@ type
                        record {$ELSE} object {$ifend}
     FOtherThreadFreedMemory: PBaseFreeMemHeader;
     FOtherThreadFreeLock: Boolean;
+    FOtherThreadFreeLockRecursion: NativeUInt;
 
     FThreadId: NativeUInt;
     FThreadTerminated: Boolean;
@@ -103,6 +105,7 @@ type
     Filler4: Int32;  //extra offset so we have 8 bytes again
     {$ENDIF}
     FOtherThreadFreeLock: NativeInt;
+    FOtherThreadFreeLockRecursion: NativeUInt;
 
     FThreadId: NativeUInt;
     FThreadTerminated: NativeInt;

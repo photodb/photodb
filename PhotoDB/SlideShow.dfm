@@ -641,6 +641,13 @@ object Viewer: TViewer
       Caption = '-'
       Visible = False
     end
+    object MiSimilarPersons: TMenuItem
+      Caption = 'Similar Persons:'
+      Enabled = False
+    end
+    object MiSimilarPersonsSeparator: TMenuItem
+      Caption = '-'
+    end
     object MiPreviousSelections: TMenuItem
       Caption = 'Previous selections:'
       Enabled = False

@@ -76,7 +76,7 @@
         <DCC_MapFile>3</DCC_MapFile>
         <DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
         <DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
-        <DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\..\Dmitry\;External\Mustangpeak\Common Library\Source;External\Mustangpeak\EasyListview\Source;External\FastMM;..\DBIcons;$(BDS)\Source\DUnit\src;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>$(DELPHI)\Lib\Debug;External\Controls\Image Controls\Source;External\Controls\DragDrop\Source;Resources;..\..\..\..\Dmitry\;External\Mustangpeak\Common Library\Source;External\Mustangpeak\EasyListview\Source;External\FastMM;..\DBIcons;$(BDS)\Source\DUnit\src;External\scalemm;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_ExeOutput>bin</DCC_ExeOutput>
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_DependencyCheckOutputName>bin\PhotoDB.exe</DCC_DependencyCheckOutputName>
@@ -119,12 +119,12 @@
         <DCC_UnitSearchPath>D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Debugger_RunParams>/nologo</Debugger_RunParams>
         <DCC_Optimize>false</DCC_Optimize>
-        <VerInfo_MinorVer>5</VerInfo_MinorVer>
+        <VerInfo_MinorVer>6</VerInfo_MinorVer>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;$(DCC_Define)</DCC_Define>
         <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Build>733</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Studio Illusion Dolphin © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.5.0.733;InternalName=PhotoDB;LegalCopyright=Studio Illusion Dolphin © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
+        <VerInfo_Build>735</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Studio Illusion Dolphin © 2002-2013;FileDescription=Photo DataBase;FileVersion=4.6.0.735;InternalName=PhotoDB;LegalCopyright=Studio Illusion Dolphin © 2002-2013;LegalTrademarks=Photo DataBase;OriginalFilename=PhotoDB.exe;ProductName=Photo DataBase v4.5;ProductVersion=4.5;Comments=Helps you to find, protect and organize your photos;Home Page=http://photodb.illusdolphin.net;E-Mail=illusdolphin@gmail.com</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <DCC_Define>PHOTODB,LOG,DBDEBUG,FullDebugMode,MOBILE_TEST;CheckHeapForCorruption;$(DCC_Define)</DCC_Define>
@@ -665,16 +665,13 @@
             <Form>FormSelectDuplicateDirectories</Form>
         </DCCReference>
         <DCCReference Include="Units\uFaceRecornizerTrainer.pas"/>
-        <DCCReference Include="External\OpenCV\include\ulibname.pas"/>
-        <DCCReference Include="External\OpenCV\include\core\Core_c.pas"/>
-        <DCCReference Include="External\OpenCV\include\core\Core.types_c.pas"/>
-        <DCCReference Include="External\OpenCV\include\objdetect\haar.pas"/>
-        <DCCReference Include="External\OpenCV\include\objdetect\objdetect.pas"/>
-        <DCCReference Include="External\OpenCV\include\imgproc\imgproc_c.pas"/>
-        <DCCReference Include="External\OpenCV\include\imgproc\imgproc.types_c.pas"/>
-        <DCCReference Include="External\OpenCV\include\legacy\legacy.pas"/>
-        <DCCReference Include="External\OpenCV\include\highgui\highgui_c.pas"/>
         <DCCReference Include="Units\OpenCV\OpenCV.Utils.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.Core.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.Lib.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.ImgProc.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.ObjDetect.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.Legacy.pas"/>
+        <DCCReference Include="Units\OpenCV\OpenCV.HighGUI.pas"/>
         <DCCReference Include="Units\uFaceRecognizerService.pas"/>
         <DCCReference Include="Units\uFaceAnalyzer.pas"/>
         <RidlCompile Include="Units\WebJS\WebJS.ridl"/>

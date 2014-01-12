@@ -11,7 +11,11 @@ type
   DWORD  = LongWord;
   BOOL   = LongBool;
   ULONG_PTR = NativeUInt;
-  UINT_PTR  = System.UIntPtr;  // NativeUInt;
+  {$if CompilerVersion >= 23}  //Delphi XE2
+  UINT_PTR  = System.UIntPtr;
+  {$else}
+  UINT_PTR  = NativeUInt;
+  {$ifend}
   SIZE_T    = ULONG_PTR;
   UINT   = LongWord;
   HWND   = type UINT_PTR;
@@ -29,6 +33,26 @@ type
   TMemoryBasicInformation = _MEMORY_BASIC_INFORMATION;
 
   PSecurityAttributes = Pointer;
+
+  PSystemInfo = ^TSystemInfo;
+  _SYSTEM_INFO = record
+    case Integer of
+      0: (
+        dwOemId: DWORD);
+      1: (
+        wProcessorArchitecture: Word;
+        wReserved: Word;
+        dwPageSize: DWORD;
+        lpMinimumApplicationAddress: Pointer;
+        lpMaximumApplicationAddress: Pointer;
+        dwActiveProcessorMask: DWORD;
+        dwNumberOfProcessors: DWORD;
+        dwProcessorType: DWORD;
+        dwAllocationGranularity: DWORD;
+        wProcessorLevel: Word;
+        wProcessorRevision: Word);
+  end;
+  TSystemInfo = _SYSTEM_INFO;
 
 const
   kernel32  = 'kernel32.dll';
@@ -107,6 +131,7 @@ const
   {$ifend}
   {$endif PURE_PASCAL}
 
+  procedure GetSystemInfo(var lpSystemInfo: TSystemInfo); stdcall; external kernel32 name 'GetSystemInfo';
 
 implementation
 

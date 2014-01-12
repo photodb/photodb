@@ -66,7 +66,7 @@ var
   I, J, PersonId: Integer;
   Area: TPersonArea;
   DR: TFaceScoreResults;
-  FaceSample: TBitmap;
+  FaceSample, FaceImage: TBitmap;
   FileName: string;
   PersonResults: TFaceRecognitionResults;
   DistanceLimit: Double;
@@ -129,7 +129,7 @@ begin
             if not PersonFound then
             begin
               for J := 0 to PersonResults.Count - 1 do
-                if PersonResults[I].IsValid and (PersonResults[J].PersonId = Area.PersonID) then
+                if PersonResults[J].IsValid and (PersonResults[J].PersonId = Area.PersonID) then
                 begin
                   HasPartialSuccess := True;
                   PartialPosition := J + 1;
@@ -169,7 +169,13 @@ begin
         //TODO do not train always?
         if not IsSuccess then
         begin
-          if Recognizer.TrainFace(FaceSample, DR.FaceImage, Area.PersonID, Area.ID, DR.TotalScore) then
+          FaceImage := nil;
+          if DR.FaceImage <> nil then
+          begin
+            FaceImage := TBitmap.Create;
+            FaceImage.Assign(DR.FaceImage);
+          end;
+          if Recognizer.TrainFace(FaceSample, FaceImage, Area.PersonID, Area.ID, DR.TotalScore) then
           begin
             //PersonId := Recognizer.DetectFace(FaceSample, DR.TotalScore);
             //if (PersonId <> Area.PersonID) and (PersonId > 0) then
@@ -219,7 +225,7 @@ begin
     MaxFaces := 80;
     FacesPerPerson := 10;
     PicturesToProcess := 10000;
-    FaceScore := 60;
+    FaceScore := 0;
 
     for N in [1] do
     begin
@@ -296,7 +302,7 @@ begin
         finally
           F(TopImages);
         end;
-          //Recognizer.SaveState('D:\TrainSaved');
+        Recognizer.SaveState('D:\TrainSaved');
       finally
         F(Detector);
         Recognizer := nil;

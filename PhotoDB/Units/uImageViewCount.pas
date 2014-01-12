@@ -121,6 +121,9 @@ begin
     begin
       Sleep(100);
 
+      if uRuntime.BlockClosingOfWindows then
+        Continue;
+
       ImageViewCounter.ExtractImageInfos(1, Infos);
       if Infos.Count > 0 then
       begin

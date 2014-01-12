@@ -1,1 +1,0 @@
-http://vision.middlebury.edu/stereo/data/scenes2006/ThirdSize/zip-7views/Aloe-7views.zip

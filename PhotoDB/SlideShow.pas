@@ -220,6 +220,8 @@ type
     TbConvert: TToolButton;
     TbExplore: TToolButton;
     TmrViewCount: TTimer;
+    MiSimilarPersonsSeparator: TMenuItem;
+    MiSimilarPersons: TMenuItem;
     procedure FormCreate(Sender: TObject);
     function LoadImage_(Sender: TObject; FullImage: Boolean; BeginZoom: Double; RealZoom: Boolean): Boolean;
     procedure RecreateDrawImage(Sender: TObject);
@@ -1196,13 +1198,16 @@ end;
 
 procedure TViewer.PmFacePopup(Sender: TObject);
 var
-  I, LatestPersonsIndex: Integer;
+  I, SimilarFacesIndex, LatestPersonsIndex: Integer;
   RI: TFaceDetectionResultItem;
-  PA: TPersonArea;
-  P: TPerson;
+  PA, AreaToSearch: TPersonArea;
+  P, PS: TPerson;
   SelectedPersons: TPersonCollection;
-  LatestPersons: Boolean;
+  LatestPersons, HasSimilarFaces: Boolean;
   MI: TMenuItem;
+  SimilarFaces: IRelatedPersonsCollection;
+  SimilarPerson: IFoundPerson;
+  B: TBitmap;
 begin
   RI := TFaceDetectionResultItem(PmFace.Tag);
   PA := TPersonArea(RI.Data);
@@ -1236,6 +1241,80 @@ begin
       MiFindPhotosSeparator.Visible := False;
       MiFindPhotos.Visible := False;
     end;
+
+    //START LOADING SIMILAR FACES
+
+    //remove similar persons
+    HasSimilarFaces := False;
+    SimilarFacesIndex := 0;
+    for I := PmFace.Items.Count - 1 downto 0 do
+    begin
+      if PmFace.Items[I] = MiSimilarPersons then
+      begin
+        HasSimilarFaces := False;
+        SimilarFacesIndex := I;
+      end;
+
+      if HasSimilarFaces then
+        PmFace.Items.Remove(PmFace.Items[I]);
+
+      if PmFace.Items[I] = MiSimilarPersonsSeparator then
+        HasSimilarFaces := True;
+    end;
+
+    if (PA <> nil) and (PA.ID > 0) then
+    begin
+      SimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, PA);
+    end else
+    begin
+      AreaToSearch := TPersonArea.Create(0, 0, RI);
+      try
+        SimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, AreaToSearch);
+      finally
+        F(AreaToSearch);
+      end;
+    end;
+    if SimilarFaces <> nil then
+    begin
+      for I := 0 to SimilarFaces.Count - 1 do
+      begin
+        SimilarPerson := SimilarFaces.GetPerson(I);
+        PS := TPerson.Create;
+        try
+          FPeopleRepository.FindPerson(SimilarPerson.GetPersonId, PS);
+          if not PS.Empty then
+          begin
+            MI := TMenuItem.Create(PmFace);
+            MI.Tag := PS.ID;
+            MI.Caption := FormatEx('{0} - {1}%', [PS.Name, SimilarPerson.GetPercents]);
+            MI.OnClick := SelectPreviousPerson;
+            B := SimilarPerson.ExtractBitmap;
+            try
+              CenterBitmap24To32ImageList(B, 16);
+              MI.ImageIndex := ImFacePopup.Add(B, nil);
+              PmFace.Items.Insert(SimilarFacesIndex + 1, MI);
+              Inc(SimilarFacesIndex);
+            finally
+              F(B);
+            end;
+          end;
+        finally
+          F(PS);
+        end;
+      end;
+    end;
+
+    if (SimilarFaces = nil) or (SimilarFaces.Count = 0) then
+    begin
+      MiSimilarPersons.Visible := False;
+      MiSimilarPersonsSeparator.Visible := False;
+    end else
+    begin
+      MiSimilarPersons.Visible := True;
+      MiSimilarPersonsSeparator.Visible := True;
+    end;
+
+    //FINISH LOADING SIMILAR FACES
 
     SelectedPersons := TPersonCollection.Create;
     try
@@ -2630,6 +2709,7 @@ begin
 
     MiCreatePerson.Caption := L('Create person');
     MiCurrentPersonAvatar.Caption := L('Update avatar');
+    MiSimilarPersons.Caption := L('Similar faces') + ':';
     MiOtherPersons.Caption := L('Other person');
     MiFindPhotos.Caption := L('Find photos');
     MiClearFaceZone.Caption := L('Clear face zone');

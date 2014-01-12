@@ -10,20 +10,18 @@ uses
   Winapi.Windows,
   Vcl.Graphics,
 
+  OpenCV.Core,
+  OpenCV.ImgProc,
   OpenCV.Utils,
+  OpenCV.ObjDetect,
+  OpenCV.Legacy,
 
   UnitDBDeclare,
 
   uRuntime,
   uMemory,
   u2DUtils,
-  uSettings,
-  Core_c,
-  Core.types_c,
-  imgproc.types_c,
-  imgproc_c,
-  haar,
-  objdetect;
+  uSettings;
 
 const
   CascadesDirectoryMask = 'Cascades';
@@ -106,38 +104,6 @@ type
     property IsActive: Boolean read GetIsActive;
     property Cascades[FileName: string]: PCvHaarClassifierCascade read GetCascadeByFileName;
   end;
-
-{type
-  TCvLoad = function(Filename: PAnsiChar; Memstorage: PCvMemStorage; name: PChar; Real_name: PAnsiChar): Pointer; cdecl;
-  TCvCreateImage = function(Size: CvSize; Depth: Longint; Channels: Longint): PIplImage; cdecl;
-  TCvRectangle = procedure(Img: Pointer; Pt1: CvPoint; Pt2: CvPoint; Color: CvScalar; Thickness: Longint; Line_type: Longint; Shift: Longint); cdecl;
-  TCvCreateMemStorage = function(Block_size: Longint): PCvMemStorage; cdecl;
-  TCvLoadImage = function(Filename: PAnsiChar; Iscolor: Longint): PIplImage; cdecl;
-  TCvShowImage = procedure(name: PAnsiChar; Image: PIplImage); cdecl;
-  TCvNamedWindow = function(name: PAnsiChar; Flags: Longint): Longint; cdecl;
-  TCvHaarDetectObjects = function(Img: PCvArr; Cascade: PCvHaarClassifierCascade; Storage: PCvMemStorage;
-    Scale_factor: Double; Min_neighbors: Longint; Flags: Longint; Min_size: CvSize): PCvSeq; cdecl;
-  TCvGetSeqElem = function(Seq: PCvSeq; index: Longint): Pschar; cdecl;
-  TCvClearMemStorage = procedure(Storage: PCvMemStorage); cdecl;
-  TCvSetImageROI = procedure(Image: PIplImage; Rect: CvRect); cdecl;
-  TCvResetImageROI = procedure(Image: PIplImage); cdecl;
-  TCvCopy = procedure(Src: PCvArr; Dst: PCvArr; Mask: PCvArr); cdecl;      }
-
-var
-{  CvLoad: TCvLoad;
-  CvCreateImage: TCvCreateImage;
-  CvRectangle: TCvRectangle;
-  CvCreateMemStorage: TCvCreateMemStorage;
-  CvLoadImage: TCvLoadImage;
-  CvShowImage: TCvShowImage;
-  CvNamedWindow: TCvNamedWindow;
-  CvHaarDetectObjects: TCvHaarDetectObjects;
-  CvGetSeqElem: TCvGetSeqElem;
-  CvClearMemStorage: TCvClearMemStorage;
-  CvSetImageROI: TCvSetImageROI;
-  CvResetImageROI: TCvResetImageROI;
-  CvCopy: TCvCopy;              }
-  FCVDLLHandle: THandle = 1;
 
 function FaceDetectionManager: TFaceDetectionManager;
 
@@ -397,7 +363,7 @@ begin
     end;
   end;
 
-  if FCVDLLHandle > 0 then
+  if HasOpenCV then
   begin
     FaceDetectionSeqFileName := ExtractFilePath(ParamStr(0)) + CascadesDirectoryMask + '\' + FileName;
     CD := TCascadeData.Create;
@@ -410,7 +376,7 @@ end;
 
 function TFaceDetectionManager.GetIsActive: Boolean;
 begin
-  Result := ((FCVDLLHandle <> 0) or FolderView) and AppSettings.Readbool('Options', 'ViewerFaceDetection', True);
+  Result := (HasOpenCV or FolderView) and AppSettings.Readbool('Options', 'ViewerFaceDetection', True);
 end;
 
 { TFaceDetectionResultItem }

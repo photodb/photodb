@@ -289,6 +289,12 @@ begin
   Files.Add(TFileObject.Create('opencv_highgui247.dll',           '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('opencv_imgproc247.dll',           '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('opencv_objdetect247.dll',         '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('opencv_legacy247.dll',            '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('opencv_flann247.dll',             '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('opencv_features2d247.dll',        '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('opencv_calib3d247.dll',           '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('opencv_ml247.dll',                '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create('opencv_video247.dll',             '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('UnInstall.exe',                   '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('libeay32.dll',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('ssleay32.dll',                    '%PROGRAM%', ''));

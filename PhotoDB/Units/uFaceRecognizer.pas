@@ -15,14 +15,13 @@ uses
   Vcl.Graphics,
   Xml.xmldom,
 
+  OpenCV.Core,
   OpenCV.Utils,
+  OpenCV.ImgProc,
+  OpenCV.Legacy,
+  OpenCV.HighGUI,
 
-  highgui_c,
-  Core.types_c,
-  imgproc.types_c,
-  imgproc_c,
-  core_c,
-  legacy,
+  Dmitry.Utils.System,
 
   uMemory,
   uGuidUtils,
@@ -455,7 +454,7 @@ begin
     FThresholdFunc := function(N: Integer): Double
     begin
       //Result := LogN(9, N - 1) / 2.2;
-      Result := LogN(3.9, N - 1) / 3.3;
+      Result := LogN(3.9, N - 1) / 3;
       //2% Fail Result := LogN(3, N - 1) / 7.2;
     end;
 
@@ -808,10 +807,12 @@ begin
       SetLength(FTrainedFaces, Length(FTrainedFaces) + 1);
       FTrainedFaces[Length(FTrainedFaces) - 1] := Person.Faces[J];
 
+      {$IFDEF DEBUG}
       try
       SavePIplImageAsBitmap(FTrainedFaces[Length(FTrainedFaces) - 1].Face, 'D:\trainset\' + IntToStr(Length(FTrainedFaces) - 1) + '.bmp');
       except
       end;
+      {$ENDIF}
     end;
   end;
   SamplesCount := Length(SamplesArray);
@@ -931,7 +932,8 @@ begin
       begin
         FIsTrained := False;
         Person.AddFace(Face, Image, FaceId, Quality);
-      end;
+      end else
+        F(Image);
 
       Exit;
     end;
@@ -1072,6 +1074,7 @@ begin
             Break;
         end;
 
+        {$IFDEF DEBUG}
         if I = 0 then
         begin
           cvNamedWindow('SearchFor', 0);
@@ -1080,6 +1083,7 @@ begin
           cvShowImage('Found', FaceDistances[I].Face.FFaceImage);
           cvWaitKey(10);
         end;
+        {$ENDIF}
       end;
     end;
 

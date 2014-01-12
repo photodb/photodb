@@ -9,6 +9,7 @@ uses
   System.Math,
   Vcl.Graphics,
 
+  OpenCV.Core,
   Dmitry.Utils.Files,
 
   uConstants,
@@ -83,7 +84,7 @@ implementation
 const    
   MaxFaces = 80;
   FacesPerPerson = 10;
-  MinFaceScore = 60;
+  MinFaceScore = 0;//60;
   FaceWidth = 64;
   FaceHeight = 64;
   MaxPersonsToSearch = 5;
@@ -108,6 +109,9 @@ end;
 
 constructor TFaceRecognizerService.Create;
 begin
+  if not HasOpenCV then
+    Exit;
+
   FRecognizer := TFaceEigenRecognizer.Create(FaceWidth, FaceHeight, FacesPerPerson, MaxFaces);
   FDetector := TFaceDetectionManager.Create;
   FRecognizer.LoadState(CacheDirectory);
@@ -115,6 +119,9 @@ end;
 
 destructor TFaceRecognizerService.Destroy;
 begin
+  if not HasOpenCV then
+    Exit;
+
   DeleteDirectoryWithFiles(CacheDirectory);
   FRecognizer.SaveState(CacheDirectory);
   FRecognizer := nil;
@@ -132,6 +139,9 @@ var
   DR: TFaceScoreResults;
   FaceSample: TBitmap;
 begin
+  if not HasOpenCV then
+    Exit;
+
   DR := ProcessFaceAreaOnImage(MI, Image, Area, FDetector, MinFaceScore);
   try
     if DR = nil then
@@ -158,11 +168,17 @@ end;
 
 function TFaceRecognizerService.UserChangedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
+  if not HasOpenCV then
+    Exit;
+
   Result := FRecognizer.MoveFaceToAnotherPerson(Area.ID, Area.PersonID);
 end;
 
 function TFaceRecognizerService.UserRemovedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
+  if not HasOpenCV then
+    Exit;
+
   Result := FRecognizer.RemoveFaceById(Area.ID);
 end;
 
@@ -172,6 +188,9 @@ var
   FaceSample, FaceImage: TBitmap;
 begin
   Result := False;
+
+  if not HasOpenCV then
+    Exit;
 
   DR := ProcessFaceAreaOnImage(MI, Image, Area, FDetector, MinFaceScore);
   try
@@ -248,7 +267,7 @@ end;
 
 function TFoundPerson.GetPercents: Byte;
 begin
-  Result :=FPercents;
+  Result := FPercents;
 end;
 
 function TFoundPerson.GetPersonId: Integer;

@@ -71,7 +71,7 @@ rem cd ..
 cd PhotoDB
 
 move photodb.cfg photodb.cfg.safe
-"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE;DEBUG;FullDebugMode;DBDEBUG" -Ebin -V -VN -GD -W -N0dcu --inline:on -U"%DM%";"External\Mustangpeak\EasyListview\Source";"External\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM;"External\Controls\virtual-treeview\Common;"External\jcl\source\windows";"External\jcl\source\common" -I"External\jcl\source\include" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
+"%DCC32%" %NS% photodb -D"PHOTODB;LICENCE;DEBUG;FullDebugMode;DBDEBUG" -Ebin -V -VN -GD -W -N0dcu --inline:on -U"%DM%";"External\Mustangpeak\EasyListview\Source";"External\Mustangpeak\Common Library\Source";"External\Controls\DragDrop\Source";"External\Controls\Image Controls\Source";"External\FastMM;"External\scalemm";"External\Controls\virtual-treeview\Common;"External\jcl\source\windows";"External\jcl\source\common" -I"External\jcl\source\include" -R"Resources";"..\DBIcons";"%DELPHI%\Lib" -$D- -$I+ -$O- -$R+ -$W+ -W-SYMBOL_PLATFORM -W-UNIT_PLATFORM
 move photodb.cfg.safe photodb.cfg 
 
 cd ..
