@@ -439,7 +439,7 @@ begin
         if DetectionResult = nil then
           Exit;
 
-        if DetectionResult.TotalScore < MinScore then
+        if (MinScore > 0) and (DetectionResult.TotalScore < MinScore) then
           Exit;
 
         //try to rotate

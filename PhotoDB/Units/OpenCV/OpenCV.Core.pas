@@ -380,37 +380,42 @@ function CV_MAKETYPE(depth, cn: Integer): Integer; inline;
 function CV_32FC1: Integer; inline;
 function CV_MAT_DEPTH(const flags: Integer): Integer;
 function cvScalarAll(val0123: Double): TCvScalar; inline;
-
 function CvSize(const width, height: Integer): TCvSize; inline;
 
+type
+  TOpenCVPrecent = (ocvUndevined, ocvAvailable, ocvUnavailable);
+
+function CvLoadCoreLib: Boolean;
+
+var
 { Creates IPL image (header and data
   CVAPI(IplImage*)  cvCreateImage( CvSize size, int depth, int channels );
 }
-function cvCreateImage(size: TCvSize; depth, channels: Integer): pIplImage; cdecl; external Core_Dll delayed;
+  cvCreateImage: function(size: TCvSize; depth, channels: Integer): pIplImage; cdecl = nil;
 
 { Creates new memory storage.
   block_size == 0 means that default,
   somewhat optimal size, is used (currently, it is 64K)
   CVAPI(CvMemStorage*)  cvCreateMemStorage( int block_size CV_DEFAULT(0));
 }
-function cvCreateMemStorage(block_size: Integer = 0): pCvMemStorage; cdecl; external Core_Dll delayed;
+  cvCreateMemStorage: function(block_size: Integer = 0): pCvMemStorage; cdecl = nil;
 
 { Retrieves pointer to specified sequence element.
   Negative indices are supported and mean counting from the end
   (e.g -1 means the last sequence element)
   CVAPI(schar*)  cvGetSeqElem( const CvSeq* seq, int index );
 }
-function cvGetSeqElem(const seq: pCvSeq; index: Integer): Pointer; cdecl; external Core_Dll delayed;
+  cvGetSeqElem: function(const seq: pCvSeq; index: Integer): Pointer; cdecl = nil;
 
 { Releases IPL image header and data
   CVAPI(void)  cvReleaseImage( IplImage** image );
 }
-procedure cvReleaseImage(var image: pIplImage); cdecl; external Core_Dll delayed;
+  cvReleaseImage: procedure(var image: pIplImage); cdecl = nil;
 
 { Resets image ROI and COI
   CVAPI(void)  cvResetImageROI( IplImage* image );
 }
-procedure cvResetImageROI(image: pIplImage); cdecl; external Core_Dll delayed;
+  cvResetImageROI: procedure(image: pIplImage); cdecl = nil;
 
 { simple API for reading data
   CVAPI(void*) cvLoad( const char* filename,
@@ -418,55 +423,49 @@ procedure cvResetImageROI(image: pIplImage); cdecl; external Core_Dll delayed;
   const char* name CV_DEFAULT(NULL),
   const char** real_name CV_DEFAULT(NULL) );
 }
-function cvLoad(const filename: pCvChar; memstorage: pCvMemStorage = Nil; const name: pCvChar = nil;
-  const real_name: ppChar = nil): Pointer; cdecl; external Core_Dll delayed;
+  cvLoad: function(const filename: pCvChar; memstorage: pCvMemStorage = Nil; const name: pCvChar = nil;
+                   const real_name: ppChar = nil): Pointer; cdecl = nil;
 
 { Splits a multi-channel array into the set of single-channel arrays or
   extracts particular [color] plane */
   CVAPI(void)  cvSplit( const pCvArr* src, pCvArr* dst0, pCvArr* dst1,
   pCvArr* dst2, pCvArr* dst3 );
 }
-procedure cvSplit(const src: pCvArr; dst0: pCvArr; dst1: pCvArr; dst2: pCvArr; dst3: pCvArr); cdecl;external Core_Dll delayed;
+  cvSplit: procedure(const src: pCvArr; dst0: pCvArr; dst1: pCvArr; dst2: pCvArr; dst3: pCvArr); cdecl = nil;
 
 { Allocates and initializes CvMat header and allocates data
   CVAPI(CvMat*)  cvCreateMat( int rows, int cols, int type );
 }
-function cvCreateMat(rows, cols, cType: Integer): pCvMat; cdecl; external Core_Dll delayed;
+  cvCreateMat: function(rows, cols, cType: Integer): pCvMat; cdecl = nil;
 
 { Releases CvMat header and deallocates matrix data
   (reference counting is used for data)
   CVAPI(void)  cvReleaseMat( CvMat** mat );
 }
-procedure cvReleaseMat(var mat: pCvMat); cdecl; external Core_Dll delayed;
-
-type
-  TOpenCVPrecent = (ocvUndevined, ocvAvailable, ocvUnavailable);
-
-function HasOpenCV: Boolean;
+  cvReleaseMat: procedure (var mat: pCvMat); cdecl = nil;
 
 implementation
 
 var
-  FOpenState: TOpenCVPrecent = ocvUnavailable;
+  FCoreLib: THandle = 0;
 
-function HasOpenCV: Boolean;
-var
-  CoreLib: THandle;
+function CvLoadCoreLib: Boolean;
 begin
-  if FOpenState = ocvUnavailable then
+  Result := False;
+  FCoreLib := LoadLibrary(Core_Dll);
+  if FCoreLib > 0 then
   begin
-    CoreLib := LoadLibrary(Core_Dll);
-
-    if CoreLib > 0 then
-      FOpenState := ocvAvailable
-    else
-      FOpenState := ocvUnavailable;
-
-    if (CoreLib > 0) then
-      FreeLibrary(CoreLib);
+    Result := True;
+    cvCreateImage := GetProcAddress(FCoreLib, 'cvCreateImage');
+    cvCreateMemStorage := GetProcAddress(FCoreLib, 'cvCreateMemStorage');
+    cvGetSeqElem := GetProcAddress(FCoreLib, 'cvGetSeqElem');
+    cvReleaseImage := GetProcAddress(FCoreLib, 'cvReleaseImage');
+    cvResetImageROI := GetProcAddress(FCoreLib, 'cvResetImageROI');
+    cvLoad := GetProcAddress(FCoreLib, 'cvLoad');
+    cvSplit := GetProcAddress(FCoreLib, 'cvSplit');
+    cvCreateMat := GetProcAddress(FCoreLib, 'cvCreateMat');
+    cvReleaseMat := GetProcAddress(FCoreLib, 'cvReleaseMat');
   end;
-
-  Result := FOpenState = ocvAvailable;
 end;
 
 function CvSize(const width, height: Integer): TCvSize; inline;
@@ -506,5 +505,10 @@ begin
   Result.val[2] := val0123;
   Result.val[3] := val0123;
 end;
+
+initialization
+finalization
+  if FCoreLib > 0 then
+    FreeLibrary(FCoreLib);
 
 end.

@@ -637,6 +637,11 @@ object Viewer: TViewer
       ImageIndex = 3
       OnClick = MiCurrentPersonAvatarClick
     end
+    object MiCurrentPersonTrain: TMenuItem
+      Caption = 'Train this face'
+      ImageIndex = 4
+      OnClick = MiCurrentPersonTrainClick
+    end
     object MiCurrentPersonSeparator: TMenuItem
       Caption = '-'
       Visible = False

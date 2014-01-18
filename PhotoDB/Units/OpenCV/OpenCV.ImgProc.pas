@@ -3,6 +3,7 @@ unit OpenCV.ImgProc;
 interface
 
 uses
+  Winapi.Windows,
   OpenCV.Lib,
   OpenCV.Core;
 
@@ -236,9 +237,10 @@ const
   CV_MOP_TOPHAT   = 5;
   CV_MOP_BLACKHAT = 6;
 
+var
 (* Converts input array pixels from one color space to another *)
 // CVAPI(void)  cvCvtColor( const CvArr* src, CvArr* dst, int code );
-procedure cvCvtColor(const src: pIplImage; dst: pIplImage; code: Integer); cdecl; overload; external imgproc_Dll name 'cvCvtColor' delayed;
+  cvCvtColor: procedure(const src: pIplImage; dst: pIplImage; code: Integer); cdecl = nil;
 
 // (* calculates probabilistic density (divides one histogram by another) *)
 // CVAPI(procedure)  cvCalcProbDensity(
@@ -246,13 +248,13 @@ procedure cvCvtColor(const src: pIplImage; dst: pIplImage; code: Integer); cdecl
 { /* equalizes histogram of 8-bit single-channel image */
   CVAPI(void)  cvEqualizeHist( const CvArr* src, CvArr* dst );
 }
-procedure cvEqualizeHist(const src, dst: pIplImage); cdecl; external imgproc_Dll delayed;
+  cvEqualizeHist: procedure (const src, dst: pIplImage); cdecl = nil;
 
 {
   (* Computes rotation_matrix matrix *)
   CVAPI(CvMat)cv2DRotationMatrix(CvPoint2D32f center, Double angle, Double scale, CvMat * map_matrix);
 }
-function cv2DRotationMatrix(center: TCvPoint2D32f; angle: double; scale: double; map_matrix: pCvMat): pCvMat; cdecl; external imgproc_Dll delayed;
+  cv2DRotationMatrix: function (center: TCvPoint2D32f; angle: double; scale: double; map_matrix: pCvMat): pCvMat; cdecl = nil;
 
 {
   /* Warps image with affine transform */
@@ -260,9 +262,28 @@ function cv2DRotationMatrix(center: TCvPoint2D32f; angle: double; scale: double;
   int flags CV_DEFAULT(CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS),
   CvScalar fillval CV_DEFAULT(cvScalarAll(0)) );
 }
-procedure cvWarpAffine(const src: pIplImage; dst: pIplImage; const map_matrix: pCvMat;
-  flags: Integer { = CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS }; fillval: TCvScalar { = cvScalarAll(0) } ); cdecl; external imgproc_Dll delayed;
+  cvWarpAffine: procedure (const src: pIplImage; dst: pIplImage; const map_matrix: pCvMat;
+                           flags: Integer { = CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS }; fillval: TCvScalar { = cvScalarAll(0) } ); cdecl = nil;
+
+function CvLoadImgProcLib: Boolean;
 
 implementation
+
+var
+  FImgProcLib: THandle = 0;
+
+function CvLoadImgProcLib: Boolean;
+begin
+  Result := False;
+  FImgProcLib := LoadLibrary(imgproc_Dll);
+  if FImgProcLib > 0 then
+  begin
+    Result := True;
+    cvCvtColor := GetProcAddress(FImgProcLib, 'cvCvtColor');
+    cvEqualizeHist := GetProcAddress(FImgProcLib, 'cvEqualizeHist');
+    cv2DRotationMatrix := GetProcAddress(FImgProcLib, 'cv2DRotationMatrix');
+    cvWarpAffine := GetProcAddress(FImgProcLib, 'cvWarpAffine');
+  end;
+end;
 
 end.

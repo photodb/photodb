@@ -12929,7 +12929,7 @@ begin
   try
     P := nil;
     try
-      Result := FormFindPerson.Execute(nil, P);
+      Result := FormFindPerson.Execute(nil, P, nil);
       if (P <> nil) and (Result = SELECT_PERSON_OK) then
       begin
         AddWideSearchPerson(P);

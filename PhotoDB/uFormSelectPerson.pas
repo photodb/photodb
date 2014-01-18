@@ -1,4 +1,4 @@
-unit uFormSelectPerson;
+﻿unit uFormSelectPerson;
 
 interface
 
@@ -36,7 +36,8 @@ uses
   uDBEntities,
   uDBContext,
   uDBManager,
-  uGraphicUtils;
+  uGraphicUtils,
+  uFaceRecognizerService;
 
 type
   TFormFindPerson = class(TThreadForm)
@@ -71,6 +72,7 @@ type
     FInfo: TMediaItem;
     FFormResult: Integer;
     FPersons: TPersonCollection;
+    FSimilarFaces: IRelatedPersonsCollection;
     function GetIndex(aNMHdr: pNMHdr): Integer;
     procedure CheckMsg(var aMsg: TMessage);
     procedure LoadList;
@@ -83,7 +85,7 @@ type
     procedure CloseForm;
   public
     { Public declarations }
-    function Execute(Info: TMediaItem; var Person: TPerson): Integer;
+    function Execute(Info: TMediaItem; var Person: TPerson; SimilarFaces: IRelatedPersonsCollection): Integer;
   end;
 
 const
@@ -228,8 +230,9 @@ begin
   LsMain.Visible := not IsEnabled;
 end;
 
-function TFormFindPerson.Execute(Info: TMediaItem; var Person: TPerson): Integer;
+function TFormFindPerson.Execute(Info: TMediaItem; var Person: TPerson; SimilarFaces: IRelatedPersonsCollection): Integer;
 begin
+  FSimilarFaces := SimilarFaces;
   FFormResult := SELECT_PERSON_CANCEL;
 
   if Info <> nil then
@@ -434,9 +437,12 @@ end;
 
 procedure TFormFindPerson.AddItem(P: TPerson);
 var
+  I: Integer;
   LI: TListItem;
-  SearchTerm, Key, Description: string;
+  SearchTerm, Key, Description, Stars: string;
   Visible: Boolean;
+  SimilarFace: IFoundPerson;
+  InsertIndex: Integer;
 begin
   SearchTerm := AnsiLowerCase(WedPersonFilter.Text);
   if Pos('*', SearchTerm) = 0 then
@@ -447,13 +453,43 @@ begin
 
   if Visible then
   begin
-    LI := LvPersons.Items.Add;
+    InsertIndex := -1;
+    SimilarFace := nil;
+    if FSimilarFaces <> nil then
+      SimilarFace := FSimilarFaces.GetPersonById(P.ID);
+
+    if SimilarFace <> nil then
+    begin
+      P.Tag := SimilarFace.GetStars;
+      for I := 0 to LvPersons.Items.Count - 1 do
+      begin
+        if P.Tag > TPerson(LvPersons.Items[I].Data).Tag then
+        begin
+          InsertIndex := I;
+          Break;
+        end;
+      end;
+    end;
+
+    if InsertIndex = -1 then
+      LI := LvPersons.Items.Add
+    else
+      LI := LvPersons.Items.Insert(InsertIndex);
+
     LI.Caption := P.Name;
     LI.ImageIndex := FPersons.IndexOf(P);
     Description := P.Name;
     if Trim(P.Comment) <> '' then
       Description := Description + #13 + P.Comment;
     Description := Description + #13 + FormatEx(L('Photos: {0}'), [P.Count]);
+
+    if SimilarFace <> nil then
+    begin
+      Stars := '';
+      for I := 1 to P.Tag do
+        Stars := Stars + '★';
+      Description := Description + #13 + FormatEx(L('Match: {0}'), [Stars]);
+    end;
 
     LI.SubItems.Add(Description);
     LI.Data := Pointer(P);

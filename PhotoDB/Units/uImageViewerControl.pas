@@ -142,12 +142,14 @@ type
     FIsHightlitingPerson: Boolean;
     FExplorer: TCustomExplorerForm;
     FCurrentFace: TFaceDetectionResultItem;
+    FSimilarFaces: IRelatedPersonsCollection;
 
    {$REGION Face menu}
     MiClearFaceZone: TMenuItem;
     MiClearFaceZoneSeparator: TMenuItem;
     MiCurrentPerson: TMenuItem;
     MiCurrentPersonAvatar: TMenuItem;
+    MiCurrentPersonTrain: TMenuItem;
     MiCurrentPersonSeparator: TMenuItem;
 
     MiSimilarPersons: TMenuItem;
@@ -211,6 +213,7 @@ type
     procedure MiFindPhotosClick(Sender: TObject);
     procedure MiCurrentPersonClick(Sender: TObject);
     procedure MiCurrentPersonAvatarClick(Sender: TObject);
+    procedure MiTrainFaceClick(Sender: TObject);
     procedure SelectPreviousPerson(Sender: TObject);
 
     procedure MiDrawFaceClick(Sender: TObject);
@@ -1043,6 +1046,20 @@ begin
   end;
 end;
 
+procedure TImageViewerControl.MiTrainFaceClick(Sender: TObject);
+var
+  FR: TFaceDetectionResultItem;
+  PA: TPersonArea;
+begin
+  FR := FindFace(FCurrentFace);
+  if FR = nil then
+    Exit;
+
+  PA := TPersonArea(FR.Data);
+  if (PA <> nil) then
+    UIFaceRecognizerService.UserSelectedPerson(Item, FFullImage, PA);
+end;
+
 procedure TImageViewerControl.MiDrawFaceClick(Sender: TObject);
 begin
   FIsSelectingFace := True;
@@ -1097,7 +1114,7 @@ begin
   try
     P := nil;
     try
-      Result := FormFindPerson.Execute(Item, P);
+      Result := FormFindPerson.Execute(Item, P, FSimilarFaces);
       if (P <> nil) and (Result = SELECT_PERSON_OK) then
         SelectPerson(P);
       if Result = SELECT_PERSON_CREATE_NEW then
@@ -1332,6 +1349,12 @@ begin
   MiCurrentPersonAvatar.ImageIndex := 3;
   MiCurrentPersonAvatar.OnClick := MiCurrentPersonAvatarClick;
 
+  MiCurrentPersonTrain := TMenuItem.Create(FFaceMenu);
+  MiCurrentPersonTrain.Caption := L('Train this face');
+  MiCurrentPersonTrain.Visible := False;
+  MiCurrentPersonTrain.ImageIndex := 4;
+  MiCurrentPersonTrain.OnClick := MiTrainFaceClick;
+
   MiCurrentPersonSeparator := TMenuItem.Create(FFaceMenu);
   MiCurrentPersonSeparator.Caption := '-';
 
@@ -1371,6 +1394,7 @@ begin
   FFaceMenu.Items.Add(MiClearFaceZoneSeparator);
   FFaceMenu.Items.Add(MiCurrentPerson);
   FFaceMenu.Items.Add(MiCurrentPersonAvatar);
+  FFaceMenu.Items.Add(MiCurrentPersonTrain);
   FFaceMenu.Items.Add(MiCurrentPersonSeparator);
   FFaceMenu.Items.Add(MiSimilarPersons);
   FFaceMenu.Items.Add(MiSimilarPersonsSeparator);
@@ -1611,7 +1635,6 @@ var
   SelectedPersons: TPersonCollection;
   HasLatestPersons, HasSimilarFaces: Boolean;
   MI: TMenuItem;
-  SimilarFaces: IRelatedPersonsCollection;
   SimilarPerson: IFoundPerson;
   B: TBitmap;
 begin
@@ -1626,10 +1649,12 @@ begin
   ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_PEOPLE]);
   ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_SEARCH]);
   ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_EDIT_PROFILE]);
+  ImageList_AddIcon(FImFacePopup.Handle, Icons[DB_IC_TRAIN]);
 
   MiCurrentPerson.Visible := (RI.Data <> nil) and (PA.PersonID > 0);
   MiCurrentPersonAvatar.Visible := MiCurrentPerson.Visible;
   MiCurrentPersonSeparator.Visible := MiCurrentPerson.Visible;
+
   P := TPerson.Create;
   try
     if (PA <> nil) and (PA.PersonID > 0) then
@@ -1671,49 +1696,55 @@ begin
         HasSimilarFaces := True;
     end;
 
+    FSimilarFaces := nil;
     if (PA <> nil) and (PA.ID > 0) then
     begin
-      SimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, PA);
+      FSimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, PA);
     end else
     begin
       AreaToSearch := TPersonArea.Create(0, 0, RI);
       try
-        SimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, AreaToSearch);
+        FSimilarFaces := UIFaceRecognizerService.FindRelatedPersons(Item, FFullImage, AreaToSearch);
       finally
         F(AreaToSearch);
       end;
     end;
-    if SimilarFaces <> nil then
+
+    if FSimilarFaces <> nil then
     begin
-      for I := 0 to SimilarFaces.Count - 1 do
+      MiCurrentPersonTrain.Visible := MiCurrentPerson.Visible and UIFaceRecognizerService.IsActive and (PA <> nil) and not UIFaceRecognizerService.HasFaceArea(PA.ID);
+      for I := 0 to FSimilarFaces.Count - 1 do
       begin
-        SimilarPerson := SimilarFaces.GetPerson(I);
-        PS := TPerson.Create;
-        try
-          FPeopleRepository.FindPerson(SimilarPerson.GetPersonId, PS);
-          if not PS.Empty then
-          begin
-            MI := TMenuItem.Create(PmFace);
-            MI.Tag := PS.ID;
-            MI.Caption := FormatEx('{0} - {1}%', [PS.Name, SimilarPerson.GetPercents]);
-            MI.OnClick := SelectPreviousPerson;
-            B := SimilarPerson.ExtractBitmap;
-            try
-              CenterBitmap24To32ImageList(B, 16);
-              MI.ImageIndex := FImFacePopup.Add(B, nil);
-              PmFace.Items.Insert(SimilarFacesIndex + 1, MI);
-              Inc(SimilarFacesIndex);
-            finally
-              F(B);
+        SimilarPerson := FSimilarFaces.GetPerson(I);
+        if SimilarPerson.GetPercents > 0 then
+        begin
+          PS := TPerson.Create;
+          try
+            FPeopleRepository.FindPerson(SimilarPerson.GetPersonId, PS);
+            if not PS.Empty then
+            begin
+              MI := TMenuItem.Create(PmFace);
+              MI.Tag := PS.ID;
+              MI.Caption := FormatEx('{0} - {1}%', [PS.Name, SimilarPerson.GetPercents]);
+              MI.OnClick := SelectPreviousPerson;
+              B := SimilarPerson.ExtractBitmap;
+              try
+                CenterBitmap24To32ImageList(B, 16);
+                MI.ImageIndex := FImFacePopup.Add(B, nil);
+                PmFace.Items.Insert(SimilarFacesIndex + 1, MI);
+                Inc(SimilarFacesIndex);
+              finally
+                F(B);
+              end;
             end;
+          finally
+            F(PS);
           end;
-        finally
-          F(PS);
         end;
       end;
     end;
 
-    if (SimilarFaces = nil) or (SimilarFaces.Count = 0) then
+    if (FSimilarFaces = nil) or not FSimilarFaces.HasMatches then
     begin
       MiSimilarPersons.Visible := False;
       MiSimilarPersonsSeparator.Visible := False;

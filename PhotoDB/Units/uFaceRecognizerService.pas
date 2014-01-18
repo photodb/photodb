@@ -9,7 +9,7 @@ uses
   System.Math,
   Vcl.Graphics,
 
-  OpenCV.Core,
+  OpenCV.Utils,
   Dmitry.Utils.Files,
 
   uConstants,
@@ -25,12 +25,15 @@ type
   IFoundPerson = interface
     function ExtractBitmap: TBitmap;
     function GetPersonId: Integer;
+    function GetStars: Byte;
     function GetPercents: Byte;
   end;
 
   IRelatedPersonsCollection = interface
     function Count: Integer;
     function GetPerson(Index: Integer): IFoundPerson;
+    function GetPersonById(PersonId: Integer): IFoundPerson;
+    function HasMatches: Boolean;
   end;
 
   TFaceDetectonOption = (fdoImage);
@@ -41,13 +44,15 @@ type
   private
     FImage: TBitmap;
     FPersonId: Integer;
-    FPercents: Integer;
+    FPercents: Byte;
+    FStars: Integer;
   public
-    constructor Create(FDR: TFaceRecognitionResult);
+    constructor Create(Stars: Integer; FDR: TFaceRecognitionResult);
     destructor Destroy; override;
     function ExtractBitmap: TBitmap;
     function GetPersonId: Integer;
     function GetPercents: Byte;
+    function GetStars: Byte;
   end;
 
   TRelatedPersonsCollection = class(TInterfacedObject, IRelatedPersonsCollection)
@@ -58,6 +63,8 @@ type
     destructor Destroy; override;
     function Count: Integer;
     function GetPerson(Index: Integer): IFoundPerson;
+    function GetPersonById(PersonId: Integer): IFoundPerson;
+    function HasMatches: Boolean;
   end;
 
 type
@@ -69,12 +76,14 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function HasFaceArea(AreaId: Integer): Boolean;
     function UserSelectedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
     function UserChangedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
     function UserRemovedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
     function FindRelatedPersons(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): IRelatedPersonsCollection;
     //For The Future, currently detection rate is too low to use automatic detection 2014/01/05
     function DetectPersonId(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Integer;
+    function IsActive: Boolean;
   end;
 
 function UIFaceRecognizerService: TFaceRecognizerService;
@@ -166,6 +175,19 @@ begin
   end;
 end;
 
+function TFaceRecognizerService.HasFaceArea(AreaId: Integer): Boolean;
+begin
+  if not HasOpenCV then
+    Exit(False);
+
+  Result := FRecognizer.HasFace(AreaId);
+end;
+
+function TFaceRecognizerService.IsActive: Boolean;
+begin
+  Result := HasOpenCV;
+end;
+
 function TFaceRecognizerService.UserChangedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
   if not HasOpenCV then
@@ -229,8 +251,7 @@ var
 begin
   FPersons := TList<IFoundPerson>.Create;
   for I := 0 to FDRs.Count - 1 do
-    if FDRs[I].IsValid then
-      FPersons.Add(TFoundPerson.Create(FDRs[I]));
+    FPersons.Add(TFoundPerson.Create(FDRs.Count - I, FDRs[I]));
 end;
 
 destructor TRelatedPersonsCollection.Destroy;
@@ -244,13 +265,34 @@ begin
   Result := FPersons[Index];
 end;
 
+function TRelatedPersonsCollection.GetPersonById(PersonId: Integer): IFoundPerson;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to FPersons.Count - 1 do
+    if FPersons[I].GetPersonId = PersonId then
+      Exit(FPersons[I]);
+end;
+
+function TRelatedPersonsCollection.HasMatches: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to FPersons.Count - 1 do
+    if FPersons[I].GetPercents > 0 then
+      Exit(True);
+end;
+
 { TFoundPerson }
 
-constructor TFoundPerson.Create(FDR: TFaceRecognitionResult);
+constructor TFoundPerson.Create(Stars: Integer; FDR: TFaceRecognitionResult);
 begin
   FImage := FDR.ExtractBitmap;
   FPersonId := FDR.PersonId;
   FPercents := Ceil(FDR.Percents);
+  FStars := Stars;
 end;
 
 destructor TFoundPerson.Destroy;
@@ -273,6 +315,11 @@ end;
 function TFoundPerson.GetPersonId: Integer;
 begin
   Result := FPersonId;
+end;
+
+function TFoundPerson.GetStars: Byte;
+begin
+  Result := FStars;
 end;
 
 initialization

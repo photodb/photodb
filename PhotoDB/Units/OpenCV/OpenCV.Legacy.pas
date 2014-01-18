@@ -3,6 +3,7 @@ unit OpenCV.Legacy;
 interface
 
 uses
+  Winapi.Windows,
   OpenCV.Lib,
   OpenCV.Core;
 
@@ -34,8 +35,9 @@ const
   // CvTermCriteria* calcLimit, IplImage* avg,
   // float* eigVals );
 
-procedure cvCalcEigenObjects(nObjects: Integer; input: Pointer; output: Pointer; ioFlags: Integer; ioBufSize: Integer;
-  userData: Pointer; calcLimit: pCvTermCriteria; avg: pIplImage; eigVals: pFloat); cdecl; external legacy_Dll delayed;
+var
+  cvCalcEigenObjects: procedure (nObjects: Integer; input: Pointer; output: Pointer; ioFlags: Integer; ioBufSize: Integer;
+                                 userData: Pointer; calcLimit: pCvTermCriteria; avg: pIplImage; eigVals: pFloat); cdecl = nil;
 
 /// * Calculates dot product (obj - avg) * eigObj (i.e. projects image to eigen vector) */
 // CVAPI(double)  cvCalcDecompCoeff( IplImage* obj, IplImage* eigObj, IplImage* avg );
@@ -44,9 +46,26 @@ procedure cvCalcEigenObjects(nObjects: Integer; input: Pointer; output: Pointer;
 // CVAPI(void)  cvEigenDecomposite( IplImage* obj, int nEigObjs, void* eigInput,
 // int ioFlags, void* userData, IplImage* avg,
 // float* coeffs );
-procedure cvEigenDecomposite(obj: pIplImage; nEigObjs: Integer; eigInput: Pointer; ioFlags: Integer; userData: Pointer;
-  avg: pIplImage; coeffs: pFloat); cdecl; external legacy_Dll delayed;
+  cvEigenDecomposite: procedure (obj: pIplImage; nEigObjs: Integer; eigInput: Pointer; ioFlags: Integer; userData: Pointer;
+                                 avg: pIplImage; coeffs: pFloat); cdecl = nil;
+
+function CvLoadLegacyLib: Boolean;
 
 implementation
+
+var
+  FLegacyLib: THandle = 0;
+
+function CvLoadLegacyLib: Boolean;
+begin
+  Result := False;
+  FLegacyLib := LoadLibrary(legacy_Dll);
+  if FLegacyLib > 0 then
+  begin
+    Result := True;
+    cvCalcEigenObjects := GetProcAddress(FLegacyLib, 'cvCalcEigenObjects');
+    cvEigenDecomposite := GetProcAddress(FLegacyLib, 'cvEigenDecomposite');
+  end;
+end;
 
 end.

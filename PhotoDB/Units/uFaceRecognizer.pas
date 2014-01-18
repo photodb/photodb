@@ -71,6 +71,7 @@ type
     function Train: Boolean;
     //simple add face to detection collection
     function HasPerson(PersonId: Integer): Boolean;
+    function HasFace(FaceId: Integer): Boolean;
     function RemoveFaceById(FaceId: Integer): Boolean;
     function MoveFaceToAnotherPerson(FaceId: Integer; PersonId: Integer): Boolean;
     function TrainFace(Face: TBitmap; Image: TBitmap; PersonId: Integer; FaceId: Integer; Quality: Byte): Boolean; overload;
@@ -177,6 +178,7 @@ type
     function Train: Boolean;
 
     function HasPerson(PersonId: Integer): Boolean;
+    function HasFace(FaceId: Integer): Boolean;
     function RemoveFaceById(FaceId: Integer): Boolean;
     function MoveFaceToAnotherPerson(FaceId: Integer; PersonId: Integer): Boolean;
     function TrainFace(Face: TBitmap; Image: TBitmap; PersonId: Integer; FaceId: Integer; Quality: Byte): Boolean; overload;
@@ -504,6 +506,17 @@ begin
   Result := 0;
   for I := 0 to FPersons.Count - 1 do
     Inc(Result, FPersons[I].FacesCount);
+end;
+
+function TFaceEigenRecognizer.HasFace(FaceId: Integer): Boolean;
+var
+  I, J: Integer;
+begin
+  Result := False;
+  for I := 0 to FPersons.Count - 1 do
+    for J := 0 to FPersons[I].FacesCount - 1 do
+      if FPersons[I].Faces[J].FFaceId = FaceId then
+         Exit(True);
 end;
 
 function TFaceEigenRecognizer.HasPerson(PersonId: Integer): Boolean;

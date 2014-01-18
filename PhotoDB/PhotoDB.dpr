@@ -480,7 +480,7 @@ begin
         DBManager.CreateSampleDefaultCollection;
     end;
 
-    TrainIt;
+    //TrainIt;
 
     // SERVICES ----------------------------------------------------
     CMDInProgress := True;

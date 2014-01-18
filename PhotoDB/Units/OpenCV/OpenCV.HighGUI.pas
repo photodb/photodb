@@ -3,6 +3,7 @@ unit OpenCV.HighGUI;
 interface
 
 uses
+  Winapi.Windows,
   OpenCV.Lib,
   OpenCV.Core;
 
@@ -27,17 +28,36 @@ const
   CV_WINDOW_FREERATIO = $00000100; // the image expends as much as it can (no ratio raint)
   CV_WINDOW_KEEPRATIO = $00000000; // the ration image is respected.;
 
+var
   (* create window *)
-function cvNamedWindow(const name: pCVChar; flags: Integer = CV_WINDOW_AUTOSIZE): Integer; cdecl; external highgui_Dll delayed;
+  cvNamedWindow: function(const name: pCVChar; flags: Integer = CV_WINDOW_AUTOSIZE): Integer; cdecl = nil;
 {
   //display image within window (highgui windows remember their content)
   CVAPI(void) cvShowImage( const char* name, const CvArr* image );
 }
-procedure cvShowImage(const name: pCVChar; const image: pCvArr); cdecl; external highgui_Dll delayed;
+  cvShowImage: procedure(const name: pCVChar; const image: pCvArr); cdecl = nil;
 
 (* wait for key event infinitely (delay<=0) or for "delay" milliseconds *)
-function cvWaitKey(delay: Integer = 0): Integer; cdecl; external highgui_Dll delayed;
+  cvWaitKey: function (delay: Integer = 0): Integer; cdecl = nil;
+
+function CvLoadHighGUILib: Boolean;
 
 implementation
+
+var
+  FHighGUILib: THandle = 0;
+
+function CvLoadHighGUILib: Boolean;
+begin
+  Result := False;
+  FHighGUILib := LoadLibrary(highgui_Dll);
+  if FHighGUILib > 0 then
+  begin
+    Result := True;
+    cvNamedWindow := GetProcAddress(FHighGUILib, 'cvNamedWindow');
+    cvShowImage := GetProcAddress(FHighGUILib, 'cvShowImage');
+    cvWaitKey := GetProcAddress(FHighGUILib, 'cvWaitKey');
+  end;
+end;
 
 end.

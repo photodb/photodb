@@ -258,6 +258,7 @@ type
     FPreview: TBitmap;
     FPreviewSize: TSize;
     FCount: Integer;
+    FTag: Integer;
     procedure SetImage(const Value: TJpegImage);
     procedure SetID(const Value: Integer);
   public
@@ -285,6 +286,7 @@ type
     property UniqID: string read FUniqID write FUniqID;
     property Empty: Boolean read FEmpty;
     property Count: Integer read FCount;
+    property Tag: Integer read FTag write FTag;
   end;
 
   TPersonCollection = class(TBaseEntity)

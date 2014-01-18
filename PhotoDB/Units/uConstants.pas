@@ -251,6 +251,7 @@ const
   DB_IC_PHOTO_DATABASE = 129;
   DB_IC_LINK           = 130;
   DB_IC_VIEW_COUNT     = 131;
+  DB_IC_TRAIN          = 132;
 
 const
     WM_DROPFILES = $0233;

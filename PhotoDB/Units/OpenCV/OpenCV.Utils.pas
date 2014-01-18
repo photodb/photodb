@@ -8,14 +8,35 @@ uses
   Vcl.Graphics,
 
   OpenCV.Core,
+  OpenCV.ImgProc,
+  OpenCV.ObjDetect,
+  OpenCV.Legacy,
+  OpenCV.HighGUI,
 
   uMemory;
 
 procedure Bitmap2IplImage(IplImg: PIplImage; Bitmap: TBitmap);
 procedure IplImage2Bitmap(IplImg: PIplImage; Bitmap: TBitmap);
 procedure SavePIplImageAsBitmap(IplImg: PIplImage; FileName: string);
+function HasOpenCV: Boolean;
 
 implementation
+
+var
+  FOpenCVState: TOpenCVPrecent = ocvUndevined;
+
+function HasOpenCV: Boolean;
+begin
+  if FOpenCVState = ocvUndevined then
+  begin
+    if CvLoadCoreLib and CvLoadImgProcLib and CvLoadObjDetectLib and CvLoadLegacyLib and CvLoadHighGUILib then
+      FOpenCVState := ocvAvailable
+    else
+      FOpenCVState := ocvUnavailable;
+  end;
+
+  Result := FOpenCVState = ocvAvailable;
+end;
 
 procedure SavePIplImageAsBitmap(IplImg: PIplImage; FileName: string);
 var

@@ -3,9 +3,9 @@ unit OpenCV.ObjDetect;
 interface
 
 uses
+  Winapi.Windows,
   OpenCV.Lib,
   OpenCV.Core;
-
 
 const
   CV_HAAR_FEATURE_MAX = 3;
@@ -142,6 +142,7 @@ type
     neighbors: Integer;
   end;
 
+var
 {
   // Loads haar classifier cascade from a directory.
   // It is obsolete: convert your cascade to xml and use cvLoad instead
@@ -149,11 +150,10 @@ type
   const char* directory,
   CvSize orig_window_size);
 }
-function cvLoadHaarClassifierCascade(const directory: pCVChar; orig_window_size: TCvSize)
-  : pCvHaarClassifierCascade; cdecl;  external objdetect_dll delayed;
+  cvLoadHaarClassifierCascade: function(const directory: pCVChar; orig_window_size: TCvSize): pCvHaarClassifierCascade; cdecl = nil;
 
 // CVAPI(void) cvReleaseHaarClassifierCascade( CvHaarClassifierCascade** cascade );
-procedure cvReleaseHaarClassifierCascade(Var cascade: pCvHaarClassifierCascade); cdecl;  external objdetect_dll delayed;
+  cvReleaseHaarClassifierCascade: procedure(Var cascade: pCvHaarClassifierCascade); cdecl = nil;
 
 {
   CVAPI(CvSeq*) cvHaarDetectObjects(
@@ -166,7 +166,7 @@ procedure cvReleaseHaarClassifierCascade(Var cascade: pCvHaarClassifierCascade);
   CvSize min_size CV_DEFAULT(cvSize(0,0)),
   CvSize max_size CV_DEFAULT(cvSize(0,0)));
 }
-function cvHaarDetectObjects(
+  cvHaarDetectObjects: function(
   { } const image: pIplImage;
   { } cascade: pCvHaarClassifierCascade;
   { } storage: pCvMemStorage;
@@ -174,8 +174,26 @@ function cvHaarDetectObjects(
   { } min_neighbors: Integer { =3 };
   { } flags: Integer { = 0 };
   { } min_size: TCvSize { =CV_DEFAULT(cvSize(0,0)) };
-  { } max_size: TCvSize { =CV_DEFAULT(cvSize(0,0)) } ): pCvSeq; cdecl;  external objdetect_dll delayed;
+  { } max_size: TCvSize { =CV_DEFAULT(cvSize(0,0)) } ): pCvSeq; cdecl = nil;
+
+function CvLoadObjDetectLib: Boolean;
 
 implementation
+
+var
+  FObjDetectLib: THandle = 0;
+
+function CvLoadObjDetectLib: Boolean;
+begin
+  Result := False;
+  FObjDetectLib := LoadLibrary(objdetect_dll);
+  if FObjDetectLib > 0 then
+  begin
+    Result := True;
+    cvLoadHaarClassifierCascade := GetProcAddress(FObjDetectLib, 'cvLoadHaarClassifierCascade');
+    cvReleaseHaarClassifierCascade := GetProcAddress(FObjDetectLib, 'cvReleaseHaarClassifierCascade');
+    cvHaarDetectObjects := GetProcAddress(FObjDetectLib, 'cvHaarDetectObjects');
+  end;
+end;
 
 end.
