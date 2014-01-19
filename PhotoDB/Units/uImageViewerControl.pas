@@ -1,4 +1,4 @@
-unit uImageViewerControl;
+﻿unit uImageViewerControl;
 
 interface
 
@@ -1628,7 +1628,7 @@ end;
 
 procedure TImageViewerControl.PmFacePopup(Sender: TObject);
 var
-  I, SimilarFacesIndex, LatestPersonsIndex: Integer;
+  I, J, SimilarFacesIndex, LatestPersonsIndex, Index: Integer;
   RI: TFaceDetectionResultItem;
   PA, AreaToSearch: TPersonArea;
   P, PS: TPerson;
@@ -1637,6 +1637,7 @@ var
   MI: TMenuItem;
   SimilarPerson: IFoundPerson;
   B: TBitmap;
+  Name: string;
 begin
   RI := FindFace(FCurrentFace);
   if RI = nil then
@@ -1710,6 +1711,7 @@ begin
       end;
     end;
 
+    MiCurrentPersonTrain.Visible := False;
     if FSimilarFaces <> nil then
     begin
       MiCurrentPersonTrain.Visible := MiCurrentPerson.Visible and UIFaceRecognizerService.IsActive and (PA <> nil) and not UIFaceRecognizerService.HasFaceArea(PA.ID);
@@ -1780,6 +1782,23 @@ begin
 
       //add current persons
       FPeopleRepository.FillLatestSelections(SelectedPersons);
+      if FSimilarFaces <> nil then
+      begin
+        Index := 0;
+        for I := 0 to FSimilarFaces.Count - 1 do
+        begin
+          for J := Index to SelectedPersons.Count - 1 do
+          begin
+            if SelectedPersons[J].ID = FSimilarFaces.GetPerson(I).GetPersonId then
+            begin
+              SelectedPersons[J].Tag := FSimilarFaces.Count - I;
+              SelectedPersons.MovePersonTo(J, Index);
+              Inc(Index);
+              Break;
+            end;
+          end;
+        end;
+      end;
 
       if not P.Empty then
         for I := 0 to SelectedPersons.Count - 1 do
@@ -1795,7 +1814,15 @@ begin
       begin
         MI := TMenuItem.Create(PmFace);
         MI.Tag := SelectedPersons[I].ID;
-        MI.Caption := SelectedPersons[I].Name;
+        Name := SelectedPersons[I].Name;
+        if (SelectedPersons[I].Tag > 0) and not MiCurrentPerson.Visible then
+        begin
+          Name := Name + ' (';
+          for J := 1 to SelectedPersons[I].Tag do
+            Name := Name + '★';
+          Name := Name + ')';
+        end;
+        MI.Caption := Name;
         MI.OnClick := SelectPreviousPerson;
         MI.ImageIndex := FImFacePopup.Add(SelectedPersons[I].CreatePreview(16, 16), nil);
         PmFace.Items.Insert(LatestPersonsIndex + 1, MI);

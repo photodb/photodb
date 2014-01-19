@@ -66,7 +66,7 @@
   </scope>
   <scope name="System">
 	<translate name="This program is running, but isn't responding! Run new instance?" value="Программа уже запущена, но не отвечает на запросы. Запустить ещё одну копию?" />
-	<translate name="Do you really want to delete Photo Database 4.5?" value="Вы действительно хотите удалить Photo Database 4.5?" />
+	<translate name="Do you really want to delete Photo Database 4.6?" value="Вы действительно хотите удалить Photo Database 4.6?" />
 	<translate name="View with PhotoDB" value="Просмотр с помощью PhotoDB" />
 	<translate name="Photo Database {V} helps you to find, protect and organize your photos." value="Photo Database {V} поможет вам в поиске, защите и организации ваших фотографий." />
 	<translate name="Get photos" value="Получить фотографии" />
@@ -95,7 +95,7 @@
   </scope>
   <scope name="Setup">
 	<translate name="Please start this program using account with administrator rights!" value="Пожалуйста, запустите программу установки с правами администратора!" />
-	<translate name="Welcome to the Photo Database 4.5" value="Добро пожаловать в Photo Database 4.5" />
+	<translate name="Welcome to the Photo Database 4.6" value="Добро пожаловать в Photo Database 4.6" />
 	<translate name="Newer version (%s) is already installed! Do you want to install old version (%s)?" value="Более новая версия (%s) уже установлена! Вы действительно хотите установить старую версию (%s)?" />
 	<translate name="Friends" value="Друзья" />
 	<translate name="Family" value="Семья" />
@@ -106,12 +106,12 @@
 	<translate name="Next" value="Далее" />
 	<translate name="Previous" value="Назад" />
 	<translate name="Install path" value="Путь для установки" />
-	<translate name="PhotoDB 4.5 Setup" value="Установка PhotoDB 4.0" />
+	<translate name="PhotoDB 4.6 Setup" value="Установка PhotoDB 4.6" />
 	<translate name="I accept license agreement" value="Я принимаю лицензионное соглашение" />
 	<translate name="Select default associations" value="По умолчанию" />
 	<translate name="Select all" value="Выбрать всё" />
 	<translate name="Select none" value="Отменить всё" />
-	<translate name="PhotoDB 4.0 Uninstall" value="Удаление PhotoDB 4.0" />
+	<translate name="PhotoDB 4.6 Uninstall" value="Удаление PhotoDB 4.6" />
 	<translate name="Yes, I want to uninstall this program" value="Да, я хочу удалить эту программу" />
 	<translate name="Don't use this extension" value="Не использовать это расширение"/>
 	<translate name="Use PhotoDB as default association" value="Использовать эту программу по умолчанию"/>
@@ -120,7 +120,7 @@
 	<translate name="Delete all registered collections" value="Удалить все зарегистрированные коллекции" />
 	<translate name="Uninstall options" value="Настройки удаления" />
 	<translate name="Do you really want to delete all collection files (*.photodb)?" value="Вы действительно хотите удалить все файлы коллекций (*.photodb)?" />
-	<translate name="Photo Database 4.5 Setup" value="Установка Photo Database 4.5" />
+	<translate name="Photo Database 4.6 Setup" value="Установка Photo Database 4.6" />
 	<translate name="Please close the following application to continue uninstall:" value="Пожалуйста, закройте следующие приложения для продолжения:" />
 	<translate name="Close applications" value="Закрытие приложений" />
 	<translate name="Installation was aborted!" value="Установка была прервана!" />	

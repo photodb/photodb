@@ -306,6 +306,7 @@ type
     procedure Add(Person: TPerson);
     procedure ReadFromDS(DS: TDataSet); override;
     procedure DeleteAt(I: Integer);
+    procedure MovePersonTo(FromIndex, ToIndex: Integer);
     procedure RemoveByID(PersonID: Integer);
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TPerson read GetPersonByIndex; default;
@@ -1712,6 +1713,15 @@ begin
   else
     F(FList);
   inherited;
+end;
+
+procedure TPersonCollection.MovePersonTo(FromIndex, ToIndex: Integer);
+var
+  P: TPerson;
+begin
+  P := FList[FromIndex];
+  FList.Delete(FromIndex);
+  FList.Insert(ToIndex, P);
 end;
 
 procedure TPersonCollection.FreeItems;

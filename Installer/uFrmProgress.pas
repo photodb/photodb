@@ -152,7 +152,7 @@ procedure TFrmProgress.LoadLanguage;
 begin
   BeginTranslate;
   try
-    Caption := L('Photo Database 4.5 Setup');
+    Caption := L('Photo Database 4.6 Setup');
   finally
     EndTranslate;
   end;

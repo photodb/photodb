@@ -173,6 +173,11 @@ begin
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_4_0 + '\' + ProgramShortCutFile_4_0, False);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_4_0 + '\' + HelpShortCutFile_4_0, False);
   AddUninstallShortcut('Start Menu', StartMenuProgramsPath_4_0, True);
+
+  AddUninstallShortcut('Desktop', ProgramShortCutFile_4_5, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_4_5 + '\' + ProgramShortCutFile_4_5, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_4_5 + '\' + HelpShortCutFile_4_5, False);
+  AddUninstallShortcut('Start Menu', StartMenuProgramsPath_4_5, True);
 end;
 
 end.

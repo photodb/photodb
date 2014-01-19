@@ -55,14 +55,14 @@ const
   MajorVersion = 3;
   MinorVersion = 1;
   PhotoDBFileName = 'PhotoDB.exe';
-  ProductName = 'Photo DataBase 4.5';
-  StartMenuProgramsPath = 'Photo DB v4.5';
-  ProductMajorVersionVersion = '4.5';
+  ProductName = 'Photo DataBase 4.6';
+  StartMenuProgramsPath = 'Photo DB v4.6';
+  ProductMajorVersionVersion = '4.6';
   ProgramShortCutFile = ProductName+'.lnk';
   HelpShortCutFile = 'Help.lnk';
   WindowsMenuTime = 1000;
   ProgramMail = 'photodb@illusdolphin.net';
-  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2013';
+  CopyRightString = 'Studio "Illusion Dolphin" © 2002-2014';
   ProgramInstallSize = 48676; //in Kb
 
   SITE_ACTION_PERSONS = 'persons';
