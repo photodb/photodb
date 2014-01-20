@@ -126,6 +126,7 @@ object FormFindPerson: TFormFindPerson
     DoubleBuffered = True
     FullDrag = True
     HideSelection = False
+    OwnerDraw = True
     ReadOnly = True
     RowSelect = True
     ParentDoubleBuffered = False
@@ -133,6 +134,7 @@ object FormFindPerson: TFormFindPerson
     TabOrder = 1
     ViewStyle = vsReport
     OnDblClick = LvPersonsDblClick
+    OnDrawItem = LvPersonsDrawItem
     OnSelectItem = LvPersonsSelectItem
   end
   object LsMain: TLoadingSign

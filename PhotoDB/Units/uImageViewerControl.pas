@@ -126,6 +126,7 @@ type
     FLoadImageSize: TSize;
 
     FText: string;
+    FStarChar: Char;
 
     FDrawFace: TFaceDetectionResultItem;
     FFaces: TFaceDetectionResult;
@@ -469,6 +470,11 @@ begin
   FDisplayAllFaces := False;
 
   FItem := TMediaItem.Create;
+
+  if IsWindowsXPOnly then
+    FStarChar := '*'
+  else
+    FStarChar := '★';
 
   CollectionEvents.RegisterChangesID(Self, ChangedDBDataByID);
 end;
@@ -1819,7 +1825,7 @@ begin
         begin
           Name := Name + ' (';
           for J := 1 to SelectedPersons[I].Tag do
-            Name := Name + '★';
+            Name := Name + FStarChar;
           Name := Name + ')';
         end;
         MI.Caption := Name;

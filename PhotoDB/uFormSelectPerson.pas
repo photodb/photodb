@@ -3,6 +3,7 @@
 interface
 
 uses
+  System.Types,
   System.SysUtils,
   System.Classes,
   Winapi.Windows,
@@ -64,6 +65,8 @@ type
     procedure WedPersonFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure LvPersonsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure WlCreatePersonClick(Sender: TObject);
+    procedure LvPersonsDrawItem(Sender: TCustomListView; Item: TListItem;
+      Rect: TRect; State: TOwnerDrawState);
   private
     { Private declarations }
     FContext: IDBContext;
@@ -73,6 +76,7 @@ type
     FFormResult: Integer;
     FPersons: TPersonCollection;
     FSimilarFaces: IRelatedPersonsCollection;
+    FStarChar: Char;
     function GetIndex(aNMHdr: pNMHdr): Integer;
     procedure CheckMsg(var aMsg: TMessage);
     procedure LoadList;
@@ -267,6 +271,11 @@ begin
   LoadLanguage;
   SaveWindowPos1.Key := RegRoot + 'SelectPerson';
   SaveWindowPos1.SetPosition(True);
+
+  if IsWindowsXPOnly then
+    FStarChar := '*'
+  else
+    FStarChar := '★';
 end;
 
 procedure TFormFindPerson.FormDestroy(Sender: TObject);
@@ -401,6 +410,69 @@ begin
   );
 end;
 
+procedure TFormFindPerson.LvPersonsDrawItem(Sender: TCustomListView;
+  Item: TListItem; Rect: TRect; State: TOwnerDrawState);
+var
+  I, X, Y: Integer;
+  DS: TDrawingStyle;
+  Data: TStrings;
+  LineHeight: Integer;
+  C: TCanvas;
+  P: TPerson;
+  Stars: string;
+  R: TRect;
+begin
+  DS := dsNormal;
+  C := Sender.Canvas;
+  P := TPerson(Item.Data);
+  LineHeight := C.TextHeight('Iy') + 2;
+  if odSelected in State then
+  begin
+    DS := dsSelected;
+    C.Brush.Color := Theme.ListSelectedColor;
+    SetTextColor(C.Handle, Theme.ListFontSelectedColor);
+  end else
+  begin
+    C.Brush.Color := Theme.ListColor;
+    SetTextColor(C.Handle, Theme.ListFontColor);
+  end;
+  C.FillRect(Rect);
+  X := Sender.Column[0].Width div 2 - ImlPersons.Width div 2;
+  Y := Rect.Top + Rect.Height div 2 - ImlPersons.Height div 2;
+
+  ImlPersons.Draw(C, X, Y, Item.ImageIndex, DS, itImage);
+
+  Data := TStringList.Create;
+  try
+    Data.Add(P.Name);
+
+    if Trim(P.Comment) <> '' then
+      Data.Add(P.Comment);
+
+    Data.Add(FormatEx(L('Photos: {0}'), [P.Count]));
+
+    if P.Tag > 0 then
+    begin
+      Stars := '';
+      for I := 1 to P.Tag do
+        Stars := Stars + FStarChar;
+      Data.Add(FormatEx(L('Match: {0}'), [Stars]));
+    end;
+
+    Y := Rect.Top + Rect.Height div 2 - (LineHeight * Data.Count) div 2;
+    X := Sender.Column[0].Width + 2;
+    for I := 0 to Data.Count - 1 do
+    begin
+      R := System.Classes.Rect(X, Y + I * LineHeight, X + Rect.Right, Y + (I + 1) * LineHeight);
+      DrawText(C.Handle,
+        Data[I],
+        Length(Data[I]), R, DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS);
+    end;
+  finally
+    F(Data);
+  end;
+end;
+
 procedure TFormFindPerson.LvPersonsDblClick(Sender: TObject);
 begin
   CloseForm;
@@ -439,7 +511,7 @@ procedure TFormFindPerson.AddItem(P: TPerson);
 var
   I: Integer;
   LI: TListItem;
-  SearchTerm, Key, Description, Stars: string;
+  SearchTerm, Key: string;
   Visible: Boolean;
   SimilarFace: IFoundPerson;
   InsertIndex: Integer;
@@ -478,20 +550,6 @@ begin
 
     LI.Caption := P.Name;
     LI.ImageIndex := FPersons.IndexOf(P);
-    Description := P.Name;
-    if Trim(P.Comment) <> '' then
-      Description := Description + #13 + P.Comment;
-    Description := Description + #13 + FormatEx(L('Photos: {0}'), [P.Count]);
-
-    if SimilarFace <> nil then
-    begin
-      Stars := '';
-      for I := 1 to P.Tag do
-        Stars := Stars + '★';
-      Description := Description + #13 + FormatEx(L('Match: {0}'), [Stars]);
-    end;
-
-    LI.SubItems.Add(Description);
     LI.Data := Pointer(P);
   end;
 end;

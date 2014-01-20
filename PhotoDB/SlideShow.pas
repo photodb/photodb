@@ -356,6 +356,7 @@ type
     FIsImageLoading: Boolean;
     FMouseDowned: Boolean;
     FSimilarFaces: IRelatedPersonsCollection;
+    FStarChar: Char;
 
     FFullScreenView: IFullScreenImageForm;
     FDirectShowForm: ISlideShowForm;
@@ -632,6 +633,11 @@ begin
   TW.I.Start('RecreateImLists - END');
   FProgressMessage := RegisterWindowMessage('SLIDE_SHOW_PROGRESS');
   PostMessage(Handle, FProgressMessage, 0, 0);
+
+  if IsWindowsXPOnly then
+    FStarChar := '*'
+  else
+    FStarChar := '★';
 end;
 
 procedure TViewer.LoadContext;
@@ -1385,7 +1391,7 @@ begin
         begin
           Name := Name + ' (';
           for J := 1 to SelectedPersons[I].Tag do
-            Name := Name + '★';
+            Name := Name + FStarChar;
           Name := Name + ')';
         end;
         MI.Caption := Name;

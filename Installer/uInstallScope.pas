@@ -285,8 +285,6 @@ begin
   Files.Add(PhotoDBBridge);
   Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('msvcr110.dll',                    '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('msvcp110.dll',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('opencv_core247.dll',              '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('opencv_highgui247.dll',           '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('opencv_imgproc247.dll',           '%PROGRAM%', ''));
