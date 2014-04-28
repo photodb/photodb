@@ -20,6 +20,7 @@ resize - raw use preview checkbox;
 - Search directory;
 - Search person;
 - Global search for elements?
+- Inport left-right buttons change date;
 
 [Maybe]
 - Groups -> Categories
@@ -33,7 +34,6 @@ Possible CRs:
 
 [F] Add new styles;
 [F] Player russian (in registry);
-[F] XP dll injection update?;
 [CR] Private group -> Hidden group;
 [F] DB Search - count indicator;
 - Explorer shift button fix?
