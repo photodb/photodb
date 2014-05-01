@@ -716,6 +716,9 @@ begin
         begin
           for FaceFileName in TDirectory.GetFiles(PersonDir, '*.xml') do
           begin
+            if GetFacesCount > FMaxFaces then
+              CleanUp1Face;
+
             Face := TPersonFace.CreateFromFile(FaceFileName);
             if Face.FFaceImage <> nil then
             begin
@@ -814,6 +817,9 @@ begin
     Person := FPersons[I];
     for J := 0 to Person.FacesCount - 1 do
     begin
+     // if Length(SamplesArray) = 79 then
+     //   Break;
+
       SetLength(SamplesArray, Length(SamplesArray) + 1);
       SamplesArray[Length(SamplesArray) - 1] := Person.Faces[J].Face;
 
@@ -847,17 +853,17 @@ begin
   NEigens := SamplesCount - 1;
 
   // This is a basis
-  SetLength(FEigImg, SamplesCount);
+  SetLength(FEigImg, NEigens);
   FEigenVals := cvCreateMat(1, NEigens, IPL_DEPTH_32F);
 
   // Get memory for basis
-  for I := 0 to SamplesCount - 1 do
+  for I := 0 to NEigens  - 1 do
     FEigImg[I] := cvCreateImage(FSize, IPL_DEPTH_32F, 1);
 
   // Calculate basis
   cvCalcEigenObjects(
     SamplesCount,
-    SamplesArray,
+    @SamplesArray[0],
     FEigImg,
     CV_EIGOBJ_NO_CALLBACK,
     0,
@@ -1023,7 +1029,7 @@ begin
 
   cvEigenDecomposite(
     FaceImage,
-    FTrainedFacesCount,
+    FTrainedFacesCount - 1,
     FEigImg,
     CV_EIGOBJ_NO_CALLBACK,
     nil,
