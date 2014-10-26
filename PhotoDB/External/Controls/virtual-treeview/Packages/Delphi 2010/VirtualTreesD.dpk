@@ -24,8 +24,9 @@ package VirtualTreesD;
 {$MINENUMSIZE 1}
 {$IMAGEBASE $30400000}
 {$DESCRIPTION 'Virtual Treeview design time package'}
+{$LIBSUFFIX '14'}
 {$DESIGNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   dclstd,

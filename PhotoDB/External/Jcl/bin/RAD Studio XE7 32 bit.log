@@ -4,6 +4,9 @@ JCL 2.7 Testing Build 5300
 Installed personalities :
 32 bit Delphi
 64 bit Delphi
+32 bit Delphi for OSX
+32 bit C++Builder
+64 bit C++Builder
 ================================================================================
 Multiple profile installation
 Single profile installation
@@ -11,3 +14,6 @@ Single profile installation
 Saving conditional defines...
 Loaded template for include file D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include\jcl.template.inc
 Saved include file D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include\jcld21win32.inc
+Added "D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\lib\d21\win32;D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include" to library search path.
+Added "D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\common;D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\windows;D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\vcl" to library browsing path.
+Added "D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\lib\d21\win32\debug" to Debug DCU Path.

@@ -13617,6 +13617,7 @@ begin
   begin
     FShellTreeView := TPathProvideTreeView.Create(Self);
     FShellTreeView.Parent := TsExplorer;
+    FShellTreeView.LoadColorScheme;
     FShellTreeView.Align := alClient;
     FShellTreeView.LoadHomeDirectory(Self);
     FShellTreeView.OnGetPopupMenu := PathTreeViewGetPopupMenu;

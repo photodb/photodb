@@ -74,7 +74,7 @@ type
     function DoGetNodeWidth(Node: PVirtualNode; Column: TColumnIndex; Canvas: TCanvas = nil): Integer; override;
     procedure DoFreeNode(Node: PVirtualNode); override;
     procedure AddToSelection(Node: PVirtualNode); override;
-    procedure DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal); override;
+    function DoInitChildren(Node: PVirtualNode; var ChildCount: Cardinal): Boolean; override;
     function DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var Index: Integer): TCustomImageList; override;
     function InitControl: Boolean;
@@ -82,6 +82,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure LoadColorScheme;
     procedure LoadHomeDirectory(Form: TThreadForm);
     procedure SelectPathItem(PathItem: TPathItem);
     procedure SelectPath(Path: string);
@@ -318,41 +319,6 @@ begin
   FIsInitialized := False;
   FIsInternalSelection := False;
 
-  {$IFDEF PHOTODB}
-  Color := Theme.ListViewColor;
-  Font.Color :=  StyleServices.GetStyleFontColor(sfListItemTextNormal);
-  Colors.BorderColor := StyleServices.GetSystemColor(clBtnFace);
-  Colors.DisabledColor := StyleServices.GetSystemColor(clBtnShadow);
-  Colors.DropMarkColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.FocusedSelectionBorderColor := Theme.GradientToColor;
-  Colors.FocusedSelectionColor := Theme.GradientFromColor;
-  Colors.GridLineColor := StyleServices.GetSystemColor(clBtnFace);
-  Colors.HotColor := StyleServices.GetSystemColor(clWindowText);
-  Colors.SelectionRectangleBlendColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.SelectionRectangleBorderColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.SelectionTextColor := Theme.GradientText;
-  Colors.TreeLineColor := StyleServices.GetSystemColor(clBtnShadow);
-  Colors.UnfocusedSelectionBorderColor := Theme.GradientToColor;
-  Colors.UnfocusedSelectionColor := Theme.GradientFromColor;
-  {$ENDIF}
-  {$IFNDEF PHOTODB}
-  Color := StyleServices.GetStyleColor(scTreeView);
-  Font.Color :=  StyleServices.GetStyleFontColor(sfTreeItemTextNormal);
-  Colors.BorderColor := StyleServices.GetSystemColor(clBtnFace);
-  Colors.DisabledColor := StyleServices.GetSystemColor(clBtnShadow);
-  Colors.DropMarkColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.FocusedSelectionBorderColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.FocusedSelectionColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.GridLineColor := StyleServices.GetSystemColor(clBtnFace);
-  Colors.HotColor := StyleServices.GetSystemColor(clWindowText);
-  Colors.SelectionRectangleBlendColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.SelectionRectangleBorderColor := StyleServices.GetSystemColor(clHighlight);
-  Colors.SelectionTextColor := StyleServices.GetStyleFontColor(sfTreeItemTextSelected);
-  Colors.TreeLineColor := StyleServices.GetSystemColor(clBtnShadow);
-  Colors.UnfocusedSelectionColor := StyleServices.GetSystemColor(clBtnFace);
-  Colors.UnfocusedSelectionBorderColor := StyleServices.GetSystemColor(clBtnFace);
-  {$ENDIF}
-
   FWaitOperationCount := 0;
   FHomeItems := TPathItemCollection.Create;
 
@@ -570,6 +536,44 @@ begin
 
   LoadFromRes(MinusBM, 'TREE_VIEW_OPEN', StyleServices.GetStyleFontColor(sfTreeItemTextNormal));
   LoadFromRes(PlusBM, 'TREE_VIEW_CLOSE', StyleServices.GetStyleFontColor(sfTreeItemTextNormal));
+end;
+
+procedure TPathProvideTreeView.LoadColorScheme;
+begin
+  {$IFDEF PHOTODB}
+  Color := Theme.ListViewColor;
+  Font.Color :=  StyleServices.GetStyleFontColor(sfListItemTextNormal);
+  Colors.BorderColor := StyleServices.GetSystemColor(clBtnFace);
+  Colors.DisabledColor := StyleServices.GetSystemColor(clBtnShadow);
+  Colors.DropMarkColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.FocusedSelectionBorderColor := Theme.GradientToColor;
+  Colors.FocusedSelectionColor := Theme.GradientFromColor;
+  Colors.GridLineColor := StyleServices.GetSystemColor(clBtnFace);
+  Colors.HotColor := StyleServices.GetSystemColor(clWindowText);
+  Colors.SelectionRectangleBlendColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.SelectionRectangleBorderColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.SelectionTextColor := Theme.GradientText;
+  Colors.TreeLineColor := StyleServices.GetSystemColor(clBtnShadow);
+  Colors.UnfocusedSelectionBorderColor := Theme.GradientToColor;
+  Colors.UnfocusedSelectionColor := Theme.GradientFromColor;
+  {$ENDIF}
+  {$IFNDEF PHOTODB}
+  Color := StyleServices.GetStyleColor(scTreeView);
+  Font.Color :=  StyleServices.GetStyleFontColor(sfTreeItemTextNormal);
+  Colors.BorderColor := StyleServices.GetSystemColor(clBtnFace);
+  Colors.DisabledColor := StyleServices.GetSystemColor(clBtnShadow);
+  Colors.DropMarkColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.FocusedSelectionBorderColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.FocusedSelectionColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.GridLineColor := StyleServices.GetSystemColor(clBtnFace);
+  Colors.HotColor := StyleServices.GetSystemColor(clWindowText);
+  Colors.SelectionRectangleBlendColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.SelectionRectangleBorderColor := StyleServices.GetSystemColor(clHighlight);
+  Colors.SelectionTextColor := StyleServices.GetStyleFontColor(sfTreeItemTextSelected);
+  Colors.TreeLineColor := StyleServices.GetSystemColor(clBtnShadow);
+  Colors.UnfocusedSelectionColor := StyleServices.GetSystemColor(clBtnFace);
+  Colors.UnfocusedSelectionBorderColor := StyleServices.GetSystemColor(clBtnFace);
+  {$ENDIF}
 end;
 
 procedure TPathProvideTreeView.SelectPath(Path: string);
@@ -796,12 +800,12 @@ begin
   LoadHomeDirectory(FForm);
 end;
 
-procedure TPathProvideTreeView.DoInitChildren(Node: PVirtualNode;
-  var ChildCount: Cardinal);
+function TPathProvideTreeView.DoInitChildren(Node: PVirtualNode;
+  var ChildCount: Cardinal): Boolean;
 var
   AInfo: TLoadChildsInfo;
 begin
-  inherited;
+  Result := inherited;
   AInfo := TLoadChildsInfo.Create;
   AInfo.Node := Node;
   AInfo.Data := GetNodeData(Node);
@@ -850,7 +854,7 @@ begin
                         if Info.Node.ChildCount > 0 then
                           SearchPath := ExcludeTrailingPathDelimiter(AnsiLowerCase(PData(GetNodeData(Info.Node.FirstChild)).Data.Path));
 
-                        InterruptValidation;
+                        //InterruptValidation;
                         BeginUpdate;
                         try
                           for I := 0 to CurrentItems.Count - 1 do

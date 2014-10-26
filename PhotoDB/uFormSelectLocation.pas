@@ -77,6 +77,7 @@ begin
 
   FShellTreeView := TPathProvideTreeView.Create(Self);
   FShellTreeView.Parent := PnExplorer;
+  FShellTreeView.LoadColorScheme;
   FShellTreeView.Align := AlClient;
   FShellTreeView.OnlyFileSystem := not AllowVirtualItems;
   FShellTreeView.LoadHomeDirectory(Self);

@@ -1035,7 +1035,7 @@ begin
         end;
         Exit;
       end;
-      {LStyle := TCustomStyleExt.Create(FThemeList[I]);
+      LStyle := TCustomStyleExt.Create(FThemeList[I]);
       try
         if Assigned(LStyle) then
         begin
@@ -1053,7 +1053,7 @@ begin
         end;
       finally
         F(LStyle);
-      end; }
+      end;
   end;
 end;
 
