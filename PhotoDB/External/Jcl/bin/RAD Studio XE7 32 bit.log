@@ -1,0 +1,13 @@
+================================================================================
+JCL 2.7 Testing Build 5300
+==========RAD Studio XE7 32 bit=================================================
+Installed personalities :
+32 bit Delphi
+64 bit Delphi
+================================================================================
+Multiple profile installation
+Single profile installation
+================================================================================
+Saving conditional defines...
+Loaded template for include file D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include\jcl.template.inc
+Saved include file D:\Dmitry\Delphi exe\Photo Database\trunk\PhotoDB\External\Jcl\source\include\jcld21win32.inc

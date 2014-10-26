@@ -1581,7 +1581,13 @@ end;
 
 function DynArrayCompareInteger(Item1, Item2: Pointer): Integer;
 begin
-  Result := PInteger(Item1)^ - PInteger(Item2)^;
+  if PInteger(Item1)^ < PInteger(Item2)^ then
+    Result := -1
+  else
+  if PInteger(Item1)^ > PInteger(Item2)^ then
+    Result := 1
+  else
+    Result := 0;
 end;
 
 function DynArrayCompareCardinal(Item1, Item2: Pointer): Integer;
@@ -3025,7 +3031,7 @@ begin
         end;
         if {$IFDEF FPC}Boolean({$ENDIF}AbortPtr^{$IFDEF FPC}){$ENDIF} then
           TerminateProcess(ProcessEvent.Handle, Cardinal(ABORT_EXIT_CODE));
-        if (ProcessEvent.WaitForever = wrSignaled) and not GetExitCodeProcess(ProcessEvent.Handle, Result) then
+        if (ProcessEvent.WaitForever = {$IFDEF DELPHI21_UP}TJclWaitResult.{$ENDIF}wrSignaled) and not GetExitCodeProcess(ProcessEvent.Handle, Result) then
           Result := $FFFFFFFF;
         CloseHandle(ProcessInfo.hThread);
         ProcessInfo.hThread := 0;

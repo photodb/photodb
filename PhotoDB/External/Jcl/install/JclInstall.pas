@@ -307,8 +307,8 @@ type
 
     // IJediProduct
     procedure Init;
-    function Install: Boolean;
-    function Uninstall: Boolean;
+    function Install(InstallPage: IJediInstallPage = nil): Boolean;
+    function Uninstall(InstallPage: IJediInstallPage = nil): Boolean;
     procedure Close;
 
     property JclPath: string read FJclPath;
@@ -1655,24 +1655,49 @@ var
           CppFile.Free;
         end;
 
-        Target.BCC32.Options.Clear;
-        Target.BCC32.Options.Add('-c'); // compile only
-        Target.BCC32.Options.Add('-Ve'); // compatibility
-        Target.BCC32.Options.Add('-X'); // no autodependencies
-        Target.BCC32.Options.Add('-a8'); // data alignment
-        Target.BCC32.Options.Add('-b'); // enum to be at least 4 bytes
-        Target.BCC32.Options.Add('-k-'); // no standard stack frame
-        {$IFDEF MSWINDOWS}
-        Target.BCC32.Options.Add('-tWM'); // code format
-        {$ELSE ~ MSWINDOWS}
-        Target.BCC32.Options.Add('-tC'); // code format
-        {$ENDIF ~MSWINDOWS}
-        Target.BCC32.Options.Add('-w-par'); // warning
-        Target.BCC32.Options.Add('-w-aus'); // warning
-        Target.BCC32.AddPathOption('I', Format('%s%s%s%sinclude%s%s', [Distribution.JclSourcePath, DirSeparator, Target.RootDir, DirDelimiter, DirSeparator, Target.VclIncludeDir[FTargetPlatform]]));
-        Options := StringsToStr(Target.BCC32.Options, NativeSpace);
-        Result := Target.BCC32.Execute(Options + ' "jcl_a2z.cpp"')
-          and Target.BCC32.Execute(Options + ' "jcl_z2a.cpp"'); 
+        Target.BCC.Options.Clear;
+        Target.BCC.Options.Add('-c'); // compile only
+        if FTargetPlatform <> bpWin64 then
+        begin
+          Target.BCC.Options.Add('-Ve'); // compatibility
+          Target.BCC.Options.Add('-b'); // enum to be at least 4 bytes
+          Target.BCC.Options.Add('-k-'); // no standard stack frame
+          Target.BCC.Options.Add('-X'); // no autodependencies
+          Target.BCC.Options.Add('-a8'); // data alignment
+          {$IFDEF MSWINDOWS}
+          Target.BCC.Options.Add('-tWM'); // code format
+          {$ELSE ~ MSWINDOWS}
+          Target.BCC.Options.Add('-tC'); // code format
+          {$ENDIF ~MSWINDOWS}
+          Target.BCC.Options.Add('-w-par'); // warning
+          Target.BCC.Options.Add('-w-aus'); // warning
+          Target.BCC.AddPathOption('I', Format('%s%s%s%sinclude%s%s', [Distribution.JclSourcePath, DirSeparator, Target.RootDir, DirDelimiter, DirSeparator, Target.VclIncludeDir[FTargetPlatform]]));
+        end
+        else
+        begin
+          Target.BCC.Options.Add('-D _DEBUG');
+          Target.BCC.Options.Add('-g');
+          Target.BCC.Options.Add('-fno-limit-debug-info');
+          Target.BCC.Options.Add('-fborland-extensions');
+          Target.BCC.Options.Add('-nobuiltininc');
+          Target.BCC.Options.Add('-fexceptions');
+          Target.BCC.Options.Add('-fcxx-exceptions');
+          Target.BCC.Options.Add('-mstackrealign');
+          Target.BCC.Options.Add('-fno-spell-checking');
+          Target.BCC.Options.Add('-fno-use-cxa-atexit');
+          Target.BCC.Options.Add('-x c++');
+          Target.BCC.Options.Add('-std=c++11');
+          Target.BCC.Options.Add('-O0');
+          Target.BCC.Options.Add('-tC');
+          Target.BCC.Options.Add('-tM');
+
+          Target.BCC.Options.Add('-I "' + Distribution.JclSourcePath + '"');
+          Target.BCC.Options.Add('-I "' + Target.RootDir + '"');
+          Target.BCC.Options.Add('-isystem "' + Target.VclIncludeDir[FTargetPlatform] + '"');
+        end;
+        Options := StringsToStr(Target.BCC.Options, NativeSpace);
+        Result := Target.BCC.Execute(Options + ' "jcl_a2z.cpp"')
+          and Target.BCC.Execute(Options + ' "jcl_z2a.cpp"');
       finally
         SetCurrentDir(SaveDir);
       end;
@@ -1682,6 +1707,11 @@ var
   var
     I: Integer;
   begin
+    if (Target is TJclBDSInstallation) and (Target.IDEVersionNumber >= 9) and (FTargetPlatform = bpWin64) then
+      Target.BCC := (Target as TJclBDSInstallation).BCC64
+    else
+      Target.BCC := Target.BCC32;
+
     Result := True;
     if OptionChecked[joJCLMake] then
     begin
@@ -3261,7 +3291,7 @@ function TJclDistribution.CreateInstall(Target: TJclBorRADToolInstallation): Boo
         Result := Target.VersionNumber in [6];
       brBorlandDevStudio :
         Result := ((Target.VersionNumber in [1, 2]) and (bpDelphi32 in Target.Personalities))
-          or (Target.VersionNumber in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+          or (Target.VersionNumber in [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15]);
       else
         Result := False;
     end;
@@ -3501,7 +3531,7 @@ begin
   InitInstallations;
 end;
 
-function TJclDistribution.Install: Boolean;
+function TJclDistribution.Install(InstallPage: IJediInstallPage): Boolean;
 var
   I: Integer;
   KeepSettings: Boolean;
@@ -3538,11 +3568,14 @@ begin
         AInstallation := TargetInstalls[I];
         if AInstallation.Enabled then
         begin
-          if Assigned(AInstallation.GUIPage) then
-            AInstallation.GUIPage.Show;
-          KeepSettings := GUI.Dialog(LoadResString(@RsKeepExpertSettings),
-            dtConfirmation, [drYes, drNo]) = drYes;
-          Break;
+          if (InstallPage = nil) or (AInstallation.GUIPage = InstallPage) then
+          begin
+            if Assigned(AInstallation.GUIPage) then
+              AInstallation.GUIPage.Show;
+            KeepSettings := GUI.Dialog(LoadResString(@RsKeepExpertSettings),
+              dtConfirmation, [drYes, drNo]) = drYes;
+            Break;
+          end;
         end;
       end;
     end;
@@ -3553,12 +3586,16 @@ begin
     FNbInstalled := 0;
 
     for I := 0 to TargetInstallCount - 1 do
-      if TargetInstalls[I].Enabled then
-        Inc(FNbEnabled);
-
-    for I := 0 to TargetInstallCount - 1 do
-      if GUI.DeletePreviousLogFiles then
-        SysUtils.DeleteFile(TargetInstalls[I].LogFileName);
+    begin
+      AInstallation := TargetInstalls[I];
+      if (InstallPage = nil) or (AInstallation.GUIPage = InstallPage) then
+      begin
+        if AInstallation.Enabled then
+          Inc(FNbEnabled);
+        if GUI.DeletePreviousLogFiles then
+          SysUtils.DeleteFile(AInstallation.LogFileName);
+      end;
+    end;
 
     Result := True;
     for I := 0 to TargetInstallCount - 1 do
@@ -3566,14 +3603,17 @@ begin
       AInstallation := TargetInstalls[I];
       if AInstallation.Enabled then
       begin
-        AInstallation.Silent := False;
-        if not KeepSettings then
-          AInstallation.RemoveSettings;
-        AInstallation.Uninstall(False);
-        Result := AInstallation.Install;
-        if not Result and (not Assigned(GUI) or not GUI.ContinueOnTargetError) then
-          Break;
-        Inc(FNbInstalled);
+        if (InstallPage = nil) or (AInstallation.GUIPage = InstallPage) then
+        begin
+          AInstallation.Silent := False;
+          if not KeepSettings then
+            AInstallation.RemoveSettings;
+          AInstallation.Uninstall(False);
+          Result := AInstallation.Install;
+          if not Result and (not Assigned(GUI) or not GUI.ContinueOnTargetError) then
+            Break;
+          Inc(FNbInstalled);
+        end;
       end;
     end;
 
@@ -3815,7 +3855,7 @@ begin
 end;
 {$ENDIF MSWINDOWS}
 
-function TJclDistribution.Uninstall: Boolean;
+function TJclDistribution.Uninstall(InstallPage: IJediInstallPage): Boolean;
 var
   I: Integer;
   AInstallation: TJclInstallation;
@@ -3836,9 +3876,12 @@ begin
   for I := 0 to TargetInstallCount - 1 do
   begin
     AInstallation := TargetInstalls[I];
-    AInstallation.Silent := False;
-    if AInstallation.Enabled and ((not AInstallation.RemoveSettings) or not AInstallation.Uninstall(True)) then
-      Result := False;
+    if (InstallPage = nil) or (AInstallation.GUIPage = InstallPage) then
+    begin
+      AInstallation.Silent := False;
+      if AInstallation.Enabled and ((not AInstallation.RemoveSettings) or not AInstallation.Uninstall(True)) then
+        Result := False;
+    end;
   end;
 
   {$IFDEF MSWINDOWS}

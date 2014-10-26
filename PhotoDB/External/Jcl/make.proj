@@ -54,6 +54,8 @@
 		<EditionDirVersion Condition=" Exists('$(BDS)\bin\dcc32170.dll') ">d17</EditionDirVersion> <!-- XE3 -->
 		<EditionDirVersion Condition=" Exists('$(BDS)\bin\dcc32180.dll') ">d18</EditionDirVersion> <!-- XE4 -->
 		<EditionDirVersion Condition=" Exists('$(BDS)\bin\dcc32190.dll') ">d19</EditionDirVersion> <!-- XE5 -->
+		<EditionDirVersion Condition=" Exists('$(BDS)\bin\dcc32200.dll') ">d20</EditionDirVersion> <!-- XE6 -->
+		<EditionDirVersion Condition=" Exists('$(BDS)\bin\dcc32210.dll') ">d21</EditionDirVersion> <!-- XE7 -->
 
 		<LibDirVersion>$(EditionDirVersion)\$(Platform)</LibDirVersion>
 		<LibDirVersion Condition=" '$(EditionDirVersion)' == 'd12' or '$(EditionDirVersion)' == 'd14' or '$(EditionDirVersion)' == 'd15' ">$(EditionDirVersion)</LibDirVersion>
@@ -67,7 +69,7 @@
 		<DCC Condition=" '$(Platform)' == 'win64' ">&quot;$(BDS)\bin\dcc64.exe&quot; --no-config -Q</DCC>
 
 		<BCBCompile>false</BCBCompile>
-		<BCBCompile Condition=" Exists('$(BDS)\bin\bccide.dll') ">true</BCBCompile>
+		<BCBCompile Condition=" Exists('$(BDS)\bin\bccide.dll') or '$(ForceBCBCompile)' == 'true' ">true</BCBCompile>
 
 		<UnitScopeRequired>true</UnitScopeRequired>
 		<UnitScopeRequired Condition=" '$(EditionDirVersion)' == 'd12' or '$(EditionDirVersion)' == 'd14' or '$(EditionDirVersion)' == 'd15' ">false</UnitScopeRequired>
