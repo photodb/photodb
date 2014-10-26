@@ -21,7 +21,7 @@ uses
   IdGlobal,
   IdSSLOpenSSL,
 
-  Data.DBXJSON,
+  System.JSON,
 
   Dmitry.Utils.System,
   Dmitry.Graphics.LayeredBitmap,

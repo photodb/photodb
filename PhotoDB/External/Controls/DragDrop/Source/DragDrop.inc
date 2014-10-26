@@ -157,6 +157,12 @@
   {$DEFINE VER_OK}
 {$ENDIF}
 
+// Delphi XE7
+{$IFDEF VER280}
+  {$DEFINE VER26_PLUS}
+  {$DEFINE VER_OK}
+{$ENDIF}
+
 // Unknown compiler version - assume D2009 compatible for Unicode or D2007 for Ansi
 {$IFNDEF VER_OK}
   {$ifdef UNICODE}

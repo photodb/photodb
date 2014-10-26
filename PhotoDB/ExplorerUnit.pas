@@ -5839,7 +5839,7 @@ begin
     if Assigned(Embed2) then
     begin
       Embed := Embeds.item(0, I) as IHTMLElement;
-      if Assigned(Embed) and (Embed.className = 'image') then
+      if Assigned(Embed) and (Embed.Get__className = 'image') then
       begin
         FWebBorwserFactory := TElementBehaviorFactory.Create(Self);
         FactoryVar := IElementBehaviorFactory(FWebBorwserFactory);
