@@ -118,7 +118,7 @@ end;
 
 constructor TFaceRecognizerService.Create;
 begin
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit;
 
   FRecognizer := TFaceEigenRecognizer.Create(FaceWidth, FaceHeight, FacesPerPerson, MaxFaces);
@@ -128,7 +128,7 @@ end;
 
 destructor TFaceRecognizerService.Destroy;
 begin
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit;
 
   DeleteDirectoryWithFiles(CacheDirectory);
@@ -148,7 +148,7 @@ var
   DR: TFaceScoreResults;
   FaceSample: TBitmap;
 begin
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit;
 
   DR := ProcessFaceAreaOnImage(MI, Image, Area, FDetector, MinFaceScore);
@@ -177,7 +177,7 @@ end;
 
 function TFaceRecognizerService.HasFaceArea(AreaId: Integer): Boolean;
 begin
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit(False);
 
   Result := FRecognizer.HasFace(AreaId);
@@ -190,7 +190,7 @@ end;
 
 function TFaceRecognizerService.UserChangedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit(False);
 
   Result := FRecognizer.MoveFaceToAnotherPerson(Area.ID, Area.PersonID);
@@ -198,7 +198,7 @@ end;
 
 function TFaceRecognizerService.UserRemovedPerson(MI: TMediaItem; Image: TBitmap; Area: TPersonArea): Boolean;
 begin
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit(False);
 
   Result := FRecognizer.RemoveFaceById(Area.ID);
@@ -211,7 +211,7 @@ var
 begin
   Result := False;
 
-  if not HasOpenCV then
+  if not LoadOpenCV then
     Exit;
 
   DR := ProcessFaceAreaOnImage(MI, Image, Area, FDetector, MinFaceScore);

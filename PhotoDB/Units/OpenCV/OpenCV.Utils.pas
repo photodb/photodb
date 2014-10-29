@@ -19,13 +19,14 @@ procedure Bitmap2IplImage(IplImg: PIplImage; Bitmap: TBitmap);
 procedure IplImage2Bitmap(IplImg: PIplImage; Bitmap: TBitmap);
 procedure SavePIplImageAsBitmap(IplImg: PIplImage; FileName: string);
 function HasOpenCV: Boolean;
+function LoadOpenCV: Boolean;
 
 implementation
 
 var
   FOpenCVState: TOpenCVPrecent = ocvUndevined;
 
-function HasOpenCV: Boolean;
+function LoadOpenCV: Boolean;
 begin
   if FOpenCVState = ocvUndevined then
   begin
@@ -36,6 +37,11 @@ begin
   end;
 
   Result := FOpenCVState = ocvAvailable;
+end;
+
+function HasOpenCV: Boolean;
+begin
+  Result := true;
 end;
 
 procedure SavePIplImageAsBitmap(IplImg: PIplImage; FileName: string);

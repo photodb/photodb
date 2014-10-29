@@ -132,7 +132,7 @@ end;
 
 procedure InitCVLib;
 begin
-
+  LoadOpenCV;
 end;
 
 { TFaceDetectionResult }
@@ -347,7 +347,7 @@ begin
     end;
   end;
 
-  if HasOpenCV then
+  if LoadOpenCV then
   begin
     FaceDetectionSeqFileName := ExtractFilePath(ParamStr(0)) + CascadesDirectoryMask + '\' + FileName;
     CD := TCascadeData.Create;

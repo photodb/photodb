@@ -121,10 +121,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 2
         OnResize = TsInfoResize
         OnShow = TsInfoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnInfoContainer: TPanel
           Left = 0
           Top = 0
@@ -385,10 +381,6 @@ object ExplorerForm: TExplorerForm
         ImageIndex = 4
         TabVisible = False
         OnResize = TsDetailedSearchResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object PnESContainer: TPanel
           Left = 0
           Top = 0
@@ -1086,8 +1078,6 @@ object ExplorerForm: TExplorerForm
       OnlyFileSystem = False
       HideExtendedButton = False
       ShowBorder = False
-      ExplicitLeft = 61
-      ExplicitTop = 4
     end
   end
   object PnContent: TPanel
@@ -1636,10 +1626,6 @@ object ExplorerForm: TExplorerForm
           Caption = 'TsMediaPreview'
           ImageIndex = 1
           OnResize = TsMediaPreviewResize
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnRightPreview: TPanel
             Left = 0
             Top = 0
@@ -1805,10 +1791,6 @@ object ExplorerForm: TExplorerForm
         end
         object TsGeoLocation: TTabSheet
           Caption = 'TsGeoLocation'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object PnGeoSearch: TPanel
             Left = 0
             Top = 540
@@ -1946,7 +1928,7 @@ object ExplorerForm: TExplorerForm
       Top = 8
       Width = 162
       Height = 163
-      Date = 41177.853770150460000000
+      Date = 41177.552030254630000000
       TabOrder = 0
       OnKeyDown = McDateSelectPopupKeyDown
     end

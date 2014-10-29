@@ -2630,9 +2630,12 @@ procedure TExplorerForm.FormResize(Sender: TObject);
 var
   IsIncreasing: Boolean;
 begin
+  if IsMaximizing or IsMinimizing then
+    Exit;
+
   if StyleServices.Enabled then
   begin
-    //hack for scrollbars in easy lsit view
+    //hack for scrollbars in easy list view
     ElvMain.Scrollbars.VertEnabled := False;
     ElvMain.Scrollbars.VertEnabled := True;
     Repaint;
