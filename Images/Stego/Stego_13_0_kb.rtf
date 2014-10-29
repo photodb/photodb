@@ -1,0 +1,99 @@
+{\rtf1\ansi\ansicpg1251\deff0\deflang1049{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset161 Calibri;}}
+{\*\generator Msftedit 5.41.21.2510;}\viewkind4\uc1\pard\sa200\sl276\slmult1\lang9\f0\fs22 Steganography is the art and science of writing hidden messages in such a way that no one, apart from the sender and intended recipient, suspects the existence of the message, a form of security through obscurity. The word steganography is of Greek origin and means "concealed writing" from the Greek words steganos (\f1\'f3\'f4\'e5\'e3\'e1\'ed\'fc\'f2) meaning "covered or protected", and graphei (\'e3\'f1\'e1\'f6\'de) meaning "writing". The first recorded use of the term was in 1499 by Johannes Trithemius in his Steganographia, a treatise on cryptography and steganography disguised as a book on magic. Generally, messages will appear to be something else: images, articles, shopping lists, or some other covertext and, classically, the hidden message may be in invisible ink between the visible lines of a private letter.\par
+\par
+The advantage of steganography, over cryptography alone, is that messages do not attract attention to themselves. Plainly visible encrypted messages\emdash no matter how unbreakable\emdash will arouse suspicion, and may in themselves be incriminating in countries where encryption is illegal.[1] Therefore, whereas cryptography protects the contents of a message, steganography can be said to protect both messages and communicating parties.\par
+\par
+Steganography includes the concealment of information within computer files. In digital steganography, electronic communications may include steganographic coding inside of a transport layer, such as a document file, image file, program or protocol. Media files are ideal for steganographic transmission because of their large size. As a simple example, a sender might start with an innocuous image file and adjust the color of every 100th pixel to correspond to a letter in the alphabet, a change so subtle that someone not specifically looking for it is unlikely to notice it.\par
+Contents\par
+ [hide] \par
+\par
+    1 History\par
+    2 Techniques\par
+        2.1 Physical\par
+        2.2 Digital\par
+        2.3 Network\par
+        2.4 Printed\par
+        2.5 Audio\par
+        2.6 Text\par
+        2.7 Using Sudoku puzzles\par
+    3 Data embedding security schemes\par
+    4 Additional terminology\par
+    5 Countermeasures and detection\par
+    6 Applications\par
+        6.1 Usage in modern printers\par
+        6.2 Example from modern practice\par
+        6.3 Alleged use by terrorists\par
+        6.4 Alleged use by intelligence services\par
+    7 See also\par
+    8 Citations\par
+    9 References\par
+    10 External links\par
+\par
+[edit] History\par
+\par
+The first recorded uses of steganography can be traced back to 440 BC when Herodotus mentions two examples of steganography in his Histories.[2] Demaratus sent a warning about a forthcoming attack to Greece by writing it directly on the wooden backing of a wax tablet before applying its beeswax surface. Wax tablets were in common use then as reusable writing surfaces, sometimes used for shorthand.\par
+\par
+In his work "Polygraphiae" Johannes Trithemius developed his so-called "Ave-Maria-Cipher" with which one can hide information in a Latin praise of God. "Auctor Sapientissimus Conseruans Angelica Deferat Nobis Charitas Potentissimi Creatoris" for example contains the concealed word VICIPEDIA.[3]\par
+[edit] Techniques\par
+[edit] Physical\par
+\par
+Steganography has been widely used, including in recent historical times and the present day. Possible permutations are endless and known examples include:\par
+\par
+    Hidden messages within wax tablets \emdash  in ancient Greece, people wrote messages on the wood, then covered it with wax upon which an innocent covering message was written.\par
+    Hidden messages on messenger's body \emdash  also used in ancient Greece. Herodotus tells the story of a message tattooed on the shaved head of a slave of Histiaeus, hidden by the hair that afterwards grew over it, and exposed by shaving the head again. The message allegedly carried a warning to Greece about Persian invasion plans. This method has obvious drawbacks, such as delayed transmission while waiting for the slave's hair to grow, and the restrictions on the number and size of messages that can be encoded on one person's scalp.\par
+    During World War II, the French Resistance sent some messages written on the backs of couriers using invisible ink.\par
+    Hidden messages on paper written in secret inks, under other messages or on the blank parts of other messages.\par
+    Messages written in Morse code on knitting yarn and then knitted into a piece of clothing worn by a courier.\par
+    Messages written on envelopes in the area covered by postage stamps.\par
+    During and after World War II, espionage agents used photographically produced microdots to send information back and forth. Microdots were typically minute, approximately less than the size of the period produced by a typewriter. World War II microdots needed to be embedded in the paper and covered with an adhesive, such as collodion. This was reflective and thus detectable by viewing against glancing light. Alternative techniques included inserting microdots into slits cut into the edge of post cards.\par
+    During World War II, a spy for Japan in New York City, Velvalee Dickinson, sent information to accommodation addresses in neutral South America. She was a dealer in dolls, and her letters discussed the quantity and type of doll to ship. The stegotext was the doll orders, while the concealed "plaintext" was itself encoded and gave information about ship movements, etc. Her case became somewhat famous and she became known as the Doll Woman.\par
+    Cold War counter-propaganda. In 1968, crew members of the USS Pueblo intelligence ship held as prisoners by North Korea, communicated in sign language during staged photo opportunities, informing the United States they were not defectors, but rather were being held captive by the North Koreans. In other photos presented to the U.S., crew members gave "the finger" to the unsuspecting North Koreans, in an attempt to discredit photos that showed them smiling and comfortable.\par
+\par
+[edit] Digital\par
+\tab This article needs attention from an expert on the subject. Please add a reason or a talk parameter to this template to explain the issue with the article. WikiProject History of Science or the History of Science Portal may be able to help recruit an expert. (May 2008)\par
+Image of a tree with a steganographically hidden image. The hidden image is revealed by removing all but the two least significant bits of each color component and a subsequent normalization. The hidden image is shown below.\par
+Image of a cat extracted from the tree image above.\par
+\par
+Modern steganography entered the world in 1985 with the advent of the personal computer being applied to classical steganography problems.[4] Development following that was slow, but has since taken off, going by the number of "stego" programs available:\par
+\par
+    Concealing messages within the lowest bits of noisy images or sound files.\par
+    Concealing data within encrypted data or within random data. The data to be concealed is first encrypted before being used to overwrite part of a much larger block of encrypted data or a block of random data (an unbreakable cipher like the one-time pad generates ciphertexts that look perfectly random if you do not have the private key).\par
+    Chaffing and winnowing.\par
+    Mimic functions convert one file to have the statistical profile of another. This can thwart statistical methods that help brute-force attacks identify the right solution in a ciphertext-only attack.\par
+    Concealed messages in tampered executable files, exploiting redundancy in the targeted instruction set.\par
+    Pictures embedded in video material (optionally played at slower or faster speed).\par
+    Injecting imperceptible delays to packets sent over the network from the keyboard. Delays in keypresses in some applications (telnet or remote desktop software) can mean a delay in packets, and the delays in the packets can be used to encode data.\par
+    Changing the order of elements in a set.\par
+    Content-Aware Steganography hides information in the semantics a human user assigns to a datagram. These systems offer security against a non-human adversary/warden.\par
+    Blog-Steganography. Messages are fractionalized and the (encrypted) pieces are added as comments of orphaned web-logs (or pin boards on social network platforms). In this case the selection of blogs is the symmetric key that sender and recipient are using; the carrier of the hidden message is the whole blogosphere.\par
+    Modifying the echo of a sound file (Echo Steganography).[5]\par
+    Secure Steganography for Audio Signals.[6]\par
+    Image bit-plane complexity segmentation steganography\par
+\par
+[edit] Network\par
+\par
+All information hiding techniques that may be used to exchange steganograms in telecommunication networks can be classified under the general term of network steganography. This nomenclature was originally introduced by Krzysztof Szczypiorski in 2003.[7] Contrary to the typical steganographic methods which utilize digital media (images, audio and video files) as a cover for hidden data, network steganography utilizes communication protocols' control elements and their basic intrinsic functionality. As a result, such methods are harder to detect and eliminate.[8]\par
+\par
+Typical network steganography methods involve modification of the properties of a single network protocol. Such modification can be applied to the PDU (Protocol Data Unit),[9][10][11] to the time relations between the exchanged PDUs,[12] or both (hybrid methods).[13]\par
+\par
+Moreover, it is feasible to utilize the relation between two or more different network protocols to enable secret communication. These applications fall under the term inter-protocol steganography.[14]\par
+\par
+Network steganography covers a broad spectrum of techniques, which include, among others:\par
+\par
+    Steganophony - the concealment of messages in Voice-over-IP conversations, e.g. the employment of delayed or corrupted packets that would normally be ignored by the receiver (this method is called LACK - Lost Audio Packets Steganography), or, alternatively, hiding information in unused header fields.[15]\par
+    WLAN Steganography \endash  the utilization of methods that may be exercised to transmit steganograms in Wireless Local Area Networks. A practical example of WLAN Steganography is the HICCUPS system (Hidden Communication System for Corrupted Networks)[16]\par
+\par
+[edit] Printed\par
+\par
+Digital steganography output may be in the form of printed documents. A message, the plaintext, may be first encrypted by traditional means, producing a ciphertext. Then, an innocuous covertext is modified in some way so as to contain the ciphertext, resulting in the stegotext. For example, the letter size, spacing, typeface, or other characteristics of a covertext can be manipulated to carry the hidden message. Only a recipient who knows the technique used can recover the message and then decrypt it. Francis Bacon developed Bacon's cipher as such a technique.\par
+\par
+The ciphertext produced by most digital steganography methods, however, is not printable. Traditional digital methods rely on perturbing noise in the channel file to hide the message, as such, the channel file must be transmitted to the recipient with no additional noise from the transmission. Printing introduces much noise in the ciphertext, generally rendering the message unrecoverable. There are techniques that address this limitation, one notable example is ASCII Art Steganography.[17]\par
+[edit] Audio\par
+\par
+In steganography, the message used to hide the secret message is called the host message or cover message. Once the contents of the host message or cover message are modified, the resultant message is known as a stego message. In other words, a stego message is a combination of a host message and a secret message. Audio steganography requires a text or audio secret message to be embedded within a cover audio message. Due to availability of redundancy, the cover audio message before steganography and the stego message after steganography remains the same.[18]\par
+[edit] Text\par
+\par
+Steganography can be applied to different types of media including text, audio, image, video, etc. However, text steganography is considered to be the most difficult kind of steganography due to the lack of redundancy in text as compared to image or audio. However, it requires less memory and provides for simpler communication. One method that could be used for text steganography is data compression. Data compression encodes information in one representation, into another representation. The new representation of data is smaller in size. One of the possible schemes to achieve data compression is Huffman coding. Huffman coding assigns smaller length codewords to more frequently occurring source symbols and longer length codewords to less frequently occurring source symbols.\par
+\f0\par
+}
+ 
