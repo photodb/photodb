@@ -225,7 +225,7 @@ begin
           F(SR);
         end;
       end;
-      MS.Seek(Header.Size, soFromCurrent);
+      MS.Seek(Header.Size, TSeekOrigin.soCurrent);
     end;
   finally
     F(MS);

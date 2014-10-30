@@ -171,7 +171,7 @@ begin
           //single representative image
           if M.MMEntries[I].IsRepresentativeImage and not M.MMEntries[I].IsDependentChildImage then
           begin
-            Stream.Seek(M.MMEntries[I].IndividualImageDataOffset, soFromBeginning);
+            Stream.Seek(M.MMEntries[I].IndividualImageDataOffset, TSeekOrigin.soBeginning);
             LoadJpegFromStream;
             LoadImageFromImages;
 
@@ -184,7 +184,7 @@ begin
         begin
           if not M.MMEntries[I].IsDependentChildImage then
           begin
-            Stream.Seek(M.MMEntries[I].IndividualImageDataOffset, soFromBeginning);
+            Stream.Seek(M.MMEntries[I].IndividualImageDataOffset, TSeekOrigin.soBeginning);
             LoadJpegFromStream;
 
             if FImages.Count = 2 then
@@ -201,7 +201,7 @@ begin
     F(Exif);
   end;
 
-  Stream.Seek(Pos, soFromBeginning);
+  Stream.Seek(Pos, TSeekOrigin.soBeginning);
   LoadJpegFromStream;
   if FImages.Count = 1 then
   begin
@@ -347,11 +347,11 @@ begin
         FEndianness := BigEndian;
 
       S.ReadLongWord(FEndianness, OffsetToFirstIFD);
-      OffsetOfNextIFD := S.Seek(OffsetToFirstIFD - 8, soFromCurrent);
+      OffsetOfNextIFD := S.Seek(OffsetToFirstIFD - 8, TSeekOrigin.soCurrent);
 
       if (OffsetOfNextIFD > 0) and (OffsetOfNextIFD < S.Size) then
       begin
-        S.Seek(OffsetOfNextIFD, soFromBeginning);
+        S.Seek(OffsetOfNextIFD, TSeekOrigin.soBeginning);
         S.ReadWord(FEndianness, TagCount);
 
         MPEntryDataSize := 0;
@@ -389,7 +389,7 @@ begin
         S.ReadLongWord(FEndianness, OffsetOfNextIFD);
         if MPEntryDataSize > 0 then
         begin
-          S.Seek(MPEntryOffset, soFromBeginning);
+          S.Seek(MPEntryOffset, TSeekOrigin.soBeginning);
           Setlength(MMEntries, NumberOfImages);
           for J := 0 to NumberOfImages - 1 do
           begin

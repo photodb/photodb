@@ -25,6 +25,7 @@ uses
   uErrors,
   uMemory,
   uStrongCrypt,
+  uRWLock,
   {$IFDEF PHOTODB}
   uSettings,
   {$ENDIF}
@@ -75,7 +76,7 @@ type
 
   TEncryptionOptions = class(TObject)
   private
-    FSync: TCriticalSection;
+    FSync: IReadWriteSync;
     FFileExtensionList: string;
   public
     constructor Create;
@@ -474,7 +475,7 @@ begin
   Pos := Stream.Position;
   Stream.Read(EncryptHeader, SizeOf(EncryptHeader));
   Result := EncryptHeader.ID = PhotoDBFileHeaderID;
-  Stream.Seek(Pos, soFromBeginning);
+  Stream.Seek(Pos, TSeekOrigin.soBeginning);
 end;
 
 function ValidEncryptFileExHandle(FileHandle: THandle; IsAsyncHandle: Boolean): Boolean;
@@ -1014,23 +1015,23 @@ var
 begin
   Ext := AnsiUpperCase(ExtractFileExt(FileName));
 
-  FSync.Enter;
+  FSync.BeginRead;
   try
     Result := FFileExtensionList.IndexOf(Ext) > 0;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
 constructor TEncryptionOptions.Create;
 begin
-  FSync := TCriticalSection.Create;
+  FSync := CreateRWLock;
   Refresh;
 end;
 
 destructor TEncryptionOptions.Destroy;
 begin
-  F(FSync);
+  FSync := nil;
   inherited;
 end;
 
@@ -1041,7 +1042,7 @@ var
   I: Integer;
 {$ENDIF}
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     FFileExtensionList := '';
     {$IFDEF PHOTODB}
@@ -1054,7 +1055,7 @@ begin
     end;
     {$ENDIF}
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 

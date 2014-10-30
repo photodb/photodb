@@ -190,6 +190,7 @@ const
   RefreshListViewInterval = 50;
 
 type
+  Tx = class(TMenuItem);
   TPageControl = class(TPageControlNoBorder);
   TMonthCalendar = class(TMonthCalendarEx);
   TValueListEditor = class(TEXIFDisplayControl);

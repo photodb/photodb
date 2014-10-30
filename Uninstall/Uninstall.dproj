@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{8287C0E9-64E3-4E66-AED8-4918B239A5B6}</ProjectGuid>
-        <ProjectVersion>14.4</ProjectVersion>
+        <ProjectVersion>16.0</ProjectVersion>
         <MainSource>Uninstall.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
@@ -41,6 +41,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>Uninstall</SanitizedProjectName>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Posix;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -57,7 +58,6 @@
         <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <Icon_MainIcon>Uninstall_Icon.ico</Icon_MainIcon>
@@ -66,7 +66,7 @@
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-        <DCC_DebugInformation>false</DCC_DebugInformation>
+        <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -91,6 +91,7 @@
         <DCCReference Include="..\PhotoDB\Units\uConstants.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemory.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemoryEx.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uRWLock.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Utils\uFormUtils.pas"/>
         <DCCReference Include="..\Installer\uInstallTypes.pas"/>
         <DCCReference Include="..\Installer\uInstallScope.pas"/>

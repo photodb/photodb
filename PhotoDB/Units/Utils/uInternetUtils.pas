@@ -7,6 +7,7 @@ uses
   Winapi.MAPI,
   System.Classes,
   System.SysUtils,
+  System.AnsiStrings,
   Vcl.Imaging.JPEG,
   Vcl.Imaging.pngimage,
   Soap.EncdDecd,
@@ -389,8 +390,8 @@ begin
     begin
       Receip.ulReserved := 0;
       Receip.ulRecipClass := MAPI_TO;
-      Receip.lpszName := StrNew(PAnsiChar(AnsiString(ToName)));
-      Receip.lpszAddress := StrNew(PAnsiChar(AnsiString('SMTP:' + ToAddress)));
+      Receip.lpszName := System.AnsiStrings.StrNew(PAnsiChar(AnsiString(ToName)));
+      Receip.lpszAddress := System.AnsiStrings.StrNew(PAnsiChar(AnsiString('SMTP:' + ToAddress)));
       Receip.ulEIDSize := 0;
       MapiMessage.nRecipCount := 1;
       MapiMessage.lpRecips := @Receip;
@@ -406,8 +407,8 @@ begin
         Attachments[i1].ulReserved := 0;
         Attachments[i1].flFlags := 0;
         Attachments[i1].nPosition := ULONG($FFFFFFFF);
-        Attachments[i1].lpszPathName := StrNew(PAnsiChar(AnsiString(FileName)));
-        Attachments[i1].lpszFileName := StrNew(PAnsiChar(AnsiString(ExtractFileName(FileName))));
+        Attachments[i1].lpszPathName := System.AnsiStrings.StrNew(PAnsiChar(AnsiString(FileName)));
+        Attachments[i1].lpszFileName := System.AnsiStrings.StrNew(PAnsiChar(AnsiString(ExtractFileName(FileName))));
         Attachments[i1].lpFileType := nil;
       end;
       MapiMessage.nFileCount := Files.Count;
@@ -415,9 +416,9 @@ begin
     end;
 
     if Subject <> '' then
-      MapiMessage.lpszSubject := StrNew(PAnsiChar(AnsiString(Subject)));
+      MapiMessage.lpszSubject := System.AnsiStrings.StrNew(PAnsiChar(AnsiString(Subject)));
     if Body <> '' then
-      MapiMessage.lpszNoteText := StrNew(PAnsiChar(AnsiString(Body)));
+      MapiMessage.lpszNoteText := System.AnsiStrings.StrNew(PAnsiChar(AnsiString(Body)));
 
     WndList := DisableTaskWindows(0);
     try
@@ -429,18 +430,18 @@ begin
 
     for i1 := 0 to Files.Count - 1 do
     begin
-      StrDispose(Attachments[i1].lpszPathName);
-      StrDispose(Attachments[i1].lpszFileName);
+      System.AnsiStrings.StrDispose(Attachments[i1].lpszPathName);
+      System.AnsiStrings.StrDispose(Attachments[i1].lpszFileName);
     end;
 
     if Assigned(MapiMessage.lpszSubject) then
-      StrDispose(MapiMessage.lpszSubject);
+      System.AnsiStrings.StrDispose(MapiMessage.lpszSubject);
     if Assigned(MapiMessage.lpszNoteText) then
-      StrDispose(MapiMessage.lpszNoteText);
+      System.AnsiStrings.StrDispose(MapiMessage.lpszNoteText);
     if Assigned(Receip.lpszAddress) then
-      StrDispose(Receip.lpszAddress);
+      System.AnsiStrings.StrDispose(Receip.lpszAddress);
     if Assigned(Receip.lpszName) then
-      StrDispose(Receip.lpszName);
+      System.AnsiStrings.StrDispose(Receip.lpszName);
     MapiLogOff(MAPI_Session, Handle, 0, 0);
   end;
 end;

@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{4C03476C-1E9C-42ED-95A6-2DF61B89636A}</ProjectGuid>
-        <ProjectVersion>15.1</ProjectVersion>
+        <ProjectVersion>16.0</ProjectVersion>
         <MainSource>Install.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
@@ -41,6 +41,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>Install</SanitizedProjectName>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Posix;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>1049</VerInfo_Locale>
@@ -93,6 +94,7 @@
         <DCCReference Include="uInstallTypes.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemory.pas"/>
         <DCCReference Include="..\PhotoDB\Units\System\uMemoryEx.pas"/>
+        <DCCReference Include="..\PhotoDB\Units\System\uRWLock.pas"/>
         <DCCReference Include="..\PhotoDB\Units\Interfaces\uIDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uDBForm.pas"/>
         <DCCReference Include="..\PhotoDB\Units\uTranslate.pas"/>

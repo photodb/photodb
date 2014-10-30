@@ -1,0 +1,64 @@
+package Dolphin;
+
+{$R *.res}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Dolphin''s Components'}
+
+requires
+  rtl,
+  vcl,
+  vclx,
+  VclSmp,
+  vclimg,
+  dbrtl,
+  vclactnband;
+
+contains
+  Dmitry.Memory in 'Dmitry.Memory.pas',
+  Dmitry.CRC32 in 'Dmitry.CRC32.pas',
+
+  Dmitry.Graphics.Types in 'Dmitry.Graphics.Types.pas',
+  Dmitry.Graphics.Utils in 'Dmitry.Graphics.Utils.pas',
+  Dmitry.Graphics.LayeredBitmap in 'Dmitry.Graphics.LayeredBitmap.pas',
+  Dmitry.Graphics.BitmapCache in 'Dmitry.Graphics.BitmapCache.pas',
+
+  Dmitry.Controls.Base in 'Dmitry.Controls.Base.pas',
+  Dmitry.Controls.Angle in 'Dmitry.Controls.Angle.pas',
+  Dmitry.Controls.DBLoading in 'Dmitry.Controls.DBLoading.pas',
+  Dmitry.Controls.DmGradient in 'Dmitry.Controls.DmGradient.pas',
+  Dmitry.Controls.DmProgress in 'Dmitry.Controls.DmProgress.pas',
+  Dmitry.Controls.ComboBoxExDB in 'Dmitry.Controls.ComboBoxExDB.pas',
+  Dmitry.Controls.PathEditor in 'Dmitry.Controls.PathEditor.pas',
+  Dmitry.Controls.LoadingSign in 'Dmitry.Controls.LoadingSign.pas',
+  Dmitry.Controls.SaveWindowPos in 'Dmitry.Controls.SaveWindowPos.pas',
+  Dmitry.Controls.ScrollPanel in 'Dmitry.Controls.ScrollPanel.pas',
+  Dmitry.Controls.ShellNotification in 'Dmitry.Controls.ShellNotification.pas',
+  Dmitry.Controls.Rating in 'Dmitry.Controls.Rating.pas',
+  Dmitry.Controls.TwButton in 'Dmitry.Controls.TwButton.pas',
+  Dmitry.Controls.ImButton in 'Dmitry.Controls.ImButton.pas',
+  Dmitry.Controls.WebLink in 'Dmitry.Controls.WebLink.pas',
+  Dmitry.Controls.WebLinkList in 'Dmitry.Controls.WebLinkList.pas',
+  Dmitry.Controls.WatermarkedEdit in 'Dmitry.Controls.WatermarkedEdit.pas',
+  Dmitry.Controls.WatermarkedMemo in 'Dmitry.Controls.WatermarkedMemo.pas',
+
+  Dmitry.Utils.Files in 'Dmitry.Utils.Files.pas',
+  Dmitry.Utils.Network in 'Dmitry.Utils.Network.pas',
+  Dmitry.Utils.System in 'Dmitry.Utils.System.pas',
+  Dmitry.Utils.Dialogs in 'Dmitry.Utils.Dialogs.pas',
+  Dmitry.Utils.ShellIcons in 'Dmitry.Utils.ShellIcons.pas',
+  Dmitry.Utils.ShortCut in 'Dmitry.Utils.ShortCut.pas',
+  Dmitry.Utils.SystemImageLists in 'Dmitry.Utils.SystemImageLists.pas',
+
+  Dmitry.PathProviders in 'Dmitry.PathProviders.pas',
+  Dmitry.PathProviders.MyComputer in 'Dmitry.PathProviders.MyComputer.pas',
+  Dmitry.PathProviders.FileSystem in 'Dmitry.PathProviders.FileSystem.pas',
+  Dmitry.PathProviders.Network in 'Dmitry.PathProviders.Network.pas',
+
+  PanelCanvas in 'PanelCanvas.pas',
+  DmMemo in 'DmMemo.pas',
+  NoVSBListView in 'NoVSBListView.pas',
+  GraphicSelectEx in 'GraphicSelectEx.pas';
+
+end.
+
+

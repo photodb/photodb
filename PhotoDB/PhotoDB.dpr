@@ -413,7 +413,8 @@ uses
   OpenCV.Legacy in 'Units\OpenCV\OpenCV.Legacy.pas',
   OpenCV.HighGUI in 'Units\OpenCV\OpenCV.HighGUI.pas',
   uFaceRecognizerService in 'Units\uFaceRecognizerService.pas',
-  uFaceAnalyzer in 'Units\uFaceAnalyzer.pas';
+  uFaceAnalyzer in 'Units\uFaceAnalyzer.pas',
+  uRWLock in 'Units\System\uRWLock.pas';
 
 {$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED or IMAGE_FILE_LARGE_ADDRESS_AWARE}
 {$R *.tlb}

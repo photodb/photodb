@@ -20,6 +20,7 @@ uses
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uMemory in '..\PhotoDB\Units\System\uMemory.pas',
   uMemoryEx in '..\PhotoDB\Units\System\uMemoryEx.pas',
+  uRWLock in '..\PhotoDB\Units\System\uRWLock.pas',
   uFormUtils in '..\PhotoDB\Units\Utils\uFormUtils.pas',
   uInstallTypes in '..\Installer\uInstallTypes.pas',
   uInstallScope in '..\Installer\uInstallScope.pas',

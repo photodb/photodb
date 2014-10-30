@@ -8,7 +8,6 @@ uses
   Winapi.ShlObj,
   System.Classes,
   System.SysUtils,
-  System.SyncObjs,
   System.Win.Registry,
   Vcl.Graphics,
   Vcl.Forms,
@@ -16,6 +15,7 @@ uses
   Dmitry.Utils.ShellIcons,
 
   uConstants,
+  uRWLock,
   uMemory;
 
 type
@@ -31,7 +31,7 @@ type
     FAssociatedIcons: array of TAssociatedIcons;
     FIDesktopFolder: IShellFolder;
     UnLoadingListEXT : TStringList;
-    FSync: TCriticalSection;
+    FSync: IReadWriteSync;
     procedure Initialize;
   public
     class function Instance: TAIcons;
@@ -118,7 +118,7 @@ end;
 
 function TAIcons.AddIconByExt(FileName, EXT: string; Size : integer) : integer;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     Result := Length(FAssociatedIcons) - 1;
     SetLength(FAssociatedIcons, Length(FAssociatedIcons) + 1);
@@ -127,7 +127,7 @@ begin
     FAssociatedIcons[Length(FAssociatedIcons) - 1].Icon := GetShellImage(FileName, Size);
     FAssociatedIcons[Length(FAssociatedIcons) - 1].Size := Size;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
@@ -136,7 +136,7 @@ begin
   if SHGetDesktopFolder(FIDesktopFolder) <> NOERROR then
      raise Exception.Create('Error in call SHGetDesktopFolder!');
   inherited;
-  FSync := TCriticalSection.Create;
+  FSync := CreateRWLock;
   UnLoadingListEXT := TStringList.Create;
   Initialize;
 end;
@@ -150,7 +150,7 @@ begin
     FAssociatedIcons[I].Icon.Free;
   SetLength(FAssociatedIcons, 0);
   UnLoadingListEXT.Free;
-  FSync.Free;
+  FSync := nil;
   inherited;
 end;
 
@@ -159,7 +159,7 @@ var
   N, I: Integer;
   Ext: string;
 begin
-  FSync.Enter;
+  FSync.BeginRead;
   try
     Result := nil;
     N := 0;
@@ -187,7 +187,7 @@ begin
         Break;
       end;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -196,7 +196,7 @@ var
   I: Integer;
 begin
   Result := False;
-  FSync.Enter;
+  FSync.BeginRead;
   try
     for i:=0 to length(FAssociatedIcons)-1 do
     if (FAssociatedIcons[i].Ext = Ext) and (FAssociatedIcons[i].Size = Size) then
@@ -205,7 +205,7 @@ begin
       Break;
     end;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -219,27 +219,33 @@ begin
   if Result then
     Exit;
 
-  FSync.Enter;
+  FSync.BeginRead;
   try
     Ext := AnsiLowerCase(ExtractFileExt(FileName));
-    for I := 0 to length(FAssociatedIcons)-1 do
+    for I := 0 to Length(FAssociatedIcons)-1 do
     if (FAssociatedIcons[i].Ext = Ext) and (FAssociatedIcons[i].Size = Size) then
     begin
-      Result := FAssociatedIcons[i].SelfIcon;
+      Result := FAssociatedIcons[I].SelfIcon;
       Exit;
     end;
+  finally
+    FSync.EndRead;
+  end;
+
+  FSync.BeginWrite;
+  try
     SetLength(FAssociatedIcons, Length(FAssociatedIcons) + 1);
     FAssociatedIcons[Length(FAssociatedIcons) - 1].Ext := Ext;
     FAssociatedIcons[Length(FAssociatedIcons) - 1].SelfIcon := VarIco(Ext);
     if FAssociatedIcons[Length(FAssociatedIcons) - 1].SelfIcon then
     begin
-      Result:=true;
+      Result := True;
       Exit;
     end;
-    FAssociatedIcons[Length(FAssociatedIcons)-1].Icon := GetShellImage(FileName,Size);
-    FAssociatedIcons[Length(FAssociatedIcons)-1].Size := Size;
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].Icon := GetShellImage(FileName, Size);
+    FAssociatedIcons[Length(FAssociatedIcons) - 1].Size := Size;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
@@ -247,17 +253,17 @@ procedure TAIcons.Clear;
 var
   I: Integer;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
-    for i:=0 to length(FAssociatedIcons)-1 do
+    for I := 0 to length(FAssociatedIcons)-1 do
     begin
-      if not FAssociatedIcons[i].SelfIcon then
-        FAssociatedIcons[i].Icon.Free;
+      if not FAssociatedIcons[I].SelfIcon then
+        FAssociatedIcons[I].Icon.Free;
     end;
-    SetLength(FAssociatedIcons,0);
+    SetLength(FAssociatedIcons, 0);
     Initialize;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 

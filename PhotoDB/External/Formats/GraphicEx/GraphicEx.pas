@@ -4075,7 +4075,7 @@ begin
           if ImageIndex = 1 then Offset := 23
                             else
             if ImageIndex = 0 then Offset := 4;
-        Seek(Offset * $800 , soFromCurrent);
+        Seek(Offset * $800 , TSeekOrigin.soCurrent);
 
         // color conversion setup
         with ColorManager do
@@ -4151,7 +4151,7 @@ begin
                 Progress(Self, psRunning, MulDiv(5, 100, Y), False, FProgressRect, '');
                 Upsample(768, 512, Width, YCbCrData[2]);
                 Offset := (Position - Integer(FBasePosition)) div $800 + 12;
-                Seek(FBasePosition + Offset * $800, soFromBeginning);
+                Seek(FBasePosition + Offset * $800, TSeekOrigin.soBeginning);
 
                 Decoder.Decode(SourceDummy, DestDummy, Width, 2048);
                 if ImageIndex = 5 then
@@ -5728,11 +5728,11 @@ begin
       // skip resource and layers section
       ReadBuffer(Count, SizeOf(Count));
       Count := SwapLong(Count);
-      Seek(Count, soFromCurrent);
+      Seek(Count, TSeekOrigin.soCurrent);
       ReadBuffer(Count, SizeOf(Count));
       Count := SwapLong(Count);
       // +2 in order to skip the following compression value
-      Seek(Count + 2, soFromCurrent);
+      Seek(Count + 2, TSeekOrigin.soCurrent);
 
       // now read out image data
       RawBuffer := nil;
@@ -5985,15 +5985,15 @@ begin
       ReadBuffer(Count, SizeOf(Count));
       Count := SwapLong(Count);
       // skip palette (count is always given, might be 0 however, e.g. for RGB)
-      Seek(Count, soFromCurrent);
+      Seek(Count, TSeekOrigin.soCurrent);
 
       // skip resource and layers section
       ReadBuffer(Count, SizeOf(Count));
       Count := SwapLong(Count);
-      Seek(Count, soFromCurrent);
+      Seek(Count, TSeekOrigin.soCurrent);
       ReadBuffer(Count, SizeOf(Count));
       Count := SwapLong(Count);
-      Seek(Count, soFromCurrent);
+      Seek(Count, TSeekOrigin.soCurrent);
 
       ReadBuffer(Dummy, SizeOf(Dummy));
       if Swap(Dummy) = 1 then Compression := ctPackedBits

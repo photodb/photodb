@@ -590,7 +590,7 @@ var
     Result := '';
     for I := 0 to 255 do
     begin
-      Param := ParamStrCustom(Handler, I).TrimEnd([',', ' ']);
+      Param := ParamStrCustom(Handler, I).TrimRight([',', ' ']);
       P := LastDelimiter(',', Param);
       if P > 0 then
         Param := Param.Remove(P - 1);

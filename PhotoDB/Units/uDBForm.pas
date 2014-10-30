@@ -774,8 +774,10 @@ end;
 
 function TFormCollection.GetImage(BaseForm: TDBForm; FileName: string;
   Bitmap: TBitmap; var Width, Height: Integer): Boolean;
+{$IFDEF PHOTODB}
 var
   I: Integer;
+{$ENDIF}
 begin
   Result := False;
 {$IFDEF PHOTODB}

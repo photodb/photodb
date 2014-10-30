@@ -4,12 +4,12 @@ interface
 
 uses
   System.SysUtils,
-  System.SyncObjs,
   Vcl.Graphics,
 
   Dmitry.Utils.Files,
 
   uMemory,
+  uRWLock,
   uBitmapUtils;
 
 type
@@ -26,7 +26,7 @@ type
   private
     FImages: array of TFolderImages;
     FSaveFoldersToDB: Boolean;
-    FSync: TCriticalSection;
+    FSync: IReadWriteSync;
     procedure SetSaveFoldersToDB(const Value: Boolean);
   public
     constructor Create;
@@ -59,7 +59,7 @@ procedure TExplorerFolders.CheckFolder(Folder: string);
 var
   I, K, L: Integer;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     for I := Length(FImages) - 1 downto 0 do
     begin
@@ -78,7 +78,7 @@ begin
       end;
     end;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
@@ -86,20 +86,20 @@ procedure TExplorerFolders.Clear;
 var
   I, J: Integer;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     for I := 0 to Length(FImages) - 1 do
       for J := 1 to 4 do
         F(FImages[I].Images[J]);
     SetLength(FImages, 0);
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
 constructor TExplorerFolders.Create;
 begin
-  FSync := TCriticalSection.Create;
+  FSync := CreateRWLock;
   SaveFoldersToDB := False;
   SetLength(FImages, 0);
 end;
@@ -107,7 +107,7 @@ end;
 destructor TExplorerFolders.Destroy;
 begin
   Clear;
-  F(FSync);
+  FSync := nil;
   inherited;
 end;
 
@@ -117,7 +117,7 @@ var
   I, J, K, W, H: Integer;
   B: Boolean;
 begin
-  FSync.Enter;
+  FSync.BeginRead;
   try
     Directory := IncludeTrailingBackslash(Directory);
     Result.Directory := '';
@@ -164,7 +164,7 @@ begin
       end;
     end;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -175,7 +175,7 @@ var
   B: Boolean;
   L: Integer;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     B := False;
     FolderImages.Directory := IncludeTrailingBackslash(FolderImages.Directory);
@@ -227,7 +227,7 @@ begin
      end;
    end;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 

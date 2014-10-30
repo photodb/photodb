@@ -5,7 +5,6 @@ interface
 uses
   System.Classes,
   System.SysUtils,
-  System.SyncObjs,
 
   UnitDBDeclare,
 
@@ -13,13 +12,14 @@ uses
   uCollectionEvents,
   uDBForm,
   uSettings,
+  uRWLock,
   uProgramStatInfo,
   uLogger;
 
 type
   TPhotoShelf = class(TObject)
   private
-    FSync: TCriticalSection;
+    FSync: IReadWriteSync;
     FItems: TStringList;
     function GetCount: Integer;
   public
@@ -67,7 +67,7 @@ begin
 
   AddedItems := TStringList.Create;
   try
-    FSync.Enter;
+    FSync.BeginWrite;
     try
       for S in Items do
         if PathInShelf(S) = -1 then
@@ -76,7 +76,7 @@ begin
           AddedItems.Add(S);
         end;
     finally
-      FSync.Leave;
+      FSync.EndWrite;
     end;
     TThread.Synchronize(nil,
       procedure
@@ -104,28 +104,28 @@ begin
   //statistics
   ProgramStatistics.ShelfUsed;
 
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     if PathInShelf(Path) = -1 then
       FItems.Add(Path);
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
 procedure TPhotoShelf.Clear;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     FItems.Clear;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
 constructor TPhotoShelf.Create;
 begin
-  FSync := TCriticalSection.Create;
+  FSync := CreateRWLock;
   FItems := TStringList.Create;
 end;
 
@@ -139,13 +139,13 @@ begin
 
   RemovedItems := TStringList.Create;
   try
-    FSync.Enter;
+    FSync.BeginWrite;
     try
       for S in Items do
         if RemoveFromShelf(S) then
           RemovedItems.Add(S);
     finally
-      FSync.Leave;
+      FSync.EndWrite;
     end;
 
     TThread.Synchronize(nil,
@@ -172,18 +172,18 @@ end;
 destructor TPhotoShelf.Destroy;
 begin
   SaveItems;
-  F(FSync);
+  FSync := nil;
   F(FItems);
   inherited;
 end;
 
 function TPhotoShelf.GetCount: Integer;
 begin
-  FSync.Enter;
+  FSync.BeginRead;
   try
     Result := FItems.Count;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -191,12 +191,12 @@ procedure TPhotoShelf.GetItems(Items: TStrings);
 var
   S: string;
 begin
-  FSync.Enter;
+  FSync.BeginRead;
   try
     for S in FItems do
       Items.Add(S);
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -207,7 +207,7 @@ var
 begin
   Result := -1;
   S := AnsiUpperCase(Path);
-  FSync.Enter;
+  FSync.BeginRead;
   try
     for I := 0 to FItems.Count - 1 do
       if AnsiUpperCase(FItems[I]) = S then
@@ -216,7 +216,7 @@ begin
         Exit;
       end;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -229,7 +229,7 @@ begin
   //statistics
   ProgramStatistics.ShelfUsed;
 
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     Index := PathInShelf(Path);
     if Index > -1 then
@@ -238,13 +238,13 @@ begin
       Result := True;
     end;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
 procedure TPhotoShelf.LoadSavedItems;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     FItems.Delimiter := '|';
     try
@@ -254,13 +254,13 @@ begin
         EventLog(e);
     end;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
 procedure TPhotoShelf.SaveItems;
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     FItems.Delimiter := '|';
     try
@@ -270,7 +270,7 @@ begin
         EventLog(e);
     end;
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 
 end;

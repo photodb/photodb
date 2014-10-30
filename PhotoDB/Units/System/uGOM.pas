@@ -6,14 +6,14 @@ uses
   System.Types,
   System.Classes,
   System.SysUtils,
-  System.SyncObjs,
+  uRWLock,
   uMemory;
 
 type
   TManagerObjects = class(TObject)
   private
     FObjects: TList;
-    FSync: TCriticalSection;
+    FSync: IReadWriteSync;
   public
     constructor Create;
     destructor Destroy; override;
@@ -42,7 +42,7 @@ end;
 
 procedure TManagerObjects.AddObj(Obj: TObject);
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     if FObjects.IndexOf(Obj) > -1 then
       Exit;
@@ -52,30 +52,30 @@ begin
 
     FObjects.Add(Obj);
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 
 constructor TManagerObjects.Create;
 begin
-  FSync := TCriticalSection.Create;
+  FSync := CreateRWLock;
   FObjects := TList.Create;
 end;
 
 destructor TManagerObjects.Destroy;
 begin
   F(FObjects);
-  F(FSync);
+  FSync := nil;
   inherited;
 end;
 
 function TManagerObjects.IsObj(Obj: TObject): Boolean;
 begin
-  FSync.Enter;
+  FSync.BeginRead;
   try
     Result := FObjects.IndexOf(Obj) > -1;
   finally
-    FSync.Leave;
+    FSync.EndRead;
   end;
 end;
 
@@ -86,11 +86,11 @@ end;
 
 procedure TManagerObjects.RemoveObj(Obj: TObject);
 begin
-  FSync.Enter;
+  FSync.BeginWrite;
   try
     FObjects.Remove(Obj);
   finally
-    FSync.Leave;
+    FSync.EndWrite;
   end;
 end;
 

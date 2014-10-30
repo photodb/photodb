@@ -841,7 +841,7 @@ begin
   Pos := Stream.Position;
   Stream.Read(GraphicHeader, SizeOf(TEncryptedFileHeader));
   Result := GraphicHeader.ID = PhotoDBFileHeaderID;
-  Stream.Seek(Pos, soFromBeginning);
+  Stream.Seek(Pos, TSeekOrigin.soBeginning);
 end;
 
 function ValidCryptGraphicFile(FileName: String): Boolean;
