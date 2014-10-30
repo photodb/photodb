@@ -142,8 +142,8 @@ var
   procedure LoadInfoByPath;
   begin
     Info := TCDIndexMapping.ReadMapFile(Path);
-    CDMapper.AddCDMapping(Info.CDLabel, ExtractFilePath(Path), False);
-    Result := Info.CDLabel;
+    CDMapper.AddCDMapping(string(Info.CDLabel), ExtractFilePath(Path), False);
+    Result := string(Info.CDLabel);
   end;
 
 begin

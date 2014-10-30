@@ -159,19 +159,21 @@ var
   N, I: Integer;
   Ext: string;
 begin
+  Result := nil;
+  N := 0;
+  if IsFolder then
+    if Copy(FileName, 1, 2) = '\\' then
+      Default := True;
+  if IsFolder then
+    Ext := ''
+  else
+    Ext := AnsiLowerCase(ExtractFileExt(FileName));
+
+  if not IsExt(EXT, Size) and not default then
+    N := AddIconByExt(FileName, Ext, Size);
+
   FSync.BeginRead;
   try
-    Result := nil;
-    N := 0;
-    if IsFolder then
-      if Copy(FileName, 1, 2) = '\\' then
-        Default := True;
-    if IsFolder then
-      Ext := ''
-    else
-      Ext := AnsiLowerCase(ExtractFileExt(FileName));
-    if not IsExt(EXT, Size) and not default then
-      N := AddIconByExt(FileName, Ext, Size);
     for I := N to Length(FAssociatedIcons) - 1 do
       if (FAssociatedIcons[I].Ext = Ext) and (FAssociatedIcons[I].Size = Size) then
       begin
@@ -198,10 +200,10 @@ begin
   Result := False;
   FSync.BeginRead;
   try
-    for i:=0 to length(FAssociatedIcons)-1 do
-    if (FAssociatedIcons[i].Ext = Ext) and (FAssociatedIcons[i].Size = Size) then
+    for I := 0 to length(FAssociatedIcons) - 1 do
+    if (FAssociatedIcons[I].Ext = Ext) and (FAssociatedIcons[i].Size = Size) then
     begin
-      Result:=True;
+      Result := True;
       Break;
     end;
   finally
