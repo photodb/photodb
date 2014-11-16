@@ -517,11 +517,9 @@ var
   InsertIndex: Integer;
 begin
   SearchTerm := AnsiLowerCase(WedPersonFilter.Text);
-  if Pos('*', SearchTerm) = 0 then
-    SearchTerm := '*' + SearchTerm + '*';
 
   Key :=  AnsiLowerCase(P.Name + ' ' + P.Comment);
-  Visible := IsMatchMask(Key, SearchTerm);
+  Visible := IsMatchWhiteSpaceMask(Key, SearchTerm);
 
   if Visible then
   begin

@@ -61,7 +61,8 @@ uses
   uProgramStatInfo in '..\PhotoDB\Units\System\uProgramStatInfo.pas',
   uFormBusyApplications in '..\Installer\uFormBusyApplications.pas' {FormBusyApplications},
   uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas',
-  uInstallCloseRelatedApplications in '..\Installer\uInstallCloseRelatedApplications.pas';
+  uInstallCloseRelatedApplications in '..\Installer\uInstallCloseRelatedApplications.pas',
+  OpenCV.Lib in '..\PhotoDB\Units\OpenCV\OpenCV.Lib.pas';
 
 {$R *.res}
 {$R Commands.res}

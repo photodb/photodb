@@ -478,8 +478,7 @@ begin
     Chipper := CipherByIdentity(GraphicHeaderEx1.Algorith);
     if Chipper <> nil then
     begin
-      DecryptStreamEx(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper, GraphicHeaderEx1.BlockSize32k);
-      Result := True;
+      Result := DecryptStreamEx(Stream, MS, Password, SeedToBinary(GraphicHeaderEx1.Seed), GraphicHeaderEx1.FileSize, Chipper, GraphicHeaderEx1.BlockSize32k);
     end;
   end;
 end;

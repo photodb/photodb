@@ -14,7 +14,8 @@ uses
   uConstants in '..\PhotoDB\Units\uConstants.pas',
   uInstallZip in 'uInstallZip.pas',
   uAppUtils in '..\PhotoDB\Units\Utils\uAppUtils.pas',
-  uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas';
+  uDBBaseTypes in '..\PhotoDB\Units\uDBBaseTypes.pas',
+  OpenCV.Lib in '..\PhotoDB\Units\OpenCV\OpenCV.Lib.pas';
 
 {$R ..\PhotoDB\Resources\PhotoDBInstall.res}
 

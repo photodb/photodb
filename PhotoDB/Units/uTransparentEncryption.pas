@@ -240,6 +240,9 @@ var
   Key, Buffer: Binary;
   BreakOperation: Boolean;
 begin
+  if Password = '' then
+    Exit(False);
+
   BreakOperation := False;
   StartPos := S.Position;
   AChipper := ValidCipher(AChipper);

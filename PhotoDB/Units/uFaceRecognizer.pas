@@ -161,6 +161,9 @@ type
     FCoeffs: array of array of Float;
     FEigenVals: pCvMat;
     FThresholdFunc: TEigenThresholdFunction;
+    FLoadedPath: string;
+
+    SamplesArray: array[0..255] of pIplImage;
     procedure ClearTrainingMemory;
     function FindFaces(FaceImage: pIplImage; MaxItems: Integer): TFaceRecognitionInternalResults;
     function FindFace(FaceImage: pIplImage): TPersonFace;
@@ -168,14 +171,13 @@ type
     function AddPerson(FaceImage: pIplImage; Image: TBitmap; Quality: Byte; PersonId, FaceId: Integer): TPersonFaces; overload;
     function AddPerson(PersonId: Integer; Face: TPersonFace): TPersonFaces; overload;
     procedure CleanUp1Face;
+    function Train: Boolean;
   public
     constructor Create(Width, Height: Integer; MaxFacesPerPerson, MaxFaces: Integer; ThresholdFunc: TEigenThresholdFunction = nil);
     destructor Destroy; override;
 
     function SaveState(Path: string): Boolean;
     function LoadState(Path: string): Boolean;
-
-    function Train: Boolean;
 
     function HasPerson(PersonId: Integer): Boolean;
     function HasFace(FaceId: Integer): Boolean;
@@ -463,6 +465,7 @@ begin
   SetLength(FEigImg, 0);
   SetLength(FTrainedFaces, 0);
   FMeanImg := nil; // Average face (float point)
+  FEigenVals := nil;
 end;
 
 destructor TFaceEigenRecognizer.Destroy;
@@ -734,7 +737,7 @@ begin
           end;
         end;
       end;
-
+    FLoadedPath := Path;
   finally
     FSync.Leave;
   end;
@@ -797,77 +800,78 @@ begin
   end;
 end;
 
+function ImageReadCallBack(ObjectNumber: Integer; var Image: pIplImage; UserData: TFaceEigenRecognizer): Integer; cdecl;
+begin
+  Image := UserData.SamplesArray[ObjectNumber];
+  Result := 0;
+end;
+
 function TFaceEigenRecognizer.Train: Boolean;
 var
   I, J: Integer;
   Tc: TCvTermCriteria;
   NEigens: Integer;
-  SamplesArray: array of pIplImage;
+
   Person: TPersonFaces;
-  SamplesCount: Integer;
 begin
   ClearTrainingMemory;
 
-  SetLength(SamplesArray, 0);
   if GetFacesCount < 2 then
     Exit(False);
 
+  FillChar(SamplesArray, SizeOf(SamplesArray), 0);
+
+  FTrainedFacesCount := 0;
   for I := 0 to FPersons.Count - 1 do
   begin
     Person := FPersons[I];
     for J := 0 to Person.FacesCount - 1 do
     begin
-     // if Length(SamplesArray) = 79 then
-     //   Break;
-
-      SetLength(SamplesArray, Length(SamplesArray) + 1);
-      SamplesArray[Length(SamplesArray) - 1] := Person.Faces[J].Face;
+      SamplesArray[FTrainedFacesCount] := Person.Faces[J].Face;
 
       SetLength(FTrainedFaces, Length(FTrainedFaces) + 1);
       FTrainedFaces[Length(FTrainedFaces) - 1] := Person.Faces[J];
+      Inc(FTrainedFacesCount);
 
       {$IFDEF DEBUG}
-      try
-      SavePIplImageAsBitmap(FTrainedFaces[Length(FTrainedFaces) - 1].Face, 'D:\trainset\' + IntToStr(Length(FTrainedFaces) - 1) + '.bmp');
-      except
-      end;
+      SavePIplImageAsBitmap(FTrainedFaces[Length(FTrainedFaces) - 1].Face, 'd:\trainset\' + IntToStr(Length(FTrainedFaces) - 1) + '.bmp');
       {$ENDIF}
     end;
   end;
-  SamplesCount := Length(SamplesArray);
+  SaveState(FLoadedPath);
 
   FMeanImg := cvCreateImage(FSize, IPL_DEPTH_32F, 1);
-
-  // -----------------------------------
-  // Set criteria to terminate process
-  // -----------------------------------
-  Tc.cType := CV_TERMCRIT_NUMBER or CV_TERMCRIT_EPS;
-
-  // TODO: check different parameters
-  Tc.max_iter := 100;
-  Tc.epsilon  := 0.001;
 
   // -----------------------------------------------------
   // Cound of basis vectors = #images - 1
   // -----------------------------------------------------
-  NEigens := SamplesCount - 1;
+  NEigens := FTrainedFacesCount - 1;
+
+  // -----------------------------------
+  // Set criteria to terminate process
+  // -----------------------------------
+  Tc.cType := CV_TERMCRIT_NUMBER {or CV_TERMCRIT_EPS};
+
+  // TODO: check different parameters
+  Tc.max_iter := NEigens;
+  Tc.epsilon  := 0.001;
 
   // This is a basis
   SetLength(FEigImg, NEigens);
   FEigenVals := cvCreateMat(1, NEigens, IPL_DEPTH_32F);
 
   // Get memory for basis
-  for I := 0 to NEigens  - 1 do
+  for I := 0 to NEigens - 1 do
     FEigImg[I] := cvCreateImage(FSize, IPL_DEPTH_32F, 1);
 
   // Calculate basis
   cvCalcEigenObjects(
-    SamplesCount,
-    @SamplesArray[0],
+    FTrainedFacesCount,
+    @ImageReadCallBack,
     FEigImg,
-    CV_EIGOBJ_NO_CALLBACK,
+    CV_EIGOBJ_INPUT_CALLBACK,
     0,
-    nil,
+    Self,
     @Tc,
     FMeanImg,
     pFloat(FEigenVals.Data));
@@ -875,8 +879,8 @@ begin
   // -----------------------------------------------------------
   // Разложение тестируемого изображения по полученному базису
   // -----------------------------------------------------------
-  SetLength(FCoeffs, SamplesCount);
-  for I := 0 to SamplesCount - 1 do
+  SetLength(FCoeffs, FTrainedFacesCount);
+  for I := 0 to FTrainedFacesCount - 1 do
   begin
     SetLength(FCoeffs[I], nEigens);
 
@@ -890,11 +894,9 @@ begin
       @FCoeffs[I][0]);
   end;
 
-  SetLength(SamplesArray, 0);
-
-  FTrainedFacesCount := SamplesCount;
   FIsTrained := True;
   Result := True;
+
 end;
 
 function TFaceEigenRecognizer.TrainFace(Face: TBitmap; Image: TBitmap; PersonId: Integer; FaceId: Integer; Quality: Byte): Boolean;
@@ -1179,7 +1181,7 @@ begin
     FFace.Assign(Face);
     Exit;
   end;
-  FFace := Face;
+  FFace := nil;
 end;
 
 end.

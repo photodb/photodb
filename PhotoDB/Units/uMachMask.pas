@@ -55,6 +55,7 @@ uses
 // с именем awString и любым расширением.
 //
 
+function IsMatchWhiteSpaceMask(AText, AMask: string): Boolean;
 function IsMatchMask(AText, AMask: PChar): Boolean; overload;
 function IsMatchMask(AText, AMask: string; AFileNameMode: Boolean = True): Boolean; overload;
 // Выполняют сопоставление текста aText с одним шаблоном aMask.
@@ -339,6 +340,18 @@ begin
         Result := False;
         Break;
       end;
+end;
+
+function IsMatchWhiteSpaceMask(AText, AMask: string): Boolean;
+var
+  I: Integer;
+  MaskParts: TArray<string>;
+begin
+  MaskParts := AMask.Split([' '], TStringSplitOptions.ExcludeEmpty);
+  Result := True;
+  for I := 0 to Length(MaskParts) - 1 do
+    if Pos(MaskParts[I], AText) = 0 then
+      Exit(False);
 end;
 
 end.

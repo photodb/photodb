@@ -198,6 +198,10 @@ object PropertiesForm: TPropertiesForm
       OnChange = PcMainChange
       object TsGeneral: TTabSheet
         Caption = 'General'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnGeneral: TPanel
           Left = 0
           Top = 0
@@ -532,6 +536,8 @@ object PropertiesForm: TPropertiesForm
         OnResize = TsGroupsResize
         ExplicitLeft = 0
         ExplicitTop = 28
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           290
           344)
@@ -918,6 +924,10 @@ object PropertiesForm: TPropertiesForm
       object TsEXIF: TTabSheet
         Caption = 'EXIF'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           290
           344)
@@ -939,6 +949,10 @@ object PropertiesForm: TPropertiesForm
       object TsGistogramm: TTabSheet
         Caption = 'Gistogramm'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         DesignSize = (
           290
           344)
@@ -994,6 +1008,10 @@ object PropertiesForm: TPropertiesForm
       object TsAdditional: TTabSheet
         Caption = 'Additional'
         ImageIndex = 4
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PnAdditional: TPanel
           Left = 0
           Top = 0

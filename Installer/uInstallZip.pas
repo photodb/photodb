@@ -169,7 +169,7 @@ begin
       end;
 
     finally
-      Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+      Src.Seek(EntryHeader.FileCompressedSize, TSeekOrigin.soCurrent);
     end;
   end;
 end;
@@ -286,7 +286,7 @@ begin
       end;
 
     finally
-      Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+      Src.Seek(EntryHeader.FileCompressedSize, TSeekOrigin.soCurrent);
     end;
   end;
 end;
@@ -304,7 +304,7 @@ begin
       FileList.Add(ExtractFileNameFromHeader(EntryHeader));
       Inc(OriginalFilesSize, EntryHeader.FileOriginalSize);
     end;
-    Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+    Src.Seek(EntryHeader.FileCompressedSize, TSeekOrigin.soCurrent);
   end;
 end;
 
@@ -345,7 +345,7 @@ begin
       Result := True;
       Exit;
     end;
-    Src.Seek(Entry.FileCompressedSize, soFromCurrent);
+    Src.Seek(Entry.FileCompressedSize, TSeekOrigin.soCurrent);
   end;
 end;
 
@@ -368,12 +368,12 @@ begin
         begin
           Src.Read(EntryHeader, SizeOf(EntryHeader));
           Inc(Result, EntryHeader.FileOriginalSize);
-          Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+          Src.Seek(EntryHeader.FileCompressedSize, TSeekOrigin.soCurrent);
         end;
       end;
       Exit;
     end;
-    Src.Seek(EntryHeader.FileCompressedSize, soFromCurrent);
+    Src.Seek(EntryHeader.FileCompressedSize, TSeekOrigin.soCurrent);
   end;
 end;
 

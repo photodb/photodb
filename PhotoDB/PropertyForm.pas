@@ -2406,7 +2406,7 @@ begin
     for I := 0 to RegGroups.Count - 1 do
     begin
       Key := AnsiLowerCase(RegGroups[I].GroupName + ' ' + RegGroups[I].GroupComment + ' ' + RegGroups[I].GroupKeyWords);
-      if (RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchMask(Key, Filter) then
+      if (RegGroups[I].IncludeInQuickList or CbShowAllGroups.Checked) and IsMatchWhiteSpaceMask(Key, Filter) then
       begin
         FShowenRegGroups.AddGroup(RegGroups[I]);
         LstAvaliableGroups.Items.AddObject(RegGroups[I].GroupName, TObject(I));

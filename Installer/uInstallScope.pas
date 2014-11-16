@@ -11,6 +11,8 @@ uses
 {$IFNDEF EXTERNAL}
   uTranslate,
 {$ENDIF}
+  OpenCV.Lib,
+  Dmitry.Utils.System,
   uConstants;
 
 type
@@ -285,16 +287,16 @@ begin
   Files.Add(PhotoDBBridge);
   Files.Add(TFileObject.Create('Kernel.dll',                      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('FreeImage.dll',                   '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_core249.dll',              '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_highgui249.dll',           '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_imgproc249.dll',           '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_objdetect249.dll',         '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_legacy249.dll',            '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_flann249.dll',             '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_features2d249.dll',        '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_calib3d249.dll',           '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_ml249.dll',                '%PROGRAM%', ''));
-  Files.Add(TFileObject.Create('opencv_video249.dll',             '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_core{0}.dll', [CV_VERSION_DLL_PATH]),       '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_highgui{0}.dll', [CV_VERSION_DLL_PATH]),    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_imgproc{0}.dll', [CV_VERSION_DLL_PATH]),    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_objdetect{0}.dll', [CV_VERSION_DLL_PATH]),  '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_legacy{0}.dll', [CV_VERSION_DLL_PATH]),     '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_flann{0}.dll', [CV_VERSION_DLL_PATH]),      '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_features2d{0}.dll', [CV_VERSION_DLL_PATH]), '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_calib3d{0}.dll', [CV_VERSION_DLL_PATH]),    '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_ml{0}.dll', [CV_VERSION_DLL_PATH]),         '%PROGRAM%', ''));
+  Files.Add(TFileObject.Create(FormatEx('opencv_video{0}.dll', [CV_VERSION_DLL_PATH]),      '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('UnInstall.exe',                   '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('libeay32.dll',                    '%PROGRAM%', ''));
   Files.Add(TFileObject.Create('ssleay32.dll',                    '%PROGRAM%', ''));

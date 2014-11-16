@@ -22,6 +22,8 @@ type
     FSync: IReadWriteSync;
     FItems: TStringList;
     function GetCount: Integer;
+    function InternalPathInShelf(Path: string): Integer;
+    function InternalRemoveFromShelf(Path: string): Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -70,7 +72,7 @@ begin
     FSync.BeginWrite;
     try
       for S in Items do
-        if PathInShelf(S) = -1 then
+        if InternalPathInShelf(S) = -1 then
         begin
           FItems.Add(S);
           AddedItems.Add(S);
@@ -106,7 +108,7 @@ begin
 
   FSync.BeginWrite;
   try
-    if PathInShelf(Path) = -1 then
+    if InternalPathInShelf(Path) = -1 then
       FItems.Add(Path);
   finally
     FSync.EndWrite;
@@ -142,7 +144,7 @@ begin
     FSync.BeginWrite;
     try
       for S in Items do
-        if RemoveFromShelf(S) then
+        if InternalRemoveFromShelf(S) then
           RemovedItems.Add(S);
     finally
       FSync.EndWrite;
@@ -200,23 +202,42 @@ begin
   end;
 end;
 
-function TPhotoShelf.PathInShelf(Path: string): Integer;
+function TPhotoShelf.InternalPathInShelf(Path: string): Integer;
 var
   S: string;
   I: Integer;
 begin
   Result := -1;
   S := AnsiUpperCase(Path);
+  for I := 0 to FItems.Count - 1 do
+    if AnsiUpperCase(FItems[I]) = S then
+    begin
+      Result := I;
+      Exit;
+    end;
+end;
+
+function TPhotoShelf.PathInShelf(Path: string): Integer;
+begin
   FSync.BeginRead;
   try
-    for I := 0 to FItems.Count - 1 do
-      if AnsiUpperCase(FItems[I]) = S then
-      begin
-        Result := I;
-        Exit;
-      end;
+    Result := InternalPathInShelf(Path);
   finally
     FSync.EndRead;
+  end;
+end;
+
+function TPhotoShelf.InternalRemoveFromShelf(Path: string): Boolean;
+var
+  Index: Integer;
+begin
+  Result := False;
+
+  Index := InternalPathInShelf(Path);
+  if Index > -1 then
+  begin
+    FItems.Delete(Index);
+    Result := True;
   end;
 end;
 
@@ -224,19 +245,12 @@ function TPhotoShelf.RemoveFromShelf(Path: string): Boolean;
 var
   Index: Integer;
 begin
-  Result := False;
-
   //statistics
   ProgramStatistics.ShelfUsed;
 
   FSync.BeginWrite;
   try
-    Index := PathInShelf(Path);
-    if Index > -1 then
-    begin
-      FItems.Delete(Index);
-      Result := True;
-    end;
+    Result := InternalRemoveFromShelf(Path);
   finally
     FSync.EndWrite;
   end;

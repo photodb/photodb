@@ -64,7 +64,8 @@ uses
   uXMLUtils in '..\PhotoDB\Units\Utils\uXMLUtils.pas',
   uThemesUtils in '..\PhotoDB\Units\Utils\uThemesUtils.pas',
   uInstallCloseRelatedApplications in 'uInstallCloseRelatedApplications.pas',
-  uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas';
+  uIconUtils in '..\PhotoDB\Units\Utils\uIconUtils.pas',
+  OpenCV.Lib in '..\PhotoDB\Units\OpenCV\OpenCV.Lib.pas';
 
 {$R SETUP_ZIP.res}
 {$R *.res}
