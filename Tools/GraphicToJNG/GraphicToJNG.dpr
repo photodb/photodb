@@ -1,13 +1,19 @@
 program GraphicToJNG;
 
+{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009/2010) }
+{$IF CompilerVersion >= 21.0}
+  {$WEAKLINKRTTI ON}
+  {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$IFEND}
+
 uses
   System.Classes,
   System.SysUtils,
   Vcl.Graphics,
-  Dmitry.Graphics.Utils in 'C:\DmitryDPK\Dmitry.Graphics.Utils.pas',
-  Dmitry.Memory in 'C:\DmitryDPK\Dmitry.Memory.pas',
-  Dmitry.Graphics.Types in 'C:\DmitryDPK\Dmitry.Graphics.Types.pas',
-  Dmitry.Imaging.JngImage in 'C:\DmitryDPK\Dmitry.Imaging.JngImage.pas';
+  Dmitry.Graphics.Utils in '..\..\Dmitry\Dmitry.Graphics.Utils.pas',
+  Dmitry.Memory in '..\..\Dmitry\Dmitry.Memory.pas',
+  Dmitry.Graphics.Types in '..\..\Dmitry\Dmitry.Graphics.Types.pas',
+  Dmitry.Imaging.JngImage in '..\..\Dmitry\Dmitry.Imaging.JngImage.pas';
 
 var
   JNG: TJNGImage;
