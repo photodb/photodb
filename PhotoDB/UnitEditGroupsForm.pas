@@ -395,9 +395,6 @@ begin
   LstAvaliableGroups.Clear;
   Filter := AnsiLowerCase(WedGroupsFilter.Text);
 
-  if Pos('*', Filter) = 0 then
-    Filter := '*' + Filter + '*';
-
   for I := 0 to FRegGroups.Count - 1 do
   begin
     Key := AnsiLowerCase(FRegGroups[I].GroupName + ' ' + FRegGroups[I].GroupComment + ' ' + FRegGroups[I].GroupKeyWords);

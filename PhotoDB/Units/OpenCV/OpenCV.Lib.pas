@@ -19,26 +19,20 @@ const
   CV_VERSION_DLL = CV_VERSION_EPOCH + CV_VERSION_MAJOR + CV_VERSION_MINOR;
 
 {$IFDEF DEBUG}
-  Core_Dll           = 'opencv_core' + CV_VERSION_DLL + 'd.dll';
-  highgui_Dll        = 'opencv_highgui' + CV_VERSION_DLL + 'd.dll';
-  imgproc_Dll        = 'opencv_imgproc' + CV_VERSION_DLL + 'd.dll';
-  objdetect_dll      = 'opencv_objdetect' + CV_VERSION_DLL + 'd.dll';
-  legacy_dll         = 'opencv_legacy' + CV_VERSION_DLL + 'd.dll';
-  calib3d_dll        = 'opencv_calib3d' + CV_VERSION_DLL + 'd.dll';
-  tracking_DLL       = 'opencv_video' + CV_VERSION_DLL + 'd.dll';
-  Nonfree_DLL        = 'opencv_nonfree' + CV_VERSION_DLL + 'd.dll';
-  OpenCV_Classes_DLL = 'OpenCV_Classes.dll';
+  CV_VERSION_DLL_PATH = CV_VERSION_DLL + 'd';
 {$ELSE}
-  Core_Dll           = 'opencv_core' + CV_VERSION_DLL + '.dll';
-  highgui_Dll        = 'opencv_highgui' + CV_VERSION_DLL + '.dll';
-  imgproc_Dll        = 'opencv_imgproc' + CV_VERSION_DLL + '.dll';
-  objdetect_dll      = 'opencv_objdetect' + CV_VERSION_DLL + '.dll';
-  legacy_dll         = 'opencv_legacy' + CV_VERSION_DLL + '.dll';
-  calib3d_dll        = 'opencv_calib3d' + CV_VERSION_DLL + '.dll';
-  tracking_DLL       = 'opencv_video' + CV_VERSION_DLL + '.dll';
-  Nonfree_DLL        = 'opencv_nonfree' + CV_VERSION_DLL + '.dll';
-  OpenCV_Classes_DLL = 'OpenCV_Classes.dll';
+  CV_VERSION_DLL_PATH = CV_VERSION_DLL;
 {$ENDIF}
+
+  Core_Dll           = 'opencv_core' + CV_VERSION_DLL_PATH + 'd.dll';
+  highgui_Dll        = 'opencv_highgui' + CV_VERSION_DLL_PATH + 'd.dll';
+  imgproc_Dll        = 'opencv_imgproc' + CV_VERSION_DLL_PATH + 'd.dll';
+  objdetect_dll      = 'opencv_objdetect' + CV_VERSION_DLL_PATH + 'd.dll';
+  legacy_dll         = 'opencv_legacy' + CV_VERSION_DLL_PATH + 'd.dll';
+  calib3d_dll        = 'opencv_calib3d' + CV_VERSION_DLL_PATH + 'd.dll';
+  tracking_DLL       = 'opencv_video' + CV_VERSION_DLL_PATH + 'd.dll';
+  Nonfree_DLL        = 'opencv_nonfree' + CV_VERSION_DLL_PATH + 'd.dll';
+  OpenCV_Classes_DLL = 'OpenCV_Classes.dll';
 
 implementation
 

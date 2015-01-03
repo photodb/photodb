@@ -6105,6 +6105,7 @@ begin
         if Item = nil then
           ElvMain.EndUpdate(False);
       end;
+      ElvMain.Scrollbars.ReCalculateScrollbars(False, True);
       ElvMain.Invalidate;
     end;
   finally
@@ -12704,7 +12705,7 @@ begin
   P := Point(Control.Left, Control.BoundsRect.Bottom);
   P := Control.Parent.ClientToScreen(P);
   PmESPerson.Tag := Control.Tag;
-  PmESPerson.Popup(P.X, P.Y);
+  PmESPerson.Popup(P.X + 1, P.Y);
 end;
 
 procedure TExplorerForm.ExtendedSearchPersonModeClick(Sender: TObject);
@@ -12721,7 +12722,7 @@ begin
   R := TWebLink(Sender).BoundsRect;
   P := Point(R.Left, R.Bottom);
   P := TWebLink(Sender).ClientToScreen(P);
-  PmSelectPerson.Popup(P.X, P.Y);
+  PmSelectPerson.Popup(P.X + 1, P.Y);
 end;
 
 procedure TExplorerForm.WlExtendedSearchDateFromClick(Sender: TObject);
@@ -12751,7 +12752,7 @@ var
 begin
   P := Point(WlExtendedSearchOptions.Left, WlExtendedSearchOptions.BoundsRect.Bottom);
   P := WlExtendedSearchOptions.Parent.ClientToScreen(P);
-  PmESOptions.Popup(P.X, P.Y);
+  PmESOptions.Popup(P.X + 1, P.Y);
 end;
 
 procedure TExplorerForm.WlExtendedSearchOptionsContextPopup(Sender: TObject;
@@ -12770,7 +12771,7 @@ var
 begin
   P := Point(WlExtendedSearchSortBy.Left, WlExtendedSearchSortBy.BoundsRect.Bottom);
   P := WlExtendedSearchSortBy.Parent.ClientToScreen(P);
-  PmESSorting.Popup(P.X, P.Y);
+  PmESSorting.Popup(P.X + 1, P.Y);
 end;
 
 procedure TExplorerForm.WlExtendedSearchSortDescendingClick(Sender: TObject);
@@ -13490,7 +13491,7 @@ begin
     P := Wl.Parent.ClientToScreen(P);
 
     PmInfoGroup.Tag := NativeInt(WL);
-    PmInfoGroup.Popup(P.X, P.Y);
+    PmInfoGroup.Popup(P.X + 1, P.Y);
   end else
   begin
     KeyWords := MemKeyWords.Text;

@@ -694,8 +694,8 @@ type
     function RefreshDeviceList: HResult; stdcall;
     function GetDeviceFriendlyName(pszPnPDeviceID: PWideChar; pDeviceFriendlyName: PWCHAR;
                                    pcchDeviceFriendlyName: PDWORD): HResult; stdcall;
-    function GetDeviceDescription(pszPnPDeviceID: PWideChar; var pDeviceDescription: Word;
-                                  var pcchDeviceDescription: LongWord): HResult; stdcall;
+    function GetDeviceDescription(pszPnPDeviceID: PWideChar; pDeviceDescription: PWCHAR;
+                                  pcchDeviceDescription: PDWORD): HResult; stdcall;
     function GetDeviceManufacturer(pszPnPDeviceID: PWideChar; var pDeviceManufacturer: Word;
                                    var pcchDeviceManufacturer: LongWord): HResult; stdcall;
     function GetDeviceProperty(pszPnPDeviceID: PWideChar; pszDevicePropertyName: PWideChar;

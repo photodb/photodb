@@ -452,6 +452,36 @@ begin
   end else
     ErrorCheck(HR);
 
+  if FName = DEFAULT_PORTABLE_DEVICE_NAME then
+  begin
+
+    repeat
+      HR := FManager.Manager.GetDeviceDescription(PChar(FDeviceID), nil, @cchFriendlyName);
+    until E_RESOURCE_IN_USE <> HR;
+
+    // Second allocate the number of characters needed and retrieve the string value.
+    if (SUCCEEDED(HR) and (cchFriendlyName > 0)) then
+    begin
+      GetMem(pszFriendlyName, cchFriendlyName * SizeOf(WChar));
+      if (pszFriendlyName <> nil) then
+      begin
+        repeat
+          HR := FManager.Manager.GetDeviceDescription(PChar(FDeviceID), pszFriendlyName, @cchFriendlyName);
+        until E_RESOURCE_IN_USE <> HR;
+
+        if (Failed(HR)) then
+          FName := DEFAULT_PORTABLE_DEVICE_NAME
+        else
+          FName := pszFriendlyName;
+
+        FreeMem(pszFriendlyName);
+      end else
+        FName := DEFAULT_PORTABLE_DEVICE_NAME;
+    end else
+      ErrorCheck(HR);
+
+  end;
+
   WPDEventManager.RegisterDevice(Self);
 end;
 
@@ -799,13 +829,13 @@ begin
         WPD_DEVICE_TYPE_CAMERA:
           FDeviceType := dtCamera;
         WPD_DEVICE_TYPE_MEDIA_PLAYER,
-        WPD_DEVICE_TYPE_PHONE:
-          FDeviceType := dtPhone;
-        WPD_DEVICE_TYPE_VIDEO:
-          FDeviceType := dtVideo;
+        WPD_DEVICE_TYPE_PHONE,
         WPD_DEVICE_TYPE_PERSONAL_INFORMATION_MANAGER,
         WPD_DEVICE_TYPE_AUDIO_RECORDER,
         WPD_DEVICE_TYPE_GENERIC:
+          FDeviceType := dtPhone;
+        WPD_DEVICE_TYPE_VIDEO:
+          FDeviceType := dtVideo;
       end;
     end;
 
