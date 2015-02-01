@@ -104,17 +104,17 @@ end;
 
 procedure AssignPNG(Dest: TBitmap; Src: TPngImage);
 begin
-  case TPngImage(Src).Header.ColorType of
+  case Src.Header.ColorType of
     COLOR_GRAYSCALE:
-      LoadPNGImage8BitWOTransparent(TPngImage(Src), Dest);
+      LoadPNGImage8BitWOTransparent(Src, Dest);
     COLOR_GRAYSCALEALPHA:
-      LoadPNGImage8BitTransparent(TPngImage(Src), Dest);
+      LoadPNGImage8BitTransparent(Src, Dest);
     COLOR_PALETTE:
-      LoadPNGImagePalette(TPngImage(Src), Dest);
+      LoadPNGImagePalette(Src, Dest);
     COLOR_RGB:
-      LoadPNGImageWOTransparent(TPngImage(Src), Dest);
+      LoadPNGImageWOTransparent(Src, Dest);
     COLOR_RGBALPHA:
-      LoadPNGImageTransparent(TPngImage(Src), Dest);
+      LoadPNGImageTransparent(Src, Dest);
     else
       Dest.Assign(Src);
   end;
