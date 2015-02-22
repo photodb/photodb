@@ -850,11 +850,11 @@ begin
   // -----------------------------------
   // Set criteria to terminate process
   // -----------------------------------
-  Tc.cType := CV_TERMCRIT_NUMBER {or CV_TERMCRIT_EPS};
+  Tc.cType := CV_TERMCRIT_NUMBER or CV_TERMCRIT_EPS;
 
   // TODO: check different parameters
   Tc.max_iter := NEigens;
-  Tc.epsilon  := 0.001;
+  Tc.epsilon  := 0.01;
 
   // This is a basis
   SetLength(FEigImg, NEigens);
