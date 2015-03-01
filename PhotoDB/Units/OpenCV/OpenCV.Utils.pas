@@ -165,7 +165,7 @@ var
   end;
 
 begin
-  Assert((iplImg.Depth = 8) and (iplImg.NChannels in [1,3]), 'IplImage2Bitmap: Not a 24 bit color iplImage!');
+  Assert((iplImg.Depth in [8]) and (iplImg.NChannels in [1,3]), 'IplImage2Bitmap: Not a 24 bit color iplImage!');
 
   Bitmap.SetSize(IplImg.Width, IplImg.Height);
 

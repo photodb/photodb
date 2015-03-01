@@ -64,7 +64,7 @@ type
 
   pCvArr = Pointer;
 
-  TIplROI = packed record
+  TIplROI = record
     coi: Integer; (* 0 - no COI (all channels are selected), 1 - 0th channel is selected ... *)
     xOffset: Integer;
     yOffset: Integer;
@@ -74,7 +74,7 @@ type
 
   TiplCallBack = procedure(img: pIplImage; xIndex: Integer; yIndex: Integer; mode: Integer);
 
-  TIplTileInfo = packed record
+  TIplTileInfo = record
     callBack: TiplCallBack;
     id: Pointer;
     tileData: pCVChar;
@@ -84,7 +84,7 @@ type
 
   TA4CVChar = array [0 .. 3] of CVChar;
 
-  TIplImage = packed record
+  TIplImage = record
     nSize: Integer;        (* sizeof(IplImage) *)
     id: Integer;           (* version (=0) *)
     nChannels: Integer;    (* Most of OpenCV functions support 1,2,3 or 4 channels *)
@@ -113,7 +113,7 @@ type
 type
   pCvMemBlock = ^TCvMemBlock;
 
-  TCvMemBlock = packed record
+  TCvMemBlock = record
     prev: pCvMemBlock;
     next: pCvMemBlock;
   end;
@@ -121,7 +121,7 @@ type
 type
   pCvMemStorage = ^TCvMemStorage;
 
-  TCvMemStorage = packed record
+  TCvMemStorage = record
     signature: Integer;
     bottom: pCvMemBlock;
     top: pCvMemBlock; (* First allocated block. *)
@@ -134,7 +134,7 @@ type
 type
   pCvMemStoragePos = ^TCvMemStoragePos;
 
-  TCvMemStoragePos = packed record
+  TCvMemStoragePos = record
     top: pCvMemBlock;
     free_space: Integer;
   end;
@@ -143,7 +143,7 @@ type
 type
   pCvSeqBlock = ^TCvSeqBlock;
 
-  TCvSeqBlock = packed record
+  TCvSeqBlock = record
     prev: pCvSeqBlock;    (* Previous sequence block. *)
     next: pCvSeqBlock;    (* Next sequence block. *)
     start_index: Integer; (* Index of the first element in the block + *)
@@ -155,7 +155,7 @@ type
   pCvSeqArray = array [0 .. 1] of pCvSeq;
   ppCvSeq     = ^pCvSeqArray;
 
-  TCvSeq = packed record
+  TCvSeq = record
     flags: Integer;           (* Miscellaneous flags. *)
     header_size: Integer;     (* Size of sequence header. *)
     h_prev: pCvSeq;           (* Previous sequence. *)
@@ -177,7 +177,7 @@ type
 type
   pCvPoint = ^TCvPoint;
 
-  TCvPoint = packed record
+  TCvPoint = record
     x: Integer;
     y: Integer;
   end;
@@ -187,14 +187,14 @@ type
 
   pCvPoint2D32f = ^TCvPoint2D32f;
 
-  TCvPoint2D32f = packed record
+  TCvPoint2D32f = record
     x: Single;
     y: Single;
   end;
 
   pCvPoint3D32f = ^TCvPoint3D32f;
 
-  TCvPoint3D32f = packed record
+  TCvPoint3D32f = record
     x: Single;
     y: Single;
     z: Single;
@@ -203,12 +203,12 @@ type
 function cvPoint3D32f(const x, y, z: Double): TCvPoint3D32f; inline;
 
 Type
-  TCvPoint2D64f = packed record
+  TCvPoint2D64f = record
     x: Double;
     y: Double;
   end;
 
-  TCvPoint3D64f = packed record
+  TCvPoint3D64f = record
     x: Double;
     y: Double;
     z: Double;
@@ -220,7 +220,7 @@ Const
 type
   pCvSize = ^TCvSize;
 
-  TCvSize = packed record
+  TCvSize = record
     width: Integer;
     height: Integer;
   end;
@@ -228,7 +228,7 @@ type
 type
   pCvRect = ^TCvRect;
 
-  TCvRect = packed record
+  TCvRect = record
     x: Integer;
     y: Integer;
     width: Integer;
@@ -239,7 +239,7 @@ type
   pCvMat  = ^TCvMat;
   ppCvMat = ^pCvMat;
 
-  TCvMat = packed record
+  TCvMat = record
     _type: Integer;
     step: Integer;
 
@@ -271,7 +271,7 @@ const
 type
   pCvTermCriteria = ^TCvTermCriteria;
 
-  TCvTermCriteria = packed record
+  TCvTermCriteria = record
     cType: Integer; (* may be combination of *)
     max_iter: Integer;
     epsilon: Double;
@@ -280,7 +280,7 @@ type
 type
   pCvScalar = ^TCvScalar;
 
-  TCvScalar = packed record
+  TCvScalar = record
     val: array [0 .. 3] of Double;
   end;
 

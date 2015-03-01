@@ -23,7 +23,7 @@ type
   Tsqsumtype = Double;
   psqsumtype = ^Tsqsumtype;
 
-  TCvHidHaarFeatureRect = packed record
+  TCvHidHaarFeatureRect = record
     p0, p1, p2, p3: pSumType;
   end;
 
@@ -31,7 +31,7 @@ type
 
   pCvHidHaarTreeNode = ^TCvHidHaarTreeNode;
 
-  TCvHidHaarTreeNode = packed record
+  TCvHidHaarTreeNode = record
     feature: TCvHidHaarFeature;
     threshold: Single;
     left: integer;
@@ -40,7 +40,7 @@ type
 
   pCvHidHaarClassifier = ^TCvHidHaarClassifier;
 
-  TCvHidHaarClassifier = packed record
+  TCvHidHaarClassifier = record
     count: integer;
     // CvHaarFeature* orig_feature;
     node: pCvHidHaarTreeNode;
@@ -49,7 +49,7 @@ type
 
   pCvHidHaarStageClassifier = ^TCvHidHaarStageClassifier;
 
-  TCvHidHaarStageClassifier = packed record
+  TCvHidHaarStageClassifier = record
     count: integer;
     threshold: Single;
     classifier: pCvHidHaarClassifier;
@@ -60,7 +60,7 @@ type
     parent: pCvHidHaarStageClassifier;
   end;
 
-  TCvHidHaarClassifierCascade = packed record
+  TCvHidHaarClassifierCascade = record
     count: integer;
     isStumpBased: integer;
     has_tilted_features: integer;
@@ -95,14 +95,14 @@ type
 
   pCvHaarFeature = ^TCvHaarFeature;
 
-  TCvHaarFeature = packed record
+  TCvHaarFeature = record
     tilted: Integer;
     rect: array [0 .. CV_HAAR_FEATURE_MAX - 1] of THaarFeature;
   end;
 
   pCvHaarClassifier = ^TCvHaarClassifier;
 
-  TCvHaarClassifier = packed record
+  TCvHaarClassifier = record
     count: Integer;
     haar_feature: pCvHaarFeature;
     threshold: pSingle;
@@ -113,7 +113,7 @@ type
 
   pCvHaarStageClassifier = ^TCvHaarStageClassifier;
 
-  TCvHaarStageClassifier = packed record
+  TCvHaarStageClassifier = record
     count: Integer;
     threshold: Single;
     classifier: pCvHaarClassifier;
@@ -127,7 +127,7 @@ type
 
   pCvHaarClassifierCascade = ^TCvHaarClassifierCascade;
 
-  TCvHaarClassifierCascade = packed record
+  TCvHaarClassifierCascade = record
     flags: Integer;
     count: Integer;
     orig_window_size: TCvSize;
@@ -137,7 +137,7 @@ type
     hid_cascade: pCvHidHaarClassifierCascade;
   end;
 
-  TCvAvgComp = packed record
+  TCvAvgComp = record
     rect: TCvRect;
     neighbors: Integer;
   end;
