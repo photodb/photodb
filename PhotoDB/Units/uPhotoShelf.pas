@@ -242,8 +242,6 @@ begin
 end;
 
 function TPhotoShelf.RemoveFromShelf(Path: string): Boolean;
-var
-  Index: Integer;
 begin
   //statistics
   ProgramStatistics.ShelfUsed;

@@ -22,6 +22,7 @@ uses
   OpenCV.HighGUI,
 
   Dmitry.Utils.System,
+  Dmitry.Utils.Files,
 
   uMemory,
   uGuidUtils,
@@ -653,10 +654,16 @@ var
   Image: pIplImage;
 begin
   if Assigned(FEigenVals) then
+  begin
     cvReleaseMat(FEigenVals);
+    FEigenVals := nil;
+  end;
 
   if Assigned(FMeanImg) then
+  begin
     cvReleaseImage(FMeanImg);
+    FMeanImg := nil;
+  end;
 
   for I := Low(FEigImg) to High(FEigImg) do
   begin
@@ -679,6 +686,7 @@ var
 begin
   Result := True;
 
+  DeleteDirectoryWithFiles(Path);
   CreateDir(Path);
 
   FSync.Enter;
@@ -736,7 +744,7 @@ begin
               P.Add(Face);
             end
             else
-              Face.Free;
+              F(Face);
           end;
         end;
       end;
@@ -867,7 +875,7 @@ begin
     @FEigImg,
     CV_EIGOBJ_NO_CALLBACK,
     0,
-    Self,
+    nil,
     @Tc,
     FMeanImg,
     pFloat(FEigenVals.Data));

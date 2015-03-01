@@ -8,6 +8,7 @@ uses
   System.Classes,
   System.SysUtils,
   System.AnsiStrings,
+  System.NetEncoding,
   Vcl.Imaging.JPEG,
   Vcl.Imaging.pngimage,
   Soap.EncdDecd,
