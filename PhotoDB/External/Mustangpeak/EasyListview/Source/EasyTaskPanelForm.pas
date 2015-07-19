@@ -27,8 +27,8 @@ unit EasyTaskPanelForm;
 // practical do to the way the VCL was designed.
 //----------------------------------------------------------------------------
 
-{$I ..\Source\Compilers.inc}
-{$I ..\Source\Options.inc}
+{$I Compilers.inc}
+{$I Options.inc}
 {$I ..\Include\Addins.inc}
 
 {$ifdef COMPILER_12_UP}

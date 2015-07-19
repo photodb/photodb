@@ -28,11 +28,13 @@ unit EasyListviewAccessible;
 // practical do to the way the VCL was designed.
 //----------------------------------------------------------------------------
 
-{$I ..\Source\Compilers.inc}
 
+{$I Compilers.inc}
 {$I ..\Include\Debug.inc}
 {$I Options.inc}
 {$I ..\Include\Addins.inc}
+
+{.$DEFINE DISABLE_ACCESSIBILITY}
 
 {$ifdef COMPILER_12_UP}
  {$WARN IMPLICIT_STRING_CAST       OFF}
@@ -44,6 +46,8 @@ unit EasyListviewAccessible;
 interface
 
 {.$DEFINE LOADGXUNIT}
+
+{$ifndef DISABLE_ACCESSIBILITY}
 
 uses
   {$IFDEF COMPILER_9_UP}
@@ -61,11 +65,11 @@ uses
   DbugIntf,
   {$ENDIF LOADGXUNIT}
 
-  //{$ifdef COMPILER_10_UP}
-  //oleacc, // MSAA support in Delphi 2006 or higher
-  //{$ELSE}
+  {$ifdef COMPILER_10_UP}
+  oleacc, // MSAA support in Delphi 2006 or higher
+  {$ELSE}
   EasyMSAAIntf, // MSAA support for Delphi up to 2005
-  //{$ENDIF}
+  {$ENDIF}
   Classes,
   ActiveX,
   EasyListview;
@@ -281,7 +285,11 @@ type
     property Selection: TEasyItemArray read FSelection write FSelection;
   end;
 
+{$endif}
+
 implementation
+
+{$ifndef DISABLE_ACCESSIBILITY}
 
 type
   TOleVarArray = array[0..0] of OleVariant;
@@ -1589,5 +1597,7 @@ begin
   Inc(FEnumCount, celt);
   Result := S_OK
 end;
+
+{$endif}
 
 end.

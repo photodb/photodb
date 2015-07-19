@@ -51,7 +51,9 @@ interface
 
 {$B-}
 
-{$I ..\Source\Compilers.inc}
+{.$DEFINE DISABLE_ACCESSIBILITY}
+
+{$I Compilers.inc}
 {$I ..\Include\Debug.inc}
 {$I Options.inc}
 {$I ..\Include\Addins.inc}
@@ -98,11 +100,13 @@ uses
     UxTheme,
     {$ENDIF}
   {$ENDIF}
-//  {$ifdef COMPILER_10_UP}
-//  oleacc, // MSAA support in Delphi 2006 or higher
-//  {$ELSE}
-  EasyMSAAIntf, // MSAA support for Delphi up to 2005
-//  {$ENDIF}
+  {$ifndef DISABLE_ACCESSIBILITY}
+    {$ifdef COMPILER_10_UP}
+    oleacc, // MSAA support in Delphi 2006 or higher
+    {$ELSE}
+    EasyMSAAIntf, // MSAA support for Delphi up to 2005
+    {$ENDIF}
+  {$ENDIF}
   ExtCtrls,
   Forms,
   ImgList,
@@ -4731,7 +4735,7 @@ type
   // **************************************************************************
   TCustomEasyListview = class(TCommonCanvasControl)
   private
-    FAccessible: IAccessible;
+    {$ifndef DISABLE_ACCESSIBILITY}FAccessible: IAccessible;{$endif}
     FAllowInvisibleCheckedItems: Boolean;
     FBackGround: TEasyBackgroundManager;
     FCellSizes: TEasyCellSizes;
@@ -4998,7 +5002,7 @@ type
     procedure CopyToClipboard(UserData: Integer = 0); virtual;
     procedure CreateWnd; override;
     procedure CutToClipboard(UserData: Integer = 0); virtual;
-    procedure DisconnectAccessibility;
+    {$ifndef DISABLE_ACCESSIBILITY}procedure DisconnectAccessibility;{$endif}
     procedure DoAfterPaint(ACanvas: TCanvas; ClipRect: TRect); virtual;
     procedure DoAutoGroupGetKey(Item: TEasyItem; ColumnIndex: Integer; Groups: TEasyGroups; var Key: LongWord); virtual;
     procedure DoAutoSortGroupCreate(Item: TEasyItem; ColumnIndex: Integer; Groups: TEasyGroups; var Group: TEasyGroup; var DoDefaultAction: Boolean); virtual;
@@ -5192,7 +5196,7 @@ type
     procedure WMEasyThreadCallback(var Msg: TWMThreadRequest); message WM_COMMONTHREADCALLBACK;
     procedure WMEraseBkGnd(var Msg: TWMEraseBkGnd); message WM_ERASEBKGND;
     procedure WMGetDlgCode(var Msg: TWMGetDlgCode); message WM_GETDLGCODE;
-    procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;
+    {$ifndef DISABLE_ACCESSIBILITY}procedure WMGetObject(var Msg: TMessage); message WM_GETOBJECT;{$endif}
     procedure WMHScroll(var Msg: TWMHScroll); message WM_HSCROLL;
     procedure WMKeyDown(var Msg: TWMKeyDown); message WM_KEYDOWN;
     procedure WMKillFocus(var Msg: TWMKillFocus); message WM_KILLFOCUS;
@@ -5217,7 +5221,7 @@ type
     procedure WMVScroll(var Msg: TWMVScroll); message WM_VSCROLL;
     procedure WMWindowPosChanged(var Msg: TWMWindowPosChanged); message WM_WINDOWPOSCHANGED;
     procedure WMWindowPosChanging(var Msg: TWMWindowPosChanging); message WM_WINDOWPOSCHANGING;
-    property Accessible: IAccessible read FAccessible write FAccessible;
+    {$ifndef DISABLE_ACCESSIBILITY}property Accessible: IAccessible read FAccessible write FAccessible;{$endif}
     property AllowHiddenCheckedItems: Boolean read FAllowInvisibleCheckedItems write FAllowInvisibleCheckedItems default False;
     property BackGround: TEasyBackgroundManager read FBackGround write SetBackGround;
     property BevelInner default bvRaised;
@@ -6127,7 +6131,7 @@ var
 implementation
 
 uses
-  EasyListviewAccessible,
+  {$ifndef DISABLE_ACCESSIBILITY}EasyListviewAccessible,{$endif}
   Math;
 
 const
@@ -8431,8 +8435,10 @@ begin
   inherited;
   FExpanded := True;
   FItems := TEasyItems.Create(OwnerListview, Self);
+  {$ifndef DISABLE_ACCESSIBILITY}
   if Assigned(OwnerListview.Accessible) and (not (csDesigning in OwnerListview.ComponentState)) then
     Accessible := TEasyGroupAccessibleManager.Create(Self);
+  {$endif}
   FVisibleItems := TList.Create;
   Checked := True;
 end;
@@ -9919,8 +9925,10 @@ constructor TEasyColumn.Create(ACollection: TEasyCollection);
 begin
   inherited;
   FDropDownButton := TEasyColumnDropDownButton.Create(Self);
+  {$ifndef DISABLE_ACCESSIBILITY}
   if Assigned(OwnerListview.Accessible) and (not (csDesigning in OwnerListview.ComponentState)) then
     Accessible := TEasyColumnAccessibleManager.Create(Self);
+  {$endif}
   FSortDirection := esdNone;
   FAutoToggleSortGlyph := True;
   FClickable := True;
@@ -15006,6 +15014,7 @@ begin
   inherited;
 end;
 
+{$ifndef DISABLE_ACCESSIBILITY}
 procedure TCustomEasyListview.DisconnectAccessibility;
 var
   i: Integer;
@@ -15039,6 +15048,7 @@ begin
     Accessible := nil;
   end
 end;
+{$endif}
 
 procedure TCustomEasyListview.DoAfterPaint(ACanvas: TCanvas; ClipRect: TRect);
 begin
@@ -17439,7 +17449,7 @@ end;
 {$IFDEF SpTBX}
 procedure TCustomEasyListview.UpdateSelectionRectColor;
 begin
-  if SkinManager.CurrentSkinName <> 'Default' then
+  if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
   begin
     if CurrentSkin.Options(skncListItem, sknsChecked).Borders.Color1 <> 0 then
     begin
@@ -17568,7 +17578,7 @@ end;
 procedure TCustomEasyListview.WMDestroy(var Msg: TMessage);
 begin
   EditManager.EndEdit;
-  DisconnectAccessibility;
+  {$ifndef DISABLE_ACCESSIBILITY}DisconnectAccessibility;{$endif}
   DragManager.Registered := False;
   Header.DragManager.Registered := False;
   inherited;
@@ -17591,6 +17601,7 @@ begin
   Msg.Result := Msg.Result or DLGC_WANTALLKEYS or DLGC_WANTARROWS or DLGC_WANTCHARS;
 end;
 
+{$ifndef DISABLE_ACCESSIBILITY}
 procedure TCustomEasyListview.WMGetObject(var Msg: TMessage);
 var
   i, j: Integer;
@@ -17619,6 +17630,7 @@ begin
     else
       Msg.Result := 0;
 end;
+{$endif}
 
 procedure TCustomEasyListview.WMHScroll(var Msg: TWMHScroll);
 // Called to scroll the Window, the Window is responsible for actually performing
@@ -19914,10 +19926,10 @@ begin
   if not Handled then
   begin
     {$IFDEF SpTBX}
-    if SkinManager.CurrentSkinName <> 'Default' then
+    if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
     begin
       // Paints the rightmost background of the columns, the part that never gets selected
-      SpDrawXPHeader(ACanvas, ViewRect, False, False, sknSkin);
+      SpDrawXPHeader(ACanvas, ViewRect, False, False);
     end else
     {$ENDIF SpTBX}
     {$IFDEF USETHEMES}
@@ -20835,7 +20847,7 @@ begin
       begin
         ACanvas.Font.Color := OwnerListview.Selection.TextColor;
         {$IFDEF SpTBX}
-        if SkinManager.CurrentSkinName <> 'Default' then
+        if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
           ACanvas.Font.Color := CurrentSkin.GetTextColor(skncListItem, CurrentSkin.GetState(True, False, False, True));
         {$ENDIF}
       end
@@ -21326,7 +21338,7 @@ begin
     begin
       ACanvas.Font.Color := OwnerListview.Selection.TextColor;
       {$IFDEF SpTBX}
-      if SkinManager.CurrentSkinName <> 'Default' then
+      if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
         ACanvas.Font.Color := CurrentSkin.GetTextColor(skncListItem, CurrentSkin.GetState(True, False, False, Item.Selected or Item.Hilighted));
       {$ENDIF}
       if (Item <> OwnerListview.Selection.FocusedItem) or not OwnerListview.Selection.UseFocusRect then
@@ -21457,8 +21469,8 @@ begin
     if not IsRectEmpty(LocalSelRect) then
     begin
       {$IFDEF SpTBX}
-      if (SkinManager.CurrentSkinName <> 'Default') and OwnerListview.PaintSpTBXSelection then
-        SpDrawXPListItemBackGround(ACanvas, LocalSelRect, Item.Selected or Item.Hilighted, False, Item.Focused, SkinManager.GetSkinType, True)
+      if (SkinManager.GetSkinType in [sknSkin, sknDelphiStyle]) and OwnerListview.PaintSpTBXSelection then
+        SpDrawXPListItemBackGround(ACanvas, LocalSelRect, Item.Selected or Item.Hilighted, False, Item.Focused, True)
       else begin
       {$ENDIF}
         if OwnerListview.Selection.Gradient and not OwnerListview.Selection.AlphaBlend then
@@ -22631,7 +22643,7 @@ begin
     begin
       LoadTextFont(Item, 0, ACanvas, Item.Selected);
       {$IFDEF SpTBX}
-      if SkinManager.CurrentSkinName <> 'Default' then
+      if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
       begin
         if Item.Selected or Item.Hilighted then
           ACanvas.Font.Color := CurrentSkin.GetTextColor(skncListItem, CurrentSkin.GetState(True, False, False, True));
@@ -22645,7 +22657,7 @@ begin
       begin
         LoadTextFont(Item, i, ACanvas, Item.Selected);
         {$IFDEF SpTBX}
-        if SkinManager.CurrentSkinName <> 'Default' then
+        if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
         begin
           if Item.Selected or Item.Hilighted then
             ACanvas.Font.Color := CurrentSkin.GetTextColor(skncListItem, CurrentSkin.GetState(True, False, False, True));
@@ -23252,6 +23264,9 @@ begin
   ACanvas.Font.Assign(OwnerListview.Header.Font);
   if Column.Bold then
     ACanvas.Font.Style := ACanvas.Font.Style +[fsBold];
+  {$IFDEF SpTBX}
+    ACanvas.Font.Color := SkinManager.CurrentSkin.GetTextColor(skncHeader, sknsNormal)
+  {$ENDIF}
 end;
 
 procedure TEasyViewColumn.Paint(Column: TEasyColumn; ACanvas: TCanvas;
@@ -23376,8 +23391,8 @@ begin
   Pt.y := 0;
 
   {$IFDEF SpTBX}
-  if SkinManager.CurrentSkinName <> 'Default' then
-    SpDrawXPHeader(ACanvas, Column.DisplayRect, Column.HotTracking[Pt], Column.Clicking, sknSkin)
+  if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
+    SpDrawXPHeader(ACanvas, Column.DisplayRect, Column.HotTracking[Pt], Column.Clicking)
   else
   {$ENDIF SpTBX}
   {$IFDEF USETHEMES}
@@ -26476,8 +26491,10 @@ end;
 constructor TEasyItem.Create(ACollection: TEasyCollection);
 begin
   inherited Create(ACollection);
+  {$ifndef DISABLE_ACCESSIBILITY}
   if Assigned(OwnerListview.Accessible) and (not (csDesigning in OwnerListview.ComponentState)) then
     Accessible := TEasyItemAccessibleManager.Create(Self);
+  {$endif}
   FVisibleIndexInGroup := -1;
 end;
 
@@ -28656,14 +28673,14 @@ begin
   {$IFDEF SpTBX}
   if not ((CheckType = ectNone) or (CheckType = ectNoneWithSpace)) then
   begin
-    if SkinManager.CurrentSkinName <> 'Default' then
+    if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
     begin
       if IsChecked then
         CheckState := cbChecked
       else
         CheckState := cbUnChecked;
       InflateRect(ARect, -1, -1);
-      SpDrawXPCheckBoxGlyph(ACanvas, ARect, IsEnabled, CheckState, IsHovering, IsPending, sknSkin);
+      SpDrawXPCheckBoxGlyph(ACanvas, ARect, IsEnabled, CheckState, IsHovering, IsPending);
       Exit;
     end
   end;
@@ -29378,11 +29395,9 @@ begin
         Scratch.Free
       end
     end else
-    begin
       ACanvas.Draw(ViewportRect.Left + (RectWidth(ViewportRect) - Image.Width) div 2,
                      ViewportRect.Top + (RectHeight(ViewportRect) - Image.Height) div 2,
                      Image);
-    end;
   end
 end;
 
@@ -29839,7 +29854,7 @@ var
 {$ENDIF SpTBX}
 begin
   {$IFDEF SpTBX}
-    if (CurrentSkin.SkinName <> 'Default') and (MarginEdge = egmeTop) then
+    if (SkinManager.GetSkinType in [sknSkin, sknDelphiStyle]) and (MarginEdge = egmeTop) then
     begin
       if Group.Enabled then
         TBXState := sknsNormal
@@ -29972,7 +29987,7 @@ begin
   if (MarginEdge = egmeTop) and Group.Expandable then
   begin
     {$IFDEF SpTBX}
-    if CurrentSkin.SkinName <> 'Default' then
+    if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
     begin
       if Group.Bold then
         ACanvas.Pen.Color := CurrentSkin.GetTextColor(skncToolbarItem, sknsHotTrack)
@@ -30029,8 +30044,8 @@ var
 {$ENDIF SpTBX}
 begin
   {$IFDEF SpTBX}
-  if (CurrentSkin.SkinName <> 'Default') and (MarginEdge = egmeTop) then
-  begin    
+  if (SkinManager.GetSkinType in [sknSkin, sknDelphiStyle]) and (MarginEdge = egmeTop) then
+  begin
 
     if Group.Bold then
       ACanvas.Font.Color := CurrentSkin.GetTextColor(skncToolbarItem, sknsHotTrack)
@@ -30113,7 +30128,7 @@ var
 {$ENDIF}
 begin
   {$IFDEF SpTBX}
-  if CurrentSkin.SkinName <> 'Default' then
+  if SkinManager.GetSkinType in [sknSkin, sknDelphiStyle] then
   begin
     CurrentSkin.PaintBackground(ACanvas, OwnerListview.ClientRect, skncPanel, sknsNormal, True, False);
   end else

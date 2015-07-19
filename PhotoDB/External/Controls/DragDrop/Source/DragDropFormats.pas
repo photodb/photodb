@@ -119,13 +119,11 @@ type
     FHasSeeked: boolean;
   public
     function Stat(out statstg: TStatStg;
-      grfStatFlag: Longint): HResult; override; stdcall;
-    function Seek(dlibMove: Largeint; dwOrigin: Longint;
-      out libNewPosition: Largeint): HResult; override; stdcall;
-    function Read(pv: Pointer; cb: Longint;
-      pcbRead: PLongint): HResult; override; stdcall;
-    function CopyTo(stm: IStream; cb: Largeint; out cbRead: Largeint;
-      out cbWritten: Largeint): HResult; override; stdcall;
+      grfStatFlag: DWORD): HResult; override; stdcall;
+    function Seek(dlibMove: Largeint; dwOrigin: DWORD;
+      out libNewPosition: LargeUInt): HResult; override; stdcall;
+    function Read(pv: Pointer; cb: FixedUInt; pcbRead: PFixedUInt): HResult; override; stdcall;
+    function CopyTo(stm: IStream; cb: LargeUInt; out cbRead: LargeUInt; out cbWritten: LargeUInt): HResult; override; stdcall;
   end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -895,36 +893,36 @@ end;
 //              TFixedStreamAdapter
 //
 ////////////////////////////////////////////////////////////////////////////////
-function TFixedStreamAdapter.Seek(dlibMove: Largeint; dwOrigin: Integer;
-  out libNewPosition: Largeint): HResult;
+function TFixedStreamAdapter.Seek(dlibMove: Largeint; dwOrigin: DWORD;
+      out libNewPosition: LargeUInt): HResult;
 begin
   Result := inherited Seek(dlibMove, dwOrigin, libNewPosition);
   FHasSeeked := True;
 end;
 
 function TFixedStreamAdapter.Stat(out statstg: TStatStg;
-  grfStatFlag: Integer): HResult;
+      grfStatFlag: DWORD): HResult;
 begin
   Result := inherited Stat(statstg, grfStatFlag);
   statstg.pwcsName := nil;
 end;
 
-function TFixedStreamAdapter.Read(pv: Pointer; cb: Integer;
-  pcbRead: PLongint): HResult;
+function TFixedStreamAdapter.Read(pv: Pointer; cb: FixedUInt; pcbRead: PFixedUInt): HResult;
+var
+  LibNewPosition: UInt64;
 begin
   if (not FHasSeeked) then
-    Seek(0, STREAM_SEEK_SET, PLargeint(nil)^);
+    Seek(0, STREAM_SEEK_SET, LibNewPosition);
   Result := inherited Read(pv, cb, pcbRead);
 end;
 
-function TFixedStreamAdapter.CopyTo(stm: IStream; cb: Largeint; out cbRead: Largeint;
-  out cbWritten: Largeint): HResult;
+function TFixedStreamAdapter.CopyTo(stm: IStream; cb: LargeUInt; out cbRead: LargeUInt; out cbWritten: LargeUInt): HResult;
 const
   MaxBufSize = 1024 * 1024;  // 1mb
 var
   Buffer: Pointer;
   BufSize, BurstReadSize, BurstWriteSize: Integer;
-  BytesRead, BytesWritten, BurstWritten: LongInt;
+  BytesRead, BytesWritten, BurstWritten: FixedUInt;
 begin
   Result := S_OK;
   BytesRead := 0;
@@ -1045,10 +1043,11 @@ var
   Buffer: pointer;
   Stream: IStream;
   Remaining: longInt;
-  Chunk: longInt;
+  Chunk: FixedUint;
   pChunk: PByte;
   HGlob: HGLOBAL;
   ChunkBuffer: pointer;
+  LibNewPosition: UInt64;
 const
   MaxChunk = 1024*1024; // 1Mb.
 begin
@@ -1076,7 +1075,7 @@ begin
         Stream := IStream(AMedium.stm);
         if (Stream <> nil) then
         begin
-          Stream.Seek(0, STREAM_SEEK_SET, PLargeint(nil)^);
+          Stream.Seek(0, STREAM_SEEK_SET, LibNewPosition);
           Result := True;
           Remaining := Size;
           pChunk := Buffer;
@@ -1146,7 +1145,8 @@ var
   Stream: IStream;
   p: pointer;
   Remaining: longInt;
-  Chunk: longInt;
+  Chunk: FixedUint;
+  LibNewPosition: UInt64;
 begin
   Result := (Buffer <> nil) and (Size > 0);
   if (Result) then
@@ -1169,7 +1169,7 @@ begin
       Stream := IStream(AMedium.stm);
       if (Stream <> nil) then
       begin
-        Stream.Seek(0, STREAM_SEEK_SET, PLargeint(nil)^);
+        Stream.Seek(0, STREAM_SEEK_SET, LibNewPosition);
         Remaining := Size;
         while (Result) and (Remaining > 0) do
         begin
@@ -1194,6 +1194,7 @@ var
   Global: HGLOBAL;
   Stream: IStream;
   OleStream: TStream;
+  LibNewPosition: UInt64;
 begin
   Result := False;
 
@@ -1256,7 +1257,7 @@ begin
         exit;
       end;
 
-      Stream.Seek(0, STREAM_SEEK_END, PLargeint(nil)^);
+      Stream.Seek(0, STREAM_SEEK_END, LibNewPosition);
 
       (*
       ** The following is a bit weird...

@@ -23,7 +23,7 @@ unit EasyLVResources;
 
 interface
 
-{$I ..\Source\Compilers.inc}
+{$I Compilers.inc}
 {$I ..\Include\Debug.inc}
 {$I ..\Include\Addins.inc}
 

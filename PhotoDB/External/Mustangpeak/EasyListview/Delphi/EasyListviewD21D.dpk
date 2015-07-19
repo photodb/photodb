@@ -1,7 +1,8 @@
-package EasyListviewD13D;
+package EasyListviewD21D;
 
 {$R *.res}
 {$R '..\Design\EasyListviewReg.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -17,12 +18,14 @@ package EasyListviewD13D;
 {$RANGECHECKS OFF}
 {$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'MustangPeak EasyListview Designtime Package'}
 {$DESIGNONLY}
 {$IMPLICITBUILD ON}
@@ -33,8 +36,9 @@ requires
   designide,
   vclactnband,
   vclx,
-  EasyListviewD13,
-  MPCommonLibD13D;
+  MPCommonLibD21D,
+  EasyListviewD21,
+  MPCommonLibD21;
 
 contains
   EasyListviewReg in '..\Design\EasyListviewReg.pas',

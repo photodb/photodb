@@ -41,7 +41,7 @@ end;
 
 function HasOpenCV: Boolean;
 begin
-  Result := true;
+  Result := True;
 end;
 
 procedure SavePIplImageAsBitmap(IplImg: PIplImage; FileName: string);

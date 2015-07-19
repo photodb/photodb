@@ -2,7 +2,7 @@
 {                                                       }
 {            Delphi Visual Component Library            }
 {                                                       }
-{ Copyright(c) 2010-2012 Embarcadero Technologies, Inc. }
+{ Copyright(c) 2010-2015 Embarcadero Technologies, Inc. }
 {                                                       }
 {*******************************************************}
 
@@ -270,7 +270,10 @@ type
     skFMXListBox,
     skFMXActiveLabel,
     skFMXGlyphButton,
-    skFMXSwitch
+    skFMXSwitch,
+    skFMXListBoxItem,
+    skFMXCheckBox,
+    skFMXRadioButton
   );
 
   TSeState = (
@@ -993,7 +996,8 @@ type
     ktxsWordBreak,
     ktxsSingleLine,
     ktxsEndEllipsis,
-    ktxsExpandTabs
+    ktxsExpandTabs,
+    ktxsWordEllipsis
   );
 
   TSeTextStyles = set of TSeTextStyle;
@@ -7274,27 +7278,14 @@ end;
 
 function StringToFontStyle(const Str: string): TFontStyles;
 var
-  S, T: string;
+  S: string;
 begin
   S := Str;
-  GetToken(S, ';,'); // Skip font name
-  GetToken(S, ';,'); // Skip font size
-  GetToken(S, ';,'); // Skip font charset
-  GetToken(S, ';,');GetToken(S, ';,');GetToken(S, ';,'); // Skip font color
-
   Result := [];
-
-  T := GetToken(S, ';,');
-  if T <> '' then Result := Result + [fsBold];
-
-  T := GetToken(S, ';,');
-  if T <> '' then Result := Result + [fsItalic];
-
-  T := GetToken(S, ';,');
-  if T <> '' then Result := Result + [fsUnderline];
-
-  T := GetToken(S, ';,');
-  if T <> '' then Result := Result + [fsStrikeOut];
+  if System.Pos(',bold', S) <> 0 then Result := Result + [fsBold];
+  if System.Pos(',italic', S) <> 0 then Result := Result + [fsItalic];
+  if System.Pos(',underline', S) <> 0 then Result := Result + [fsUnderline];
+  if System.Pos(',strikeout', S) <> 0 then Result := Result + [fsStrikeOut];
 end;
 
 { TSeColorList ================================================================}
@@ -7805,6 +7796,10 @@ begin
     if Text.Align = ktxaMiddleLeft then Text.Align := ktxaMiddleRight;
     if Text.Align = ktxaBottomLeft then Text.Align := ktxaBottomRight;
   end;
+
+  if Text.Align = ktxaMiddleCenter then
+    Flags := Flags or DT_CENTER;
+
   if ktxsNoPrefix in Text.Style then
     Flags := Flags or DT_NOPREFIX;
   if ktxsWordBreak in Text.Style then
@@ -7815,6 +7810,8 @@ begin
     Flags := Flags or DT_END_ELLIPSIS;
   if ktxsExpandTabs in Text.Style then
     Flags := Flags or DT_EXPANDTABS;
+  if ktxsWordEllipsis in Text.Style then
+    Flags := Flags or DT_WORD_ELLIPSIS;
 
   FromTop := Text.Orientation = ktxoVerticalTop;
 
@@ -9307,7 +9304,8 @@ begin
     Result.Style := Result.Style + [ktxsEndEllipsis];
   if DT_EXPANDTABS and DT_Flags = DT_EXPANDTABS then
     Result.Style := Result.Style + [ktxsExpandTabs];
-
+  if DT_WORD_ELLIPSIS and DT_Flags = DT_WORD_ELLIPSIS then
+    Result.Style := Result.Style + [ktxsWordEllipsis];
 
   Result.Orientation := ktxoHorizontal;
 end;

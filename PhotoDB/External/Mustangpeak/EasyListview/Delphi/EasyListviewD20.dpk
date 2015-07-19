@@ -1,33 +1,36 @@
-package EasyListviewD14;
+package EasyListviewD20;
 
 {$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
-{$ASSERTIONS OFF}
+{$ASSERTIONS ON}
 {$BOOLEVAL OFF}
-{$DEBUGINFO OFF}
+{$DEBUGINFO ON}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS OFF}
+{$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
 {$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
-{$REFERENCEINFO OFF}
+{$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'Muststang Peak EasyListview Runtime Package'}
 {$RUNONLY}
 {$IMPLICITBUILD ON}
 
 requires
-  MPCommonLibD14,
+  MPCommonLibD20,
   rtl,
   vcl;
 
@@ -35,7 +38,7 @@ contains
   EasyListview in '..\Source\EasyListview.pas',
   EasyLVResources in '..\Source\EasyLVResources.pas',
   EasyScrollFrame in '..\Source\EasyScrollFrame.pas',
-  EasyTaskPanelForm in '..\Source\EasyTaskPanelForm.pas',  
+  EasyTaskPanelForm in '..\Source\EasyTaskPanelForm.pas',
   EasyListviewAccessible in '..\Source\EasyListviewAccessible.pas',
   EasyMSAAIntf in '..\Source\EasyMSAAIntf.pas';
 

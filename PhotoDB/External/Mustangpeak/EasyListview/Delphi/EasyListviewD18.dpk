@@ -1,7 +1,6 @@
-package EasyListviewD14D_XE2;
+package EasyListviewD18;
 
 {$R *.res}
-{$R '..\Design\EasyListviewReg.dcr'}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
@@ -26,22 +25,21 @@ package EasyListviewD14D_XE2;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'MustangPeak EasyListview Designtime Package'}
-{$DESIGNONLY}
+{$DESCRIPTION 'Muststang Peak EasyListview Runtime Package'}
+{$RUNONLY}
 {$IMPLICITBUILD ON}
 
 requires
+  MPCommonLibD18,
   rtl,
-  vcl,
-  designide,
-  vclactnband,
-  vclx,
-  MPCommonLibD14_XE2,
-  MPCommonLibD14D_XE2,
-  EasyListviewD14_XE2;
+  vcl;
 
 contains
-  EasyListviewReg in '..\Design\EasyListviewReg.pas',
-  EasyCollectionEditor in '..\Design\EasyCollectionEditor.pas';
+  EasyListview in '..\Source\EasyListview.pas',
+  EasyLVResources in '..\Source\EasyLVResources.pas',
+  EasyScrollFrame in '..\Source\EasyScrollFrame.pas',
+  EasyTaskPanelForm in '..\Source\EasyTaskPanelForm.pas',
+  EasyListviewAccessible in '..\Source\EasyListviewAccessible.pas',
+  EasyMSAAIntf in '..\Source\EasyMSAAIntf.pas';
 
 end.

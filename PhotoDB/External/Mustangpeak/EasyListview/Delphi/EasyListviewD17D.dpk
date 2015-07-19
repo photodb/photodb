@@ -1,4 +1,4 @@
-package EasyListviewD7D;
+package EasyListviewD17D;
 
 {$R *.res}
 {$R '..\Design\EasyListviewReg.dcr'}
@@ -33,14 +33,15 @@ package EasyListviewD7D;
 requires
   rtl,
   vcl,
-  EasyListviewD7,
-  MPCommonLibD7D,
   designide,
   vclactnband,
-  vclx;
+  vclx,
+  MPCommonLibD17D,
+  EasyListviewD17,
+  MPCommonLibD17;
 
 contains
   EasyListviewReg in '..\Design\EasyListviewReg.pas',
-  EasyCollectionEditor in '..\Design\EasyCollectionEditor.pas' {FormEasyCollectionEditor};
+  EasyCollectionEditor in '..\Design\EasyCollectionEditor.pas';
 
 end.

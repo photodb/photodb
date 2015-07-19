@@ -1,6 +1,7 @@
-package EasyListviewD7D;
+package EasyListviewD16D;
 
 {$R *.res}
+{$R *.otares}
 {$R '..\Design\EasyListviewReg.dcr'}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -28,19 +29,20 @@ package EasyListviewD7D;
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'MustangPeak EasyListview Designtime Package'}
 {$DESIGNONLY}
-{$IMPLICITBUILD ON}
+{$IMPLICITBUILD OFF}
 
 requires
   rtl,
   vcl,
-  EasyListviewD7,
-  MPCommonLibD7D,
   designide,
   vclactnband,
-  vclx;
+  vclx,
+  MPCommonLibD16D,
+  EasyListviewD16,
+  MPCommonLibD16;
 
 contains
   EasyListviewReg in '..\Design\EasyListviewReg.pas',
-  EasyCollectionEditor in '..\Design\EasyCollectionEditor.pas' {FormEasyCollectionEditor};
+  EasyCollectionEditor in '..\Design\EasyCollectionEditor.pas';
 
 end.

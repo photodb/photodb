@@ -1,4 +1,4 @@
-package EasyListviewD14_XE2;
+package EasyListviewD15;
 
 {$R *.res}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
@@ -30,7 +30,7 @@ package EasyListviewD14_XE2;
 {$IMPLICITBUILD ON}
 
 requires
-  MPCommonLibD14_XE2,
+  MPCommonLibD16,
   rtl,
   vcl;
 

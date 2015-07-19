@@ -2,7 +2,7 @@
 {                                                       }
 {            Delphi Visual Component Library            }
 {                                                       }
-{ Copyright(c) 2010-2012 Embarcadero Technologies, Inc. }
+{ Copyright(c) 2010-2015 Embarcadero Technologies, Inc. }
 {                                                       }
 {*******************************************************}
 
@@ -11,8 +11,6 @@
 {$IFDEF CPUX64}
   {$DEFINE PUREPASCAL}
 {$ENDIF CPUX64}
-
-{$POINTERMATH ON}
 
 { from SkinBitmap.pas }
 
@@ -25,10 +23,12 @@ type
 
   { Color type }
 
+{$POINTERMATH ON}
   PseColor = ^TseColor;
   TseColor = type cardinal;
 
   PseColorRec = ^TseColorRec;
+{$POINTERMATH OFF}
   TseColorRec = packed record
     case Cardinal of
       0: (Color: Cardinal);

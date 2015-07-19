@@ -62,7 +62,7 @@ unit MPCommonUtilities;
 
 {$B-}
 
-{$I ..\Source\Compilers.inc}
+{$I Compilers.inc}
 {$I Options.inc}
 {$I ..\Include\Debug.inc}
 {$I ..\Include\Addins.inc}
@@ -5763,8 +5763,6 @@ begin
     AdvAPI32Handle := GetModuleHandle(AdvAPI32);
     ShlwapiHandle := CommonLoadLibrary(Shlwapi);
     UserEnvHandle := CommonLoadLibrary('Userenv.dll');
-    NetAPI32Handle := CommonLoadLibrary('NETAPI32.DLL');
-    SrvAPIHandle := CommonLoadLibrary('SVRAPI.DLL');
 
     GetDiskFreeSpaceExA_MP := GetProcAddress(Kernel32Handle, 'GetDiskFreeSpaceA');
     TrackMouseEvent_MP := GetProcAddress(User32Handle, 'TrackMouseEvent');
@@ -5848,16 +5846,25 @@ begin
       Wow64RevertWow64FsRedirection_MP := GetProcAddress(Kernel32Handle, 'Wow64RevertWow64FsRedirection');
       Wow64DisableWow64FsRedirection_MP := GetProcAddress(Kernel32Handle, 'Wow64DisableWow64FsRedirection');
       Wow64EnableWow64FsRedirection_MP := GetProcAddress(Kernel32Handle, 'Wow64EnableWow64FsRedirection');   // Don't use this per M$, use the above two to disable and rever
-      NetShareEnumW_MP := GetProcAddress(NetAPI32Handle, 'NetShareEnum');
-      NetApiBufferFree_MP := GetProcAddress(NetAPI32Handle, 'NetApiBufferFree');
+
+      NetAPI32Handle := CommonLoadLibrary('NETAPI32.DLL');
+      if NetAPI32Handle <> 0 then
+      begin
+        NetShareEnumW_MP := GetProcAddress(NetAPI32Handle, 'NetShareEnum');
+        NetApiBufferFree_MP := GetProcAddress(NetAPI32Handle, 'NetApiBufferFree');
+      end;
 
       // Windows 7 stuff
       SetCurrentProcessExplicitAppUserModelID_MP := GetProcAddress(Shell32Handle, 'SetCurrentProcessExplicitAppUserModelID');
       SHGetPropertyStoreForWindow_MP := GetProcAddress(Shell32Handle, 'SHGetPropertyStoreForWindow');
     end else
     begin
-      NetShareEnum_MP := GetProcAddress(SrvAPIHandle, 'NetShareEnum');
-      NetApiBufferFree_MP := GetProcAddress(SrvAPIHandle, 'NetApiBufferFree');
+      SrvAPIHandle := CommonLoadLibrary('SVRAPI.DLL');  // Windows 95/98 only
+      if SrvAPIHandle <> 0 then 
+      begin
+        NetShareEnum_MP := GetProcAddress(SrvAPIHandle, 'NetShareEnum');
+        NetApiBufferFree_MP := GetProcAddress(SrvAPIHandle, 'NetApiBufferFree');
+      end
     end;
     FindFirstFileExA_MP := GetProcAddress(Kernel32Handle, 'FindFirstFileExA');
 
