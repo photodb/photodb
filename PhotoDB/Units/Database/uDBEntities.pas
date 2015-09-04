@@ -146,7 +146,7 @@ type
     procedure Assign(Source: TMediaItemCollection);
     procedure Insert(Index: Integer; MenuRecord: TMediaItem);
     procedure Add(MenuRecord: TMediaItem); overload;
-    function Add(FileName: string): TMediaItem; overload;
+    function Add(FileName: string; FileSize: Int64): TMediaItem; overload;
     procedure Clear;
     procedure ClearList;
     procedure Exchange(Index1, Index2: Integer);
@@ -743,12 +743,13 @@ begin
   FData.Insert(Index, MenuRecord);
 end;
 
-function TMediaItemCollection.Add(FileName: string): TMediaItem;
+function TMediaItemCollection.Add(FileName: string;
+  FileSize: Int64): TMediaItem;
 begin
   Result := TMediaItem.Create;
   Result.FileName := FileName;
   Result.Include := True;
-  Result.FileSize := GetFileSize(FileName);
+  Result.FileSize := FileSize;
   Add(Result);
 end;
 

@@ -592,13 +592,14 @@ var
   Folder, S, AddFolder: string;
   C: Integer;
   FQuery: TDataSet;
-  FBlockedFiles,
-  List: TStrings;
+  FBlockedFiles: TStrings;
   FE, EM: Boolean;
   P: PChar;
   PSupportedExt: PChar;
   ByDirectory: Boolean;
 begin
+  Info.Clear;
+
   if FileExists(BeginFile) then
     Folder := ExtractFileDir(BeginFile);
 
@@ -609,93 +610,87 @@ begin
   if Folder = '' then
     Exit;
 
-  List := TStringlist.Create;
+  C := 0;
+  N := 0;
+  FBlockedFiles := TStringList.Create;
   try
-    C := 0;
-    N := 0;
-    FBlockedFiles := TStringList.Create;
+    FQuery := DBContext.CreateQuery(dbilRead);
     try
-      FQuery := DBContext.CreateQuery(dbilRead);
-      try
-        Folder := IncludeTrailingBackslash(AnsiLowerCase(Folder));
+      Folder := IncludeTrailingBackslash(AnsiLowerCase(Folder));
 
-        if FolderView then
-          AddFolder := AnsiLowerCase(ProgramDir)
+      if FolderView then
+        AddFolder := AnsiLowerCase(ProgramDir)
+      else
+        AddFolder := '';
+
+      SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Folder, False)));
+
+      OpenDS(FQuery);
+      FQuery.First;
+      for I := 1 to FQuery.RecordCount do
+      begin
+        if FQuery.FieldByName('Access').AsInteger = Db_access_private then
+          FBlockedFiles.Add(AnsiLowerCase(FQuery.FieldByName('FFileName').AsString));
+
+        FQuery.Next;
+      end;
+
+      BeginFile := AnsiLowerCase(BeginFile);
+      PSupportedExt := PChar(Mask); // !!!!
+      Found := FindFirst(Folder + '*.*', FaAnyFile, SearchRec);
+      while Found = 0 do
+      begin
+        FE := (SearchRec.Attr and FaDirectory = 0);
+        if PSupportedExt = '*.*' then
+          EM := True
         else
-          AddFolder := '';
-
-        SetSQL(FQuery, 'Select * from $DB$ where FolderCRC=' + IntToStr(GetPathCRC(Folder, False)));
-
-        OpenDS(FQuery);
-        FQuery.First;
-        for I := 1 to FQuery.RecordCount do
         begin
-          if FQuery.FieldByName('Access').AsInteger = Db_access_private then
-            FBlockedFiles.Add(AnsiLowerCase(FQuery.FieldByName('FFileName').AsString));
-
-          FQuery.Next;
-        end;
-
-        BeginFile := AnsiLowerCase(BeginFile);
-        PSupportedExt := PChar(Mask); // !!!!
-        Found := FindFirst(Folder + '*.*', FaAnyFile, SearchRec);
-        while Found = 0 do
-        begin
-          FE := (SearchRec.Attr and FaDirectory = 0);
           S := ExtractFileExt(SearchRec.name);
           S := '|' + AnsiLowerCase(S) + '|';
-          if PSupportedExt = '*.*' then
-            EM := True
-          else
-          begin
-            P := StrPos(PSupportedExt, PChar(S));
-            EM := P <> nil;
-          end;
-          if FE and EM and (FBlockedFiles.IndexOf(AnsiLowerCase(Folder + SearchRec.name)) < 0) then
-          begin
-            Inc(C);
-            if AnsiLowerCase(Folder + SearchRec.name) = BeginFile then
-              N := C - 1;
-            List.Add(AnsiLowerCase(Folder + SearchRec.name));
-          end;
-          Found := System.SysUtils.FindNext(SearchRec);
+          P := StrPos(PSupportedExt, PChar(S));
+          EM := P <> nil;
         end;
-        System.SysUtils.FindClose(SearchRec);
-
-        Info.Clear;
-        FQuery.First;
-        for I := 0 to List.Count - 1 do
-          Info.Add(List[I]);
-
-        for I := 0 to FQuery.RecordCount - 1 do
+        if FE and EM and (FBlockedFiles.IndexOf(AnsiLowerCase(Folder + SearchRec.name)) < 0) then
         begin
-          for J := 0 to Info.Count - 1 do
-          begin
-            if (AddFolder + FQuery.FieldByName('FFileName').AsString) = Info[J].FileName then
-            begin
-              Info[J].ReadFromDS(FQuery);
-              Break;
-            end;
-          end;
-          FQuery.Next;
-        end;
-        for I := 0 to Info.Count - 1 do
-        begin
-          if AnsiLowerCase(Info[I].FileName) = AnsiLowerCase(BeginFile) then
-            Info.Position := I;
+          Inc(C);
+          if AnsiLowerCase(Folder + SearchRec.name) = BeginFile then
+            N := C - 1;
 
-          Info[I].InfoLoaded := True;
+          Info.Add(AnsiLowerCase(Folder + SearchRec.name), SearchRec.Size);
         end;
-        FQuery.Close;
-      finally
-        FreeDS(FQuery);
+        Found := System.SysUtils.FindNext(SearchRec);
       end;
+      System.SysUtils.FindClose(SearchRec);
+
+      FQuery.First;
+
+      for I := 0 to FQuery.RecordCount - 1 do
+      begin
+        for J := 0 to Info.Count - 1 do
+        begin
+          if (AddFolder + FQuery.FieldByName('FFileName').AsString) = Info[J].FileName then
+          begin
+            Info[J].ReadFromDS(FQuery);
+            Break;
+          end;
+        end;
+        FQuery.Next;
+      end;
+      for I := 0 to Info.Count - 1 do
+      begin
+        if AnsiLowerCase(Info[I].FileName) = AnsiLowerCase(BeginFile) then
+          Info.Position := I;
+
+        Info[I].InfoLoaded := True;
+      end;
+      FQuery.Close;
     finally
-      F(FBlockedFiles);
+      FreeDS(FQuery);
     end;
   finally
-    F(List);
+    F(FBlockedFiles);
   end;
+
   if (Info.Count = 0) and not ByDirectory then
     Info.Add(TMediaItem.CreateFromFile(BeginFile));
 end;
