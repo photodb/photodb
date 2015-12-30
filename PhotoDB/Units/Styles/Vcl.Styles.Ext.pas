@@ -203,8 +203,14 @@ uses
  System.Sysutils;
 
 {$IFDEF USE_VCL_STYLESAPI}
-{$I 'C:\Program Files (x86)\Embarcadero\Studio\16.0\source\vcl\StyleUtils.inc'}
-{$I 'C:\Program Files (x86)\Embarcadero\Studio\16.0\source\vcl\StyleAPI.inc'}
+  {$IFDEF VER290}
+    {$I 'C:\Program Files (x86)\Embarcadero\Studio\16.0\source\vcl\StyleUtils.inc'}
+    {$I 'C:\Program Files (x86)\Embarcadero\Studio\16.0\source\vcl\StyleAPI.inc'}
+  {$ENDIF}
+  {$IFDEF VER300}
+    {$I 'C:\Program Files (x86)\Embarcadero\Studio\17.0\source\vcl\StyleUtils.inc'}
+    {$I 'C:\Program Files (x86)\Embarcadero\Studio\17.0\source\vcl\StyleAPI.inc'}
+  {$ENDIF}
 {$ENDIF}
 
 

@@ -33,8 +33,15 @@ uses
 implementation
 
 //local files should be copied from Delphi sources
-{$I StyleUtils.inc}
-{$I StyleAPI.inc}
+{$IFDEF VER290}
+{$I StyleUtils_v22.inc}
+{$I StyleAPI_v22.inc}
+{$ENDIF}
+
+{$IFDEF VER300}
+{$I StyleUtils_v23.inc}
+{$I StyleAPI_v23.inc}
+{$ENDIF}
 
 type
   TCustomStyleEx = class(TCustomStyle)

@@ -839,7 +839,7 @@ begin
       Inc(FTrainedFacesCount);
 
       {$IFDEF DEBUG}
-      SavePIplImageAsBitmap(FTrainedFaces[Length(FTrainedFaces) - 1].Face, 'd:\trainset\' + IntToStr(Length(FTrainedFaces) - 1) + '.bmp');
+      //SavePIplImageAsBitmap(FTrainedFaces[Length(FTrainedFaces) - 1].Face, 'd:\trainset\' + IntToStr(Length(FTrainedFaces) - 1) + '.bmp');
       {$ENDIF}
     end;
   end;
@@ -1094,14 +1094,14 @@ begin
         end;
 
         {$IFDEF DEBUG}
-        if I = 0 then
+        (*if I = 0 then
         begin
           cvNamedWindow('SearchFor', 0);
           cvNamedWindow('Found', 0);
           cvShowImage('SearchFor', FaceImage);
           cvShowImage('Found', FaceDistances[I].Face.FFaceImage);
           cvWaitKey(10);
-        end;
+        end;*)
         {$ENDIF}
       end;
     end;

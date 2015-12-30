@@ -134,9 +134,9 @@
 {$ifdef Win64}
 
   // BDS XE8 (BDS 15.0) DELPHI and BCB are no longer defined, only COMPILER
-  {$ifdef VER290}
+  {$if CompilerVersion >= 22}
     {$define COMPILER_22}
-  {$endif VER290}
+  {$endif}
 
   // BDS XE7 (BDS 14.0) DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER280}
@@ -195,9 +195,9 @@
 // Compiler defines not specific to a particular platform.
 
   // BDS XE8 (BDS 15.0) DELPHI and BCB are no longer defined, only COMPILER
-  {$ifdef VER290}
+  {$if CompilerVersion >= 22}
     {$define COMPILER_22}
-  {$endif VER290}
+  {$endif}
 
   // BDS XE7 (BDS 14.0) DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER280}
@@ -230,9 +230,9 @@
   {$endif VER230}
 
   // BDS XE (BDS 8.0) DELPHI and BCB are no longer defined, only COMPILER
-  {$ifdef VER220}
+  {$if CompilerVersion >= 22}
     {$define COMPILER_15}
-  {$endif VER220}
+  {$endif}
 
   // BDS 2010 (BDS 7.0) DELPHI and BCB are no longer defined, only COMPILER
   {$ifdef VER210}
